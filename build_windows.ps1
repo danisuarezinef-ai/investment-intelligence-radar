@@ -23,7 +23,7 @@ $manifest=[ordered]@{
   channel='stable'
   package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip'
   sha256=$hash
-  notes='Nueva interfaz nativa, controles PC y Cloud independientes y sistema de actualizaciones integrado.'
+  notes='Cuadros de dialogo integrados con el tema visual de Radar y actividad Cloud visible con contadores de mercado, eventos y ciclos.'
   published_at=(Get-Date).ToUniversalTime().ToString('o')
 }
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
