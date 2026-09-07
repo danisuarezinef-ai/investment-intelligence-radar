@@ -105,12 +105,15 @@ def supabase_sync_loop():
     print('[supabase] persistent sync enabled', flush=True)
     while True:
         try:
-            result = sync_once(500)
+            result = sync_once(1000)
             print(
-                '[supabase] synced market={market} events={events} runs={runs}'.format(
-                    market=result.get('market', 0),
-                    events=result.get('events', 0),
-                    runs=result.get('runs', 0),
+                '[supabase] synced market={market} events={events} runs={runs} '
+                'rep={reputation} alerts={alerts} notifications={notifications} '
+                'nodes={nodes} agents={agents} positions={positions} trades={trades} marks={marks}'.format(
+                    **{k: result.get(k, 0) for k in (
+                        'market','events','runs','reputation','alerts','notifications',
+                        'nodes','agents','positions','trades','marks'
+                    )}
                 ),
                 flush=True,
             )
@@ -119,6 +122,12 @@ def supabase_sync_loop():
                 supabase_market=result.get('market', 0),
                 supabase_events=result.get('events', 0),
                 supabase_runs=result.get('runs', 0),
+                supabase_reputation=result.get('reputation', 0),
+                supabase_alerts=result.get('alerts', 0),
+                supabase_notifications=result.get('notifications', 0),
+                supabase_agents=result.get('agents', 0),
+                supabase_trades=result.get('trades', 0),
+                supabase_marks=result.get('marks', 0),
                 supabase_synced_at=now(),
             )
         except Exception as exc:
