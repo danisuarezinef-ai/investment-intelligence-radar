@@ -7,7 +7,7 @@ import urllib.parse
 
 import run_worker
 from radar_core import con, fetch, init_db, log, now, write_status
-from radar_supabase_sync import enabled as supabase_sync_enabled, sync_once
+from radar_supabase_sync import enabled as supabase_sync_enabled, sync_once, _post as forward_supabase
 
 
 def collect_science_safe():
@@ -93,6 +93,42 @@ class MobileHandler(BaseHandler):
             self._send_static(*static)
             return
         super().do_GET()
+
+    def do_POST(self):
+        path = self.path.split('?', 1)[0]
+        if path == '/pc-sync':
+            if not run_worker._authorized(self):
+                self._send(401, {'ok': False, 'error': 'unauthorized'})
+                return
+            data = run_worker._read_json(self)
+            node_id = str(data.get('node_id') or '').strip()
+            if not node_id:
+                self._send(400, {'ok': False, 'error': 'node_id requerido'})
+                return
+            payload = {
+                'node_id': node_id,
+                'market_snapshots': list(data.get('market_snapshots') or [])[:500],
+                'information_events': list(data.get('information_events') or [])[:500],
+                'system_runs': list(data.get('system_runs') or [])[:500],
+                'nodes': list(data.get('nodes') or [])[:20],
+                'node': {
+                    'node_id': node_id,
+                    'node_type': 'desktop',
+                    'name': data.get('name') or 'Windows PC',
+                    'enabled': True,
+                    'app_version': data.get('app_version'),
+                    'last_seen': now(),
+                    'capabilities': data.get('capabilities') or ['local-collector', 'desktop-ui'],
+                    'metadata': {'bridge': 'railway'},
+                },
+            }
+            try:
+                result = forward_supabase(payload, timeout=35)
+                self._send(200, {'ok': True, 'result': result})
+            except Exception as exc:
+                self._send(502, {'ok': False, 'error': str(exc)[:800]})
+            return
+        super().do_POST()
 
 
 run_worker._Handler = MobileHandler
