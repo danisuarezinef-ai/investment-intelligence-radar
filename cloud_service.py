@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import urllib.parse
 
@@ -52,11 +53,47 @@ def collect_science_safe():
     return added
 
 
-# run_worker references collect_science as a module global, so replacing it here
-# fixes both the scheduled collector and /collect-now in the Cloud process.
 run_worker.collect_science = collect_science_safe
 
 
+BaseHandler = run_worker._Handler
+
+
+class MobileHandler(BaseHandler):
+    STATIC = {
+        '/': ('mobile/index.html', 'text/html; charset=utf-8'),
+        '/mobile': ('mobile/index.html', 'text/html; charset=utf-8'),
+        '/mobile/': ('mobile/index.html', 'text/html; charset=utf-8'),
+        '/mobile/index.html': ('mobile/index.html', 'text/html; charset=utf-8'),
+        '/mobile/manifest.webmanifest': ('mobile/manifest.webmanifest', 'application/manifest+json; charset=utf-8'),
+        '/mobile/sw.js': ('mobile/sw.js', 'application/javascript; charset=utf-8'),
+    }
+
+    def _send_static(self, relpath, content_type):
+        path = os.path.join(os.path.dirname(__file__), relpath)
+        try:
+            with open(path, 'rb') as f:
+                body = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', str(len(body)))
+            self.send_header('Cache-Control', 'no-cache' if relpath.endswith('sw.js') else 'public, max-age=300')
+            self.end_headers()
+            self.wfile.write(body)
+        except OSError:
+            self._send(404, {'ok': False, 'error': 'static file not found'})
+
+    def do_GET(self):
+        path = self.path.split('?', 1)[0]
+        static = self.STATIC.get(path)
+        if static:
+            self._send_static(*static)
+            return
+        super().do_GET()
+
+
+run_worker._Handler = MobileHandler
+
+
 if __name__ == '__main__':
-    # One HTTP server only. run_worker.main() starts the worker thread when PORT exists.
     run_worker.main()
