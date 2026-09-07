@@ -11,7 +11,6 @@ New-Item -ItemType Directory -Path assets -Force | Out-Null
 $version=(Get-Content version.json -Raw | ConvertFrom-Json).version
 if(!$version){throw 'version.json no contiene version'}
 
-# Keep the visible desktop version synchronized with version.json at build time.
 $desktop=Get-Content radar_desktop.py -Raw
 $desktop=[regex]::Replace($desktop,"APP_VERSION\s*=\s*'[^']+'","APP_VERSION='$version'")
 Set-Content radar_desktop.py -Value $desktop -Encoding UTF8
@@ -31,12 +30,12 @@ $pngStream=New-Object System.IO.MemoryStream; $bmp.Save($pngStream,[System.Drawi
 $icoPath=Join-Path $PSScriptRoot 'assets\radar.ico'; $fs=[System.IO.File]::Create($icoPath); $bw=New-Object System.IO.BinaryWriter($fs); $bw.Write([UInt16]0); $bw.Write([UInt16]1); $bw.Write([UInt16]1); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([UInt16]1); $bw.Write([UInt16]32); $bw.Write([UInt32]$png.Length); $bw.Write([UInt32]22); $bw.Write($png); $bw.Close(); $fs.Close()
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarWorker run_worker.py
-python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarUpdater radar_updater.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarUpdater radar_updater_v2.py
 $updateZip='release\update-channel\RadarUpdate.zip'
 Compress-Archive -Path dist\InvestmentIntelligenceRadar.exe,dist\RadarWorker.exe,dist\RadarUpdater.exe -DestinationPath $updateZip -CompressionLevel Optimal -Force
 Copy-Item dist\RadarUpdater.exe release\update-channel\RadarUpdater.exe -Force
 $hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant(); $updaterHash=(Get-FileHash 'release\update-channel\RadarUpdater.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Amplia la inteligencia con noticias de mercado y geopolitica por RSS, arXiv, cinco agentes paper independientes de 200 EUR con costes, drawdown y Sharpe, detector de silencio, reputacion de fuentes, notificaciones y sincronizacion PC/Cloud. El actualizador mantiene scroll y boton de instalacion siempre visible.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
+$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Corrige el actualizador que cerraba Radar sin mostrar ventana. El nuevo actualizador abre una ventana visible inmediatamente, mantiene Radar abierto hasta confirmar la instalacion, registra errores y conserva todos los datos.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
 $inno="${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"; if(!(Test-Path $inno)){throw 'Inno Setup 6 not found'}; & $inno installer\Radar.iss
 Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"; Write-Host "Updater SHA256: $updaterHash"
