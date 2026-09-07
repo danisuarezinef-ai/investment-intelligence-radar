@@ -12,6 +12,7 @@ from radar_intelligence import (
     silence_alerts, sync_node_heartbeat, sync_nodes, intelligence_summary
 )
 from radar_feeds import collect_news, collect_arxiv
+from radar_agents import ensure_agents, agents_status, step_all_agents, reset_agents
 
 CONTROL_TOKEN = os.environ.get('RADAR_CONTROL_TOKEN', '').strip()
 _state_lock = threading.Lock()
@@ -83,12 +84,14 @@ def snapshot_payload():
         },
         'opportunities': opportunity_rankings(),
         'paper': paper_status(),
+        'paper_agents': agents_status(),
         'intelligence': intelligence_summary(),
     }
 
 def worker_loop():
     init_db()
     init_intelligence_db()
+    ensure_agents()
     open(PID, 'w').write(str(os.getpid()))
     write_status(
         version='1.3.1',
@@ -121,6 +124,8 @@ def worker_loop():
                     print(f'[collector] market added={n}', flush=True)
                     next_market = t + 300
                     paper_step()
+                    agents = step_all_agents()
+                    print(f'[paper] agents stepped={len(agents)}', flush=True)
 
                 if t >= next_sec:
                     write_status(state='RECOPILANDO SEC', current_job='sec')
@@ -251,6 +256,10 @@ class _Handler(BaseHTTPRequestHandler):
             self._send(200, {'nodes': sync_nodes(100)})
             return
 
+        if path == '/paper-agents':
+            self._send(200, {'agents': agents_status()})
+            return
+
         self._send(404, {'ok': False, 'error': 'not found'})
 
     def do_POST(self):
@@ -281,6 +290,8 @@ class _Handler(BaseHTTPRequestHandler):
                 'source_reputation': len(evaluate_source_reputation()),
             }
             paper_step(force=True)
+            agents = step_all_agents(force=True)
+            results['paper_agents'] = len(agents)
             self._send(200, {
                 'ok': True,
                 'results': results,
@@ -316,6 +327,18 @@ class _Handler(BaseHTTPRequestHandler):
             data = _read_json(self)
             n = mark_notifications_read(data.get('ids'))
             self._send(200, {'ok': True, 'updated': n})
+            return
+
+        if path == '/paper-agents/step':
+            agents = step_all_agents(force=True)
+            self._send(200, {'ok': True, 'agents': agents})
+            return
+
+        if path == '/paper-agents/reset':
+            data = _read_json(self)
+            amount = float(data.get('initial_cash', 200.0))
+            agents = reset_agents(amount)
+            self._send(200, {'ok': True, 'agents': agents})
             return
 
         self._send(404, {'ok': False, 'error': 'not found'})
