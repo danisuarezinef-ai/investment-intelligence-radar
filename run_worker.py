@@ -11,6 +11,7 @@ from radar_intelligence import (
     list_notifications, mark_notifications_read, source_reputation,
     silence_alerts, sync_node_heartbeat, sync_nodes, intelligence_summary
 )
+from radar_feeds import collect_news, collect_arxiv
 
 CONTROL_TOKEN = os.environ.get('RADAR_CONTROL_TOKEN', '').strip()
 _state_lock = threading.Lock()
@@ -90,13 +91,13 @@ def worker_loop():
     init_intelligence_db()
     open(PID, 'w').write(str(os.getpid()))
     write_status(
-        version='1.3.0',
+        version='1.3.1',
         state='INICIANDO',
         started_at=now(),
         last_error='',
         cloud_enabled=cloud_enabled(),
     )
-    next_market = next_sec = next_science = next_silence = next_reputation = 0
+    next_market = next_sec = next_science = next_news = next_arxiv = next_silence = next_reputation = 0
     history_attempted = False
     try:
         while True:
@@ -132,6 +133,18 @@ def worker_loop():
                     n = collect_science()
                     print(f'[collector] science added={n}', flush=True)
                     next_science = t + 1800
+
+                if t >= next_news:
+                    write_status(state='RECOPILANDO NOTICIAS', current_job='news')
+                    n = collect_news()
+                    print(f'[collector] news added={n}', flush=True)
+                    next_news = t + 900
+
+                if t >= next_arxiv:
+                    write_status(state='RECOPILANDO ARXIV', current_job='arxiv')
+                    n = collect_arxiv()
+                    print(f'[collector] arxiv added={n}', flush=True)
+                    next_arxiv = t + 3600
 
                 if t >= next_silence:
                     write_status(state='ANALIZANDO SILENCIO', current_job='silence')
@@ -204,7 +217,7 @@ class _Handler(BaseHTTPRequestHandler):
             self._send(200, {
                 'ok': True,
                 'service': 'Investment Intelligence Radar Cloud',
-                'version': '1.3.0',
+                'version': '1.3.1',
                 'cloud_enabled': cloud_enabled(),
                 'status': _read_status(),
             })
@@ -262,6 +275,8 @@ class _Handler(BaseHTTPRequestHandler):
                 'market': collect_market(),
                 'sec': collect_sec(),
                 'science': collect_science(),
+                'news': collect_news(),
+                'arxiv': collect_arxiv(),
                 'silence': len(detect_silence()),
                 'source_reputation': len(evaluate_source_reputation()),
             }
