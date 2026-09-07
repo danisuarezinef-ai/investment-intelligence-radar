@@ -1,6 +1,5 @@
 import os, sys, json, hashlib, tempfile, urllib.request, zipfile, shutil, subprocess, time
 import tkinter as tk
-from tkinter import messagebox
 
 APP_NAME='Investment Intelligence Radar'
 UPDATE_MANIFEST='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/update_manifest.json'
@@ -8,6 +7,7 @@ APPDIR=os.path.dirname(os.path.abspath(sys.executable if getattr(sys,'frozen',Fa
 DATA=os.path.join(os.environ.get('LOCALAPPDATA',os.path.expanduser('~')),'InvestmentIntelligenceRadarData')
 VERSION_FILE=os.path.join(APPDIR,'version.json')
 PID_FILE=os.path.join(DATA,'worker.pid')
+BG='#0f172a'; PANEL='#1e293b'; PANEL2='#111827'; TEXT='#f8fafc'; MUTED='#94a3b8'; BLUE='#2563eb'; GREEN='#16a34a'; RED='#dc2626'; AMBER='#f59e0b'; BORDER='#334155'
 
 
 def _version_tuple(v):
@@ -20,16 +20,13 @@ def _version_tuple(v):
 
 def current_version():
     try:
-        with open(VERSION_FILE,'r',encoding='utf-8-sig') as f:
-            return json.load(f).get('version','0.0.0')
-    except Exception:
-        return '0.0.0'
+        with open(VERSION_FILE,'r',encoding='utf-8-sig') as f: return json.load(f).get('version','0.0.0')
+    except Exception: return '0.0.0'
 
 
 def get_json(url,timeout=15):
     req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/1.0','Cache-Control':'no-cache'})
-    with urllib.request.urlopen(req,timeout=timeout) as r:
-        return json.loads(r.read().decode('utf-8-sig'))
+    with urllib.request.urlopen(req,timeout=timeout) as r: return json.loads(r.read().decode('utf-8-sig'))
 
 
 def sha256(path):
@@ -49,30 +46,20 @@ def stop_worker():
     except OSError: pass
 
 
-def wait_app_exit():
-    time.sleep(1.5)
+def wait_app_exit(): time.sleep(1.5)
 
 
 def atomic_install(extract_dir,new_version):
-    app_new=os.path.join(extract_dir,'InvestmentIntelligenceRadar.exe')
-    worker_new=os.path.join(extract_dir,'RadarWorker.exe')
-    if not (os.path.isfile(app_new) and os.path.isfile(worker_new)):
-        raise RuntimeError('El paquete de actualización no contiene los ejecutables esperados.')
-    backup=os.path.join(DATA,'update_backup')
-    os.makedirs(backup,exist_ok=True)
-    targets=[('InvestmentIntelligenceRadar.exe',app_new),('RadarWorker.exe',worker_new)]
-    restored=[]
+    app_new=os.path.join(extract_dir,'InvestmentIntelligenceRadar.exe'); worker_new=os.path.join(extract_dir,'RadarWorker.exe')
+    if not (os.path.isfile(app_new) and os.path.isfile(worker_new)): raise RuntimeError('El paquete de actualización no contiene los ejecutables esperados.')
+    backup=os.path.join(DATA,'update_backup'); os.makedirs(backup,exist_ok=True)
+    targets=[('InvestmentIntelligenceRadar.exe',app_new),('RadarWorker.exe',worker_new)]; restored=[]
     try:
         for name,src in targets:
-            dst=os.path.join(APPDIR,name)
-            bak=os.path.join(backup,name+'.bak')
+            dst=os.path.join(APPDIR,name); bak=os.path.join(backup,name+'.bak')
             if os.path.exists(dst): shutil.copy2(dst,bak)
-            tmp=dst+'.new'
-            shutil.copy2(src,tmp)
-            os.replace(tmp,dst)
-            restored.append((dst,bak))
-        with open(VERSION_FILE+'.new','w',encoding='utf-8') as f:
-            json.dump({'version':new_version,'channel':'stable'},f,ensure_ascii=False,indent=2)
+            tmp=dst+'.new'; shutil.copy2(src,tmp); os.replace(tmp,dst); restored.append((dst,bak))
+        with open(VERSION_FILE+'.new','w',encoding='utf-8') as f: json.dump({'version':new_version,'channel':'stable'},f,ensure_ascii=False,indent=2)
         os.replace(VERSION_FILE+'.new',VERSION_FILE)
     except Exception:
         for dst,bak in reversed(restored):
@@ -87,49 +74,53 @@ def launch_app():
     if os.path.exists(exe): subprocess.Popen([exe],cwd=APPDIR,creationflags=0x08000000)
 
 
+def radar_dialog(root,title,message,kind='info',confirm=False):
+    win=tk.Toplevel(root); win.title(title); win.configure(bg=BG); win.resizable(False,False); win.geometry('560x300'); win.grab_set()
+    outer=tk.Frame(win,bg=BG,padx=24,pady=22); outer.pack(fill='both',expand=True)
+    card=tk.Frame(outer,bg=PANEL,highlightthickness=1,highlightbackground=BORDER,padx=22,pady=20); card.pack(fill='both',expand=True)
+    accent={'info':GREEN,'warning':AMBER,'error':RED}.get(kind,BLUE)
+    tk.Label(card,text=title,bg=PANEL,fg=accent,font=('Segoe UI',16,'bold')).pack(anchor='w')
+    tk.Label(card,text=message,bg=PANEL,fg=TEXT,font=('Segoe UI',10),justify='left',wraplength=475).pack(anchor='w',pady=(14,18))
+    result={'v':False}; buttons=tk.Frame(card,bg=PANEL); buttons.pack(side='bottom',fill='x')
+    def close(v): result['v']=v; win.destroy()
+    if confirm:
+        tk.Button(buttons,text='AHORA NO',command=lambda:close(False),bg=PANEL2,fg=TEXT,activebackground=PANEL2,activeforeground=TEXT,relief='flat',bd=0,padx=18,pady=9).pack(side='right',padx=(8,0))
+        tk.Button(buttons,text='INSTALAR',command=lambda:close(True),bg=BLUE,fg='white',activebackground=BLUE,activeforeground='white',relief='flat',bd=0,padx=18,pady=9).pack(side='right')
+    else:
+        tk.Button(buttons,text='ACEPTAR',command=lambda:close(True),bg=BLUE,fg='white',activebackground=BLUE,activeforeground='white',relief='flat',bd=0,padx=18,pady=9).pack(side='right')
+    win.protocol('WM_DELETE_WINDOW',lambda:close(False)); root.wait_window(win); return result['v']
+
+
 def main():
-    root=tk.Tk(); root.withdraw()
-    cur=current_version()
-    try:
-        manifest=get_json(UPDATE_MANIFEST)
+    root=tk.Tk(); root.withdraw(); cur=current_version()
+    try: manifest=get_json(UPDATE_MANIFEST)
     except Exception as e:
-        messagebox.showerror('Actualizaciones',f'No se pudo comprobar si hay actualizaciones.\n\n{e}')
-        return 2
+        radar_dialog(root,'Actualizaciones',f'No se pudo comprobar si hay actualizaciones.\n\n{e}','error'); return 2
     latest=str(manifest.get('version','0.0.0'))
     if _version_tuple(latest) <= _version_tuple(cur):
-        messagebox.showinfo('Actualizaciones',f'Investment Intelligence Radar está actualizado.\n\nVersión instalada: {cur}')
-        return 0
-    notes=str(manifest.get('notes','')).strip()
-    text=f'Nueva versión disponible: {latest}\nVersión instalada: {cur}'
+        radar_dialog(root,'Radar está actualizado',f'Investment Intelligence Radar está actualizado.\n\nVersión instalada: {cur}','info'); return 0
+    notes=str(manifest.get('notes','')).strip(); text=f'Nueva versión disponible: {latest}\nVersión instalada: {cur}'
     if notes: text+='\n\n'+notes
-    text+='\n\n¿Instalar ahora?'
-    if not messagebox.askyesno('Actualización disponible',text): return 0
-    package_url=manifest.get('package_url')
-    expected=str(manifest.get('sha256','')).lower().strip()
+    text+='\n\n¿Quieres instalarla ahora?'
+    if not radar_dialog(root,'Actualización disponible',text,'warning',True): return 0
+    package_url=manifest.get('package_url'); expected=str(manifest.get('sha256','')).lower().strip()
     if not package_url or not expected:
-        messagebox.showerror('Actualizaciones','El manifiesto de actualización está incompleto.')
-        return 3
-    temp=tempfile.mkdtemp(prefix='radar_update_')
-    pkg=os.path.join(temp,'RadarUpdate.zip')
+        radar_dialog(root,'Actualizaciones','El manifiesto de actualización está incompleto.','error'); return 3
+    temp=tempfile.mkdtemp(prefix='radar_update_'); pkg=os.path.join(temp,'RadarUpdate.zip')
     try:
         req=urllib.request.Request(package_url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/1.0','Cache-Control':'no-cache'})
-        with urllib.request.urlopen(req,timeout=60) as r, open(pkg,'wb') as f:
-            shutil.copyfileobj(r,f)
+        with urllib.request.urlopen(req,timeout=60) as r, open(pkg,'wb') as f: shutil.copyfileobj(r,f)
         actual=sha256(pkg)
-        if actual.lower()!=expected:
-            raise RuntimeError('La firma SHA-256 del paquete no coincide. La actualización se ha cancelado.')
+        if actual.lower()!=expected: raise RuntimeError('La firma SHA-256 del paquete no coincide. La actualización se ha cancelado.')
         extract=os.path.join(temp,'payload'); os.makedirs(extract,exist_ok=True)
         with zipfile.ZipFile(pkg,'r') as z: z.extractall(extract)
         stop_worker(); wait_app_exit(); atomic_install(extract,latest)
-        messagebox.showinfo('Actualización completada',f'Investment Intelligence Radar se ha actualizado a la versión {latest}.')
+        radar_dialog(root,'Actualización completada',f'Investment Intelligence Radar se ha actualizado correctamente a la versión {latest}.','info')
         launch_app(); return 0
     except Exception as e:
-        messagebox.showerror('Actualización cancelada',f'No se pudo completar la actualización. La instalación anterior se conserva.\n\n{e}')
-        return 4
+        radar_dialog(root,'Actualización cancelada',f'No se pudo completar la actualización. La instalación anterior se conserva.\n\n{e}','error'); return 4
     finally:
         try: shutil.rmtree(temp,ignore_errors=True)
         except Exception: pass
 
-
-if __name__=='__main__':
-    raise SystemExit(main())
+if __name__=='__main__': raise SystemExit(main())
