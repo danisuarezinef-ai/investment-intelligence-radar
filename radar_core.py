@@ -23,14 +23,29 @@ def con():
     c.execute('PRAGMA journal_mode=WAL')
     return c
 
+def _cols(c,table):
+    try: return {r[1] for r in c.execute('pragma table_info('+table+')').fetchall()}
+    except Exception: return set()
+
+def _ensure_table(c,name,required,ddl):
+    cols=_cols(c,name)
+    if cols and not set(required).issubset(cols):
+        # Previous Radar versions used a different SQLite layout. Preserve it instead
+        # of deleting it, then create the current schema alongside it.
+        base=name+'_legacy'
+        legacy=base; i=1
+        existing={r[0] for r in c.execute("select name from sqlite_master where type='table'").fetchall()}
+        while legacy in existing:
+            i+=1; legacy=base+'_'+str(i)
+        c.execute('alter table '+name+' rename to '+legacy)
+    c.execute(ddl)
+
 def init_db():
     c=con()
-    c.executescript('''
-    create table if not exists market_snapshots(id integer primary key, ts text, symbol text, price real, volume real, source text);
-    create table if not exists information_events(id integer primary key, ts text, source text, title text, url text unique, category text);
-    create table if not exists system_runs(id integer primary key, ts text, job text, status text, detail text);
-    create table if not exists control(key text primary key, value text);
-    ''')
+    _ensure_table(c,'market_snapshots',{'id','ts','symbol','price','volume','source'},'create table if not exists market_snapshots(id integer primary key, ts text, symbol text, price real, volume real, source text)')
+    _ensure_table(c,'information_events',{'id','ts','source','title','url','category'},'create table if not exists information_events(id integer primary key, ts text, source text, title text, url text unique, category text)')
+    _ensure_table(c,'system_runs',{'id','ts','job','status','detail'},'create table if not exists system_runs(id integer primary key, ts text, job text, status text, detail text)')
+    _ensure_table(c,'control',{'key','value'},'create table if not exists control(key text primary key, value text)')
     c.commit(); c.close()
 
 def write_status(**kw):
@@ -67,44 +82,37 @@ def _market_yahoo(sym):
     data=json.loads(fetch(f'https://query1.finance.yahoo.com/v8/finance/chart/{ys}?interval=1d&range=5d',10))
     result=(data.get('chart') or {}).get('result') or []
     if not result: raise RuntimeError('Yahoo sin resultado')
-    meta=result[0].get('meta') or {}
-    price=meta.get('regularMarketPrice')
+    meta=result[0].get('meta') or {}; price=meta.get('regularMarketPrice')
     if price is None:
         closes=(((result[0].get('indicators') or {}).get('quote') or [{}])[0].get('close') or [])
         price=next((x for x in reversed(closes) if x is not None),None)
     if price is None: raise RuntimeError('Yahoo sin precio')
-    vol=None
     volumes=(((result[0].get('indicators') or {}).get('quote') or [{}])[0].get('volume') or [])
-    if volumes: vol=next((x for x in reversed(volumes) if x is not None),None)
+    vol=next((x for x in reversed(volumes) if x is not None),None) if volumes else None
     return float(price), (float(vol) if vol is not None else None), 'Yahoo Finance'
 
 def collect_market():
-    ok=0; errs=[]; sources={}
+    init_db(); ok=0; errs=[]; sources={}
     for sym,stooq in ASSETS.items():
         value=None; failures=[]
         for getter in (lambda:_market_stooq(sym,stooq),lambda:_market_yahoo(sym)):
-            try:
-                value=getter(); break
+            try: value=getter(); break
             except Exception as e: failures.append(str(e))
         if value is None:
             errs.append(sym+': '+' / '.join(failures)[:220]); continue
         price,volume,source=value
         c=con(); c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',(now(),sym,price,volume,source)); c.commit(); c.close(); ok+=1
         sources[source]=sources.get(source,0)+1
-    status='OK' if ok else 'ERROR'
-    detail=f'{ok}/{len(ASSETS)} precios guardados'
+    status='OK' if ok else 'ERROR'; detail=f'{ok}/{len(ASSETS)} precios guardados'
     if sources: detail+=' · '+', '.join(f'{k} {v}' for k,v in sources.items())
     if errs: detail+=' · errores: '+'; '.join(errs[:2])
-    log('market',status,detail); write_status(market_status=status,market_source=', '.join(sources) or 'sin fuente',prices_added=ok,last_market_errors=errs[:4])
-    return ok
+    log('market',status,detail); write_status(market_status=status,market_source=', '.join(sources) or 'sin fuente',prices_added=ok,last_market_errors=errs[:4]); return ok
 
 def collect_science():
-    q=urllib.parse.quote('artificial intelligence OR semiconductor OR battery OR fusion energy OR quantum computing')
-    url='https://www.ebi.ac.uk/europepmc/webservices/rest/search?query='+q+'&format=json&pageSize=15'
-    n=0
+    init_db(); q=urllib.parse.quote('artificial intelligence OR semiconductor OR battery OR fusion energy OR quantum computing')
+    url='https://www.ebi.ac.uk/europepmc/webservices/rest/search?query='+q+'&format=json&pageSize=15'; n=0
     try:
-        data=json.loads(fetch(url)); results=data.get('resultList',{}).get('result',[])
-        c=con()
+        data=json.loads(fetch(url)); results=data.get('resultList',{}).get('result',[]); c=con()
         for r in results:
             title=(r.get('title') or '').strip(); pid=r.get('pmid') or r.get('pmcid') or r.get('id')
             if not title or not pid: continue
@@ -112,37 +120,24 @@ def collect_science():
             try: c.execute('insert into information_events(ts,source,title,url,category) values(?,?,?,?,?)',(now(),'Europe PMC',title,u,'science')); n+=1
             except sqlite3.IntegrityError: pass
         c.commit(); c.close(); log('science','OK',f'{n} eventos nuevos de {len(results)} recuperados'); write_status(science_status='OK',science_seen=len(results))
-    except Exception as e:
-        log('science','ERROR',str(e)); write_status(science_status='ERROR',last_error=str(e))
+    except Exception as e: log('science','ERROR',str(e)); write_status(science_status='ERROR',last_error=str(e))
     return n
 
 def collect_sec():
-    tickers={'MSFT':'0000789019','NVDA':'0001045810','AMZN':'0001018724','META':'0001326801','GOOGL':'0001652044'}
-    n=0; failures=[]
-    c=con()
+    init_db(); tickers={'MSFT':'0000789019','NVDA':'0001045810','AMZN':'0001018724','META':'0001326801','GOOGL':'0001652044'}; n=0; failures=[]; c=con()
     for sym,cik in tickers.items():
         try:
-            data=json.loads(fetch(f'https://data.sec.gov/submissions/CIK{cik}.json',15,{'Accept-Encoding':'identity'}))
-            recent=data.get('filings',{}).get('recent',{})
+            data=json.loads(fetch(f'https://data.sec.gov/submissions/CIK{cik}.json',15,{'Accept-Encoding':'identity'})); recent=data.get('filings',{}).get('recent',{})
             forms=recent.get('form',[]); acc=recent.get('accessionNumber',[]); docs=recent.get('primaryDocument',[])
             for i,form in enumerate(forms[:40]):
                 if form not in ('8-K','10-Q','10-K','6-K','20-F'): continue
-                a=acc[i].replace('-',''); doc=docs[i]; url=f'https://www.sec.gov/Archives/edgar/data/{int(cik)}/{a}/{doc}'
-                title=f'{sym} · SEC {form}'
+                a=acc[i].replace('-',''); doc=docs[i]; url=f'https://www.sec.gov/Archives/edgar/data/{int(cik)}/{a}/{doc}'; title=f'{sym} · SEC {form}'
                 try: c.execute('insert into information_events(ts,source,title,url,category) values(?,?,?,?,?)',(now(),'SEC EDGAR',title,url,'regulatory')); n+=1
                 except sqlite3.IntegrityError: pass
         except Exception as e: failures.append(sym+': '+str(e))
-    c.commit(); c.close()
-    status='OK' if n or len(failures)<len(tickers) else 'ERROR'
-    detail=f'{n} eventos SEC nuevos' + ((' · '+'; '.join(failures[:2])) if failures else '')
-    log('sec',status,detail); write_status(sec_status=status,last_sec_errors=failures[:4])
-    return n
+    c.commit(); c.close(); status='OK' if n or len(failures)<len(tickers) else 'ERROR'; detail=f'{n} eventos SEC nuevos'+((' · '+'; '.join(failures[:2])) if failures else '')
+    log('sec',status,detail); write_status(sec_status=status,last_sec_errors=failures[:4]); return n
 
 def stats():
-    init_db(); c=con()
-    prices=c.execute('select count(*) from market_snapshots').fetchone()[0]
-    events=c.execute('select count(*) from information_events').fetchone()[0]
-    runs=c.execute('select count(*) from system_runs').fetchone()[0]
-    latest=c.execute('select symbol,price,source,ts from market_snapshots order by id desc limit 16').fetchall()
-    news=c.execute('select source,title,ts from information_events order by id desc limit 12').fetchall()
-    c.close(); return prices,events,runs,latest,news
+    init_db(); c=con(); prices=c.execute('select count(*) from market_snapshots').fetchone()[0]; events=c.execute('select count(*) from information_events').fetchone()[0]; runs=c.execute('select count(*) from system_runs').fetchone()[0]
+    latest=c.execute('select symbol,price,source,ts from market_snapshots order by id desc limit 16').fetchall(); news=c.execute('select source,title,ts from information_events order by id desc limit 12').fetchall(); c.close(); return prices,events,runs,latest,news
