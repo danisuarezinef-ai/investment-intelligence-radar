@@ -8,12 +8,19 @@ if(Test-Path release){Remove-Item release -Recurse -Force}
 New-Item -ItemType Directory -Path release -Force | Out-Null
 New-Item -ItemType Directory -Path release\update-channel -Force | Out-Null
 New-Item -ItemType Directory -Path assets -Force | Out-Null
-$version=(Get-Content version.json -Raw | ConvertFrom-Json).version
+$version=(Get-Content version.json -Raw -Encoding UTF8 | ConvertFrom-Json).version
 if(!$version){throw 'version.json no contiene version'}
 
-$desktop=Get-Content radar_desktop.py -Raw
+# Preserve Unicode text while synchronizing the visible app version.
+$desktop=Get-Content radar_desktop.py -Raw -Encoding UTF8
 $desktop=[regex]::Replace($desktop,"APP_VERSION\s*=\s*'[^']+'","APP_VERSION='$version'")
-Set-Content radar_desktop.py -Value $desktop -Encoding UTF8
+[System.IO.File]::WriteAllText((Join-Path $PSScriptRoot 'radar_desktop.py'),$desktop,(New-Object System.Text.UTF8Encoding($false)))
+
+# Keep Inno Setup metadata synchronized with version.json too.
+$issPath=Join-Path $PSScriptRoot 'installer\Radar.iss'
+$iss=Get-Content $issPath -Raw -Encoding UTF8
+$iss=[regex]::Replace($iss,'#define MyAppVersion "[^"]+"','#define MyAppVersion "'+$version+'"')
+[System.IO.File]::WriteAllText($issPath,$iss,(New-Object System.Text.UTF8Encoding($false)))
 
 Add-Type -AssemblyName System.Drawing
 $bmp=New-Object System.Drawing.Bitmap 256,256
@@ -35,7 +42,7 @@ $updateZip='release\update-channel\RadarUpdate.zip'
 Compress-Archive -Path dist\InvestmentIntelligenceRadar.exe,dist\RadarWorker.exe,dist\RadarUpdater.exe -DestinationPath $updateZip -CompressionLevel Optimal -Force
 Copy-Item dist\RadarUpdater.exe release\update-channel\RadarUpdater.exe -Force
 $hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant(); $updaterHash=(Get-FileHash 'release\update-channel\RadarUpdater.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Corrige el actualizador que cerraba Radar sin mostrar ventana. El nuevo actualizador abre una ventana visible inmediatamente, mantiene Radar abierto hasta confirmar la instalacion, registra errores y conserva todos los datos.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
+$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Corrige caracteres Unicode, sincroniza la version del instalador y refuerza las fuentes de datos de mercado. Mantiene el actualizador visible y conserva la base de datos.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
 $inno="${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"; if(!(Test-Path $inno)){throw 'Inno Setup 6 not found'}; & $inno installer\Radar.iss
 Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"; Write-Host "Updater SHA256: $updaterHash"
