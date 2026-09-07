@@ -2,7 +2,7 @@ import os, sys, json, subprocess, urllib.request, urllib.error
 import tkinter as tk
 from radar_core import init_db, stats, STATUS, PID, DATA
 
-APP_VERSION='1.1.1'
+APP_VERSION='1.1.3'
 APPDIR=os.path.dirname(os.path.abspath(sys.executable if getattr(sys,'frozen',False) else __file__))
 SETTINGS=os.path.join(DATA,'desktop_settings.json')
 CLOUD_BASE='https://radar-cloud-production.up.railway.app'
@@ -24,6 +24,36 @@ def save_settings(d):
     try:
         os.makedirs(DATA,exist_ok=True)
         with open(SETTINGS,'w',encoding='utf-8') as f: json.dump(d,f,ensure_ascii=False,indent=2)
+    except Exception: pass
+
+
+def refresh_windows_shortcuts():
+    """Recrea accesos directos para forzar a Windows a usar el icono integrado de la nueva version."""
+    if os.name!='nt' or not getattr(sys,'frozen',False): return
+    exe=os.path.join(APPDIR,'InvestmentIntelligenceRadar.exe')
+    if not os.path.exists(exe): return
+    try:
+        ps=r'''$ErrorActionPreference='SilentlyContinue'
+$exe=$env:RADAR_EXE
+$ws=New-Object -ComObject WScript.Shell
+$desktop=[Environment]::GetFolderPath('Desktop')
+$start=Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
+foreach($path in @((Join-Path $desktop 'Investment Intelligence Radar.lnk'),(Join-Path $start 'Investment Intelligence Radar.lnk'))){
+  if(Test-Path $path){Remove-Item $path -Force}
+  $s=$ws.CreateShortcut($path)
+  $s.TargetPath=$exe
+  $s.WorkingDirectory=Split-Path $exe
+  $s.IconLocation="$exe,0"
+  $s.Description='Investment Intelligence Radar'
+  $s.Save()
+}
+'''
+        env=os.environ.copy(); env['RADAR_EXE']=exe
+        subprocess.run(['powershell','-NoProfile','-ExecutionPolicy','Bypass','-Command',ps],env=env,creationflags=0x08000000,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=15)
+        try:
+            import ctypes
+            ctypes.windll.shell32.SHChangeNotify(0x08000000,0x0000,None,None)
+        except Exception: pass
     except Exception: pass
 
 
@@ -120,6 +150,7 @@ def launch_updater():
 
 
 init_db()
+refresh_windows_shortcuts()
 root=tk.Tk(); root.title('Investment Intelligence Radar'); root.geometry('1220x840'); root.minsize(1080,720); root.configure(bg=BG)
 main=tk.Frame(root,bg=BG,padx=28,pady=24); main.pack(fill='both',expand=True)
 header=tk.Frame(main,bg=BG); header.pack(fill='x')
