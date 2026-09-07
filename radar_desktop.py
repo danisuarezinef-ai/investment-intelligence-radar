@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 from radar_core import init_db, stats, STATUS, PID, DATA
 
+APP_VERSION='1.1.0'
 APPDIR=os.path.dirname(os.path.abspath(sys.executable if getattr(sys,'frozen',False) else __file__))
 SETTINGS=os.path.join(DATA,'desktop_settings.json')
 CLOUD_BASE='https://radar-cloud-production.up.railway.app'
@@ -85,13 +86,28 @@ def cloud_toggle():
         messagebox.showerror('Cloud','No se pudo contactar con el servicio Cloud:\n'+str(e),parent=root)
 
 
+def launch_updater():
+    exe=os.path.join(APPDIR,'RadarUpdater.exe')
+    if not os.path.exists(exe):
+        messagebox.showinfo('Actualizaciones','El actualizador se instalará con la actualización de transición.',parent=root)
+        return
+    try:
+        subprocess.Popen([exe],cwd=APPDIR,creationflags=0x08000000 if os.name=='nt' else 0)
+        root.after(600,root.destroy)
+    except Exception as e:
+        messagebox.showerror('Actualizaciones','No se pudo abrir el actualizador:\n'+str(e),parent=root)
+
+
 init_db()
-root=tk.Tk(); root.title('Investment Intelligence Radar'); root.geometry('1180x780'); root.minsize(1040,680); root.configure(bg=BG)
+root=tk.Tk(); root.title('Investment Intelligence Radar'); root.geometry('1180x800'); root.minsize(1040,700); root.configure(bg=BG)
 
 main=tk.Frame(root,bg=BG,padx=28,pady=24); main.pack(fill='both',expand=True)
 header=tk.Frame(main,bg=BG); header.pack(fill='x')
-tk.Label(header,text='Investment Intelligence Radar',bg=BG,fg=TEXT,font=('Segoe UI',24,'bold')).pack(anchor='w')
-tk.Label(header,text='Centro de control · Windows Desktop v1.1 · actualización automática',bg=BG,fg=MUTED,font=('Segoe UI',10)).pack(anchor='w',pady=(2,18))
+header_left=tk.Frame(header,bg=BG); header_left.pack(side='left',fill='x',expand=True)
+tk.Label(header_left,text='Investment Intelligence Radar',bg=BG,fg=TEXT,font=('Segoe UI',24,'bold')).pack(anchor='w')
+tk.Label(header_left,text=f'Centro de control · Windows Desktop v{APP_VERSION} · actualizaciones integradas',bg=BG,fg=MUTED,font=('Segoe UI',10)).pack(anchor='w',pady=(2,18))
+update_btn=tk.Button(header,text='BUSCAR ACTUALIZACIÓN',command=launch_updater,font=('Segoe UI',9,'bold'),fg='white',bg=BLUE,activebackground=BLUE,activeforeground='white',relief='flat',bd=0,padx=16,pady=9,cursor='hand2')
+update_btn.pack(side='right',anchor='n',pady=(2,0))
 
 controls=tk.Frame(main,bg=BG); controls.pack(fill='x')
 
@@ -128,7 +144,7 @@ tk.Label(right,text='Últimos eventos',bg=PANEL,fg=TEXT,font=('Segoe UI',12,'bol
 prices=tk.Listbox(left,bg=PANEL2,fg=TEXT,selectbackground=BLUE,selectforeground='white',highlightthickness=0,bd=0,font=('Consolas',10)); prices.pack(fill='both',expand=True)
 events=tk.Listbox(right,bg=PANEL2,fg=TEXT,selectbackground=BLUE,selectforeground='white',highlightthickness=0,bd=0,font=('Segoe UI',9)); events.pack(fill='both',expand=True)
 
-footer=tk.Label(main,text='Fuentes activas: Stooq · SEC EDGAR · Europe PMC   |   Trading real: OFF',bg=BG,fg=MUTED,font=('Segoe UI',9)); footer.pack(anchor='w',pady=(12,0))
+footer=tk.Label(main,text='Fuentes activas: Stooq · SEC EDGAR · Europe PMC   |   Trading real: OFF   |   Canal: estable',bg=BG,fg=MUTED,font=('Segoe UI',9)); footer.pack(anchor='w',pady=(12,0))
 
 
 def toggle_pc():
@@ -159,7 +175,7 @@ def refresh_local():
 
 def refresh_cloud():
     try:
-        d=cloud_get('/health'); enabled=bool(d.get('cloud_enabled',True)); st=d.get('status',{})
+        d=cloud_get('/health'); enabled=bool(d.get('cloud_enabled',True))
         cloud_state.configure(text='ACTIVO 24/7' if enabled else 'PAUSADO',fg='#4ade80' if enabled else '#f87171')
         cloud_btn.configure(text='OFF' if enabled else 'ON',bg=RED if enabled else GREEN,activebackground=RED if enabled else GREEN)
         cloud_detail.configure(text=('Cloud funcionando de forma independiente. Pulsa OFF para pausarlo.' if enabled else 'Cloud pausado. Pulsa ON para reanudarlo.'))
