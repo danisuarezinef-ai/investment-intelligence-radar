@@ -1,5 +1,5 @@
 #define MyAppName "Investment Intelligence Radar"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 [Setup]
 AppId={{44C4B1FA-5DC9-42E1-AE16-93AB0F9EA76A}
@@ -17,6 +17,8 @@ CloseApplications=yes
 [Files]
 Source: "..\dist\InvestmentIntelligenceRadar.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\RadarWorker.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\RadarUpdater.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
 Name: "{autodesktop}\Investment Intelligence Radar"; Filename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Investment Intelligence Radar"; Filename: "{app}\{#MyAppExeName}"
