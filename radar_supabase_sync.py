@@ -32,7 +32,16 @@ def _control_set(key, value):
     c.close()
 
 
-def _post(payload, timeout=25):
+def _table_exists(c, name):
+    try:
+        return c.execute(
+            "select 1 from sqlite_master where type='table' and name=?", (name,)
+        ).fetchone() is not None
+    except Exception:
+        return False
+
+
+def _post(payload, timeout=30):
     data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
     req = urllib.request.Request(
         SYNC_URL,
@@ -60,11 +69,13 @@ def sync_once(batch=500):
         return {'enabled': False}
 
     init_db()
-    c = con()
     market_after = int(_control_get('supabase_market_id', '0') or 0)
     events_after = int(_control_get('supabase_event_id', '0') or 0)
     runs_after = int(_control_get('supabase_run_id', '0') or 0)
+    trades_after = int(_control_get('supabase_agent_trade_id', '0') or 0)
+    marks_after = int(_control_get('supabase_agent_mark_id', '0') or 0)
 
+    c = con()
     market_rows = c.execute(
         'select id,ts,symbol,price,volume,source from market_snapshots where id>? order by id limit ?',
         (market_after, batch),
@@ -77,6 +88,31 @@ def sync_once(batch=500):
         'select id,ts,job,status,detail from system_runs where id>? order by id limit ?',
         (runs_after, batch),
     ).fetchall()
+
+    agent_rows = []
+    position_rows = []
+    trade_rows = []
+    mark_rows = []
+    if _table_exists(c, 'paper_agents'):
+        agent_rows = c.execute(
+            'select agent_id,name,strategy,initial_cash,cash,enabled,last_rebalance,created_at from paper_agents order by agent_id'
+        ).fetchall()
+    if _table_exists(c, 'paper_agent_positions'):
+        position_rows = c.execute(
+            'select agent_id,symbol,qty,avg_price,updated_at from paper_agent_positions order by agent_id,symbol'
+        ).fetchall()
+    if _table_exists(c, 'paper_agent_trades'):
+        trade_rows = c.execute(
+            '''select id,ts,agent_id,symbol,side,qty,price,gross_value,fees,spread_cost,fx_cost,reason
+               from paper_agent_trades where id>? order by id limit ?''',
+            (trades_after, batch),
+        ).fetchall()
+    if _table_exists(c, 'paper_agent_marks'):
+        mark_rows = c.execute(
+            '''select id,ts,agent_id,total,cash,invested,drawdown_pct
+               from paper_agent_marks where id>? order by id limit ?''',
+            (marks_after, batch),
+        ).fetchall()
     c.close()
 
     payload = {
@@ -92,6 +128,22 @@ def sync_once(batch=500):
         'system_runs': [
             {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'node_id': NODE_ID, 'kind': r[2], 'status': r[3], 'message': r[4]}
             for r in run_rows
+        ],
+        'paper_agents': [
+            {'agent_id': r[0], 'name': r[1], 'strategy': r[2], 'initial_cash': r[3], 'cash': r[4], 'enabled': bool(r[5]), 'last_rebalance': r[6], 'created_at': r[7]}
+            for r in agent_rows
+        ],
+        'paper_positions': [
+            {'agent_id': r[0], 'symbol': r[1], 'qty': r[2], 'avg_price': r[3], 'updated_at': r[4]}
+            for r in position_rows
+        ],
+        'paper_trades': [
+            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'agent_id': r[2], 'symbol': r[3], 'side': r[4], 'qty': r[5], 'price': r[6], 'gross_value': r[7], 'fees': r[8], 'spread_cost': r[9], 'fx_cost': r[10], 'reason': r[11]}
+            for r in trade_rows
+        ],
+        'portfolio_values': [
+            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'agent_id': r[2], 'total': r[3], 'cash': r[4], 'invested': r[5], 'drawdown_pct': r[6]}
+            for r in mark_rows
         ],
         'node': {
             'node_id': NODE_ID,
@@ -111,10 +163,18 @@ def sync_once(batch=500):
         _control_set('supabase_event_id', event_rows[-1][0])
     if run_rows:
         _control_set('supabase_run_id', run_rows[-1][0])
+    if trade_rows:
+        _control_set('supabase_agent_trade_id', trade_rows[-1][0])
+    if mark_rows:
+        _control_set('supabase_agent_mark_id', mark_rows[-1][0])
     return {
         'enabled': True,
         'market': len(market_rows),
         'events': len(event_rows),
         'runs': len(run_rows),
+        'agents': len(agent_rows),
+        'positions': len(position_rows),
+        'trades': len(trade_rows),
+        'marks': len(mark_rows),
         'remote': result,
     }
