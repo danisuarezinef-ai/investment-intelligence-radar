@@ -20,7 +20,7 @@ def _version_tuple(v):
 
 def current_version():
     try:
-        with open(VERSION_FILE,'r',encoding='utf-8') as f:
+        with open(VERSION_FILE,'r',encoding='utf-8-sig') as f:
             return json.load(f).get('version','0.0.0')
     except Exception:
         return '0.0.0'
@@ -29,7 +29,7 @@ def current_version():
 def get_json(url,timeout=15):
     req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/1.0','Cache-Control':'no-cache'})
     with urllib.request.urlopen(req,timeout=timeout) as r:
-        return json.loads(r.read().decode('utf-8'))
+        return json.loads(r.read().decode('utf-8-sig'))
 
 
 def sha256(path):
@@ -50,7 +50,6 @@ def stop_worker():
 
 
 def wait_app_exit():
-    # The desktop launches the updater and then closes itself. Give it time to release the executable.
     time.sleep(1.5)
 
 
@@ -67,8 +66,7 @@ def atomic_install(extract_dir,new_version):
         for name,src in targets:
             dst=os.path.join(APPDIR,name)
             bak=os.path.join(backup,name+'.bak')
-            if os.path.exists(dst):
-                shutil.copy2(dst,bak)
+            if os.path.exists(dst): shutil.copy2(dst,bak)
             tmp=dst+'.new'
             shutil.copy2(src,tmp)
             os.replace(tmp,dst)
@@ -86,8 +84,7 @@ def atomic_install(extract_dir,new_version):
 
 def launch_app():
     exe=os.path.join(APPDIR,'InvestmentIntelligenceRadar.exe')
-    if os.path.exists(exe):
-        subprocess.Popen([exe],cwd=APPDIR,creationflags=0x08000000)
+    if os.path.exists(exe): subprocess.Popen([exe],cwd=APPDIR,creationflags=0x08000000)
 
 
 def main():
