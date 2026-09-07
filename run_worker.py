@@ -1,5 +1,5 @@
 import json, os, time, traceback, threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 from radar_core import (
     init_db, collect_market, collect_sec, collect_science, collect_history,
@@ -196,7 +196,7 @@ def _read_json(h):
     except Exception:
         return {}
 
-class _Handler(BaseHTTPRequestHandler):
+class _Handler(SimpleHTTPRequestHandler):
     def _send(self, code, payload):
         body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
         self.send_response(code)
@@ -217,6 +217,15 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split('?', 1)[0]
+
+        if path == '/mobile':
+            self.send_response(302)
+            self.send_header('Location', '/mobile/')
+            self.end_headers()
+            return
+
+        if path.startswith('/mobile/') and path != '/mobile/dashboard':
+            return super().do_GET()
 
         if path == '/health':
             self._send(200, {
