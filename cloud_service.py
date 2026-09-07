@@ -1,65 +1,62 @@
-import json, os, threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
+import sqlite3
+import urllib.parse
 
-from radar_core import STATUS, stats, init_db
-from run_worker import main as worker_main
-
-PORT = int(os.environ.get('PORT', '8080'))
-
-
-def read_status():
-    try:
-        with open(STATUS, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        return {'state': 'STARTING', 'heartbeat': None, 'detail': str(e)}
+import run_worker
+from radar_core import con, fetch, init_db, log, now, write_status
 
 
-class Handler(BaseHTTPRequestHandler):
-    def _send(self, code, payload):
-        body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
-        self.send_response(code)
-        self.send_header('Content-Type', 'application/json; charset=utf-8')
-        self.send_header('Content-Length', str(len(body)))
-        self.send_header('Cache-Control', 'no-store')
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_GET(self):
-        path = self.path.split('?', 1)[0]
-        if path == '/health':
-            s = read_status()
-            self._send(200, {'ok': True, 'service': 'Investment Intelligence Radar Cloud', 'status': s})
-            return
-        if path == '/status':
-            self._send(200, read_status())
-            return
-        if path == '/snapshot':
-            prices, events, runs, latest, news = stats()
-            self._send(200, {
-                'counts': {'prices': prices, 'events': events, 'runs': runs},
-                'latest_prices': [
-                    {'symbol': r[0], 'price': r[1], 'source': r[2], 'ts': r[3]} for r in latest
-                ],
-                'latest_events': [
-                    {'source': r[0], 'title': r[1], 'ts': r[2]} for r in news
-                ],
-                'status': read_status(),
-            })
-            return
-        self._send(404, {'ok': False, 'error': 'not found'})
-
-    def log_message(self, fmt, *args):
-        print('[http]', fmt % args, flush=True)
-
-
-def main():
+def collect_science_safe():
+    """Europe PMC collector with fully encoded query parameters and no control characters."""
     init_db()
-    t = threading.Thread(target=worker_main, name='radar-worker', daemon=True)
-    t.start()
-    print(f'Radar cloud HTTP listening on 0.0.0.0:{PORT}', flush=True)
-    ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
+    query = 'artificial intelligence OR semiconductor OR battery OR fusion energy OR quantum computing'
+    params = urllib.parse.urlencode({
+        'query': query,
+        'format': 'json',
+        'pageSize': 15,
+    })
+    url = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search?' + params
+    if any(ord(ch) < 32 for ch in url):
+        raise RuntimeError('Europe PMC URL contains control characters')
+
+    added = 0
+    seen = 0
+    try:
+        data = json.loads(fetch(url, 25, {'Accept': 'application/json'}))
+        results = (data.get('resultList') or {}).get('result') or []
+        seen = len(results)
+        c = con()
+        try:
+            for item in results:
+                title = ' '.join(str(item.get('title') or '').split())
+                pid = item.get('pmid') or item.get('pmcid') or item.get('id')
+                if not title or not pid:
+                    continue
+                article_url = 'https://europepmc.org/article/MED/' + urllib.parse.quote(str(pid), safe='')
+                try:
+                    c.execute(
+                        'insert into information_events(ts,source,title,url,category) values(?,?,?,?,?)',
+                        (now(), 'Europe PMC', title, article_url, 'science'),
+                    )
+                    added += 1
+                except sqlite3.IntegrityError:
+                    pass
+            c.commit()
+        finally:
+            c.close()
+        log('science', 'OK', f'{added} eventos nuevos de {seen} recuperados')
+        write_status(science_status='OK', science_seen=seen, last_error='')
+    except Exception as exc:
+        log('science', 'ERROR', str(exc))
+        write_status(science_status='ERROR', last_error=str(exc))
+    return added
+
+
+# run_worker references collect_science as a module global, so replacing it here
+# fixes both the scheduled collector and /collect-now in the Cloud process.
+run_worker.collect_science = collect_science_safe
 
 
 if __name__ == '__main__':
-    main()
+    # One HTTP server only. run_worker.main() starts the worker thread when PORT exists.
+    run_worker.main()
