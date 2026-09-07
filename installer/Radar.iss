@@ -1,5 +1,5 @@
 #define MyAppName "Investment Intelligence Radar"
-#define MyAppVersion "1.1.3"
+#define MyAppVersion "1.2.0"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 [Setup]
 AppId={{44C4B1FA-5DC9-42E1-AE16-93AB0F9EA76A}
