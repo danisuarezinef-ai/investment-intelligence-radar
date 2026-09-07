@@ -1,0 +1,12 @@
+{
+  "name": "Investment Intelligence Radar",
+  "short_name": "Radar",
+  "description": "Panel móvil del Investment Intelligence Radar",
+  "start_url": "/mobile/",
+  "scope": "/mobile/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "es",
+  "categories": ["finance", "business", "productivity"]
+}
