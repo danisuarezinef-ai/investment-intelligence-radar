@@ -29,8 +29,8 @@ python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\rad
 $updateZip='release\update-channel\RadarUpdate.zip'
 Compress-Archive -Path dist\InvestmentIntelligenceRadar.exe,dist\RadarWorker.exe,dist\RadarUpdater.exe -DestinationPath $updateZip -CompressionLevel Optimal -Force
 Copy-Item dist\RadarUpdater.exe release\update-channel\RadarUpdater.exe -Force
-$hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;notes='Nuevo simulador autonomo con 1.000 EUR ficticios, rankings por semana/mes/anio, oportunidades por nivel de riesgo, recolector de mercado con cuatro rutas de respaldo y actualizador completamente integrado con la interfaz de Radar.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
+$hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant(); $updaterHash=(Get-FileHash 'release\update-channel\RadarUpdater.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
+$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Scroll vertical, controles compactos, simulador autonomo operativo, carga de historico para rankings y oportunidades, recopilacion cloud reforzada y actualizador visual autocorregible.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
 $inno="${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"; if(!(Test-Path $inno)){throw 'Inno Setup 6 not found'}; & $inno installer\Radar.iss
-Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"
+Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"; Write-Host "Updater SHA256: $updaterHash"
