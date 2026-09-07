@@ -74,6 +74,8 @@ def sync_once(batch=500):
     runs_after = int(_control_get('supabase_run_id', '0') or 0)
     trades_after = int(_control_get('supabase_agent_trade_id', '0') or 0)
     marks_after = int(_control_get('supabase_agent_mark_id', '0') or 0)
+    alerts_after = int(_control_get('supabase_alert_id', '0') or 0)
+    notifications_after = int(_control_get('supabase_notification_id', '0') or 0)
 
     c = con()
     market_rows = c.execute(
@@ -93,6 +95,11 @@ def sync_once(batch=500):
     position_rows = []
     trade_rows = []
     mark_rows = []
+    reputation_rows = []
+    alert_rows = []
+    notification_rows = []
+    node_rows = []
+
     if _table_exists(c, 'paper_agents'):
         agent_rows = c.execute(
             'select agent_id,name,strategy,initial_cash,cash,enabled,last_rebalance,created_at from paper_agents order by agent_id'
@@ -113,6 +120,28 @@ def sync_once(batch=500):
                from paper_agent_marks where id>? order by id limit ?''',
             (marks_after, batch),
         ).fetchall()
+    if _table_exists(c, 'source_reputation'):
+        reputation_rows = c.execute(
+            '''select source,events,actionable,avg_abs_move,precision_proxy,confidence,score,updated_at
+               from source_reputation order by score desc'''
+        ).fetchall()
+    if _table_exists(c, 'silence_alerts'):
+        alert_rows = c.execute(
+            '''select id,ts,symbol,return_pct,z_score,recent_public_catalyst,status,detail
+               from silence_alerts where id>? order by id limit ?''',
+            (alerts_after, batch),
+        ).fetchall()
+    if _table_exists(c, 'notifications'):
+        notification_rows = c.execute(
+            '''select id,ts,kind,severity,title,body,symbol,read,dedupe_key
+               from notifications where id>? order by id limit ?''',
+            (notifications_after, batch),
+        ).fetchall()
+    if _table_exists(c, 'sync_nodes'):
+        node_rows = c.execute(
+            '''select node_id,node_type,name,capabilities,last_seen,app_version,detail
+               from sync_nodes order by last_seen desc limit 200'''
+        ).fetchall()
     c.close()
 
     payload = {
@@ -128,6 +157,22 @@ def sync_once(batch=500):
         'system_runs': [
             {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'node_id': NODE_ID, 'kind': r[2], 'status': r[3], 'message': r[4]}
             for r in run_rows
+        ],
+        'source_reputation': [
+            {'source': r[0], 'events': r[1], 'actionable': r[2], 'avg_abs_move': r[3], 'precision_proxy': r[4], 'confidence': r[5], 'score': r[6], 'updated_at': r[7]}
+            for r in reputation_rows
+        ],
+        'silence_alerts': [
+            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'symbol': r[2], 'return_pct': r[3], 'z_score': r[4], 'recent_public_catalyst': bool(r[5]), 'status': r[6], 'detail': r[7]}
+            for r in alert_rows
+        ],
+        'notifications': [
+            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'kind': r[2], 'severity': r[3], 'title': r[4], 'body': r[5], 'symbol': r[6], 'read': bool(r[7]), 'dedupe_key': r[8]}
+            for r in notification_rows
+        ],
+        'nodes': [
+            {'node_id': r[0], 'node_type': r[1], 'name': r[2], 'capabilities': r[3], 'last_seen': r[4], 'app_version': r[5], 'detail': r[6]}
+            for r in node_rows
         ],
         'paper_agents': [
             {'agent_id': r[0], 'name': r[1], 'strategy': r[2], 'initial_cash': r[3], 'cash': r[4], 'enabled': bool(r[5]), 'last_rebalance': r[6], 'created_at': r[7]}
@@ -167,11 +212,20 @@ def sync_once(batch=500):
         _control_set('supabase_agent_trade_id', trade_rows[-1][0])
     if mark_rows:
         _control_set('supabase_agent_mark_id', mark_rows[-1][0])
+    if alert_rows:
+        _control_set('supabase_alert_id', alert_rows[-1][0])
+    if notification_rows:
+        _control_set('supabase_notification_id', notification_rows[-1][0])
+
     return {
         'enabled': True,
         'market': len(market_rows),
         'events': len(event_rows),
         'runs': len(run_rows),
+        'reputation': len(reputation_rows),
+        'alerts': len(alert_rows),
+        'notifications': len(notification_rows),
+        'nodes': len(node_rows),
         'agents': len(agent_rows),
         'positions': len(position_rows),
         'trades': len(trade_rows),
