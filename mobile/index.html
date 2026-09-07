@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Investment Intelligence Radar</title>
+  <link rel="manifest" href="/mobile/manifest.webmanifest">
+  <style>
+    :root{--bg:#0f172a;--panel:#1e293b;--panel2:#111827;--text:#f8fafc;--muted:#94a3b8;--blue:#2563eb;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--cyan:#22d3ee;--border:#334155}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,system-ui,-apple-system,sans-serif} main{max-width:920px;margin:auto;padding:18px 14px 42px}.head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:14px}.head h1{font-size:23px;margin:0}.sub{color:var(--muted);font-size:12px;margin-top:5px}.pill{border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;white-space:nowrap}.ok{color:#4ade80}.bad{color:#f87171}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}.card{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:13px}.metric{background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:11px}.metric small,.muted{color:var(--muted)}.metric strong{display:block;font-size:20px;margin-top:4px}.card h2{font-size:15px;margin:0 0 10px}.list{display:flex;flex-direction:column;gap:7px}.row{background:var(--panel2);border-radius:9px;padding:9px 10px;font-size:12px}.row b{font-size:12px}.meta{color:var(--muted);font-size:10px;margin-top:3px}.bar{height:5px;background:#0b1220;border-radius:10px;margin-top:7px;overflow:hidden}.bar i{display:block;height:100%;background:var(--cyan)}button{border:0;border-radius:9px;background:var(--blue);color:white;font-weight:700;padding:10px 12px;cursor:pointer}.secondary{background:var(--panel2);border:1px solid var(--border)}.toolbar{display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap}.empty{color:var(--muted);font-size:12px;padding:6px}.agent-head{display:flex;justify-content:space-between;gap:8px}.pos{color:#4ade80}.neg{color:#f87171}@media(max-width:700px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}.head h1{font-size:20px}}@media(max-width:420px){main{padding-left:10px;padding-right:10px}.card{padding:11px}.head{display:block}.pill{display:inline-block;margin-top:9px}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <div><h1>Investment Intelligence Radar</h1><div class="sub">Cloud 24/7 · panel móvil · trading real OFF</div></div>
+    <div id="cloud" class="pill">CONECTANDO</div>
+  </div>
+  <div class="toolbar">
+    <button id="refresh">ACTUALIZAR</button>
+    <button id="notify" class="secondary">ACTIVAR AVISOS</button>
+  </div>
+  <section class="metrics">
+    <div class="metric"><small>Precios</small><strong id="mPrices">—</strong></div>
+    <div class="metric"><small>Eventos</small><strong id="mEvents">—</strong></div>
+    <div class="metric"><small>Ciclos</small><strong id="mRuns">—</strong></div>
+    <div class="metric"><small>Alertas</small><strong id="mAlerts">—</strong></div>
+  </section>
+  <section class="grid">
+    <div class="card"><h2>Alertas de silencio</h2><div id="alerts" class="list"></div></div>
+    <div class="card"><h2>Fuentes con mejor reputación</h2><div id="sources" class="list"></div></div>
+    <div class="card"><h2>Oportunidades</h2><div id="opps" class="list"></div></div>
+    <div class="card"><h2>Agentes paper</h2><div id="agents" class="list"></div></div>
+    <div class="card"><h2>Últimos precios</h2><div id="prices" class="list"></div></div>
+    <div class="card"><h2>Últimos eventos</h2><div id="events" class="list"></div></div>
+  </section>
+  <p class="muted" style="font-size:11px;margin-top:14px">Este panel es informativo y de simulación. Las señales no ejecutan operaciones reales.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id); let lastNotificationId=0;
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function empty(el,text='Sin datos'){el.innerHTML=`<div class="empty">${esc(text)}</div>`}
+function pct(v){v=Number(v||0);return `<span class="${v>=0?'pos':'neg'}">${v>=0?'+':''}${v.toFixed(2)}%</span>`}
+function render(d){
+ const c=d.counts||{}, intel=d.intelligence||{}; $('mPrices').textContent=c.prices??0;$('mEvents').textContent=c.events??0;$('mRuns').textContent=c.runs??0;
+ const alerts=intel.silence_alerts||[];$('mAlerts').textContent=alerts.length; const enabled=!!(d.status||{}).cloud_enabled;$('cloud').textContent=enabled?'CLOUD ACTIVO':'CLOUD PAUSADO';$('cloud').className='pill '+(enabled?'ok':'bad');
+ const ae=$('alerts');ae.innerHTML=''; if(!alerts.length)empty(ae,'Sin alertas abiertas'); alerts.slice(0,10).forEach(a=>ae.insertAdjacentHTML('beforeend',`<div class="row"><b>${esc(a.symbol)}</b> · z ${Number(a.z_score||0).toFixed(2)} · ${pct(a.return_pct)}<div class="meta">${esc(a.detail||'')}</div></div>`));
+ const se=$('sources');se.innerHTML=''; const src=intel.source_reputation||[];if(!src.length)empty(se,'Aún sin puntuación suficiente');src.slice(0,8).forEach(s=>se.insertAdjacentHTML('beforeend',`<div class="row"><b>${esc(s.source)}</b> · ${Number(s.score||0).toFixed(1)}/100<div class="bar"><i style="width:${Math.max(0,Math.min(100,Number(s.score||0)))}%"></i></div><div class="meta">confianza ${Math.round(Number(s.confidence||0)*100)}% · ${s.events||0} eventos</div></div>`));
+ const oe=$('opps');oe.innerHTML=''; const o=d.opportunities||{};['bajo','intermedio','alto'].forEach(t=>(o[t]||[]).slice(0,3).forEach(x=>oe.insertAdjacentHTML('beforeend',`<div class="row"><b>${esc(x.symbol)}</b> · score ${Number(x.score||0).toFixed(2)}<div class="meta">riesgo ${t} · vol ${Number(x.volatility||0).toFixed(1)}%</div></div>`)));if(!oe.children.length)empty(oe,'Histórico insuficiente');
+ const ag=$('agents');ag.innerHTML='';const agents=d.paper_agents||[];if(!agents.length)empty(ag,'Agentes aún no disponibles');agents.forEach(a=>ag.insertAdjacentHTML('beforeend',`<div class="row"><div class="agent-head"><b>${esc(a.name||a.agent_id)}</b><span>${Number(a.total||0).toFixed(2)} €</span></div><div class="meta">P/L ${pct(a.pnl_pct)} · DD ${Number(a.max_drawdown_pct||0).toFixed(2)}% · Sharpe ${Number(a.sharpe||0).toFixed(2)}</div></div>`));
+ const pe=$('prices');pe.innerHTML='';(d.latest_prices||[]).slice(0,10).forEach(x=>pe.insertAdjacentHTML('beforeend',`<div class="row"><b>${esc(x.symbol)}</b> · ${Number(x.price||0).toLocaleString(undefined,{maximumFractionDigits:3})}<div class="meta">${esc(x.source)}</div></div>`));if(!pe.children.length)empty(pe);
+ const ee=$('events');ee.innerHTML='';(d.latest_events||[]).slice(0,10).forEach(x=>ee.insertAdjacentHTML('beforeend',`<div class="row"><b>${esc(x.source)}</b><div>${esc(x.title)}</div></div>`));if(!ee.children.length)empty(ee);
+ const ns=intel.notifications||[]; if(Notification.permission==='granted'&&ns.length){const newest=Math.max(...ns.map(n=>Number(n.id||0)));ns.filter(n=>Number(n.id||0)>lastNotificationId&&!n.read).slice(0,3).forEach(n=>new Notification(n.title||'Radar',{body:n.body||'',tag:'radar-'+n.id}));lastNotificationId=Math.max(lastNotificationId,newest)}
+}
+async function refresh(){try{const r=await fetch('/mobile/dashboard',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);render(await r.json())}catch(e){$('cloud').textContent='SIN CONEXIÓN';$('cloud').className='pill bad'}}
+$('refresh').onclick=refresh;$('notify').onclick=async()=>{if(!('Notification'in window)){alert('Este navegador no admite avisos.');return}const p=await Notification.requestPermission();$('notify').textContent=p==='granted'?'AVISOS ACTIVOS':'ACTIVAR AVISOS'};
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/mobile/sw.js').catch(()=>{});refresh();setInterval(refresh,15000);
+</script>
+</body>
+</html>
