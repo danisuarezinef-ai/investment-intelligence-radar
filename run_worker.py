@@ -2,14 +2,34 @@ import json, os, time, traceback, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from radar_core import init_db, collect_market, collect_sec, collect_science, write_status, PID, LOG, STATUS, stats, now
 
+CONTROL_TOKEN=os.environ.get('RADAR_CONTROL_TOKEN','').strip()
+_cloud_enabled=True
+_state_lock=threading.Lock()
+
+
+def cloud_enabled():
+    with _state_lock:
+        return _cloud_enabled
+
+
+def set_cloud_enabled(value):
+    global _cloud_enabled
+    with _state_lock:
+        _cloud_enabled=bool(value)
+    write_status(cloud_enabled=_cloud_enabled,state='ACTIVO' if _cloud_enabled else 'PAUSADO CLOUD')
+    return _cloud_enabled
+
 
 def worker_loop():
     init_db(); open(PID,'w').write(str(os.getpid()))
-    write_status(version='1.0.0',state='INICIANDO',started_at=now(),last_error='')
+    write_status(version='1.1.0',state='INICIANDO',started_at=now(),last_error='',cloud_enabled=True)
     next_market=next_sec=next_science=0
     try:
         while True:
-            t=time.time(); write_status(state='ACTIVO')
+            if not cloud_enabled():
+                write_status(state='PAUSADO CLOUD',cloud_enabled=False,current_job='')
+                time.sleep(2); continue
+            t=time.time(); write_status(state='ACTIVO',cloud_enabled=True)
             try:
                 if t>=next_market: write_status(state='RECOPILANDO MERCADO',current_job='market'); collect_market(); next_market=t+300
                 if t>=next_sec: write_status(state='RECOPILANDO SEC',current_job='sec'); collect_sec(); next_sec=t+900
@@ -17,7 +37,7 @@ def worker_loop():
             except Exception as e:
                 with open(LOG,'a',encoding='utf-8') as f: f.write(traceback.format_exc()+'\n')
                 write_status(state='ERROR',last_error=str(e))
-            write_status(state='ESPERANDO SIGUIENTE CICLO',current_job='')
+            write_status(state='ESPERANDO SIGUIENTE CICLO',current_job='',cloud_enabled=True)
             time.sleep(10)
     finally:
         try: os.remove(PID)
@@ -26,9 +46,17 @@ def worker_loop():
 
 def _read_status():
     try:
-        with open(STATUS,'r',encoding='utf-8') as f: return json.load(f)
+        with open(STATUS,'r',encoding='utf-8') as f: d=json.load(f)
     except Exception as e:
-        return {'state':'STARTING','heartbeat':None,'detail':str(e)}
+        d={'state':'STARTING','heartbeat':None,'detail':str(e)}
+    d['cloud_enabled']=cloud_enabled()
+    return d
+
+
+def _authorized(handler):
+    if not CONTROL_TOKEN: return False
+    auth=handler.headers.get('Authorization','')
+    return auth == 'Bearer '+CONTROL_TOKEN
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -43,7 +71,7 @@ class _Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path=self.path.split('?',1)[0]
         if path=='/health':
-            self._send(200,{'ok':True,'service':'Investment Intelligence Radar Cloud','status':_read_status()}); return
+            self._send(200,{'ok':True,'service':'Investment Intelligence Radar Cloud','cloud_enabled':cloud_enabled(),'status':_read_status()}); return
         if path=='/status':
             self._send(200,_read_status()); return
         if path=='/snapshot':
@@ -54,6 +82,15 @@ class _Handler(BaseHTTPRequestHandler):
                 'latest_events':[{'source':r[0],'title':r[1],'ts':r[2]} for r in news],
                 'status':_read_status(),
             }); return
+        self._send(404,{'ok':False,'error':'not found'})
+
+    def do_POST(self):
+        path=self.path.split('?',1)[0]
+        if path=='/toggle':
+            if not _authorized(self):
+                self._send(401,{'ok':False,'error':'unauthorized'}); return
+            enabled=set_cloud_enabled(not cloud_enabled())
+            self._send(200,{'ok':True,'cloud_enabled':enabled,'status':_read_status()}); return
         self._send(404,{'ok':False,'error':'not found'})
 
     def log_message(self, fmt, *args):
