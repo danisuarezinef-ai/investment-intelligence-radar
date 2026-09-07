@@ -10,6 +10,12 @@ New-Item -ItemType Directory -Path release\update-channel -Force | Out-Null
 New-Item -ItemType Directory -Path assets -Force | Out-Null
 $version=(Get-Content version.json -Raw | ConvertFrom-Json).version
 if(!$version){throw 'version.json no contiene version'}
+
+# Keep the visible desktop version synchronized with version.json at build time.
+$desktop=Get-Content radar_desktop.py -Raw
+$desktop=[regex]::Replace($desktop,"APP_VERSION\s*=\s*'[^']+'","APP_VERSION='$version'")
+Set-Content radar_desktop.py -Value $desktop -Encoding UTF8
+
 Add-Type -AssemblyName System.Drawing
 $bmp=New-Object System.Drawing.Bitmap 256,256
 $g=[System.Drawing.Graphics]::FromImage($bmp); $g.SmoothingMode=[System.Drawing.Drawing2D.SmoothingMode]::AntiAlias; $g.Clear([System.Drawing.Color]::Transparent)
@@ -30,7 +36,7 @@ $updateZip='release\update-channel\RadarUpdate.zip'
 Compress-Archive -Path dist\InvestmentIntelligenceRadar.exe,dist\RadarWorker.exe,dist\RadarUpdater.exe -DestinationPath $updateZip -CompressionLevel Optimal -Force
 Copy-Item dist\RadarUpdater.exe release\update-channel\RadarUpdater.exe -Force
 $hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant(); $updaterHash=(Get-FileHash 'release\update-channel\RadarUpdater.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Inteligencia v1: detector de silencio, reputacion automatica de fuentes, notificaciones, API movil y sincronizacion de nodos PC/Cloud. Panel de inteligencia en Windows. Actualizador con scroll y boton de instalacion siempre visible.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
+$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Amplia la inteligencia con noticias de mercado y geopolitica por RSS, arXiv, cinco agentes paper independientes de 200 EUR con costes, drawdown y Sharpe, detector de silencio, reputacion de fuentes, notificaciones y sincronizacion PC/Cloud. El actualizador mantiene scroll y boton de instalacion siempre visible.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
 $inno="${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"; if(!(Test-Path $inno)){throw 'Inno Setup 6 not found'}; & $inno installer\Radar.iss
 Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"; Write-Host "Updater SHA256: $updaterHash"
