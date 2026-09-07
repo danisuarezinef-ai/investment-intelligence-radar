@@ -17,6 +17,14 @@ $desktop=Get-Content $desktopPath -Raw -Encoding UTF8
 $desktop=[regex]::Replace($desktop,"APP_VERSION\s*=\s*'[^']+'","APP_VERSION='$version'")
 [System.IO.File]::WriteAllText($desktopPath,$desktop,(New-Object System.Text.UTF8Encoding($false)))
 
+# Synchronize the Windows runtime hook version used for PC -> Cloud persistence.
+$pcSyncPath=Join-Path $PSScriptRoot 'radar_pc_sync_hook.py'
+if(Test-Path $pcSyncPath){
+  $pcSync=Get-Content $pcSyncPath -Raw -Encoding UTF8
+  $pcSync=[regex]::Replace($pcSync,"PC_SYNC_VERSION\s*=\s*'[^']+'","PC_SYNC_VERSION='$version'")
+  [System.IO.File]::WriteAllText($pcSyncPath,$pcSync,(New-Object System.Text.UTF8Encoding($false)))
+}
+
 # Keep Cloud/worker version metadata synchronized with version.json too.
 $workerPath=Join-Path $PSScriptRoot 'run_worker.py'
 $worker=Get-Content $workerPath -Raw -Encoding UTF8
@@ -43,14 +51,14 @@ $bar=New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(210,
 $trend=New-Object System.Drawing.Pen $green,8; $pts=[System.Drawing.Point[]]@((New-Object System.Drawing.Point 54,187),(New-Object System.Drawing.Point 88,166),(New-Object System.Drawing.Point 116,174),(New-Object System.Drawing.Point 148,143),(New-Object System.Drawing.Point 176,151),(New-Object System.Drawing.Point 207,111)); $g.DrawLines($trend,$pts); $g.FillPolygon((New-Object System.Drawing.SolidBrush $green),[System.Drawing.Point[]]@((New-Object System.Drawing.Point 207,111),(New-Object System.Drawing.Point 190,113),(New-Object System.Drawing.Point 209,91),(New-Object System.Drawing.Point 218,119)))
 $pngStream=New-Object System.IO.MemoryStream; $bmp.Save($pngStream,[System.Drawing.Imaging.ImageFormat]::Png); $png=$pngStream.ToArray(); $pngStream.Dispose(); $g.Dispose(); $bmp.Dispose()
 $icoPath=Join-Path $PSScriptRoot 'assets\radar.ico'; $fs=[System.IO.File]::Create($icoPath); $bw=New-Object System.IO.BinaryWriter($fs); $bw.Write([UInt16]0); $bw.Write([UInt16]1); $bw.Write([UInt16]1); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([UInt16]1); $bw.Write([UInt16]32); $bw.Write([UInt32]$png.Length); $bw.Write([UInt32]22); $bw.Write($png); $bw.Close(); $fs.Close()
-python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarWorker run_worker.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarUpdater radar_updater_v2.py
 $updateZip='release\update-channel\RadarUpdate.zip'
 Compress-Archive -Path dist\InvestmentIntelligenceRadar.exe,dist\RadarWorker.exe,dist\RadarUpdater.exe -DestinationPath $updateZip -CompressionLevel Optimal -Force
 Copy-Item dist\RadarUpdater.exe release\update-channel\RadarUpdater.exe -Force
 $hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant(); $updaterHash=(Get-FileHash 'release\update-channel\RadarUpdater.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Versión estable con Unicode correcto, metadatos sincronizados, fuentes de mercado reforzadas y actualizador visible. Conserva base de datos y configuración.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
+$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Persistencia central Supabase operativa, sincronización Cloud y PC preparada, agentes paper e inteligencia persistentes. Trading real permanece OFF.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
 $inno="${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"; if(!(Test-Path $inno)){throw 'Inno Setup 6 not found'}; & $inno installer\Radar.iss
 Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"; Write-Host "Updater SHA256: $updaterHash"
