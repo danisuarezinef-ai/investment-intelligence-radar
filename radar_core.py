@@ -5,7 +5,8 @@ APP='Investment Intelligence Radar'
 DATA=os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'InvestmentIntelligenceRadarData')
 os.makedirs(DATA, exist_ok=True)
 DB=os.path.join(DATA,'radar.db'); STATUS=os.path.join(DATA,'status.json'); PID=os.path.join(DATA,'worker.pid'); LOG=os.path.join(DATA,'worker.log')
-UA='InvestmentIntelligenceRadar/1.2.1 contact=danisuarezinef@gmail.com'
+UA='InvestmentIntelligenceRadar/1.3.3 contact=danisuarezinef@gmail.com'
+BROWSER_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0 Safari/537.36'
 ASSETS={'MSFT':'msft.us','NVDA':'nvda.us','GOOGL':'googl.us','AMZN':'amzn.us','META':'meta.us','AVGO':'avgo.us','ASML':'asml.us','SAP':'sap.us','TSM':'tsm.us','TM':'tm.us','SHEL':'shel.us','RIO':'rio.us','LLY':'lly.us','V':'v.us','BRK-B':'brk-b.us','NVS':'nvs.us'}
 
 def now(): return datetime.now(timezone.utc).isoformat()
@@ -29,10 +30,10 @@ def init_db():
     _ensure(c,'information_events',{'id','ts','source','title','url','category'},'create table if not exists information_events(id integer primary key,ts text,source text,title text,url text unique,category text)')
     _ensure(c,'system_runs',{'id','ts','job','status','detail'},'create table if not exists system_runs(id integer primary key,ts text,job text,status text,detail text)')
     _ensure(c,'control',{'key','value'},'create table if not exists control(key text primary key,value text)')
-    c.execute('create table if not exists paper_account(id integer primary key check(id=1),cash real not null,initial_cash real not null,enabled integer not null default 0,last_rebalance text)')
-    c.execute('create table if not exists paper_positions(symbol text primary key,qty real not null,avg_price real not null,updated_at text not null)')
-    c.execute('create table if not exists paper_trades(id integer primary key,ts text,symbol text,side text,qty real,price real,value real,reason text)')
-    c.execute('create table if not exists portfolio_values(id integer primary key,ts text,total real,cash real,invested real)')
+    _ensure(c,'paper_account',{'id','cash','initial_cash','enabled','last_rebalance'},'create table if not exists paper_account(id integer primary key check(id=1),cash real not null,initial_cash real not null,enabled integer not null default 0,last_rebalance text)')
+    _ensure(c,'paper_positions',{'symbol','qty','avg_price','updated_at'},'create table if not exists paper_positions(symbol text primary key,qty real not null,avg_price real not null,updated_at text not null)')
+    _ensure(c,'paper_trades',{'id','ts','symbol','side','qty','price','value','reason'},'create table if not exists paper_trades(id integer primary key,ts text,symbol text,side text,qty real,price real,value real,reason text)')
+    _ensure(c,'portfolio_values',{'id','ts','total','cash','invested'},'create table if not exists portfolio_values(id integer primary key,ts text,total real,cash real,invested real)')
     c.execute('create index if not exists idx_market_symbol_ts on market_snapshots(symbol,ts)')
     c.commit(); c.close()
 
@@ -56,20 +57,29 @@ def fetch(url,timeout=18,headers=None):
 def _history_stooq(code,days=390,host='stooq.com'):
     end=datetime.now(timezone.utc).date(); start=end-timedelta(days=days)
     u=f'https://{host}/q/d/l/?s={urllib.parse.quote(code)}&d1={start:%Y%m%d}&d2={end:%Y%m%d}&i=d'
-    txt=fetch(u,20)
+    txt=fetch(u,20,{'User-Agent':BROWSER_UA,'Accept':'text/csv,text/plain,*/*'})
     rows=[]
     for r in csv.DictReader(io.StringIO(txt)):
         try:
             d=r.get('Date'); close=float(r.get('Close')); vol=r.get('Volume')
             if not d:continue
-            ts=d+'T21:00:00+00:00'; rows.append((ts,close,float(vol) if vol not in (None,'','N/D','-') else None))
+            rows.append((d+'T21:00:00+00:00',close,float(vol) if vol not in (None,'','N/D','-') else None))
         except:continue
     if len(rows)<2:raise RuntimeError(host+' sin histórico válido')
     return rows
 
+def _quote_stooq(code,host='stooq.com'):
+    u=f'https://{host}/q/l/?s={urllib.parse.quote(code)}&f=sd2t2ohlcv&h&e=csv'
+    txt=fetch(u,15,{'User-Agent':BROWSER_UA,'Accept':'text/csv,text/plain,*/*'})
+    rows=list(csv.DictReader(io.StringIO(txt)))
+    if not rows:raise RuntimeError(host+' sin cotización')
+    r=rows[0]; close=r.get('Close'); vol=r.get('Volume')
+    if close in (None,'','N/D','-'):raise RuntimeError(host+' sin precio')
+    return float(close),(float(vol) if vol not in (None,'','N/D','-') else None),'Stooq Quote'
+
 def _quote_yahoo(sym,host='query1.finance.yahoo.com'):
     ys=urllib.parse.quote(sym,safe=''); u=f'https://{host}/v8/finance/chart/{ys}?interval=1d&range=5d'
-    data=json.loads(fetch(u,15)); result=(data.get('chart') or {}).get('result') or []
+    data=json.loads(fetch(u,15,{'User-Agent':BROWSER_UA,'Accept':'application/json,*/*'})); result=(data.get('chart') or {}).get('result') or []
     if not result:raise RuntimeError(host+' sin resultado')
     meta=result[0].get('meta') or {}; q=((result[0].get('indicators') or {}).get('quote') or [{}])[0]
     price=meta.get('regularMarketPrice')
@@ -78,20 +88,41 @@ def _quote_yahoo(sym,host='query1.finance.yahoo.com'):
     vol=next((x for x in reversed(q.get('volume') or []) if x is not None),None)
     return float(price),(float(vol) if vol is not None else None),'Yahoo Finance'
 
+def _history_yahoo(sym,days=390,host='query1.finance.yahoo.com'):
+    period2=int(datetime.now(timezone.utc).timestamp()); period1=int((datetime.now(timezone.utc)-timedelta(days=days+8)).timestamp())
+    ys=urllib.parse.quote(sym,safe=''); u=f'https://{host}/v8/finance/chart/{ys}?period1={period1}&period2={period2}&interval=1d&events=history'
+    data=json.loads(fetch(u,20,{'User-Agent':BROWSER_UA,'Accept':'application/json,*/*'})); result=(data.get('chart') or {}).get('result') or []
+    if not result:raise RuntimeError(host+' sin histórico')
+    item=result[0]; stamps=item.get('timestamp') or []; q=((item.get('indicators') or {}).get('quote') or [{}])[0]; closes=q.get('close') or []; vols=q.get('volume') or []
+    rows=[]
+    for i,ts in enumerate(stamps):
+        try:
+            p=closes[i]
+            if p is None:continue
+            d=datetime.fromtimestamp(ts,timezone.utc).date().isoformat(); v=vols[i] if i<len(vols) else None
+            rows.append((d+'T21:00:00+00:00',float(p),float(v) if v is not None else None))
+        except:continue
+    if len(rows)<2:raise RuntimeError(host+' histórico insuficiente')
+    return rows
+
 def history_ready():
-    init_db(); c=con(); n=c.execute("select count(distinct substr(ts,1,10)) from market_snapshots where source='Stooq Historical'").fetchone()[0]; c.close(); return n>=20
+    init_db(); c=con(); n=c.execute("select count(distinct substr(ts,1,10)) from market_snapshots where source like '%Historical%'").fetchone()[0]; c.close(); return n>=20
 
 def collect_history(days=390):
     init_db(); added=0; failures=[]; c=con()
     for sym,code in ASSETS.items():
-        hist=None
-        for host in ('stooq.com','stooq.pl'):
-            try:hist=_history_stooq(code,days,host); break
+        hist=None; source=None
+        for host in ('query1.finance.yahoo.com','query2.finance.yahoo.com'):
+            try:hist=_history_yahoo(sym,days,host); source='Yahoo Historical'; break
             except Exception as e:failures.append(sym+' '+host+': '+str(e))
+        if hist is None:
+            for host in ('stooq.com','stooq.pl'):
+                try:hist=_history_stooq(code,days,host); source='Stooq Historical'; break
+                except Exception as e:failures.append(sym+' '+host+': '+str(e))
         if not hist:continue
         for ts,price,vol in hist:
             if not c.execute('select 1 from market_snapshots where symbol=? and ts=? limit 1',(sym,ts)).fetchone():
-                c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',(ts,sym,price,vol,'Stooq Historical')); added+=1
+                c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',(ts,sym,price,vol,source)); added+=1
     c.commit(); c.close(); status='OK' if added or history_ready() else 'ERROR'; log('history',status,f'{added} puntos históricos añadidos'+((' · '+failures[0]) if failures and not added else '')); write_status(history_status=status,history_added=added,last_history_errors=failures[:4]); return added
 
 def collect_market():
@@ -103,9 +134,13 @@ def collect_market():
             except Exception as e:failures.append(host+': '+str(e))
         if value is None:
             for host in ('stooq.com','stooq.pl'):
-                try:
-                    h=_history_stooq(code,10,host); ts,price,vol=h[-1]; value=(price,vol,'Stooq Daily'); break
+                try:value=_quote_stooq(code,host); break
                 except Exception as e:failures.append(host+': '+str(e))
+        if value is None:
+            for host in ('stooq.com','stooq.pl'):
+                try:
+                    h=_history_stooq(code,10,host); _,price,vol=h[-1]; value=(price,vol,'Stooq Daily'); break
+                except Exception as e:failures.append(host+' hist: '+str(e))
         if value is None:errs.append(sym+': '+' | '.join(failures)[:500]); continue
         price,volume,source=value; c=con(); c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',(now(),sym,price,volume,source)); c.commit(); c.close(); ok+=1; sources[source]=sources.get(source,0)+1
     status='OK' if ok else 'ERROR'; detail=f'{ok}/{len(ASSETS)} precios guardados'
@@ -131,7 +166,7 @@ def collect_sec():
     init_db(); tickers={'MSFT':'0000789019','NVDA':'0001045810','AMZN':'0001018724','META':'0001326801','GOOGL':'0001652044'}; n=0; failures=[]; c=con()
     for sym,cik in tickers.items():
         try:
-            data=json.loads(fetch(f'https://data.sec.gov/submissions/CIK{cik}.json',15,{'Accept-Encoding':'identity'})); recent=data.get('filings',{}).get('recent',{}); forms=recent.get('form',[]); acc=recent.get('accessionNumber',[]); docs=recent.get('primaryDocument',[])
+            data=json.loads(fetch(f'https://data.sec.gov/submissions/CIK{cik}.json',15,{'Accept-Encoding':'identity','User-Agent':UA})); recent=data.get('filings',{}).get('recent',{}); forms=recent.get('form',[]); acc=recent.get('accessionNumber',[]); docs=recent.get('primaryDocument',[])
             for i,form in enumerate(forms[:40]):
                 if form not in ('8-K','10-Q','10-K','6-K','20-F'):continue
                 a=acc[i].replace('-',''); doc=docs[i]; url=f'https://www.sec.gov/Archives/edgar/data/{int(cik)}/{a}/{doc}'; title=f'{sym} · SEC {form}'
@@ -141,7 +176,7 @@ def collect_sec():
     c.commit(); c.close(); status='OK' if n or len(failures)<len(tickers) else 'ERROR'; log('sec',status,f'{n} eventos SEC nuevos'+((' · '+'; '.join(failures[:2])) if failures else '')); write_status(sec_status=status,last_sec_errors=failures[:4]); return n
 
 def stats():
-    init_db(); c=con(); p=c.execute('select count(*) from market_snapshots').fetchone()[0]; e=c.execute('select count(*) from information_events').fetchone()[0]; r=c.execute('select count(*) from system_runs').fetchone()[0]; latest=c.execute("select symbol,price,source,ts from market_snapshots where source!='Stooq Historical' order by id desc limit 16").fetchall(); news=c.execute('select source,title,ts from information_events order by id desc limit 12').fetchall(); c.close(); return p,e,r,latest,news
+    init_db(); c=con(); p=c.execute('select count(*) from market_snapshots').fetchone()[0]; e=c.execute('select count(*) from information_events').fetchone()[0]; r=c.execute('select count(*) from system_runs').fetchone()[0]; latest=c.execute("select symbol,price,source,ts from market_snapshots where source not like '%Historical%' order by id desc limit 16").fetchall(); news=c.execute('select source,title,ts from information_events order by id desc limit 12').fetchall(); c.close(); return p,e,r,latest,news
 
 def _daily_series(symbol,days=365):
     c=con(); since=(datetime.now(timezone.utc)-timedelta(days=days+8)).isoformat(); rows=c.execute('select ts,price from market_snapshots where symbol=? and ts>=? order by ts',(symbol,since)).fetchall(); c.close(); byday={}
