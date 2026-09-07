@@ -1,104 +1,172 @@
-import os, sys, json, subprocess
+import os, sys, json, subprocess, urllib.request, urllib.error
 import tkinter as tk
-from tkinter import ttk
-from radar_core import init_db, stats, STATUS, PID
+from tkinter import simpledialog, messagebox
+from radar_core import init_db, stats, STATUS, PID, DATA
 
 APPDIR=os.path.dirname(os.path.abspath(sys.executable if getattr(sys,'frozen',False) else __file__))
+SETTINGS=os.path.join(DATA,'desktop_settings.json')
+CLOUD_BASE='https://radar-cloud-production.up.railway.app'
 worker_proc=None
+
+BG='#0f172a'; PANEL='#1e293b'; PANEL2='#111827'; TEXT='#f8fafc'; MUTED='#94a3b8'
+GREEN='#16a34a'; RED='#dc2626'; BLUE='#2563eb'; BORDER='#334155'; AMBER='#f59e0b'
+
+
+def load_settings():
+    try:
+        if os.path.exists(SETTINGS):
+            with open(SETTINGS,'r',encoding='utf-8') as f: return json.load(f)
+    except Exception: pass
+    return {}
+
+
+def save_settings(d):
+    try:
+        os.makedirs(DATA,exist_ok=True)
+        with open(SETTINGS,'w',encoding='utf-8') as f: json.dump(d,f,ensure_ascii=False,indent=2)
+    except Exception: pass
+
 
 def pid_running(pid):
     if os.name=='nt':
         import ctypes
         h=ctypes.windll.kernel32.OpenProcess(0x1000,False,pid)
         if h:
-            ctypes.windll.kernel32.CloseHandle(h)
-            return True
+            ctypes.windll.kernel32.CloseHandle(h); return True
         return False
-    try:
-        os.kill(pid,0); return True
-    except OSError:
-        return False
+    try: os.kill(pid,0); return True
+    except OSError: return False
+
 
 def running():
-    try:
-        return os.path.exists(PID) and pid_running(int(open(PID).read().strip()))
-    except Exception:
-        return False
+    try: return os.path.exists(PID) and pid_running(int(open(PID).read().strip()))
+    except Exception: return False
+
 
 def start_worker():
     global worker_proc
     if running(): return
-    exe=os.path.join(APPDIR,'RadarWorker.exe')
-    flags=0x08000000 if os.name=='nt' else 0
-    if os.path.exists(exe):
-        worker_proc=subprocess.Popen([exe],cwd=APPDIR,creationflags=flags)
-    else:
-        worker_proc=subprocess.Popen([sys.executable,os.path.join(os.path.dirname(__file__),'run_worker.py')],cwd=os.path.dirname(__file__),creationflags=flags)
+    exe=os.path.join(APPDIR,'RadarWorker.exe'); flags=0x08000000 if os.name=='nt' else 0
+    if os.path.exists(exe): worker_proc=subprocess.Popen([exe],cwd=APPDIR,creationflags=flags)
+    else: worker_proc=subprocess.Popen([sys.executable,os.path.join(os.path.dirname(__file__),'run_worker.py')],cwd=os.path.dirname(__file__),creationflags=flags)
+
 
 def stop_worker():
     try:
         pid=int(open(PID).read().strip())
-        if os.name=='nt':
-            subprocess.run(['taskkill','/PID',str(pid),'/F'],creationflags=0x08000000,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        else:
-            os.kill(pid,15)
-    except Exception:
-        pass
+        if os.name=='nt': subprocess.run(['taskkill','/PID',str(pid),'/F'],creationflags=0x08000000,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        else: os.kill(pid,15)
+    except Exception: pass
     try: os.remove(PID)
     except OSError: pass
 
+
+def cloud_get(path,timeout=5):
+    req=urllib.request.Request(CLOUD_BASE+path,headers={'User-Agent':'InvestmentIntelligenceRadarDesktop/1.1'})
+    with urllib.request.urlopen(req,timeout=timeout) as r: return json.loads(r.read().decode('utf-8'))
+
+
+def cloud_toggle():
+    settings=load_settings(); token=settings.get('cloud_control_token','').strip()
+    if not token:
+        token=simpledialog.askstring('Conectar control Cloud','Introduce la clave de control Cloud una sola vez:',show='•',parent=root)
+        if not token: return
+        settings['cloud_control_token']=token.strip(); save_settings(settings); token=token.strip()
+    try:
+        req=urllib.request.Request(CLOUD_BASE+'/toggle',method='POST',headers={'Authorization':'Bearer '+token,'User-Agent':'InvestmentIntelligenceRadarDesktop/1.1'})
+        with urllib.request.urlopen(req,timeout=8) as r: json.loads(r.read().decode('utf-8'))
+        refresh_cloud()
+    except urllib.error.HTTPError as e:
+        if e.code==401:
+            settings.pop('cloud_control_token',None); save_settings(settings)
+            messagebox.showerror('Cloud','Clave de control incorrecta. Se ha borrado para volver a introducirla.',parent=root)
+        else: messagebox.showerror('Cloud',f'Error HTTP {e.code}',parent=root)
+    except Exception as e:
+        messagebox.showerror('Cloud','No se pudo contactar con el servicio Cloud:\n'+str(e),parent=root)
+
+
 init_db()
-root=tk.Tk(); root.title('Investment Intelligence Radar'); root.geometry('1000x700'); root.minsize(900,620)
-style=ttk.Style()
-try: style.theme_use('vista')
-except Exception: pass
-main=ttk.Frame(root,padding=18); main.pack(fill='both',expand=True)
-ttk.Label(main,text='Investment Intelligence Radar',font=('Segoe UI',22,'bold')).pack(anchor='w')
-ttk.Label(main,text='Windows Desktop · v1.0.0',font=('Segoe UI',10)).pack(anchor='w',pady=(0,16))
+root=tk.Tk(); root.title('Investment Intelligence Radar'); root.geometry('1180x780'); root.minsize(1040,680); root.configure(bg=BG)
 
-control=ttk.LabelFrame(main,text='Actividad PC',padding=12); control.pack(fill='x')
-state_var=tk.StringVar(value='COMPROBANDO'); detail_var=tk.StringVar(value='')
-row=ttk.Frame(control); row.pack(fill='x')
-ttk.Label(row,textvariable=state_var,font=('Segoe UI',14,'bold')).pack(side='left')
-btn=ttk.Button(row,text='ON'); btn.pack(side='right')
-ttk.Label(control,textvariable=detail_var).pack(anchor='w',pady=(7,0))
+main=tk.Frame(root,bg=BG,padx=28,pady=24); main.pack(fill='both',expand=True)
+header=tk.Frame(main,bg=BG); header.pack(fill='x')
+tk.Label(header,text='Investment Intelligence Radar',bg=BG,fg=TEXT,font=('Segoe UI',24,'bold')).pack(anchor='w')
+tk.Label(header,text='Centro de control · Windows Desktop v1.1 · actualización automática',bg=BG,fg=MUTED,font=('Segoe UI',10)).pack(anchor='w',pady=(2,18))
 
-metrics=ttk.Frame(main); metrics.pack(fill='x',pady=14)
-price_var=tk.StringVar(value='0'); event_var=tk.StringVar(value='0'); run_var=tk.StringVar(value='0')
-for title,var in [('Precios guardados',price_var),('Eventos / ciencia',event_var),('Ciclos registrados',run_var)]:
-    f=ttk.LabelFrame(metrics,text=title,padding=12); f.pack(side='left',fill='x',expand=True,padx=4)
-    ttk.Label(f,textvariable=var,font=('Segoe UI',18,'bold')).pack()
+controls=tk.Frame(main,bg=BG); controls.pack(fill='x')
 
-body=ttk.Frame(main); body.pack(fill='both',expand=True)
-left=ttk.LabelFrame(body,text='Últimos precios',padding=8); left.pack(side='left',fill='both',expand=True,padx=(0,5))
-right=ttk.LabelFrame(body,text='Últimos eventos',padding=8); right.pack(side='left',fill='both',expand=True,padx=(5,0))
-prices=tk.Listbox(left,font=('Consolas',10)); prices.pack(fill='both',expand=True)
-events=tk.Listbox(right,font=('Segoe UI',9)); events.pack(fill='both',expand=True)
-cloud=ttk.LabelFrame(main,text='Cloud 24/7',padding=10); cloud.pack(fill='x',pady=(12,0))
-ttk.Label(cloud,text='PENDIENTE DE CONEXIÓN · el nodo PC funciona de forma independiente y está preparado para sincronización Cloud.').pack(anchor='w')
 
-def toggle():
+def control_card(parent,title,subtitle):
+    f=tk.Frame(parent,bg=PANEL,highlightthickness=1,highlightbackground=BORDER,padx=20,pady=18)
+    tk.Label(f,text=title,bg=PANEL,fg=TEXT,font=('Segoe UI',15,'bold')).pack(anchor='w')
+    state=tk.Label(f,text='COMPROBANDO',bg=PANEL,fg=AMBER,font=('Segoe UI',12,'bold')); state.pack(anchor='w',pady=(5,2))
+    detail=tk.Label(f,text=subtitle,bg=PANEL,fg=MUTED,font=('Segoe UI',9),justify='left',wraplength=390); detail.pack(anchor='w')
+    button=tk.Button(f,text='ON',font=('Segoe UI',11,'bold'),fg='white',bg=GREEN,activebackground=GREEN,activeforeground='white',relief='flat',bd=0,padx=24,pady=10,cursor='hand2')
+    button.pack(anchor='e',pady=(14,0))
+    return f,state,detail,button
+
+pc_card,pc_state,pc_detail,pc_btn=control_card(controls,'Actividad en este ordenador','Motor local: recopila datos y acelera el Radar cuando el PC está encendido.')
+pc_card.pack(side='left',fill='both',expand=True,padx=(0,7))
+cloud_card,cloud_state,cloud_detail,cloud_btn=control_card(controls,'Actividad continua en Cloud','Motor 24/7: sigue trabajando aunque este ordenador esté apagado.')
+cloud_card.pack(side='left',fill='both',expand=True,padx=(7,0))
+
+metrics=tk.Frame(main,bg=BG); metrics.pack(fill='x',pady=14)
+metric_vars={k:tk.StringVar(value='—') for k in ['db','last','runs','prices','events','cloud']}
+metric_defs=[('Base de datos','db'),('Último ciclo','last'),('Ejecuciones','runs'),('Datos de mercado','prices'),('Eventos / ciencia','events'),('Cloud','cloud')]
+for i,(title,key) in enumerate(metric_defs):
+    f=tk.Frame(metrics,bg=PANEL2,highlightthickness=1,highlightbackground=BORDER,padx=14,pady=12)
+    f.grid(row=0,column=i,sticky='nsew',padx=(0 if i==0 else 4,0 if i==len(metric_defs)-1 else 4))
+    metrics.grid_columnconfigure(i,weight=1)
+    tk.Label(f,text=title,bg=PANEL2,fg=MUTED,font=('Segoe UI',9)).pack(anchor='w')
+    tk.Label(f,textvariable=metric_vars[key],bg=PANEL2,fg=TEXT,font=('Segoe UI',15,'bold')).pack(anchor='w',pady=(4,0))
+
+body=tk.Frame(main,bg=BG); body.pack(fill='both',expand=True)
+left=tk.Frame(body,bg=PANEL,highlightthickness=1,highlightbackground=BORDER,padx=14,pady=12); left.pack(side='left',fill='both',expand=True,padx=(0,7))
+right=tk.Frame(body,bg=PANEL,highlightthickness=1,highlightbackground=BORDER,padx=14,pady=12); right.pack(side='left',fill='both',expand=True,padx=(7,0))
+tk.Label(left,text='Últimos precios',bg=PANEL,fg=TEXT,font=('Segoe UI',12,'bold')).pack(anchor='w',pady=(0,8))
+tk.Label(right,text='Últimos eventos',bg=PANEL,fg=TEXT,font=('Segoe UI',12,'bold')).pack(anchor='w',pady=(0,8))
+prices=tk.Listbox(left,bg=PANEL2,fg=TEXT,selectbackground=BLUE,selectforeground='white',highlightthickness=0,bd=0,font=('Consolas',10)); prices.pack(fill='both',expand=True)
+events=tk.Listbox(right,bg=PANEL2,fg=TEXT,selectbackground=BLUE,selectforeground='white',highlightthickness=0,bd=0,font=('Segoe UI',9)); events.pack(fill='both',expand=True)
+
+footer=tk.Label(main,text='Fuentes activas: Stooq · SEC EDGAR · Europe PMC   |   Trading real: OFF',bg=BG,fg=MUTED,font=('Segoe UI',9)); footer.pack(anchor='w',pady=(12,0))
+
+
+def toggle_pc():
     if running(): stop_worker()
     else: start_worker()
-    root.after(700,refresh)
-btn.configure(command=toggle)
+    root.after(700,refresh_local)
 
-def refresh():
-    r=running(); btn.configure(text='OFF' if r else 'ON')
-    status={}
+
+def refresh_local():
+    r=running(); pc_btn.configure(text='OFF' if r else 'ON',bg=RED if r else GREEN,activebackground=RED if r else GREEN)
+    pc_state.configure(text='ACTIVO' if r else 'DETENIDO',fg='#4ade80' if r else '#f87171')
+    pc_detail.configure(text='Motor local activo. Pulsa OFF para detenerlo.' if r else 'Motor local detenido. Pulsa ON para iniciar recopilación real.')
     try:
-        if os.path.exists(STATUS): status=json.load(open(STATUS,'r',encoding='utf-8'))
-    except Exception: pass
-    state_var.set(status.get('state','ACTIVO' if r else 'PAUSADO') if r else 'PAUSADO')
-    detail_var.set('Motor local activo. Pulsa OFF para detenerlo.' if r else 'Motor local detenido. Pulsa ON para iniciar recopilación real.')
-    try:
-        p,e,rr,latest,news=stats(); price_var.set(str(p)); event_var.set(str(e)); run_var.set(str(rr))
+        p,e,rr,latest,news=stats(); metric_vars['db'].set('CONECTADA'); metric_vars['prices'].set(str(p)); metric_vars['events'].set(str(e)); metric_vars['runs'].set(str(rr))
+        status={}
+        try:
+            if os.path.exists(STATUS): status=json.load(open(STATUS,'r',encoding='utf-8'))
+        except Exception: pass
+        metric_vars['last'].set((status.get('last_job') or status.get('state') or '—')[:18])
         prices.delete(0,'end')
-        for sym,price,source,ts in latest: prices.insert('end',f'{sym:<7} {price:>12.4f}   {source}')
+        for sym,price,source,ts in latest: prices.insert('end',f'  {sym:<7} {price:>12.4f}    {source}')
         events.delete(0,'end')
-        for source,title,ts in news: events.insert('end',f'[{source}] {title}')
+        for source,title,ts in news: events.insert('end',f'  [{source}] {title}')
     except Exception as ex:
-        detail_var.set('Error de lectura: '+str(ex))
-    root.after(3000,refresh)
+        metric_vars['db'].set('ERROR'); pc_detail.configure(text='Error de lectura: '+str(ex))
+    root.after(3000,refresh_local)
 
-start_worker(); refresh(); root.mainloop()
+
+def refresh_cloud():
+    try:
+        d=cloud_get('/health'); enabled=bool(d.get('cloud_enabled',True)); st=d.get('status',{})
+        cloud_state.configure(text='ACTIVO 24/7' if enabled else 'PAUSADO',fg='#4ade80' if enabled else '#f87171')
+        cloud_btn.configure(text='OFF' if enabled else 'ON',bg=RED if enabled else GREEN,activebackground=RED if enabled else GREEN)
+        cloud_detail.configure(text=('Cloud funcionando de forma independiente. Pulsa OFF para pausarlo.' if enabled else 'Cloud pausado. Pulsa ON para reanudarlo.'))
+        metric_vars['cloud'].set('ONLINE' if enabled else 'PAUSADO')
+    except Exception:
+        cloud_state.configure(text='SIN CONEXIÓN',fg='#f87171'); cloud_detail.configure(text='No se ha podido verificar Railway en este momento.'); metric_vars['cloud'].set('OFFLINE')
+    root.after(5000,refresh_cloud)
+
+pc_btn.configure(command=toggle_pc); cloud_btn.configure(command=cloud_toggle)
+start_worker(); refresh_local(); refresh_cloud(); root.mainloop()
