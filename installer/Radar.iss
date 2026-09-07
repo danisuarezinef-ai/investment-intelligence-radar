@@ -1,5 +1,5 @@
 #define MyAppName "Investment Intelligence Radar"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.2"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 [Setup]
 AppId={{44C4B1FA-5DC9-42E1-AE16-93AB0F9EA76A}
@@ -14,6 +14,7 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 CloseApplications=yes
+SetupIconFile=..\assets\radar.ico
 [Files]
 Source: "..\dist\InvestmentIntelligenceRadar.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\RadarWorker.exe"; DestDir: "{app}"; Flags: ignoreversion
