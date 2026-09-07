@@ -1,10 +1,13 @@
 import json
 import os
 import sqlite3
+import threading
+import time
 import urllib.parse
 
 import run_worker
 from radar_core import con, fetch, init_db, log, now, write_status
+from radar_supabase_sync import enabled as supabase_sync_enabled, sync_once
 
 
 def collect_science_safe():
@@ -95,5 +98,35 @@ class MobileHandler(BaseHandler):
 run_worker._Handler = MobileHandler
 
 
+def supabase_sync_loop():
+    if not supabase_sync_enabled():
+        print('[supabase] sync disabled: missing configuration', flush=True)
+        return
+    print('[supabase] persistent sync enabled', flush=True)
+    while True:
+        try:
+            result = sync_once(500)
+            print(
+                '[supabase] synced market={market} events={events} runs={runs}'.format(
+                    market=result.get('market', 0),
+                    events=result.get('events', 0),
+                    runs=result.get('runs', 0),
+                ),
+                flush=True,
+            )
+            write_status(
+                supabase_sync='OK',
+                supabase_market=result.get('market', 0),
+                supabase_events=result.get('events', 0),
+                supabase_runs=result.get('runs', 0),
+                supabase_synced_at=now(),
+            )
+        except Exception as exc:
+            print('[supabase] ERROR ' + repr(exc), flush=True)
+            write_status(supabase_sync='ERROR', supabase_sync_error=str(exc)[:500])
+        time.sleep(30)
+
+
 if __name__ == '__main__':
+    threading.Thread(target=supabase_sync_loop, name='supabase-sync', daemon=True).start()
     run_worker.main()
