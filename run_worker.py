@@ -1,6 +1,6 @@
 import json, os, time, traceback, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from radar_core import init_db, collect_market, collect_sec, collect_science, write_status, PID, LOG, STATUS, stats, now, profitability_leaders, opportunity_rankings, paper_status, paper_step
+from radar_core import init_db, collect_market, collect_sec, collect_science, collect_history, history_ready, write_status, PID, LOG, STATUS, stats, now, profitability_leaders, opportunity_rankings, paper_status, paper_step
 
 CONTROL_TOKEN=os.environ.get('RADAR_CONTROL_TOKEN','').strip(); _cloud_enabled=True; _state_lock=threading.Lock()
 def cloud_enabled():
@@ -21,13 +21,15 @@ def snapshot_payload():
     return {'counts':{'prices':prices,'events':events,'runs':runs},'latest_prices':[{'symbol':r[0],'price':r[1],'source':r[2],'ts':r[3]} for r in latest],'latest_events':[{'source':r[0],'title':r[1],'ts':r[2]} for r in news],'status':_read_status(),'leaders':{'week':profitability_leaders(7),'month':profitability_leaders(30),'year':profitability_leaders(365)},'opportunities':opportunity_rankings(),'paper':paper_status()}
 
 def worker_loop():
-    init_db(); open(PID,'w').write(str(os.getpid())); write_status(version='1.2.0',state='INICIANDO',started_at=now(),last_error='',cloud_enabled=True)
-    next_market=next_sec=next_science=0
+    init_db(); open(PID,'w').write(str(os.getpid())); write_status(version='1.2.1',state='INICIANDO',started_at=now(),last_error='',cloud_enabled=True)
+    next_market=next_sec=next_science=0; history_attempted=False
     try:
         while True:
             if not cloud_enabled():write_status(state='PAUSADO CLOUD',cloud_enabled=False,current_job=''); time.sleep(2); continue
             t=time.time(); write_status(state='ACTIVO',cloud_enabled=True)
             try:
+                if not history_attempted and not history_ready():
+                    history_attempted=True; write_status(state='CARGANDO HISTÓRICO',current_job='history'); n=collect_history(); print(f'[collector] history added={n}',flush=True)
                 if t>=next_market:
                     write_status(state='RECOPILANDO MERCADO',current_job='market'); n=collect_market(); print(f'[collector] market added={n}',flush=True); next_market=t+300; paper_step()
                 if t>=next_sec:
@@ -58,6 +60,7 @@ class _Handler(BaseHTTPRequestHandler):
         if not _authorized(self):self._send(401,{'ok':False,'error':'unauthorized'}); return
         if path=='/toggle':self._send(200,{'ok':True,'cloud_enabled':set_cloud_enabled(not cloud_enabled()),'status':_read_status()}); return
         if path=='/collect-now':
+            if not history_ready():collect_history()
             results={'market':collect_market(),'sec':collect_sec(),'science':collect_science()}; paper_step(force=True); self._send(200,{'ok':True,'results':results,'snapshot':snapshot_payload()}); return
         self._send(404,{'ok':False,'error':'not found'})
     def log_message(self,fmt,*args):print('[http]',fmt % args,flush=True)
