@@ -1,7 +1,7 @@
-import json, math, statistics
+import json, statistics
 from datetime import datetime, timezone, timedelta
 
-from radar_core import con, init_db, now, ASSETS, opportunity_rankings
+from radar_core import con, init_db, now, ASSETS
 
 def _dt(s):
     if not s:
@@ -148,56 +148,66 @@ def mark_notifications_read(ids=None):
 def detect_silence(z_threshold=2.25, catalyst_hours=12):
     init_intelligence_db()
     created = []
+    pending_notifications = []
     now_dt = datetime.now(timezone.utc)
     catalyst_since = (now_dt - timedelta(hours=catalyst_hours)).isoformat()
     c = con()
-    for symbol in ASSETS:
-        rows = _daily_prices(symbol, 55)
-        rets = _returns(rows)
-        if len(rets) < 12:
-            continue
-        hist = [x[1] for x in rets[:-1]][-40:]
-        latest = rets[-1][1]
-        sd = statistics.pstdev(hist) if len(hist) > 2 else 0.0
-        mu = statistics.mean(hist) if hist else 0.0
-        if sd <= 1e-9:
-            continue
-        z = (latest - mu) / sd
-        if abs(z) < z_threshold:
-            continue
-        recent = c.execute(
-            """select count(*) from information_events
-               where ts>=? and upper(title) like ?""",
-            (catalyst_since, f"%{symbol.upper()}%"),
-        ).fetchone()[0]
-        if recent:
-            continue
-        day = rows[-1][0]
-        exists = c.execute(
-            "select 1 from silence_alerts where symbol=? and substr(ts,1,10)=? limit 1",
-            (symbol, day),
-        ).fetchone()
-        if exists:
-            continue
-        severity = "HIGH" if abs(z) >= 3.0 else "MEDIUM"
-        detail = (
-            f"Movimiento diario {latest:+.2f}% (z={z:+.2f}) sin catalizador público "
-            f"detectado en las últimas {catalyst_hours} h."
-        )
-        c.execute(
-            """insert into silence_alerts(ts,symbol,return_pct,z_score,recent_public_catalyst,status,detail)
-               values(?,?,?,?,0,'OPEN',?)""",
-            (now(), symbol, latest, z, detail),
-        )
-        dedupe = f"silence:{symbol}:{day}"
-        enqueue_notification(
-            "silence", severity,
-            f"Movimiento sin catalizador: {symbol}",
-            detail, symbol=symbol, dedupe_key=dedupe
-        )
-        created.append(dict(symbol=symbol, return_pct=latest, z_score=z, severity=severity, detail=detail))
-    c.commit()
-    c.close()
+    try:
+        for symbol in ASSETS:
+            rows = _daily_prices(symbol, 55)
+            rets = _returns(rows)
+            if len(rets) < 12:
+                continue
+            hist = [x[1] for x in rets[:-1]][-40:]
+            latest = rets[-1][1]
+            sd = statistics.pstdev(hist) if len(hist) > 2 else 0.0
+            mu = statistics.mean(hist) if hist else 0.0
+            if sd <= 1e-9:
+                continue
+            z = (latest - mu) / sd
+            if abs(z) < z_threshold:
+                continue
+            recent = c.execute(
+                """select count(*) from information_events
+                   where ts>=? and upper(title) like ?""",
+                (catalyst_since, f"%{symbol.upper()}%"),
+            ).fetchone()[0]
+            if recent:
+                continue
+            day = rows[-1][0]
+            exists = c.execute(
+                "select 1 from silence_alerts where symbol=? and substr(ts,1,10)=? limit 1",
+                (symbol, day),
+            ).fetchone()
+            if exists:
+                continue
+            severity = "HIGH" if abs(z) >= 3.0 else "MEDIUM"
+            detail = (
+                f"Movimiento diario {latest:+.2f}% (z={z:+.2f}) sin catalizador público "
+                f"detectado en las últimas {catalyst_hours} h."
+            )
+            c.execute(
+                """insert into silence_alerts(ts,symbol,return_pct,z_score,recent_public_catalyst,status,detail)
+                   values(?,?,?,?,0,'OPEN',?)""",
+                (now(), symbol, latest, z, detail),
+            )
+            dedupe = f"silence:{symbol}:{day}"
+            pending_notifications.append((
+                "silence", severity, f"Movimiento sin catalizador: {symbol}",
+                detail, symbol, dedupe
+            ))
+            created.append(dict(
+                symbol=symbol, return_pct=latest, z_score=z,
+                severity=severity, detail=detail
+            ))
+        c.commit()
+    finally:
+        c.close()
+
+    # Notifications are written only after the alert transaction has committed.
+    # This avoids two concurrent SQLite writers and prevents "database is locked".
+    for kind, severity, title, body, symbol, dedupe in pending_notifications:
+        enqueue_notification(kind, severity, title, body, symbol=symbol, dedupe_key=dedupe)
     return created
 
 def silence_alerts(limit=50, open_only=True):
