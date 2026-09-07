@@ -8,6 +8,12 @@ on:
 permissions:
   contents: write
 
+# Only the newest main build may publish the stable update channel.
+# This prevents two near-simultaneous pushes from racing on the updates branch.
+concurrency:
+  group: radar-windows-stable
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
