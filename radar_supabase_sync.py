@@ -1,4 +1,4 @@
-import json, os, urllib.request
+import json, os, urllib.request, urllib.error
 
 from radar_core import con, init_db, now
 
@@ -44,8 +44,15 @@ def _post(payload, timeout=25):
             'User-Agent': 'InvestmentIntelligenceRadarCloud/1.4',
         },
     )
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode('utf-8'))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return json.loads(r.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode('utf-8', 'replace')
+        except Exception:
+            body = ''
+        raise RuntimeError(f'Supabase sync HTTP {e.code}: {body[:1200]}') from e
 
 
 def sync_once(batch=500):
