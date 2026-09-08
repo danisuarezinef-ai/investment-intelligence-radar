@@ -9,10 +9,8 @@ import run_worker
 from radar_core import con, fetch, init_db, log, now, write_status
 from radar_supabase_sync import enabled as supabase_sync_enabled, sync_once, _post as forward_supabase
 from radar_learning_sync import enabled as learning_sync_enabled, sync_learning_once
-from radar_learning import (
-    init_learning_db, run_learning_cycle, capture_predictions,
-    evaluate_predictions, backtest_point_in_time, calibration_summary
-)
+from radar_learning import init_learning_db, capture_predictions, evaluate_predictions, backtest_point_in_time, calibration_summary
+from radar_learning_guarded import run_guarded_cycle, learning_health
 from radar_dashboard_v2 import dashboard_payload as intelligence_dashboard
 from radar_causal import build_causal_graph, graph_summary, symbol_causal_summary
 from radar_benchmark import benchmark_agents
@@ -61,6 +59,10 @@ class MobileHandler(BaseHandler):
             try:self._send(200,intelligence_dashboard())
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
+        if path=='/learning-health':
+            try:self._send(200,learning_health())
+            except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
+            return
         if path=='/lists-369':
             try:self._send(200,lists_369_v2())
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
@@ -91,7 +93,7 @@ class MobileHandler(BaseHandler):
             if not run_worker._authorized(self):self._send(401,{'ok':False,'error':'unauthorized'});return
             try:
                 if path=='/learning-now':
-                    result=run_learning_cycle(True);result['causal_edges_created']=build_causal_graph(168);result['source_dimensions']=len(evaluate_source_dimensions());result['audit_v15']=run_integrity_audit()['summary']
+                    result=run_guarded_cycle(True);result['causal_edges_created']=build_causal_graph(168);result['source_dimensions']=len(evaluate_source_dimensions());result['audit_v15']=run_integrity_audit()['summary']
                 else:result=run_integrity_audit()
                 self._send(200,{'ok':True,'result':result})
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
@@ -124,14 +126,14 @@ def learning_sync_loop():
 
 
 def learning_loop():
-    init_learning_db();next_eval=time.time()+15;next_full=time.time()+25;print('[learning] adaptive intelligence enabled; real trading OFF',flush=True)
+    init_learning_db();next_eval=time.time()+15;next_full=time.time()+25;print('[learning] holdout-validated champion/challenger enabled; real trading OFF',flush=True)
     while True:
         t=time.time()
         try:
             if t>=next_eval:
                 evaluated=evaluate_predictions();created=capture_predictions(False);edges=build_causal_graph(168);write_status(learning_status='OK',learning_evaluated=evaluated,learning_predictions=created,causal_edges_created=edges,learning_last_eval=now());next_eval=t+1800
             if t>=next_full:
-                result=run_learning_cycle(False);dims=evaluate_source_dimensions();audit=run_integrity_audit();bench=benchmark_agents();write_status(learning_status='OK',learning_cycle=result,source_dimensions=len(dims),audit_v15=audit['summary'],benchmark_agents=len(bench),learning_last_full=now());print('[learning] cycle '+json.dumps({'core':result,'source_dimensions':len(dims),'audit':audit['summary'],'benchmarks':len(bench)},ensure_ascii=False)[:2200],flush=True);next_full=t+21600
+                result=run_guarded_cycle(False);dims=evaluate_source_dimensions();audit=run_integrity_audit();bench=benchmark_agents();write_status(learning_status='OK',learning_cycle=result,source_dimensions=len(dims),audit_v15=audit['summary'],benchmark_agents=len(bench),learning_last_full=now());print('[learning] guarded cycle '+json.dumps({'core':result,'source_dimensions':len(dims),'audit':audit['summary'],'benchmarks':len(bench)},ensure_ascii=False)[:2600],flush=True);next_full=t+21600
         except Exception as exc:print('[learning] ERROR '+repr(exc),flush=True);write_status(learning_status='ERROR',learning_error=str(exc)[:700])
         time.sleep(20)
 
