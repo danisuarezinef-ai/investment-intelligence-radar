@@ -1,0 +1,80 @@
+{
+  "timestamp": "2026-09-08T16:15:00+02:00",
+  "repository": "danisuarezinef-ai/investment-intelligence-radar",
+  "branch": "brain-evolution-v3",
+  "commit": "ceb8441484b4f55ef33e6f3aac00d2339931080f",
+  "base_commit": "1b84a002a931ed8c376223d53abf9f8728bd1b7e",
+  "pull_request": {
+    "number": 3,
+    "state": "OPEN_DRAFT",
+    "merged": false
+  },
+  "ci": "NOT_RUN",
+  "tests": {
+    "status": "PASS",
+    "passed": 33,
+    "failed": 0,
+    "duration_seconds": 96.44,
+    "scope": "local_full_pytest",
+    "synthetic_performance_evidence": false
+  },
+  "railway": {
+    "deployed": false,
+    "status": "NOT_VERIFIED",
+    "health": "NOT_VERIFIED",
+    "dashboard_v2": "NOT_VERIFIED",
+    "brain_evolution": "NOT_VERIFIED",
+    "logs": "NOT_VERIFIED"
+  },
+  "supabase": {
+    "project_id": "wvmiludqzdepqmjhfwos",
+    "project_status": "ACTIVE_HEALTHY",
+    "migration_governance": "APPLIED_VERIFIED",
+    "migration_sync_provenance": "APPLIED_VERIFIED",
+    "rls_new_tables": true,
+    "public_policies_added": 0,
+    "vault_count": 9,
+    "deep_vault_sealed": true
+  },
+  "active_champion": "2.0.0",
+  "brain_operational_champion": null,
+  "shadow_champions": [],
+  "generation": null,
+  "challengers_tested": 0,
+  "challengers_accepted": 0,
+  "challengers_rejected": 0,
+  "vaults": {
+    "registered": 8,
+    "status": "SEALED_NOT_EVALUATED"
+  },
+  "deep_vault": {
+    "key": "deep_final_test",
+    "status": "SEALED",
+    "opens": 0
+  },
+  "historical_score": null,
+  "live_score": null,
+  "transfer_score": null,
+  "live_n": 0,
+  "meta_learning": {
+    "status": "STRUCTURE_READY_NO_LIVE_EVIDENCE",
+    "optimization_active": false
+  },
+  "historical_data": {
+    "lab_runs": 1,
+    "accepted_runs": 0,
+    "promoted_runs": 0,
+    "survivorship_bias_risk": true
+  },
+  "known_limitations": [
+    "CI not run for the development commit",
+    "Windows and installer builds not verified",
+    "Railway not deployed or inspected",
+    "No live prediction outcomes",
+    "No real v3 challenger evaluation",
+    "Current static universe creates survivorship-bias risk",
+    "Historical depth is insufficient for multi-cycle Vault evidence",
+    "Production HTTP sync after deployment is not verified"
+  ],
+  "real_trading": false
+}
