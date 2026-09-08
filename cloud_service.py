@@ -13,6 +13,7 @@ from radar_learning_sync import enabled as learning_sync_enabled, sync_learning_
 from radar_learning import init_learning_db, capture_predictions, evaluate_predictions, backtest_point_in_time, calibration_summary
 from radar_learning_guarded import run_guarded_cycle, learning_health
 from radar_historical_lab import run_historical_lab, historical_lab_health, init_historical_lab_db
+from radar_brain_evolution import init_brain_db, brain_dashboard
 from radar_dashboard_v2 import dashboard_payload as intelligence_dashboard
 from radar_causal import build_causal_graph, graph_summary, symbol_causal_summary
 from radar_benchmark import benchmark_agents
@@ -43,10 +44,8 @@ def collect_science_safe():
     except Exception as exc:log('science','ERROR',str(exc));write_status(science_status='ERROR',last_error=str(exc))
     return added
 
-
 run_worker.collect_science=collect_science_safe
 BaseHandler=run_worker._Handler
-
 
 class MobileHandler(BaseHandler):
     STATIC={'/':('mobile/index.html','text/html; charset=utf-8'),'/mobile':('mobile/index.html','text/html; charset=utf-8'),'/mobile/':('mobile/index.html','text/html; charset=utf-8'),'/mobile/index.html':('mobile/index.html','text/html; charset=utf-8'),'/mobile/manifest.webmanifest':('mobile/manifest.webmanifest','application/manifest+json; charset=utf-8'),'/mobile/sw.js':('mobile/sw.js','application/javascript; charset=utf-8')}
@@ -61,12 +60,16 @@ class MobileHandler(BaseHandler):
         if static:self._send_static(*static);return
         if path in ('/learning','/dashboard-v2','/intelligence-v2'):
             try:
-                payload=intelligence_dashboard();payload['historical_lab']=historical_lab_health(8);self._send(200,payload)
+                payload=intelligence_dashboard();payload['historical_lab']=historical_lab_health(8);payload['brain_evolution']=brain_dashboard(30);self._send(200,payload)
+            except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
+            return
+        if path=='/brain-evolution':
+            try:self._send(200,brain_dashboard(100))
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         if path=='/learning-health':
             try:
-                payload=learning_health();payload['historical_lab']=historical_lab_health(8);self._send(200,payload)
+                payload=learning_health();payload['historical_lab']=historical_lab_health(8);payload['brain_evolution']=brain_dashboard(30);self._send(200,payload)
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         if path=='/historical-lab':
@@ -86,8 +89,7 @@ class MobileHandler(BaseHandler):
         if path=='/calibration':self._send(200,calibration_summary());return
         if path=='/backtest':self._send(200,{'results':backtest_point_in_time()});return
         if path=='/causal':self._send(200,graph_summary());return
-        if path.startswith('/causal/'):
-            self._send(200,symbol_causal_summary(path.rsplit('/',1)[-1].upper()));return
+        if path.startswith('/causal/'):self._send(200,symbol_causal_summary(path.rsplit('/',1)[-1].upper()));return
         super().do_GET()
     def do_POST(self):
         path=self.path.split('?',1)[0]
@@ -110,8 +112,6 @@ class MobileHandler(BaseHandler):
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         super().do_POST()
-
-
 run_worker._Handler=MobileHandler
 
 
@@ -137,8 +137,8 @@ def learning_sync_loop():
 
 
 def learning_loop():
-    init_learning_db();init_historical_lab_db();next_eval=time.time()+15;next_full=time.time()+25;next_hist=time.time()+40
-    print('[learning] live + repeated historical walk-forward champion/challenger enabled; real trading OFF',flush=True)
+    init_learning_db();init_historical_lab_db();init_brain_db();next_eval=time.time()+15;next_full=time.time()+25;next_hist=time.time()+40
+    print('[learning] live + evolutionary historical champion/challenger + epistemic brain layer enabled; real trading OFF',flush=True)
     while True:
         t=time.time()
         try:
@@ -151,9 +151,5 @@ def learning_loop():
         except Exception as exc:print('[learning] ERROR '+repr(exc),flush=True);write_status(learning_status='ERROR',learning_error=str(exc)[:700]);next_hist=max(next_hist,time.time()+1800)
         time.sleep(20)
 
-
 if __name__=='__main__':
-    threading.Thread(target=supabase_sync_loop,name='supabase-sync',daemon=True).start()
-    threading.Thread(target=learning_sync_loop,name='learning-sync',daemon=True).start()
-    threading.Thread(target=learning_loop,name='learning-engine',daemon=True).start()
-    run_worker.main()
+    threading.Thread(target=supabase_sync_loop,name='supabase-sync',daemon=True).start();threading.Thread(target=learning_sync_loop,name='learning-sync',daemon=True).start();threading.Thread(target=learning_loop,name='learning-engine',daemon=True).start();run_worker.main()
