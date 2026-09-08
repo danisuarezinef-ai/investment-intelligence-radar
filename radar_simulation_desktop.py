@@ -18,7 +18,6 @@ def fmt(v,d=2,s=''):
     except Exception:return '—'
 
 def card(p):return tk.Frame(p,bg=PANEL,highlightthickness=1,highlightbackground=BORDER,padx=14,pady=12)
-
 def lbl(p,t='',fg=TEXT,size=9,bold=False):return tk.Label(p,text=t,bg=p.cget('bg'),fg=fg,font=('Segoe UI',size,'bold' if bold else 'normal'),justify='left')
 
 class Lab:
@@ -49,7 +48,11 @@ class Lab:
             try:res=fn(); self.root.after(0,lambda:self.done(name,res,None))
             except Exception as e:self.root.after(0,lambda:self.done(name,None,e))
         threading.Thread(target=work,daemon=True).start()
-    def done(self,name,res,err): self.busy=False; self.status.set(('ERROR · '+str(err)[:90]) if err else name+' completado'); self.refresh()
+    def done(self,name,res,err):
+        self.busy=False; self.status.set(('ERROR · '+str(err)[:90]) if err else name+' completado')
+        if not err and name=='Replay histórico' and isinstance(res,dict):
+            lead=res.get('leader') or {}; self.replaytxt.set(f"Completado · {res.get('start_date','—')} → {res.get('end_date','—')} · líder {lead.get('name','—')} · retorno {fmt(lead.get('return_pct'),2,'%')} · alpha {fmt(lead.get('alpha_pct'),2,'%')} · max DD {fmt(lead.get('max_drawdown_pct'),2,'%')}")
+        self.refresh()
     def fast(self): self.run('Decisión',safe_fast_cycle)
     def deep(self): self.run('Aprendizaje profundo',safe_deep_cycle)
     def reset(self): self.run('Reinicio',lambda:reset_agents(200.0))
@@ -61,9 +64,10 @@ class Lab:
             for a in sts:
                 s=smap.get(a.get('agent_id'),{}); self.tree.insert('', 'end', values=(a.get('name','?'),fmt(a.get('total'),2,' €'),fmt(a.get('pnl_pct'),2,'%'),fmt(a.get('invested'),2,' €'),fmt(s.get('max_drawdown_pct',a.get('max_drawdown_pct')),2,'%'),fmt(s.get('sharpe',a.get('sharpe')),2),s.get('trades',len(a.get('trades',[])))))
             leader=sim.get('leader') or {}; self.simtxt.set(f"Run {sim.get('run_id','—')} · {sim.get('status','—')} · líder {leader.get('name','—')} · retorno {fmt(leader.get('return_pct'),2,'%')} · alpha {fmt(leader.get('alpha_pct'),2,'%')} · costes {fmt(leader.get('costs'),2,' €')}")
-            d=champion_decision(record=False); self.champion.set(f"{d.get('action','ABSTAIN')} · {d.get('symbol') or '—'} · confianza {fmt((d.get('confidence') or 0)*100,1,'%')}"); self.chdetail.set(f"Score {fmt(d.get('score'),3)} · desacuerdo {fmt(d.get('disagreement'),3)} · familias independientes {d.get('independent_families','—')} · ABSTAIN habilitado")
-            self.memtxt.set(f"Episodios {mem.get('episodes',0)} · evaluados {mem.get('evaluated',0)} · hit-rate {fmt(mem.get('hit_rate'),3)} · recompensa {fmt(mem.get('mean_reward'),3)} · calibración {fmt(mem.get('calibration_error'),3)}")
-            skills=learn.get('agent_skills') or []; top=skills[0] if skills else {}; self.learntxt.set(f"Ciclos {learn.get('cycles',0)} · observaciones {learn.get('observations',0)} · mejor habilidad {top.get('agent_id','—')} ({fmt(top.get('skill'),3)}) · trading real OFF")
+            d=champion_decision(record=False); top=(d.get('candidates') or [{}])[0]; self.champion.set(f"{d.get('action','ABSTAIN')} · {d.get('symbol') or '—'} · confianza {fmt((d.get('confidence') or 0)*100,1,'%')}"); self.chdetail.set(f"Score Champion {fmt(top.get('champion_score'),3)} · consenso {fmt(top.get('consensus'),3)} · desacuerdo {fmt(d.get('disagreement'),3)} · memoria n={top.get('memory_n',0)} · ABSTAIN habilitado")
+            mstats=mem.get('stats') or []; ms=next((x for x in mstats if x.get('scope')=='agent' and x.get('key')=='champion'),mstats[0] if mstats else {})
+            self.memtxt.set(f"Episodios {mem.get('episodes',0)} · evaluados {mem.get('evaluated',0)} · hit-rate {fmt(ms.get('hit_rate'),3)} · recompensa media {fmt(ms.get('mean_reward'),3)} · error calibración {fmt(ms.get('calibration_error'),3)}")
+            skills=learn.get('skills') or []; top_skill=skills[0] if skills else {}; last=learn.get('last_cycle') or {}; self.learntxt.set(f"Último ciclo {last.get('status','—')} · habilidades registradas {len(skills)} · líder {top_skill.get('agent_id','—')} · score {fmt(top_skill.get('score'),3)} · n={top_skill.get('n','—')} · hit-rate {fmt(top_skill.get('hit_rate'),3)}")
         except Exception as e:self.status.set('Error refrescando: '+str(e)[:90])
     def tick(self):
         if not self.busy:self.refresh()

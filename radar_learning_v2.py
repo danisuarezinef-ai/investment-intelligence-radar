@@ -1,9 +1,10 @@
-"""Learning Engine v2: learns agent/regime skill from simulation and decision outcomes without auto-promoting real trading."""
+"""Learning Engine v2: guarded meta-learning from simulation and forward decision outcomes."""
 from __future__ import annotations
 import json,statistics
 from radar_core import con,init_db,now
 from radar_decision_memory_v2 import refresh_memory_stats,memory_health
 from radar_learning_guarded import run_guarded_cycle,learning_health
+from radar_memory_outcomes_v3 import evaluate_mature_episodes
 
 REAL_TRADING=False
 
@@ -21,16 +22,20 @@ def init_learning_v2_db():
 
 
 def update_agent_skill(regime='unknown',horizon='forward'):
-    init_learning_v2_db();c=con(); agents=[r[0] for r in c.execute('select distinct agent_id from simulation_marks').fetchall()];updated=0
+    """Score agents without ever calculating a return across two different simulation runs."""
+    init_learning_v2_db();c=con();agents=[r[0] for r in c.execute('select distinct agent_id from simulation_marks').fetchall()];updated=0
     for aid in agents:
-        rows=c.execute('select total,benchmark,drawdown_pct from simulation_marks where agent_id=? order by id',(aid,)).fetchall()
+        rows=c.execute('select run_id,total,benchmark,drawdown_pct from simulation_marks where agent_id=? order by run_id,id',(aid,)).fetchall()
         if len(rows)<2:continue
-        alphas=[];hits=[];dds=[]
-        for i in range(1,len(rows)):
-            p0,p1=float(rows[i-1][0]),float(rows[i][0]); ar=(p1/p0-1)*100 if p0 else 0
-            br=0.0
-            if rows[i-1][1] and rows[i][1]:br=(float(rows[i][1])/float(rows[i-1][1])-1)*100
-            alpha=ar-br;alphas.append(alpha);hits.append(1 if alpha>0 else 0);dds.append(float(rows[i][2] or 0))
+        alphas=[];hits=[];dds=[];prev=None
+        for run_id,total,benchmark,dd in rows:
+            cur=(run_id,float(total),float(benchmark) if benchmark is not None else None,float(dd or 0))
+            if prev is not None and prev[0]==cur[0] and prev[1]>0:
+                ar=(cur[1]/prev[1]-1)*100; br=0.0
+                if prev[2] and cur[2]:br=(cur[2]/prev[2]-1)*100
+                alpha=ar-br;alphas.append(alpha);hits.append(1 if alpha>0 else 0);dds.append(cur[3])
+            prev=cur
+        if not alphas:continue
         mean_alpha=statistics.mean(alphas);hit=statistics.mean(hits);maxdd=min(dds) if dds else 0.0
         score=mean_alpha+2.0*(hit-.5)-0.05*abs(maxdd)
         c.execute('''insert into agent_skill(agent_id,regime,horizon,n,mean_alpha,hit_rate,max_drawdown,score,updated_at) values(?,?,?,?,?,?,?,?,?)
@@ -43,11 +48,14 @@ def agent_skill_table(limit=50):
 
 
 def learning_cycle_v2(force_predictions=False,regime='unknown'):
-    init_learning_v2_db();memory_groups=refresh_memory_stats();skills=update_agent_skill(regime=regime)
+    init_learning_v2_db()
+    outcomes=evaluate_mature_episodes()
+    memory_groups=refresh_memory_stats()
+    skills=update_agent_skill(regime=regime)
     guarded=run_guarded_cycle(force_predictions=force_predictions)
-    status='OK' if guarded else 'PARTIAL'
-    c=con();c.execute('insert into meta_learning_cycles(created_at,status,guarded_result,memory_result,agent_skill_result,notes) values(?,?,?,?,?,?)',(now(),status,json.dumps(guarded,default=str),json.dumps(memory_health(),default=str),json.dumps({'updated':skills},default=str),'No automatic operational promotion; REAL_TRADING=false'));c.commit();c.close()
-    return {'status':status,'guarded':guarded,'memory_groups':memory_groups,'agent_skills_updated':skills,'agent_skill':agent_skill_table(),'real_trading':False}
+    status='OK' if guarded else 'PARTIAL'; mem=memory_health()
+    c=con();c.execute('insert into meta_learning_cycles(created_at,status,guarded_result,memory_result,agent_skill_result,notes) values(?,?,?,?,?,?)',(now(),status,json.dumps(guarded,default=str),json.dumps({'health':mem,'outcomes':outcomes},default=str),json.dumps({'updated':skills},default=str),'Forward outcomes are single-assignment; no cross-run returns; no automatic operational promotion; REAL_TRADING=false'));c.commit();c.close()
+    return {'status':status,'guarded':guarded,'outcomes':outcomes,'memory_groups':memory_groups,'agent_skills_updated':skills,'agent_skill':agent_skill_table(),'real_trading':False}
 
 
 def learning_v2_health():
