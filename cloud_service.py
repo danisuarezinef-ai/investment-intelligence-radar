@@ -12,6 +12,7 @@ from radar_supabase_sync import enabled as supabase_sync_enabled, sync_once, _po
 from radar_learning_sync import enabled as learning_sync_enabled, sync_learning_once
 from radar_learning import init_learning_db, capture_predictions, evaluate_predictions, backtest_point_in_time, calibration_summary
 from radar_learning_guarded import run_guarded_cycle, learning_health
+from radar_historical_lab import run_historical_lab, historical_lab_health, init_historical_lab_db
 from radar_dashboard_v2 import dashboard_payload as intelligence_dashboard
 from radar_causal import build_causal_graph, graph_summary, symbol_causal_summary
 from radar_benchmark import benchmark_agents
@@ -59,11 +60,17 @@ class MobileHandler(BaseHandler):
         path=self.path.split('?',1)[0];static=self.STATIC.get(path)
         if static:self._send_static(*static);return
         if path in ('/learning','/dashboard-v2','/intelligence-v2'):
-            try:self._send(200,intelligence_dashboard())
+            try:
+                payload=intelligence_dashboard();payload['historical_lab']=historical_lab_health(8);self._send(200,payload)
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         if path=='/learning-health':
-            try:self._send(200,learning_health())
+            try:
+                payload=learning_health();payload['historical_lab']=historical_lab_health(8);self._send(200,payload)
+            except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
+            return
+        if path=='/historical-lab':
+            try:self._send(200,historical_lab_health(20))
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         if path=='/lists-369':
@@ -92,11 +99,12 @@ class MobileHandler(BaseHandler):
             try:self._send(200,{'ok':True,'result':forward_supabase(payload,timeout=35)})
             except Exception as exc:self._send(502,{'ok':False,'error':str(exc)[:800]})
             return
-        if path in ('/learning-now','/audit-now'):
+        if path in ('/learning-now','/audit-now','/historical-lab-now'):
             if not run_worker._authorized(self):self._send(401,{'ok':False,'error':'unauthorized'});return
             try:
                 if path=='/learning-now':
                     result=run_guarded_cycle(True);result['causal_edges_created']=build_causal_graph(168);result['source_dimensions']=len(evaluate_source_dimensions());result['audit_v15']=run_integrity_audit()['summary']
+                elif path=='/historical-lab-now':result=run_historical_lab(promote=True)
                 else:result=run_integrity_audit()
                 self._send(200,{'ok':True,'result':result})
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
@@ -129,15 +137,18 @@ def learning_sync_loop():
 
 
 def learning_loop():
-    init_learning_db();next_eval=time.time()+15;next_full=time.time()+25;print('[learning] holdout-validated champion/challenger enabled; real trading OFF',flush=True)
+    init_learning_db();init_historical_lab_db();next_eval=time.time()+15;next_full=time.time()+25;next_hist=time.time()+40
+    print('[learning] live + repeated historical walk-forward champion/challenger enabled; real trading OFF',flush=True)
     while True:
         t=time.time()
         try:
             if t>=next_eval:
                 evaluated=evaluate_predictions();created=capture_predictions(False);edges=build_causal_graph(168);write_status(learning_status='OK',learning_evaluated=evaluated,learning_predictions=created,causal_edges_created=edges,learning_last_eval=now());next_eval=t+1800
             if t>=next_full:
-                result=run_guarded_cycle(False);dims=evaluate_source_dimensions();audit=run_integrity_audit();bench=benchmark_agents();write_status(learning_status='OK',learning_cycle=result,source_dimensions=len(dims),audit_v15=audit['summary'],benchmark_agents=len(bench),learning_last_full=now());print('[learning] guarded cycle '+json.dumps({'core':result,'source_dimensions':len(dims),'audit':audit['summary'],'benchmarks':len(bench)},ensure_ascii=False)[:2600],flush=True);next_full=t+21600
-        except Exception as exc:print('[learning] ERROR '+repr(exc),flush=True);write_status(learning_status='ERROR',learning_error=str(exc)[:700])
+                result=run_guarded_cycle(False);dims=evaluate_source_dimensions();audit=run_integrity_audit();bench=benchmark_agents();write_status(learning_status='OK',learning_cycle=result,source_dimensions=len(dims),audit_v15=audit['summary'],benchmark_agents=len(bench),learning_last_full=now());print('[learning] guarded live cycle '+json.dumps({'core':result,'source_dimensions':len(dims),'audit':audit['summary'],'benchmarks':len(bench)},ensure_ascii=False)[:2600],flush=True);next_full=t+21600
+            if t>=next_hist:
+                hist=run_historical_lab(promote=True);write_status(historical_lab='OK',historical_lab_last=hist,historical_lab_at=now());print('[historical-lab] '+json.dumps(hist,ensure_ascii=False)[:2600],flush=True);next_hist=t+43200
+        except Exception as exc:print('[learning] ERROR '+repr(exc),flush=True);write_status(learning_status='ERROR',learning_error=str(exc)[:700]);next_hist=max(next_hist,time.time()+1800)
         time.sleep(20)
 
 
