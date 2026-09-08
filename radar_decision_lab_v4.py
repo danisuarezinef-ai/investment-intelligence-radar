@@ -78,7 +78,9 @@ def event_study(event_index,returns,pre=5,post=5):
 class CausalEdge:
  source:str; target:str; confidence:float; first_known_at:str; provenance:str; falsification:list
 
-def bottleneck_score(capacity_growth,demand_growth,criticality):return max(0,float(demand_growth)-float(capacity_growth))*clamp(criticality)
+def bottleneck_score(capacity_growth,demand_growth,criticality):
+ if capacity_growth is None or demand_growth is None or criticality is None:return {'status':'MISSING_DATA','score':None}
+ return {'status':'OK','score':max(0,float(demand_growth)-float(capacity_growth))*clamp(criticality)}
 
 def cross_asset(signals):
  vals=list(map(float,signals.values()));mean=sum(vals)/len(vals) if vals else 0;spread=statistics.pstdev(vals) if len(vals)>1 else 0
@@ -92,7 +94,9 @@ def realized_voi(before_utility,after_utility,research_cost=0):return float(afte
 
 def committee_record(votes):
  scores=[float(v.get('score',0)) for v in votes];return {'votes':votes,'consensus':sum(scores)/len(scores) if scores else 0,'disagreement':statistics.pstdev(scores) if len(scores)>1 else 0}
-def red_team_gate(conviction,attacks):return {'required':float(conviction)>=.75,'max_attack':max([float(a.get('severity',0))*float(a.get('plausibility',0)) for a in attacks] or [0]),'attacks':attacks}
+def red_team_gate(conviction,attacks):
+ required=float(conviction)>=.75;strength=max([float(a.get('severity',0))*float(a.get('plausibility',0)) for a in attacks] or [0])
+ return {'required':required,'completed':bool(attacks),'pass':not required or bool(attacks),'max_attack':strength,'attacks':attacks}
 def premortem_record(failure_modes):return {'created_at':utcnow(),'failure_modes':failure_modes,'evaluated':False}
 
 def decision_quality(data_quality,calibration,process_completeness,thesis_precommit,independence):return sum(map(clamp,[data_quality,calibration,process_completeness,thesis_precommit,independence]))/5

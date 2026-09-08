@@ -86,7 +86,7 @@ def init_learning_db():
     c.execute('create index if not exists idx_regime_ts on market_regimes(ts)')
     row = c.execute('select 1 from model_versions where version=?', (MODEL_VERSION,)).fetchone()
     if not row:
-        c.execute('insert into model_versions(version,created_at,parent_version,status,weights,metrics,notes) values(?,?,?,?,?,?,?)',
+        c.execute('insert or ignore into model_versions(version,created_at,parent_version,status,weights,metrics,notes) values(?,?,?,?,?,?,?)',
                   (MODEL_VERSION, now(), None, 'active', json.dumps(DEFAULT_WEIGHTS), '{}',
                    'Initial bounded adaptive model'))
     c.commit(); c.close()
@@ -280,20 +280,21 @@ def learn_if_ready(min_observations=25):
     # Guardrail: only accept when recent hit-rate is not pathological and total step is bounded.
     recent=rows[:max(25,min(100,len(rows)))]
     recent_hit=statistics.mean(int(r[1]) for r in recent)
-    accepted=recent_hit>=0.45 and sum(abs(v) for v in deltas.values())<=0.12
+    qualified=recent_hit>=0.45 and sum(abs(v) for v in deltas.values())<=0.12
+    accepted=False
     new_version=model['version']
-    if accepted:
+    if qualified:
         parts=model['version'].split('.')
         try:new_version=f"{parts[0]}.{parts[1]}.{int(parts[2])+1}"
         except Exception:new_version=model['version']+'-1'
-        c=con(); c.execute("update model_versions set status='retired' where status='active'")
+        c=con()
         c.execute('insert into model_versions(version,created_at,parent_version,status,weights,metrics,notes) values(?,?,?,?,?,?,?)',
-                  (new_version,now(),model['version'],'active',json.dumps(proposed),json.dumps({'training_n':len(rows),'recent_hit_rate':recent_hit}),'Bounded online update; no real trading'))
+                  (new_version,now(),model['version'],'shadow',json.dumps(proposed),json.dumps({'training_n':len(rows),'recent_hit_rate':recent_hit}),'Live-derived shadow candidate; operational promotion requires Brain gate'))
         c.commit(); c.close()
     c=con(); c.execute('''insert into learning_cycles(created_at,prior_version,new_version,observations,objective_before,objective_after,accepted,weight_delta,calibration,notes)
         values(?,?,?,?,?,?,?,?,?,?)''',(now(),model['version'],new_version,len(rows),before,before,1 if accepted else 0,json.dumps(deltas),json.dumps(calibration_summary()),'Guarded update; acceptance requires >=45% recent hit rate'))
     c.commit(); c.close()
-    return {'accepted':accepted,'n':len(rows),'prior_version':model['version'],'new_version':new_version,'deltas':deltas,'recent_hit_rate':recent_hit}
+    return {'accepted':accepted,'shadow_qualified':qualified,'n':len(rows),'prior_version':model['version'],'new_version':new_version,'deltas':deltas,'recent_hit_rate':recent_hit}
 
 
 def weak_signal_scan(hours=72):

@@ -5,6 +5,7 @@ from radar_learning_guarded import init_guarded_learning_db
 from radar_historical_lab import init_historical_lab_db
 from radar_reputation_v2 import init_reputation_v2_db
 from radar_brain_evolution import init_brain_db
+from radar_investment_memory import init_memory
 
 SYNC_URL=os.environ.get('SUPABASE_LEARNING_SYNC_URL','').strip()
 SYNC_TOKEN=os.environ.get('RADAR_SYNC_TOKEN','').strip()
@@ -59,7 +60,7 @@ def _decode(k,v):
 
 def sync_learning_once(batch=750):
  if not enabled():return {'enabled':False}
- init_db();init_learning_db();init_guarded_learning_db();init_historical_lab_db();init_reputation_v2_db();init_brain_db();payload={'node_id':NODE_ID};c=con();counts={}
+ init_db();init_learning_db();init_guarded_learning_db();init_historical_lab_db();init_reputation_v2_db();init_brain_db();memory=con();init_memory(memory);memory.close();payload={'node_id':NODE_ID};c=con();counts={}
  rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions order by created_at,version').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
  for table,cols in TABLES.items():
   key='learning_sync_'+table;idcol='rowid' if table=='prediction_outcomes' else 'id'
@@ -77,9 +78,27 @@ def sync_learning_once(batch=750):
     d[k]=_decode(k,v)
    origin_id=int(r[0]);d['origin_node']=NODE_ID;d['origin_id']=origin_id;out.append(d)
   payload[table]=out;counts[table]=len(out)
+ after=_get('learning_sync_prediction_ledger')
+ rs=c.execute('''select rowid,id,created_at,target_date,asset,horizon,model_version,prediction_hash,
+   feature_fingerprint,thesis_fingerprint,confidence,uncertainty,decision_state,paper_allocation,
+   data_cutoff,known_at_boundary,provenance_snapshot,payload,outcome,evaluated_at
+   from prediction_ledger where rowid>? order by rowid limit ?''',(after,batch)).fetchall()
+ payload['decision_forward_ledger']=[{'origin_node':NODE_ID,'origin_id':str(r[0]),'local_prediction_id':r[1],
+   'created_at':r[2],'target_date':r[3],'symbol':r[4],'horizon':r[5],'model_version':r[6],
+   'prediction_hash':r[7],'feature_fingerprint':r[8],'thesis_fingerprint':r[9],'confidence':r[10],
+   'uncertainty':_decode('metadata',r[11]),'decision_state':r[12],'paper_allocation':_decode('metadata',r[13]),
+   'data_cutoff':r[14],'known_at_boundary':r[15],'provenance_snapshot':_decode('metadata',r[16]),
+   'payload':_decode('metadata',r[17]),'outcome':_decode('metadata',r[18]) if r[18] is not None else None,'evaluated_at':r[19]} for r in rs]
+ counts['decision_forward_ledger']=len(rs)
+ tafter=_get('learning_sync_thesis_events')
+ trs=c.execute('select id,event_time,thesis_id,state,payload,event_hash from thesis_events where id>? order by id limit ?',(tafter,batch)).fetchall()
+ payload['decision_thesis_events']=[{'origin_node':NODE_ID,'origin_id':str(r[0]),'event_time':r[1],'thesis_id':r[2],'state':r[3],'payload':_decode('metadata',r[4]),'event_hash':r[5]} for r in trs]
+ counts['decision_thesis_events']=len(trs)
  c.close();result=_post(payload)
  for table in TABLES:
   if table=='historical_lab_runs':continue
   arr=payload.get(table) or []
   if arr:_set('learning_sync_'+table,max(int(x['origin_id']) for x in arr))
+ if rs:_set('learning_sync_prediction_ledger',max(int(x[0]) for x in rs))
+ if trs:_set('learning_sync_thesis_events',max(int(x[0]) for x in trs))
  return {'enabled':True,**counts,'remote':result}

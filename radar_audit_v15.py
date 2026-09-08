@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from radar_core import con, init_db, STATUS, now
 from radar_learning import init_learning_db, active_model
 from radar_brain_evolution import init_brain_db
+from radar_investment_memory import init_memory
 
 
 def _status():
@@ -12,7 +13,7 @@ def _status():
 
 
 def run_integrity_audit():
-    init_db();init_learning_db();init_brain_db();c=con();tests=[]
+    init_db();init_learning_db();init_brain_db();c=con();init_memory(c);tests=[]
     def add(component,name,status,detail,metrics=None):
         tests.append({'component':component,'test':name,'status':status,'detail':detail,'metrics':metrics or {}})
         try:c.execute('insert into audit_events(ts,component,test_name,status,detail,metrics) values(?,?,?,?,?,?)',(now(),component,name,status,detail,json.dumps(metrics or {})))
@@ -49,6 +50,10 @@ def run_integrity_audit():
         try:
             value=c.execute(sql).fetchone()[0];add('brain',name,'PASS' if value in expect else 'FAIL',str(value),{'count':value})
         except Exception as e:add('brain',name,'FAIL',str(e))
+    try:
+        bad=c.execute("select count(*) from prediction_ledger where data_cutoff>created_at or known_at_boundary>created_at or target_date<=created_at").fetchone()[0]
+        add('forward','pit_boundaries','PASS' if bad==0 else 'FAIL',str(bad),{'invalid_rows':bad})
+    except Exception as e:add('forward','pit_boundaries','FAIL',str(e))
     st=_status();sup=st.get('supabase_sync');learn=st.get('learning_persistence');add('sync','supabase_core','PASS' if sup=='OK' else 'WARN',str(sup or 'unknown'));add('sync','supabase_learning','PASS' if learn=='OK' else 'WARN',str(learn or 'unknown'))
     c.commit()
     try:

@@ -3,6 +3,8 @@ name: Build Windows Setup
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -71,6 +73,7 @@ jobs:
           retention-days: 30
 
       - name: Publish stable update channel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
