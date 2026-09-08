@@ -1,5 +1,5 @@
-import json, os
-from datetime import datetime, timezone, timedelta
+import json
+from datetime import datetime, timezone
 from radar_core import con, init_db, STATUS, now
 from radar_learning import init_learning_db, active_model
 
@@ -37,6 +37,7 @@ def run_integrity_audit():
     m=active_model();add('learning','bounded_weights','PASS' if all(abs(float(v))<=0.5 for v in m.get('weights',{}).values()) else 'FAIL',m.get('version','unknown'),m.get('weights',{}))
     add('safety','real_trading_off','PASS','No real broker/execution path enabled',{'real_trading':False})
     st=_status();sup=st.get('supabase_sync');learn=st.get('learning_persistence');add('sync','supabase_core','PASS' if sup=='OK' else 'WARN',str(sup or 'unknown'));add('sync','supabase_learning','PASS' if learn=='OK' else 'WARN',str(learn or 'unknown'))
+    c.commit()
     try:
         c.execute('begin');c.execute("insert into control(key,value) values('__audit_rollback__','1') on conflict(key) do update set value='1'");c.execute('rollback');exists=c.execute("select 1 from control where key='__audit_rollback__'").fetchone();add('recovery','transaction_rollback','PASS' if not exists else 'FAIL','rollback isolation check')
     except Exception as e:
