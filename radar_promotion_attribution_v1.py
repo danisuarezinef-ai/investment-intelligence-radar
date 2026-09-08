@@ -7,6 +7,7 @@ from __future__ import annotations
 import math, statistics
 
 REAL_TRADING=False
+PROMOTION_POLICY_VERSION='v1'
 DEFAULT_PROMOTION_POLICY={
     'min_forward_days':90,
     'min_matured_predictions':100,
@@ -44,7 +45,8 @@ def promotion_gate(evidence,policy=None):
     }
     failed=[k for k,v in checks.items() if not v]
     return {'checks':checks,'failed':failed,'ready_for_live_review':not failed,
-            'auto_promote':False,'can_trade':False,'real_trading':False,'policy':p}
+            'auto_promote':False,'can_trade':False,'real_trading':False,
+            'policy_version':PROMOTION_POLICY_VERSION,'policy':p}
 
 def confidence_calibration(records):
     """Brier score and hit-rate from immutable matured prediction records."""
