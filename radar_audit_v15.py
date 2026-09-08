@@ -34,7 +34,10 @@ def run_integrity_audit():
     try:
         active=c.execute("select count(*) from model_versions where status='active'").fetchone()[0];add('learning','single_active_model','PASS' if active==1 else 'FAIL',f'{active} active')
     except Exception as e:add('learning','single_active_model','FAIL',str(e))
-    m=active_model();add('learning','bounded_weights','PASS' if all(abs(float(v))<=0.5 for v in m.get('weights',{}).values()) else 'FAIL',m.get('version','unknown'),m.get('weights',{}))
+    c.commit()
+    try:
+        m=active_model();add('learning','bounded_weights','PASS' if all(abs(float(v))<=0.5 for v in m.get('weights',{}).values()) else 'FAIL',m.get('version','unknown'),m.get('weights',{}))
+    except Exception as e:add('learning','bounded_weights','FAIL',str(e))
     add('safety','real_trading_off','PASS','No real broker/execution path enabled',{'real_trading':False})
     st=_status();sup=st.get('supabase_sync');learn=st.get('learning_persistence');add('sync','supabase_core','PASS' if sup=='OK' else 'WARN',str(sup or 'unknown'));add('sync','supabase_learning','PASS' if learn=='OK' else 'WARN',str(learn or 'unknown'))
     c.commit()
