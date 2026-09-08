@@ -18,7 +18,6 @@ def _seed(days=280):
     for si,s in enumerate(radar_core.ASSETS):
         p=70+si*3
         for i in range(days):
-            # deterministic but heterogeneous path with trend and pullbacks
             drift=.0015 + (si%4)*.00015
             shock=-.012 if (i+si)%29==0 else (.006 if (i+2*si)%17==0 else 0)
             p*=1+drift+shock
@@ -27,28 +26,25 @@ def _seed(days=280):
 
 
 def test_historical_observations_are_cutoff_provenanced(tmp_path,monkeypatch):
-    _tmp(tmp_path,monkeypatch);_seed()
-    obs=hl.build_historical_observations()
-    assert len(obs)>500
-    x=obs[0]
-    assert x['provenance']['lookahead'] is not True if 'lookahead' in x['provenance'] else True
-    assert x['provenance']['future_date']>x['provenance']['cutoff']
+    _tmp(tmp_path,monkeypatch);_seed();obs=hl.build_historical_observations();assert len(obs)>500
+    x=obs[0];assert x['provenance']['lookahead'] is False;assert x['provenance']['future_date']>x['provenance']['cutoff']
     assert set(x['features'])=={'momentum7','momentum30','momentum90','volatility','source_quality','regime_fit','causal_strength'}
 
 
-def test_walk_forward_lab_records_untouched_test(tmp_path,monkeypatch):
-    _tmp(tmp_path,monkeypatch);_seed()
-    r=hl.run_historical_lab(promote=False)
-    assert r['observations']>500
-    assert r['folds']>=hl.MIN_FOLDS
-    assert r['test_n']>0
-    assert r['promoted'] is False
-    health=hl.historical_lab_health()
-    assert health['runs'][0]['metadata']['lookahead'] is False
-    assert health['guardrails']['final_test_untouched'] is True
+def test_evolutionary_walk_forward_has_vault_and_final_test(tmp_path,monkeypatch):
+    _tmp(tmp_path,monkeypatch);_seed();r=hl.run_historical_lab(promote=False)
+    assert r['observations']>500;assert r['folds']>=hl.MIN_FOLDS;assert r['vault_n']>0;assert r['test_n']>0
+    assert r['challengers']==len(hl.CHALLENGER_VARIANTS);assert r['selected_challenger'] in {x[0] for x in hl.CHALLENGER_VARIANTS};assert r['promoted'] is False
+    health=hl.historical_lab_health();m=health['runs'][0]['metadata']
+    assert m['lookahead'] is False;assert m['vault_untouched_during_evolution'] is True;assert m['test_untouched_until_selection'] is True
+    assert health['guardrails']['temporal_vault'] is True
+
+
+def test_challenger_population_is_persisted(tmp_path,monkeypatch):
+    _tmp(tmp_path,monkeypatch);_seed();r=hl.run_historical_lab(promote=False);c=radar_core.con()
+    rows=c.execute('select challenger_name,selected from historical_challenger_results where run_id=?',(r['run_id'],)).fetchall();c.close()
+    assert len(rows)==len(hl.CHALLENGER_VARIANTS);assert sum(int(x[1]) for x in rows)==1
 
 
 def test_historical_lab_never_enables_real_trading(tmp_path,monkeypatch):
-    _tmp(tmp_path,monkeypatch);_seed()
-    r=hl.run_historical_lab(promote=False)
-    assert r['trading_real'] is False
+    _tmp(tmp_path,monkeypatch);_seed();r=hl.run_historical_lab(promote=False);assert r['trading_real'] is False
