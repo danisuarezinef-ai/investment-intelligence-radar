@@ -1,10 +1,12 @@
-import json, os, urllib.request, urllib.error
+import json, os, time, urllib.request, urllib.error
 
 from radar_core import con, init_db, now
 
 SYNC_URL = os.environ.get('SUPABASE_SYNC_URL', '').strip()
 SYNC_TOKEN = os.environ.get('RADAR_SYNC_TOKEN', '').strip()
 NODE_ID = os.environ.get('RADAR_NODE_ID', 'cloud-primary').strip() or 'cloud-primary'
+MAX_SYNC_BATCH = 250
+RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
 def enabled():
@@ -41,7 +43,7 @@ def _table_exists(c, name):
         return False
 
 
-def _post(payload, timeout=30):
+def _post(payload, timeout=30, attempts=3, base_delay=0.75):
     data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
     req = urllib.request.Request(
         SYNC_URL,
@@ -53,15 +55,29 @@ def _post(payload, timeout=30):
             'User-Agent': 'InvestmentIntelligenceRadarCloud/1.4',
         },
     )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return json.loads(r.read().decode('utf-8'))
-    except urllib.error.HTTPError as e:
+    last_exc = None
+    attempts = max(1, int(attempts))
+    for attempt in range(attempts):
         try:
-            body = e.read().decode('utf-8', 'replace')
-        except Exception:
-            body = ''
-        raise RuntimeError(f'Supabase sync HTTP {e.code}: {body[:1200]}') from e
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.loads(r.read().decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            try:
+                body = e.read().decode('utf-8', 'replace')
+            except Exception:
+                body = ''
+            err = RuntimeError(f'Supabase sync HTTP {e.code}: {body[:1200]}')
+            if e.code not in RETRYABLE_HTTP or attempt >= attempts - 1:
+                raise err from e
+            last_exc = err
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            last_exc = e
+            if attempt >= attempts - 1:
+                raise
+        time.sleep(base_delay * (2 ** attempt))
+    if last_exc is not None:
+        raise last_exc
+    raise RuntimeError('Supabase sync failed without an explicit error')
 
 
 def sync_once(batch=500):
@@ -69,6 +85,7 @@ def sync_once(batch=500):
         return {'enabled': False}
 
     init_db()
+    batch = max(1, min(int(batch), MAX_SYNC_BATCH))
     market_after = int(_control_get('supabase_market_id', '0') or 0)
     events_after = int(_control_get('supabase_event_id', '0') or 0)
     runs_after = int(_control_get('supabase_run_id', '0') or 0)
