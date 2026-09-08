@@ -1,7 +1,6 @@
 """Decision Memory v2: episodic, append-only decision/outcome memory for simulation and learning."""
 from __future__ import annotations
-import hashlib,json,math
-from datetime import datetime,timezone
+import hashlib,json
 from radar_core import con,init_db,now
 
 REAL_TRADING=False
@@ -59,11 +58,15 @@ def retrieve_similar(*,symbol=None,regime=None,horizon=None,tags=None,limit=12):
     out.sort(key=lambda x:(x['similarity'],x['created_at']),reverse=True);return out[:max(1,int(limit))]
 
 def refresh_memory_stats():
-    init_decision_memory_db();c=con();rows=c.execute('select agent_id,symbol,horizon,regime,confidence,outcome from decision_episodes where outcome is not null').fetchall();groups={}
-    for aid,sym,hor,reg,conf,outcome in rows:
+    init_decision_memory_db();c=con();rows=c.execute('select agent_id,symbol,horizon,regime,action,confidence,outcome from decision_episodes where outcome is not null').fetchall();groups={}
+    for aid,sym,hor,reg,action,conf,outcome in rows:
         reward=_reward(outcome)
         if reward is None:continue
-        for scope,key in [('agent',aid),('symbol',sym),('horizon',hor),('regime',reg)]:
+        keys=[('agent',aid),('symbol',sym),('horizon',hor),('regime',reg),('action',action)]
+        if aid and action:keys.append(('agent_action',str(aid)+'|'+str(action)))
+        if aid and hor:keys.append(('agent_horizon',str(aid)+'|'+str(hor)))
+        if aid and reg:keys.append(('agent_regime',str(aid)+'|'+str(reg)))
+        for scope,key in keys:
             if key is not None:groups.setdefault((scope,str(key)),[]).append((reward,float(conf or 0)))
     stamp=now()
     for (scope,key),vals in groups.items():
@@ -72,5 +75,24 @@ def refresh_memory_stats():
           on conflict(scope,key) do update set created_at=excluded.created_at,n=excluded.n,mean_reward=excluded.mean_reward,hit_rate=excluded.hit_rate,mean_confidence=excluded.mean_confidence,calibration_error=excluded.calibration_error,metadata=excluded.metadata''',(stamp,scope,key,len(vals),sum(rewards)/len(rewards),hit,mc,cal,'{}'))
     c.commit();c.close();return len(groups)
 
+def calibration_profile(agent_id='champion',action=None,horizon=None,regime=None):
+    """Return best available evaluated-memory calibration profile, never unevaluated guesses."""
+    refresh_memory_stats(); init_decision_memory_db(); c=con()
+    candidates=[]
+    if agent_id and action:candidates.append(('agent_action',str(agent_id)+'|'+str(action),5))
+    if agent_id and horizon:candidates.append(('agent_horizon',str(agent_id)+'|'+str(horizon),4))
+    if agent_id and regime:candidates.append(('agent_regime',str(agent_id)+'|'+str(regime),3))
+    if agent_id:candidates.append(('agent',str(agent_id),2))
+    if action:candidates.append(('action',str(action),1))
+    best=None
+    for scope,key,priority in candidates:
+        r=c.execute('select n,mean_reward,hit_rate,mean_confidence,calibration_error,created_at from decision_memory_stats where scope=? and key=?',(scope,key)).fetchone()
+        if not r:continue
+        item={'scope':scope,'key':key,'n':int(r[0] or 0),'mean_reward':r[1],'hit_rate':r[2],'mean_confidence':r[3],'calibration_error':r[4],'updated_at':r[5],'priority':priority}
+        if best is None or (item['n']>=8 and best['n']<8) or (item['n']>=8 and priority>best['priority']) or (best['n']<8 and item['n']>best['n']):best=item
+    c.close()
+    if not best:return {'scope':'none','key':None,'n':0,'mean_reward':None,'hit_rate':None,'mean_confidence':None,'calibration_error':None,'updated_at':None,'priority':0}
+    best.pop('priority',None);return best
+
 def memory_health():
-    init_decision_memory_db();c=con();row=c.execute('select count(*),sum(case when outcome is not null then 1 else 0 end),min(created_at),max(created_at) from decision_episodes').fetchone();stats=c.execute('select scope,key,n,mean_reward,hit_rate,calibration_error from decision_memory_stats order by n desc limit 20').fetchall();c.close();return {'episodes':row[0] or 0,'evaluated':row[1] or 0,'first':row[2],'last':row[3],'stats':[{'scope':r[0],'key':r[1],'n':r[2],'mean_reward':r[3],'hit_rate':r[4],'calibration_error':r[5]} for r in stats],'real_trading':False}
+    init_decision_memory_db();c=con();row=c.execute('select count(*),sum(case when outcome is not null then 1 else 0 end),min(created_at),max(created_at) from decision_episodes').fetchone();stats=c.execute('select scope,key,n,mean_reward,hit_rate,calibration_error from decision_memory_stats order by n desc limit 30').fetchall();c.close();return {'episodes':row[0] or 0,'evaluated':row[1] or 0,'first':row[2],'last':row[3],'stats':[{'scope':r[0],'key':r[1],'n':r[2],'mean_reward':r[3],'hit_rate':r[4],'calibration_error':r[5]} for r in stats],'real_trading':False}

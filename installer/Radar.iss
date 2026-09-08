@@ -25,6 +25,7 @@ Source: "..\dist\RadarUpdater.exe"; DestDir: "{app}"; Flags: ignoreversion resta
 Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
 Name: "{autodesktop}\Investment Intelligence Radar"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{autodesktop}\Investment Radar - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Investment Intelligence Radar"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Investment Intelligence Radar - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 [Run]
