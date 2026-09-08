@@ -14,6 +14,7 @@ from radar_learning import init_learning_db, capture_predictions, evaluate_predi
 from radar_learning_guarded import run_guarded_cycle, learning_health
 from radar_historical_lab import run_historical_lab, historical_lab_health, init_historical_lab_db
 from radar_brain_evolution import init_brain_db, brain_dashboard
+from radar_forward_ledger import init_forward_ledger, freeze_new_predictions, ledger_status
 from radar_dashboard_v2 import dashboard_payload as intelligence_dashboard
 from radar_causal import build_causal_graph, graph_summary, symbol_causal_summary
 from radar_benchmark import benchmark_agents
@@ -60,7 +61,11 @@ class MobileHandler(BaseHandler):
         if static:self._send_static(*static);return
         if path in ('/learning','/dashboard-v2','/intelligence-v2'):
             try:
-                payload=intelligence_dashboard();payload['historical_lab']=historical_lab_health(8);payload['brain_evolution']=brain_dashboard(30);self._send(200,payload)
+                payload=intelligence_dashboard();payload['historical_lab']=historical_lab_health(8);payload['brain_evolution']=brain_dashboard(30);payload['forward_ledger']=ledger_status();self._send(200,payload)
+            except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
+            return
+        if path=='/forward-ledger':
+            try:self._send(200,ledger_status())
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         if path=='/brain-evolution':
@@ -69,7 +74,7 @@ class MobileHandler(BaseHandler):
             return
         if path=='/learning-health':
             try:
-                payload=learning_health();payload['historical_lab']=historical_lab_health(8);payload['brain_evolution']=brain_dashboard(30);self._send(200,payload)
+                payload=learning_health();payload['historical_lab']=historical_lab_health(8);payload['brain_evolution']=brain_dashboard(30);payload['forward_ledger']=ledger_status();self._send(200,payload)
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         if path=='/historical-lab':
@@ -137,15 +142,15 @@ def learning_sync_loop():
 
 
 def learning_loop():
-    init_learning_db();init_historical_lab_db();init_brain_db();next_eval=time.time()+15;next_full=time.time()+25;next_hist=time.time()+40
-    print('[learning] live + evolutionary historical champion/challenger + epistemic brain layer enabled; real trading OFF',flush=True)
+    init_learning_db();init_historical_lab_db();init_brain_db();init_forward_ledger();next_eval=time.time()+15;next_full=time.time()+25;next_hist=time.time()+40
+    print('[learning] live + evolutionary historical champion/challenger + immutable forward ledger enabled; real trading OFF',flush=True)
     while True:
         t=time.time()
         try:
             if t>=next_eval:
-                evaluated=evaluate_predictions();created=capture_predictions(False);edges=build_causal_graph(168);write_status(learning_status='OK',learning_evaluated=evaluated,learning_predictions=created,causal_edges_created=edges,learning_last_eval=now());next_eval=t+1800
+                evaluated=evaluate_predictions();frozen=freeze_new_predictions();edges=build_causal_graph(168);write_status(learning_status='OK',learning_evaluated=evaluated,learning_predictions=frozen.get('added',0),forward_ledger=ledger_status(),causal_edges_created=edges,learning_last_eval=now());next_eval=t+1800
             if t>=next_full:
-                result=run_guarded_cycle(False);dims=evaluate_source_dimensions();audit=run_integrity_audit();bench=benchmark_agents();write_status(learning_status='OK',learning_cycle=result,source_dimensions=len(dims),audit_v15=audit['summary'],benchmark_agents=len(bench),learning_last_full=now());print('[learning] guarded live cycle '+json.dumps({'core':result,'source_dimensions':len(dims),'audit':audit['summary'],'benchmarks':len(bench)},ensure_ascii=False)[:2600],flush=True);next_full=t+21600
+                result=run_guarded_cycle(False);dims=evaluate_source_dimensions();audit=run_integrity_audit();bench=benchmark_agents();write_status(learning_status='OK',learning_cycle=result,source_dimensions=len(dims),audit_v15=audit['summary'],benchmark_agents=len(bench),learning_last_full=now());print('[learning] guarded live cycle '+json.dumps({'core':result,'source_dimensions':len(dims),'audit':audit['summary'],'benchmarks':len(bench),'forward_ledger':ledger_status()},ensure_ascii=False)[:3000],flush=True);next_full=t+21600
             if t>=next_hist:
                 hist=run_historical_lab(promote=True);write_status(historical_lab='OK',historical_lab_last=hist,historical_lab_at=now());print('[historical-lab] '+json.dumps(hist,ensure_ascii=False)[:2600],flush=True);next_hist=t+43200
         except Exception as exc:print('[learning] ERROR '+repr(exc),flush=True);write_status(learning_status='ERROR',learning_error=str(exc)[:700]);next_hist=max(next_hist,time.time()+1800)
