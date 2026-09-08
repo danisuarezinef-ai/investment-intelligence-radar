@@ -7,6 +7,7 @@ from radar_simulation_v2 import simulation_summary, replay_historical
 from radar_decision_memory_v2 import memory_health
 from radar_learning_v2 import learning_v2_health
 from radar_meta_decision_v2 import champion_decision
+from radar_champion_portfolio import champion_status, reset_champion
 from radar_runtime_v2 import safe_fast_cycle, safe_deep_cycle
 
 REAL_TRADING=False
@@ -26,13 +27,13 @@ class Lab:
         root.title('Investment Intelligence Radar · Simulation Lab'); root.geometry('1280x900'); root.minsize(1020,700); root.configure(bg=BG)
         cv=tk.Canvas(root,bg=BG,highlightthickness=0); sb=tk.Scrollbar(root,orient='vertical',command=cv.yview); cv.configure(yscrollcommand=sb.set); sb.pack(side='right',fill='y'); cv.pack(side='left',fill='both',expand=True)
         self.main=tk.Frame(cv,bg=BG,padx=24,pady=20); wid=cv.create_window((0,0),window=self.main,anchor='nw'); cv.bind('<Configure>',lambda e:cv.itemconfigure(wid,width=e.width)); self.main.bind('<Configure>',lambda e:cv.configure(scrollregion=cv.bbox('all')))
-        self.build(); ensure_agents(); self.refresh(); root.after(5000,self.tick)
+        self.build(); ensure_agents(); champion_status(); self.refresh(); root.after(5000,self.tick)
     def build(self):
         lbl(self.main,'Simulation Lab',size=24,bold=True).pack(anchor='w'); lbl(self.main,f'5 agentes + Champion adaptativo · Windows v{APP_VERSION} · TRADING REAL OFF',MUTED,10).pack(anchor='w',pady=(0,12))
         c=card(self.main); c.pack(fill='x',pady=(0,10)); lbl(c,'Control de simulación',size=12,bold=True).pack(side='left'); self.status=tk.StringVar(value='Listo'); tk.Label(c,textvariable=self.status,bg=PANEL,fg=CYAN,font=('Segoe UI',9,'bold')).pack(side='left',padx=14)
-        for text,cmd in [('DECIDIR AHORA',self.fast),('APRENDIZAJE PROFUNDO',self.deep),('REINICIAR 200 € / AGENTE',self.reset)]: tk.Button(c,text=text,command=cmd,bg=BLUE if text=='DECIDIR AHORA' else PANEL2,fg='white',relief='flat',bd=0,padx=12,pady=7).pack(side='right',padx=4)
-        ch=card(self.main); ch.pack(fill='x',pady=(0,10)); lbl(ch,'Champion adaptativo',size=13,bold=True).pack(anchor='w'); self.champion=tk.StringVar(value='—'); self.chdetail=tk.StringVar(value='—'); tk.Label(ch,textvariable=self.champion,bg=PANEL,fg=GREEN,font=('Segoe UI',16,'bold')).pack(anchor='w',pady=(6,2)); tk.Label(ch,textvariable=self.chdetail,bg=PANEL,fg=MUTED,font=('Segoe UI',9),wraplength=1120,justify='left').pack(anchor='w')
-        a=card(self.main); a.pack(fill='x',pady=(0,10)); lbl(a,'Agentes simulados',size=13,bold=True).pack(anchor='w'); cols=('agente','total','pnl','invertido','drawdown','sharpe','trades'); self.tree=ttk.Treeview(a,columns=cols,show='headings',height=6)
+        for text,cmd in [('DECIDIR AHORA',self.fast),('APRENDIZAJE PROFUNDO',self.deep),('REINICIAR TODO 200 €',self.reset)]: tk.Button(c,text=text,command=cmd,bg=BLUE if text=='DECIDIR AHORA' else PANEL2,fg='white',relief='flat',bd=0,padx=12,pady=7).pack(side='right',padx=4)
+        ch=card(self.main); ch.pack(fill='x',pady=(0,10)); lbl(ch,'Champion adaptativo',size=13,bold=True).pack(anchor='w'); self.champion=tk.StringVar(value='—'); self.chdetail=tk.StringVar(value='—'); self.chportfolio=tk.StringVar(value='—'); tk.Label(ch,textvariable=self.champion,bg=PANEL,fg=GREEN,font=('Segoe UI',16,'bold')).pack(anchor='w',pady=(6,2)); tk.Label(ch,textvariable=self.chportfolio,bg=PANEL,fg=TEXT,font=('Segoe UI',10,'bold')).pack(anchor='w',pady=(0,2)); tk.Label(ch,textvariable=self.chdetail,bg=PANEL,fg=MUTED,font=('Segoe UI',9),wraplength=1120,justify='left').pack(anchor='w')
+        a=card(self.main); a.pack(fill='x',pady=(0,10)); lbl(a,'Agentes simulados + Champion',size=13,bold=True).pack(anchor='w'); cols=('agente','total','pnl','invertido','drawdown','sharpe','trades'); self.tree=ttk.Treeview(a,columns=cols,show='headings',height=7)
         for c,h,w in [('agente','Agente',180),('total','Capital',110),('pnl','P/L',110),('invertido','Invertido',110),('drawdown','Max DD',100),('sharpe','Sharpe',90),('trades','Operaciones',90)]: self.tree.heading(c,text=h); self.tree.column(c,width=w,anchor='w' if c=='agente' else 'center')
         self.tree.pack(fill='x',pady=(8,0))
         s=card(self.main); s.pack(fill='x',pady=(0,10)); lbl(s,'Forward Simulation v2',size=12,bold=True).pack(anchor='w'); self.simtxt=tk.StringVar(value='—'); tk.Label(s,textvariable=self.simtxt,bg=PANEL,fg=TEXT,font=('Segoe UI',10),wraplength=1120,justify='left').pack(anchor='w',pady=(5,0))
@@ -55,16 +56,19 @@ class Lab:
         self.refresh()
     def fast(self): self.run('Decisión',safe_fast_cycle)
     def deep(self): self.run('Aprendizaje profundo',safe_deep_cycle)
-    def reset(self): self.run('Reinicio',lambda:reset_agents(200.0))
+    def reset(self):
+        def job(): reset_agents(200.0); reset_champion(200.0); return True
+        self.run('Reinicio',job)
     def replay(self): self.run('Replay histórico',lambda:replay_historical(self.start.get().strip() or None,self.end.get().strip() or None,float(self.cash.get().replace(',','.'))))
     def refresh(self):
         try:
-            sts=agents_status(); sim=simulation_summary(); mem=memory_health(); learn=learning_v2_health(); smap={x.get('agent_id'):x for x in sim.get('agents',[])}
+            sts=agents_status(); sim=simulation_summary(); mem=memory_health(); learn=learning_v2_health(); cp=champion_status(); smap={x.get('agent_id'):x for x in sim.get('agents',[])}
             for i in self.tree.get_children():self.tree.delete(i)
             for a in sts:
                 s=smap.get(a.get('agent_id'),{}); self.tree.insert('', 'end', values=(a.get('name','?'),fmt(a.get('total'),2,' €'),fmt(a.get('pnl_pct'),2,'%'),fmt(a.get('invested'),2,' €'),fmt(s.get('max_drawdown_pct',a.get('max_drawdown_pct')),2,'%'),fmt(s.get('sharpe',a.get('sharpe')),2),s.get('trades',len(a.get('trades',[])))))
-            leader=sim.get('leader') or {}; self.simtxt.set(f"Run {sim.get('run_id','—')} · {sim.get('status','—')} · líder {leader.get('name','—')} · retorno {fmt(leader.get('return_pct'),2,'%')} · alpha {fmt(leader.get('alpha_pct'),2,'%')} · costes {fmt(leader.get('costs'),2,' €')}")
-            d=champion_decision(record=False); top=(d.get('candidates') or [{}])[0]; self.champion.set(f"{d.get('action','ABSTAIN')} · {d.get('symbol') or '—'} · confianza {fmt((d.get('confidence') or 0)*100,1,'%')}"); self.chdetail.set(f"Score Champion {fmt(top.get('champion_score'),3)} · consenso {fmt(top.get('consensus'),3)} · desacuerdo {fmt(d.get('disagreement'),3)} · memoria n={top.get('memory_n',0)} · ABSTAIN habilitado")
+            self.tree.insert('', 'end', values=('CHAMPION',fmt(cp.get('total'),2,' €'),fmt(cp.get('pnl_pct'),2,'%'),fmt(cp.get('invested'),2,' €'),fmt(cp.get('max_drawdown_pct'),2,'%'),fmt(cp.get('sharpe'),2),len(cp.get('trades',[]))))
+            leader=sim.get('leader') or {}; self.simtxt.set(f"Run {sim.get('run_id','—')} · {sim.get('status','—')} · líder 5 agentes {leader.get('name','—')} · retorno {fmt(leader.get('return_pct'),2,'%')} · alpha {fmt(leader.get('alpha_pct'),2,'%')} · costes {fmt(leader.get('costs'),2,' €')}")
+            d=champion_decision(record=False); top=(d.get('candidates') or [{}])[0]; self.champion.set(f"{d.get('action','ABSTAIN')} · {d.get('symbol') or '—'} · confianza {fmt((d.get('confidence') or 0)*100,1,'%')}"); self.chportfolio.set(f"Cartera Champion {fmt(cp.get('total'),2,' €')} · P/L {fmt(cp.get('pnl_pct'),2,'%')} · efectivo {fmt(cp.get('cash'),2,' €')} · invertido {fmt(cp.get('invested'),2,' €')} · DD {fmt(cp.get('max_drawdown_pct'),2,'%')}"); self.chdetail.set(f"Score Champion {fmt(top.get('champion_score'),3)} · consenso {fmt(top.get('consensus'),3)} · desacuerdo {fmt(d.get('disagreement'),3)} · memoria n={top.get('memory_n',0)} · ABSTAIN habilitado")
             mstats=mem.get('stats') or []; ms=next((x for x in mstats if x.get('scope')=='agent' and x.get('key')=='champion'),mstats[0] if mstats else {})
             self.memtxt.set(f"Episodios {mem.get('episodes',0)} · evaluados {mem.get('evaluated',0)} · hit-rate {fmt(ms.get('hit_rate'),3)} · recompensa media {fmt(ms.get('mean_reward'),3)} · error calibración {fmt(ms.get('calibration_error'),3)}")
             skills=learn.get('skills') or []; top_skill=skills[0] if skills else {}; last=learn.get('last_cycle') or {}; self.learntxt.set(f"Último ciclo {last.get('status','—')} · habilidades registradas {len(skills)} · líder {top_skill.get('agent_id','—')} · score {fmt(top_skill.get('score'),3)} · n={top_skill.get('n','—')} · hit-rate {fmt(top_skill.get('hit_rate'),3)}")
@@ -73,5 +77,5 @@ class Lab:
         if not self.busy:self.refresh()
         self.root.after(5000,self.tick)
 
-def main(): ensure_agents(); r=tk.Tk(); Lab(r); r.mainloop()
+def main(): ensure_agents(); champion_status(); r=tk.Tk(); Lab(r); r.mainloop()
 if __name__=='__main__': main()
