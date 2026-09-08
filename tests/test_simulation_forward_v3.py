@@ -14,6 +14,10 @@ def _tmp(tmp_path,monkeypatch):
     radar_core.init_db(); radar_agents.ensure_agents(reset=True,initial_cash=200); sf.init_forward_v3_db(); dm.init_decision_memory_db()
 
 
+def _backdate_episode(eid):
+    c=radar_core.con(); c.execute("update decision_episodes set created_at=? where episode_id=?",('2026-01-01T00:00:00+00:00',eid)); c.commit(); c.close()
+
+
 def test_forward_trade_import_is_idempotent_and_benchmark_is_recorded(tmp_path,monkeypatch):
     _tmp(tmp_path,monkeypatch)
     prices={'MSFT':100.0,'NVDA':50.0}
@@ -37,6 +41,7 @@ def test_forward_trade_import_is_idempotent_and_benchmark_is_recorded(tmp_path,m
 def test_abstain_episode_learns_avoided_loss(tmp_path,monkeypatch):
     _tmp(tmp_path,monkeypatch)
     eid=dm.record_episode(agent_id='champion',symbol=None,horizon='1d',regime='mixed',state={},evidence={},hypothesis={'top':{'symbol':'MSFT'}},action='ABSTAIN',confidence=.7,tags=['champion'])
+    _backdate_episode(eid)
     c=radar_core.con()
     c.execute("insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)",('2026-01-01T10:00:00+00:00','MSFT',100,None,'test'))
     c.execute("insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)",('2026-01-02T10:00:00+00:00','MSFT',90,None,'test'))
@@ -54,6 +59,7 @@ def test_abstain_episode_learns_avoided_loss(tmp_path,monkeypatch):
 def test_abstain_penalizes_material_missed_gain(tmp_path,monkeypatch):
     _tmp(tmp_path,monkeypatch)
     eid=dm.record_episode(agent_id='champion',symbol=None,horizon='1d',regime='mixed',state={'x':1},evidence={},hypothesis={'top':{'symbol':'MSFT'}},action='ABSTAIN',confidence=.7,tags=['champion'])
+    _backdate_episode(eid)
     c=radar_core.con()
     c.execute("insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)",('2026-01-01T10:00:00+00:00','MSFT',100,None,'test'))
     c.execute("insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)",('2026-01-02T10:00:00+00:00','MSFT',110,None,'test'))
