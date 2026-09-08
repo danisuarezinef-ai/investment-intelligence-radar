@@ -1,6 +1,7 @@
 import json, os, urllib.request, urllib.error
 from radar_core import con, init_db
 from radar_learning import init_learning_db
+from radar_learning_guarded import init_guarded_learning_db
 from radar_reputation_v2 import init_reputation_v2_db
 
 SYNC_URL=os.environ.get('SUPABASE_LEARNING_SYNC_URL','').strip()
@@ -10,6 +11,7 @@ TABLES={
  'predictions':['id','created_at','symbol','horizon','model_version','score','confidence','entry_price','thesis','features','regime','source_snapshot'],
  'prediction_outcomes':['rowid','prediction_id','horizon','evaluated_at','exit_price','return_pct','benchmark_return_pct','excess_return_pct','hit','calibration_error','metadata'],
  'learning_cycles':['id','created_at','prior_version','new_version','observations','objective_before','objective_after','accepted','weight_delta','calibration','notes'],
+ 'model_evaluations':['id','created_at','model_version','evaluation_role','sample_start','sample_end','observations','hit_rate','brier','signed_return','objective','metadata'],
  'market_regimes':['id','ts','regime','confidence','features','model_version'],
  'causal_edges':['id','created_at','source_node','relation','target_node','depth','confidence','evidence_event_id','horizon','metadata'],
  'thesis_history':['id','ts','symbol','horizon','model_version','score','confidence','status','thesis','change_reason','trigger_event_ids'],
@@ -42,7 +44,7 @@ def _decode(k,v):
 
 def sync_learning_once(batch=750):
  if not enabled():return {'enabled':False}
- init_db();init_learning_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
+ init_db();init_learning_db();init_guarded_learning_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
  rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
  for table,cols in TABLES.items():
   key='learning_sync_'+table;after=_get(key);idcol='rowid' if table=='prediction_outcomes' else 'id';q=f"select {','.join(cols)} from {table} where {idcol}>? order by {idcol} limit ?";rs=c.execute(q,(after,batch)).fetchall();out=[]
