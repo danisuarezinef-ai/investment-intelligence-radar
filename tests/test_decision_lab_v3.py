@@ -7,8 +7,8 @@ from radar_market_context_v2 import narrative_saturation,cross_asset_confirmatio
 from radar_stress_v2 import stress_portfolio
 
 def test_prediction_outcome_is_single_assignment():
- db=sqlite3.connect(':memory:');init_memory(db);pid=freeze_prediction(db,{'symbol':'X','horizon':'1d','target_date':'2026-01-02','model_version':'v'})
- evaluate_prediction(db,pid,{'return':.01})
+ db=sqlite3.connect(':memory:');init_memory(db);clock=lambda:'2026-01-01T12:00:00+00:00';pid=freeze_prediction(db,{'symbol':'X','horizon':'1d','target_date':'2026-01-02T12:00:00+00:00','model_version':'v','provenance_snapshot':{'lookahead':False}},clock=clock)
+ evaluate_prediction(db,pid,{'return':.01},'2026-01-02T12:00:00+00:00')
  with pytest.raises(ValueError):evaluate_prediction(db,pid,{'return':-.2})
 
 def test_research_queue_prefers_value_of_information():

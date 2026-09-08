@@ -20,6 +20,7 @@ from radar_benchmark import benchmark_agents
 from radar_scoring_v2 import lists_369_v2, multihorizon_rankings
 from radar_reputation_v2 import evaluate_source_dimensions, top_source_dimensions
 from radar_audit_v15 import run_integrity_audit
+from radar_forward_engine import start_forward_ledger,capture_forward_predictions,mature_forward_outcomes,forward_health
 
 write_status=install_safe_status(run_worker)
 
@@ -65,6 +66,10 @@ class MobileHandler(BaseHandler):
             return
         if path=='/brain-evolution':
             try:self._send(200,brain_dashboard(100))
+            except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
+            return
+        if path=='/forward-evidence':
+            try:self._send(200,forward_health())
             except Exception as exc:self._send(500,{'ok':False,'error':str(exc)[:800]})
             return
         if path=='/learning-health':
@@ -138,12 +143,17 @@ def learning_sync_loop():
 
 def learning_loop():
     init_learning_db();init_historical_lab_db();init_brain_db();next_eval=time.time()+15;next_full=time.time()+25;next_hist=time.time()+40
+    try:
+        gates=json.loads(os.environ.get('SHADOW_FORWARD_RELEASE_GATES','{}'))
+    except Exception:gates={}
+    forward_start=start_forward_ledger(gates)
+    print('[forward] '+json.dumps(forward_start,ensure_ascii=False),flush=True)
     print('[learning] live + evolutionary historical champion/challenger + epistemic brain layer enabled; real trading OFF',flush=True)
     while True:
         t=time.time()
         try:
             if t>=next_eval:
-                evaluated=evaluate_predictions();created=capture_predictions(False);edges=build_causal_graph(168);write_status(learning_status='OK',learning_evaluated=evaluated,learning_predictions=created,causal_edges_created=edges,learning_last_eval=now());next_eval=t+1800
+                evaluated=evaluate_predictions();created=capture_predictions(False);forward_created=capture_forward_predictions();forward_matured=mature_forward_outcomes();edges=build_causal_graph(168);write_status(learning_status='OK',learning_evaluated=evaluated,learning_predictions=created,forward_created=forward_created,forward_matured=forward_matured,causal_edges_created=edges,learning_last_eval=now());next_eval=t+1800
             if t>=next_full:
                 result=run_guarded_cycle(False);dims=evaluate_source_dimensions();audit=run_integrity_audit();bench=benchmark_agents();write_status(learning_status='OK',learning_cycle=result,source_dimensions=len(dims),audit_v15=audit['summary'],benchmark_agents=len(bench),learning_last_full=now());print('[learning] guarded live cycle '+json.dumps({'core':result,'source_dimensions':len(dims),'audit':audit['summary'],'benchmarks':len(bench)},ensure_ascii=False)[:2600],flush=True);next_full=t+21600
             if t>=next_hist:

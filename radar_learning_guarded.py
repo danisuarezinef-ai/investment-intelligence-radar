@@ -84,17 +84,18 @@ def guarded_learn(min_observations=MIN_OBSERVATIONS):
     _record_eval(model['version'],'champion_holdout',valid,before,{'weights':current})
     _record_eval(model['version']+'-challenger','challenger_holdout',valid,after,{'weights':proposed,'deltas':deltas})
     gain=after['objective']-before['objective']
-    accepted=(gain>=MIN_OBJECTIVE_GAIN and after['hit_rate']>=before['hit_rate'] and train_after['objective']>=train_before['objective']-0.01 and sum(abs(v) for v in deltas.values())<=MAX_TOTAL_STEP+1e-9)
+    qualified=(gain>=MIN_OBJECTIVE_GAIN and after['hit_rate']>=before['hit_rate'] and train_after['objective']>=train_before['objective']-0.01 and sum(abs(v) for v in deltas.values())<=MAX_TOTAL_STEP+1e-9)
+    accepted=False
     new_version=model['version']
-    if accepted:
+    if qualified:
         parts=model['version'].split('.')
         try:new_version=f"{parts[0]}.{parts[1]}.{int(parts[2])+1}"
         except Exception:new_version=model['version']+'-next'
-        c=con();c.execute("update model_versions set status='retired' where status='active'");c.execute('''insert into model_versions(version,created_at,parent_version,status,weights,metrics,notes)
-          values(?,?,?,?,?,?,?)''',(new_version,now(),model['version'],'active',json.dumps(proposed),json.dumps({'validation':after,'training':train_after,'gain':gain}),'Champion/challenger update accepted only after chronological holdout improvement'));c.commit();c.close()
+        c=con();c.execute('''insert or ignore into model_versions(version,created_at,parent_version,status,weights,metrics,notes)
+          values(?,?,?,?,?,?,?)''',(new_version,now(),model['version'],'shadow',json.dumps(proposed),json.dumps({'validation':after,'training':train_after,'gain':gain}),'Shadow candidate only; operational promotion requires Brain live gate'));c.commit();c.close()
     c=con();c.execute('''insert into learning_cycles(created_at,prior_version,new_version,observations,objective_before,objective_after,accepted,weight_delta,calibration,notes)
       values(?,?,?,?,?,?,?,?,?,?)''',(now(),model['version'],new_version,len(rows),before['objective'],after['objective'],1 if accepted else 0,json.dumps(deltas),json.dumps({'validation_before':before,'validation_after':after}),'Chronological holdout; bounded step; no real trading'));c.commit();c.close()
-    return {'accepted':accepted,'n':len(rows),'train_n':len(train),'validation_n':len(valid),'prior_version':model['version'],'new_version':new_version,'objective_before':before['objective'],'objective_after':after['objective'],'gain':gain,'validation_before':before,'validation_after':after,'deltas':deltas}
+    return {'accepted':accepted,'shadow_qualified':qualified,'n':len(rows),'train_n':len(train),'validation_n':len(valid),'prior_version':model['version'],'new_version':new_version,'objective_before':before['objective'],'objective_after':after['objective'],'gain':gain,'validation_before':before,'validation_after':after,'deltas':deltas}
 
 
 def run_guarded_cycle(force_predictions=False):

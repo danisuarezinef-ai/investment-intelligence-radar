@@ -5,6 +5,7 @@ from radar_scoring_v2 import lists_369_v2
 from radar_benchmark import benchmark_agents
 from radar_reputation_v2 import top_source_dimensions
 from radar_causal import graph_summary
+from radar_forward_engine import forward_health
 
 
 def _portfolio_snapshot(c, horizon='1m'):
@@ -36,5 +37,5 @@ def dashboard_payload():
       'learning_cycles':[{'ts':r[0],'prior':r[1],'new':r[2],'n':r[3],'accepted':bool(r[4])} for r in cycles],
       'weak_signals':[{'topic':r[0],'strength':r[1],'sources':r[2],'explanation':r[3],'ts':r[4]} for r in weak],
       'audit':[{'component':r[0],'test':r[1],'status':r[2],'detail':r[3],'ts':r[4]} for r in audits],
-      'backtest':backtest_point_in_time()[:8],'benchmarks':benchmark_agents(),'source_dimensions':top_source_dimensions(20),'causal_summary':graph_summary(),'trading_real':False,
+      'backtest':backtest_point_in_time()[:8],'benchmarks':benchmark_agents(),'source_dimensions':top_source_dimensions(20),'causal_summary':graph_summary(),'forward_evidence':forward_health(),'trading_real':False,
     }

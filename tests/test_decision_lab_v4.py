@@ -23,3 +23,8 @@ def test_pit_membership_requires_known_at():
  rows=[{'asset':'A','valid_from':'2020','valid_to':None,'known_at':'2025'}];assert pit_membership('A','2024',rows) is False
 def test_regret_is_hindsight_labelled():assert regret(-.1,.2)['hindsight_only'] is True
 def test_real_trading_off():assert REAL_TRADING is False
+def test_missing_bottleneck_data_is_not_zero():
+ x=bottleneck_score(None,.2,.8);assert x['status']=='MISSING_DATA' and x['score'] is None
+def test_high_conviction_requires_red_team():
+ assert red_team_gate(.9,[])['pass'] is False
+ assert red_team_gate(.9,[{'severity':.2,'plausibility':.5}])['pass'] is True
