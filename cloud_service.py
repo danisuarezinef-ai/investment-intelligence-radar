@@ -6,7 +6,8 @@ import time
 import urllib.parse
 
 import run_worker
-from radar_core import con, fetch, init_db, log, now, write_status
+from radar_core import con, fetch, init_db, log, now
+from radar_status_safe import install as install_safe_status
 from radar_supabase_sync import enabled as supabase_sync_enabled, sync_once, _post as forward_supabase
 from radar_learning_sync import enabled as learning_sync_enabled, sync_learning_once
 from radar_learning import init_learning_db, capture_predictions, evaluate_predictions, backtest_point_in_time, calibration_summary
@@ -17,6 +18,8 @@ from radar_benchmark import benchmark_agents
 from radar_scoring_v2 import lists_369_v2, multihorizon_rankings
 from radar_reputation_v2 import evaluate_source_dimensions, top_source_dimensions
 from radar_audit_v15 import run_integrity_audit
+
+write_status=install_safe_status(run_worker)
 
 
 def collect_science_safe():
