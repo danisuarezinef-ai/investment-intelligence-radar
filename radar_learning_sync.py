@@ -4,6 +4,7 @@ from radar_learning import init_learning_db
 from radar_learning_guarded import init_guarded_learning_db
 from radar_historical_lab import init_historical_lab_db
 from radar_reputation_v2 import init_reputation_v2_db
+from radar_brain_evolution import init_brain_db
 
 SYNC_URL=os.environ.get('SUPABASE_LEARNING_SYNC_URL','').strip()
 SYNC_TOKEN=os.environ.get('RADAR_SYNC_TOKEN','').strip()
@@ -22,9 +23,20 @@ TABLES={
  'source_reputation_dimensions':['id','source','topic','horizon','observations','actionable','hit_rate','avg_abs_move','lead_score','noise_penalty','score','updated_at','metadata'],
  'historical_lab_runs':['id','created_at','base_model','candidate_version','symbols','observations','folds','positive_folds','mean_gain','median_gain','test_objective_champion','test_objective_challenger','accepted','promoted','candidate_weights','metadata'],
  'historical_fold_results':['id','run_id','fold_no','train_start','train_end','validation_start','validation_end','observations_train','observations_validation','champion_objective','challenger_objective','gain','challenger_weights','metadata'],
+ 'historical_challenger_results':['id','run_id','challenger_name','folds','positive_folds','mean_gain','median_gain','vault_objective','vault_gain','rank_score','selected','weights','metadata'],
+ 'brain_lineages':['id','created_at','lineage','parent','generation','specialist_regime','weights','status','reason','metrics','family','mutation','specialization','training_method','features','updated_at'],
+ 'brain_evidence':['id','created_at','lineage','tier','regime','horizon','n','objective','hit_rate','drawdown','score','metadata','evidence_key'],
+ 'brain_transfer':['id','created_at','lineage','historical_score','live_score','transfer_ratio','n_live','regime','horizon','metadata'],
+ 'brain_meta_methods':['id','method','trials','historical_wins','live_wins','transfer_mean','last_seen','metadata'],
+ 'brain_vault_registry':['id','vault_key','start_date','end_date','vault_type','status','opens','last_opened','candidate_evaluated','result','reuse_penalty','metadata'],
+ 'brain_vault_events':['id','created_at','vault_key','lineage','action','purpose','result','epistemic_penalty'],
+ 'brain_hall_of_fame':['id','created_at','lineage','category','reason','score','metadata'],
+ 'brain_graveyard':['id','created_at','lineage','reason','failed_regime','failed_horizon','score','metadata'],
+ 'brain_shadow_predictions':['id','prediction_key','created_at','lineage','symbol','horizon','cutoff','due_at','score','confidence','features','provenance','outcome','evaluated_at'],
+ 'brain_generation_runs':['id','created_at','generation','champion','candidates_tested','candidates_surviving','status','configuration','result'],
 }
-JSON_FIELDS={'features','source_snapshot','metadata','weight_delta','calibration','trigger_event_ids','evidence','metrics','candidate_weights','challenger_weights'}
-BOOL_FIELDS={'hit','accepted','promoted'}
+JSON_FIELDS={'features','source_snapshot','metadata','weight_delta','calibration','trigger_event_ids','evidence','metrics','candidate_weights','challenger_weights','weights','mutation','specialization','provenance','configuration','result'}
+BOOL_FIELDS={'hit','accepted','promoted','selected'}
 
 def enabled():return bool(SYNC_URL and SYNC_TOKEN)
 def _get(k):
@@ -47,7 +59,7 @@ def _decode(k,v):
 
 def sync_learning_once(batch=750):
  if not enabled():return {'enabled':False}
- init_db();init_learning_db();init_guarded_learning_db();init_historical_lab_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
+ init_db();init_learning_db();init_guarded_learning_db();init_historical_lab_db();init_reputation_v2_db();init_brain_db();payload={'node_id':NODE_ID};c=con();counts={}
  rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions order by created_at,version').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
  for table,cols in TABLES.items():
   key='learning_sync_'+table;idcol='rowid' if table=='prediction_outcomes' else 'id'
@@ -60,7 +72,7 @@ def sync_learning_once(batch=750):
    d={}
    for k,v in zip(cols,r):
     if k in ('rowid','id'):continue
-    if table=='historical_fold_results' and k=='run_id':
+    if table in ('historical_fold_results','historical_challenger_results') and k=='run_id':
      d['run_origin_node']=NODE_ID;d['run_origin_id']=int(v);continue
     d[k]=_decode(k,v)
    origin_id=int(r[0]);d['origin_node']=NODE_ID;d['origin_id']=origin_id;out.append(d)
