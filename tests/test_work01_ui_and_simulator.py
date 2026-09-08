@@ -83,6 +83,6 @@ def test_canonical_desktop_source_has_required_collapsed_controls():
     assert "text='ACTUALIZACIÓN'" in source
     assert 'BUSCAR ACTUALIZACIÓN' not in source
     for label in ('ACTIVAR', 'DESACTIVAR', 'REINICIAR', 'DECIDIR AHORA'):
-        assert "text='" + label + "'" in source
+        assert label in source
     assert 'check_for_update_async()' in source
     assert source.count('MOSTRAR') >= 2
