@@ -3,6 +3,7 @@ from __future__ import annotations
 import json,statistics
 from radar_core import con,init_db,now
 from radar_decision_memory_v2 import refresh_memory_stats,memory_health
+from radar_memory_consolidation_v3 import consolidate_memory,consolidation_health
 from radar_learning_guarded import run_guarded_cycle,learning_health
 from radar_memory_outcomes_v4 import evaluate_mature_episodes_v4
 
@@ -48,15 +49,10 @@ def agent_skill_table(limit=50):
 
 
 def learning_cycle_v2(force_predictions=False,regime='unknown'):
-    init_learning_v2_db()
-    outcomes=evaluate_mature_episodes_v4()
-    memory_groups=refresh_memory_stats()
-    skills=update_agent_skill(regime=regime)
-    guarded=run_guarded_cycle(force_predictions=force_predictions)
-    status='OK' if guarded else 'PARTIAL'; mem=memory_health()
-    c=con();c.execute('insert into meta_learning_cycles(created_at,status,guarded_result,memory_result,agent_skill_result,notes) values(?,?,?,?,?,?)',(now(),status,json.dumps(guarded,default=str),json.dumps({'health':mem,'outcomes':outcomes},default=str),json.dumps({'updated':skills},default=str),'Forward outcomes including ABSTAIN are single-assignment; forward agent skill uses recorded benchmark when available; no cross-run returns; no automatic operational promotion; REAL_TRADING=false'));c.commit();c.close()
-    return {'status':status,'guarded':guarded,'outcomes':outcomes,'memory_groups':memory_groups,'agent_skills_updated':skills,'agent_skill':agent_skill_table(),'real_trading':False}
+    init_learning_v2_db();outcomes=evaluate_mature_episodes_v4();memory_groups=refresh_memory_stats();consolidated=consolidate_memory();skills=update_agent_skill(regime=regime);guarded=run_guarded_cycle(force_predictions=force_predictions);status='OK' if guarded else 'PARTIAL';mem=memory_health();patterns=consolidation_health()
+    c=con();c.execute('insert into meta_learning_cycles(created_at,status,guarded_result,memory_result,agent_skill_result,notes) values(?,?,?,?,?,?)',(now(),status,json.dumps(guarded,default=str),json.dumps({'health':mem,'outcomes':outcomes,'consolidation':consolidated,'patterns':patterns},default=str),json.dumps({'updated':skills},default=str),'Forward outcomes including ABSTAIN are single-assignment; derived memory patterns use Bayesian hit-rate and reward shrinkage; no cross-run returns; no automatic operational promotion; REAL_TRADING=false'));c.commit();c.close()
+    return {'status':status,'guarded':guarded,'outcomes':outcomes,'memory_groups':memory_groups,'memory_consolidation':consolidated,'memory_patterns':patterns,'agent_skills_updated':skills,'agent_skill':agent_skill_table(),'real_trading':False}
 
 
 def learning_v2_health():
-    init_learning_v2_db();c=con();last=c.execute('select created_at,status,notes from meta_learning_cycles order by id desc limit 1').fetchone();c.close();return {'last_cycle':({'ts':last[0],'status':last[1],'notes':last[2]} if last else None),'skills':agent_skill_table(),'guarded':learning_health(),'memory':memory_health(),'real_trading':False}
+    init_learning_v2_db();c=con();last=c.execute('select created_at,status,notes from meta_learning_cycles order by id desc limit 1').fetchone();c.close();return {'last_cycle':({'ts':last[0],'status':last[1],'notes':last[2]} if last else None),'skills':agent_skill_table(),'guarded':learning_health(),'memory':memory_health(),'memory_patterns':consolidation_health(),'real_trading':False}
