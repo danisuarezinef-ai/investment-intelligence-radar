@@ -6,7 +6,7 @@ import radar_forward_benchmark_v2 as fb
 def _tmp(tmp_path,monkeypatch):
     monkeypatch.setattr(radar_core,'DB',str(tmp_path/'radar.db'));radar_core.init_db()
     c=radar_core.con()
-    for j,s in enumerate(radar_core.ASSETS[:8]):
+    for j,s in enumerate(list(radar_core.ASSETS)[:8]):
         c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',('2026-01-01T10:00:00+00:00',s,100+j,None,'TEST'))
         c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',('2026-01-03T10:00:00+00:00',s,(100+j)*1.10,None,'TEST'))
     c.commit();c.close()
