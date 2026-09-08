@@ -2,6 +2,7 @@ import json, os, urllib.request, urllib.error
 from radar_core import con, init_db
 from radar_learning import init_learning_db
 from radar_learning_guarded import init_guarded_learning_db
+from radar_historical_lab import init_historical_lab_db
 from radar_reputation_v2 import init_reputation_v2_db
 
 SYNC_URL=os.environ.get('SUPABASE_LEARNING_SYNC_URL','').strip()
@@ -19,9 +20,11 @@ TABLES={
  'signal_weak_events':['id','created_at','topic','symbol','strength','novelty','cross_source_count','explanation','evidence','status'],
  'audit_events':['id','ts','component','test_name','status','detail','metrics'],
  'source_reputation_dimensions':['id','source','topic','horizon','observations','actionable','hit_rate','avg_abs_move','lead_score','noise_penalty','score','updated_at','metadata'],
+ 'historical_lab_runs':['id','created_at','base_model','candidate_version','symbols','observations','folds','positive_folds','mean_gain','median_gain','test_objective_champion','test_objective_challenger','accepted','promoted','candidate_weights','metadata'],
+ 'historical_fold_results':['id','run_id','fold_no','train_start','train_end','validation_start','validation_end','observations_train','observations_validation','champion_objective','challenger_objective','gain','challenger_weights','metadata'],
 }
-JSON_FIELDS={'features','source_snapshot','metadata','weight_delta','calibration','trigger_event_ids','evidence','metrics'}
-BOOL_FIELDS={'hit','accepted'}
+JSON_FIELDS={'features','source_snapshot','metadata','weight_delta','calibration','trigger_event_ids','evidence','metrics','candidate_weights','challenger_weights'}
+BOOL_FIELDS={'hit','accepted','promoted'}
 
 def enabled():return bool(SYNC_URL and SYNC_TOKEN)
 def _get(k):
@@ -29,7 +32,7 @@ def _get(k):
 def _set(k,v):
  c=con();c.execute('insert into control(key,value) values(?,?) on conflict(key) do update set value=excluded.value',(k,str(v)));c.commit();c.close()
 def _post(p):
- data=json.dumps(p,ensure_ascii=False).encode();req=urllib.request.Request(SYNC_URL,data=data,method='POST',headers={'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'InvestmentIntelligenceRadarLearning/2.0'})
+ data=json.dumps(p,ensure_ascii=False).encode();req=urllib.request.Request(SYNC_URL,data=data,method='POST',headers={'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'InvestmentIntelligenceRadarLearning/2.1'})
  try:
   with urllib.request.urlopen(req,timeout=35) as r:return json.loads(r.read().decode())
  except urllib.error.HTTPError as e:
@@ -44,15 +47,16 @@ def _decode(k,v):
 
 def sync_learning_once(batch=750):
  if not enabled():return {'enabled':False}
- init_db();init_learning_db();init_guarded_learning_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
+ init_db();init_learning_db();init_guarded_learning_db();init_historical_lab_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
  rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions order by created_at,version').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
  for table,cols in TABLES.items():
   key='learning_sync_'+table;after=_get(key);idcol='rowid' if table=='prediction_outcomes' else 'id';q=f"select {','.join(cols)} from {table} where {idcol}>? order by {idcol} limit ?";rs=c.execute(q,(after,batch)).fetchall();out=[]
   for r in rs:
    d={}
    for k,v in zip(cols,r):
-    # Local SQLite identity is provenance only. Postgres owns its own primary key.
     if k in ('rowid','id'):continue
+    if table=='historical_fold_results' and k=='run_id':
+     d['run_origin_node']=NODE_ID;d['run_origin_id']=int(v);continue
     d[k]=_decode(k,v)
    origin_id=int(r[0]);d['origin_node']=NODE_ID;d['origin_id']=origin_id;out.append(d)
   payload[table]=out;counts[table]=len(out)
