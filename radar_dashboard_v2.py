@@ -1,5 +1,6 @@
 from radar_core import con
 from radar_learning import active_model, calibration_summary, detect_regime, backtest_point_in_time, init_learning_db
+from radar_learning_guarded import learning_health
 from radar_scoring_v2 import lists_369_v2
 from radar_benchmark import benchmark_agents
 from radar_reputation_v2 import top_source_dimensions
@@ -26,11 +27,11 @@ def dashboard_payload():
     weak=c.execute('select topic,strength,cross_source_count,explanation,created_at from signal_weak_events order by id desc limit 10').fetchall()
     audits=c.execute('select component,test_name,status,detail,ts from audit_events order by id desc limit 20').fetchall()
     portfolio=_portfolio_snapshot(c)
-    counts={k:count(t) for k,t in {'predictions':'predictions','outcomes':'prediction_outcomes','learning_cycles':'learning_cycles','weak_signals':'signal_weak_events','causal_edges':'causal_edges','theses':'thesis_history'}.items()}
+    counts={k:count(t) for k,t in {'predictions':'predictions','outcomes':'prediction_outcomes','learning_cycles':'learning_cycles','model_evaluations':'model_evaluations','weak_signals':'signal_weak_events','causal_edges':'causal_edges','theses':'thesis_history'}.items()}
     c.close()
     regime={'regime':regime_row[0],'confidence':regime_row[1],'ts':regime_row[2]} if regime_row else detect_regime(False)
     return {
-      'model':active_model(),'calibration':calibration_summary(),'regime':regime,'lists_369':lists_369_v2(),
+      'model':active_model(),'learning_health':learning_health(),'calibration':calibration_summary(),'regime':regime,'lists_369':lists_369_v2(),
       'portfolio':portfolio,'counts':counts,
       'learning_cycles':[{'ts':r[0],'prior':r[1],'new':r[2],'n':r[3],'accepted':bool(r[4])} for r in cycles],
       'weak_signals':[{'topic':r[0],'strength':r[1],'sources':r[2],'explanation':r[3],'ts':r[4]} for r in weak],
