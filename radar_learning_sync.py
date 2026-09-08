@@ -50,7 +50,12 @@ def sync_learning_once(batch=750):
  init_db();init_learning_db();init_guarded_learning_db();init_historical_lab_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
  rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions order by created_at,version').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
  for table,cols in TABLES.items():
-  key='learning_sync_'+table;after=_get(key);idcol='rowid' if table=='prediction_outcomes' else 'id';q=f"select {','.join(cols)} from {table} where {idcol}>? order by {idcol} limit ?";rs=c.execute(q,(after,batch)).fetchall();out=[]
+  key='learning_sync_'+table;idcol='rowid' if table=='prediction_outcomes' else 'id'
+  if table=='historical_lab_runs':
+   rs=c.execute(f"select {','.join(cols)} from {table} order by id desc limit 100").fetchall();rs=list(reversed(rs))
+  else:
+   after=_get(key);q=f"select {','.join(cols)} from {table} where {idcol}>? order by {idcol} limit ?";rs=c.execute(q,(after,batch)).fetchall()
+  out=[]
   for r in rs:
    d={}
    for k,v in zip(cols,r):
@@ -62,6 +67,7 @@ def sync_learning_once(batch=750):
   payload[table]=out;counts[table]=len(out)
  c.close();result=_post(payload)
  for table in TABLES:
+  if table=='historical_lab_runs':continue
   arr=payload.get(table) or []
   if arr:_set('learning_sync_'+table,max(int(x['origin_id']) for x in arr))
  return {'enabled':True,**counts,'remote':result}
