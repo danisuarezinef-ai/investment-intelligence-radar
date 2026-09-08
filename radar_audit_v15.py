@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timezone
 from radar_core import con, init_db, STATUS, now
 from radar_learning import init_learning_db, active_model
+from radar_brain_evolution import init_brain_db
 
 
 def _status():
@@ -11,7 +12,7 @@ def _status():
 
 
 def run_integrity_audit():
-    init_db();init_learning_db();c=con();tests=[]
+    init_db();init_learning_db();init_brain_db();c=con();tests=[]
     def add(component,name,status,detail,metrics=None):
         tests.append({'component':component,'test':name,'status':status,'detail':detail,'metrics':metrics or {}})
         try:c.execute('insert into audit_events(ts,component,test_name,status,detail,metrics) values(?,?,?,?,?,?)',(now(),component,name,status,detail,json.dumps(metrics or {})))
@@ -39,6 +40,15 @@ def run_integrity_audit():
         m=active_model();add('learning','bounded_weights','PASS' if all(abs(float(v))<=0.5 for v in m.get('weights',{}).values()) else 'FAIL',m.get('version','unknown'),m.get('weights',{}))
     except Exception as e:add('learning','bounded_weights','FAIL',str(e))
     add('safety','real_trading_off','PASS','No real broker/execution path enabled',{'real_trading':False})
+    for name,sql,expect in (
+      ('one_active_champion',"select count(*) from brain_lineages where status='operational_champion'",(0,1)),
+      ('genealogy_complete',"select count(*) from brain_lineages where generation>0 and (parent is null or training_method is null or mutation is null)",(0,)),
+      ('live_predictions_immutable',"select count(*) from brain_shadow_predictions where outcome is not null and evaluated_at is null",(0,)),
+      ('vault_not_used_for_training',"select count(*) from brain_vault_events where purpose in ('training','candidate_selection')",(0,)),
+      ('deep_vault_not_used_for_training',"select count(*) from brain_vault_events where vault_key='deep_final_test' and purpose in ('training','candidate_selection')",(0,))):
+        try:
+            value=c.execute(sql).fetchone()[0];add('brain',name,'PASS' if value in expect else 'FAIL',str(value),{'count':value})
+        except Exception as e:add('brain',name,'FAIL',str(e))
     st=_status();sup=st.get('supabase_sync');learn=st.get('learning_persistence');add('sync','supabase_core','PASS' if sup=='OK' else 'WARN',str(sup or 'unknown'));add('sync','supabase_learning','PASS' if learn=='OK' else 'WARN',str(learn or 'unknown'))
     c.commit()
     try:

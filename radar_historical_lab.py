@@ -117,6 +117,16 @@ def build_historical_observations():
     return sorted(obs,key=lambda x:(x['ts'],x['symbol'],x['horizon']))
 
 
+def purged_temporal_split(obs, train_dates, validation_dates, embargo_days=1):
+    """Remove training labels whose outcome overlaps validation plus embargo."""
+    if not validation_dates:return list(obs),[]
+    validation_start=min(validation_dates)
+    cutoff=(datetime.fromisoformat(validation_start).date()-__import__('datetime').timedelta(days=max(0,embargo_days))).isoformat()
+    train=[x for x in obs if x['ts'] in train_dates and x['provenance']['future_date']<cutoff]
+    valid=[x for x in obs if x['ts'] in validation_dates]
+    return train,valid
+
+
 def _candidate(current,train,step_scale=1.0,bias_scale=1.0,variant='balanced'):
     best=dict(current);best_m=evaluate_weights(best,train);keys=list(best)
     for _ in range(3):
@@ -141,7 +151,7 @@ def _evolve_variant(current,obs,pre_vault_dates,name,step_scale,bias_scale):
     challenger=dict(current);folds=[];anchor=train_end;fold_no=0
     while anchor+fold_span<=len(pre_vault_dates):
         fold_no+=1;train_dates=set(pre_vault_dates[:anchor]);valid_dates=set(pre_vault_dates[anchor:anchor+fold_span])
-        train=[x for x in obs if x['ts'] in train_dates];valid=[x for x in obs if x['ts'] in valid_dates]
+        train,valid=purged_temporal_split(obs,train_dates,valid_dates)
         if len(train)>=MIN_FOLD_OBS and len(valid)>=MIN_FOLD_OBS:
             proposed,_=_candidate(challenger,train,step_scale,bias_scale,name)
             before=evaluate_weights(current,valid);after=evaluate_weights(proposed,valid);gain=after['objective']-before['objective']
@@ -165,15 +175,20 @@ def run_historical_lab(promote=True):
         v=_evolve_variant(current,obs,pre_vault,name,ss,bs);vm=evaluate_weights(v['weights'],vault);v['vault']=vm;v['vault_gain']=vm['objective']-champion_vault['objective']
         ratio=v['positive']/max(1,len(v['folds']));v['positive_ratio']=ratio
         stability=min(1.0,ratio/MIN_POSITIVE_FOLD_RATIO) if MIN_POSITIVE_FOLD_RATIO else 1
-        v['rank_score']=v['mean_gain']*.45+v['vault_gain']*.45+max(0,stability-1)*.10
+        # Selection is based only on development walk-forward evidence. Vault
+        # evidence may qualify/reject the already selected candidate, never choose it.
+        v['rank_score']=v['mean_gain']*.80+v['median_gain']*.15+max(0,stability-1)*.05
         variants.append(v)
-    eligible=[v for v in variants if len(v['folds'])>=MIN_FOLDS and v['positive_ratio']>=MIN_POSITIVE_FOLD_RATIO and v['mean_gain']>=MIN_MEAN_GAIN and v['vault_gain']>=MIN_VAULT_GAIN and v['vault']['hit_rate']>=champion_vault['hit_rate']]
+    eligible=[v for v in variants if len(v['folds'])>=MIN_FOLDS and v['positive_ratio']>=MIN_POSITIVE_FOLD_RATIO and v['mean_gain']>=MIN_MEAN_GAIN]
     selected=max(eligible,key=lambda x:x['rank_score']) if eligible else max(variants,key=lambda x:x['rank_score'])
     challenger=selected['weights'];chall_test=evaluate_weights(challenger,test);test_gain=chall_test['objective']-champ_test['objective']
-    accepted=(selected in eligible and test_gain>=MIN_TEST_GAIN and chall_test['hit_rate']>=champ_test['hit_rate'])
+    # Historical qualification creates a shadow candidate only. It never replaces
+    # the operational champion; live-forward validation is a separate gate.
+    vault_pass=selected['vault_gain']>=MIN_VAULT_GAIN and selected['vault']['hit_rate']>=champion_vault['hit_rate']
+    accepted=(selected in eligible and vault_pass and test_gain>=MIN_TEST_GAIN and chall_test['hit_rate']>=champ_test['hit_rate'])
     candidate_version=model['version']+'-evo';promoted=False
     meta={'method':'evolutionary_expanding_walk_forward','lookahead':False,'market_only':True,'vault_untouched_during_evolution':True,
-          'test_untouched_until_selection':True,'vault_n':len(vault),'test_n':len(test),'vault_gain':selected['vault_gain'],'test_gain':test_gain,
+          'test_untouched_until_selection':True,'vault_not_used_for_candidate_selection':True,'vault_pass':vault_pass,'vault_n':len(vault),'test_n':len(test),'vault_gain':selected['vault_gain'],'test_gain':test_gain,
           'selected_challenger':selected['name'],'challengers':len(variants),'vault_start':dates[vault_start],'test_start':dates[test_start]}
     c=con();c.execute('''insert into historical_lab_runs(created_at,base_model,candidate_version,symbols,observations,folds,positive_folds,mean_gain,median_gain,test_objective_champion,test_objective_challenger,accepted,promoted,candidate_weights,metadata) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
       (now(),model['version'],candidate_version,len({x['symbol'] for x in obs}),len(obs),len(selected['folds']),selected['positive'],selected['mean_gain'],selected['median_gain'],champ_test['objective'],chall_test['objective'],1 if accepted else 0,0,json.dumps(challenger),json.dumps(meta)))
@@ -185,14 +200,14 @@ def run_historical_lab(promote=True):
         c.execute('''insert into historical_fold_results(run_id,fold_no,train_start,train_end,validation_start,validation_end,observations_train,observations_validation,champion_objective,challenger_objective,gain,challenger_weights,metadata) values(?,?,?,?,?,?,?,?,?,?,?,?,?)''',
           (run_id,f['fold_no'],f['train'][0]['ts'],f['train'][-1]['ts'],f['valid'][0]['ts'],f['valid'][-1]['ts'],len(f['train']),len(f['valid']),f['champion']['objective'],f['challenger']['objective'],f['gain'],json.dumps(f['weights']),json.dumps({'holdout':True,'challenger':selected['name']})))
     c.commit();c.close()
-    if accepted and promote:
-        parts=model['version'].split('.')
-        try:new_version=f"{parts[0]}.{parts[1]}.{int(parts[2])+1}"
-        except Exception:new_version=model['version']+'-evo-next'
-        c=con();c.execute("update model_versions set status='retired' where status='active'")
-        c.execute('insert into model_versions(version,created_at,parent_version,status,weights,metrics,notes) values(?,?,?,?,?,?,?)',
-          (new_version,now(),model['version'],'active',json.dumps(challenger),json.dumps({'evolutionary_walk_forward':meta,'test':chall_test}),'Evolutionary challengers + temporal vault + untouched final test; real trading OFF'))
-        c.execute('update historical_lab_runs set promoted=1,candidate_version=? where id=?',(new_version,run_id));c.commit();c.close();candidate_version=new_version;promoted=True
+    if accepted:
+        from radar_brain_evolution import Candidate, record_evidence, record_lineage
+        candidate=Candidate(candidate_version,1,challenger,f"champion:{model['version']}",selected['name'],
+                            {'source':'historical_lab_lab'},{},selected['name'],list(challenger))
+        record_lineage(candidate,'shadow_champion','Qualified historically; awaiting immutable live-forward evidence',{'run_id':run_id})
+        record_evidence(candidate_version,'historical_walk_forward','mixed','multi',sum(len(f['valid']) for f in selected['folds']),selected['mean_gain'],metadata={'run_id':run_id},evidence_key=f'run:{run_id}:walk')
+        record_evidence(candidate_version,'historical_vault','mixed','multi',len(vault),selected['vault_gain'],metadata={'run_id':run_id},evidence_key=f'run:{run_id}:vault')
+        record_evidence(candidate_version,'historical_final_test','mixed','multi',len(test),test_gain,metadata={'run_id':run_id},evidence_key=f'run:{run_id}:final')
     return {'accepted':accepted,'promoted':promoted,'run_id':run_id,'base_model':model['version'],'candidate_version':candidate_version,'observations':len(obs),
             'challengers':len(variants),'selected_challenger':selected['name'],'folds':len(selected['folds']),'positive_folds':selected['positive'],
             'positive_ratio':selected['positive_ratio'],'mean_gain':selected['mean_gain'],'median_gain':selected['median_gain'],'vault_n':len(vault),'vault_gain':selected['vault_gain'],
@@ -207,4 +222,4 @@ def historical_lab_health(limit=10):
         out.append({'run_id':r[0],'ts':r[1],'base_model':r[2],'candidate_version':r[3],'observations':r[4],'folds':r[5],'positive_folds':r[6],'mean_gain':r[7],'test_before':r[8],'test_after':r[9],'accepted':bool(r[10]),'promoted':bool(r[11]),'metadata':meta})
     return {'runs':out,'guardrails':{'min_folds':MIN_FOLDS,'min_mean_gain':MIN_MEAN_GAIN,'min_positive_fold_ratio':MIN_POSITIVE_FOLD_RATIO,
             'min_vault_gain':MIN_VAULT_GAIN,'min_test_gain':MIN_TEST_GAIN,'evolutionary_challengers':len(CHALLENGER_VARIANTS),'temporal_vault':True,
-            'final_test_untouched':True,'lookahead':False,'real_trading':False}}
+            'final_test_untouched':True,'purge_embargo_active':True,'historical_promotion_disabled':True,'lookahead':False,'real_trading':False}}

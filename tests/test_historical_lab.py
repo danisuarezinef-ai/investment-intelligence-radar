@@ -30,6 +30,11 @@ def test_historical_observations_are_cutoff_provenanced(tmp_path,monkeypatch):
     x=obs[0];assert x['provenance']['lookahead'] is False;assert x['provenance']['future_date']>x['provenance']['cutoff']
     assert set(x['features'])=={'momentum7','momentum30','momentum90','volatility','source_quality','regime_fit','causal_strength'}
 
+def test_purge_embargo_removes_overlapping_labels(tmp_path,monkeypatch):
+    _tmp(tmp_path,monkeypatch);_seed();obs=hl.build_historical_observations();dates=sorted({x['ts'] for x in obs});boundary=dates[130]
+    train,valid=hl.purged_temporal_split(obs,set(dates[:130]),set(dates[130:140]),1)
+    assert valid;assert train;assert all(x['provenance']['future_date']<boundary for x in train)
+
 
 def test_evolutionary_walk_forward_has_vault_and_final_test(tmp_path,monkeypatch):
     _tmp(tmp_path,monkeypatch);_seed();r=hl.run_historical_lab(promote=False)
@@ -37,6 +42,7 @@ def test_evolutionary_walk_forward_has_vault_and_final_test(tmp_path,monkeypatch
     assert r['challengers']==len(hl.CHALLENGER_VARIANTS);assert r['selected_challenger'] in {x[0] for x in hl.CHALLENGER_VARIANTS};assert r['promoted'] is False
     health=hl.historical_lab_health();m=health['runs'][0]['metadata']
     assert m['lookahead'] is False;assert m['vault_untouched_during_evolution'] is True;assert m['test_untouched_until_selection'] is True
+    assert m['vault_not_used_for_candidate_selection'] is True
     assert health['guardrails']['temporal_vault'] is True
 
 
