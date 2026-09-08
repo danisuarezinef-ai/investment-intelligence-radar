@@ -31,6 +31,17 @@ def test_mature_episode_gets_forward_market_outcome_once(tmp_path, monkeypatch):
     assert again['evaluated']==0
 
 
+def test_observed_path_uses_first_inserted_price_each_day(tmp_path, monkeypatch):
+    _tmp(tmp_path,monkeypatch)
+    c=radar_core.con()
+    c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',('2026-01-02T09:00:00+00:00','MSFT',100,None,'TEST'))
+    c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',('2026-01-02T16:00:00+00:00','MSFT',999,None,'TEST'))
+    c.execute('insert into market_snapshots(ts,symbol,price,volume,source) values(?,?,?,?,?)',('2026-01-03T09:00:00+00:00','MSFT',101,None,'TEST'))
+    c.commit();c.close()
+    path=mo._observed_path('MSFT','2026-01-01T00:00:00+00:00')
+    assert path==[('2026-01-02',100.0),('2026-01-03',101.0)]
+
+
 def test_agent_skill_never_crosses_simulation_run_boundary(tmp_path, monkeypatch):
     _tmp(tmp_path,monkeypatch)
     c=radar_core.con()

@@ -5,7 +5,6 @@ never assigns an outcome twice, and never evaluates before enough observed marke
 sessions exist for the configured horizon.
 """
 from __future__ import annotations
-import json
 from radar_core import con, init_db, now
 from radar_decision_memory_v2 import init_decision_memory_db, evaluate_episode
 
@@ -14,12 +13,17 @@ HORIZON_SESSIONS={'1d':1,'1w':5,'1m':21,'3m':63,'forward':21}
 
 
 def _observed_path(symbol, created_at):
+    """Return the first recorded observation for each market date deterministically."""
     init_db(); c=con()
-    rows=c.execute('''select substr(ts,1,10) d, price, min(id)
-                      from market_snapshots
-                      where symbol=? and price is not null and ts>=?
-                      group by substr(ts,1,10)
-                      order by d''',(symbol,created_at)).fetchall()
+    rows=c.execute('''select x.d,m.price
+                      from (
+                        select substr(ts,1,10) d,min(id) mid
+                        from market_snapshots
+                        where symbol=? and price is not null and ts>=?
+                        group by substr(ts,1,10)
+                      ) x
+                      join market_snapshots m on m.id=x.mid
+                      order by x.d''',(symbol,created_at)).fetchall()
     c.close(); return [(r[0],float(r[1])) for r in rows if r[1] is not None]
 
 
@@ -35,7 +39,6 @@ def evaluate_mature_episodes(limit=250):
         if not need:
             skipped+=1; continue
         path=_observed_path(symbol,created)
-        # session 0 is first observed price at/after the decision; need N later sessions.
         if len(path)<=need:
             pending+=1; continue
         entry_date,entry=path[0]; exit_date,exit_px=path[need]
@@ -47,7 +50,6 @@ def evaluate_mature_episodes(limit=250):
         elif action in ('PAPER_SELL_CANDIDATE','SELL','PAPER_SELL'):
             reward=-ret; hit=ret<0
         else:
-            # Unknown/neutral actions are intentionally not silently scored.
             skipped+=1; continue
         outcome={'return_pct':ret,'reward':reward,'hit':bool(hit),'entry_price':entry,'exit_price':exit_px,'entry_date':entry_date,'exit_date':exit_date,'sessions':need,'source':'recorded_market_snapshots','real_trading':False}
         lesson=('decision direction confirmed' if hit else 'decision direction not confirmed')+f'; confidence={float(confidence or 0):.3f}'
