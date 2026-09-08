@@ -45,13 +45,14 @@ def _decode(k,v):
 def sync_learning_once(batch=750):
  if not enabled():return {'enabled':False}
  init_db();init_learning_db();init_guarded_learning_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
- rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
+ rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions order by created_at,version').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
  for table,cols in TABLES.items():
   key='learning_sync_'+table;after=_get(key);idcol='rowid' if table=='prediction_outcomes' else 'id';q=f"select {','.join(cols)} from {table} where {idcol}>? order by {idcol} limit ?";rs=c.execute(q,(after,batch)).fetchall();out=[]
   for r in rs:
    d={}
    for k,v in zip(cols,r):
-    if k=='rowid':continue
+    # Local SQLite identity is provenance only. Postgres owns its own primary key.
+    if k in ('rowid','id'):continue
     d[k]=_decode(k,v)
    origin_id=int(r[0]);d['origin_node']=NODE_ID;d['origin_id']=origin_id;out.append(d)
   payload[table]=out;counts[table]=len(out)
