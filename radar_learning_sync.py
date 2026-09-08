@@ -1,6 +1,7 @@
 import json, os, urllib.request, urllib.error
 from radar_core import con, init_db
 from radar_learning import init_learning_db
+from radar_reputation_v2 import init_reputation_v2_db
 
 SYNC_URL=os.environ.get('SUPABASE_LEARNING_SYNC_URL','').strip()
 SYNC_TOKEN=os.environ.get('RADAR_SYNC_TOKEN','').strip()
@@ -15,6 +16,7 @@ TABLES={
  'portfolio_recommendations':['id','ts','model_version','horizon','symbol','target_weight','score','risk_contribution','rationale','metadata'],
  'signal_weak_events':['id','created_at','topic','symbol','strength','novelty','cross_source_count','explanation','evidence','status'],
  'audit_events':['id','ts','component','test_name','status','detail','metrics'],
+ 'source_reputation_dimensions':['id','source','topic','horizon','observations','actionable','hit_rate','avg_abs_move','lead_score','noise_penalty','score','updated_at','metadata'],
 }
 JSON_FIELDS={'features','source_snapshot','metadata','weight_delta','calibration','trigger_event_ids','evidence','metrics'}
 BOOL_FIELDS={'hit','accepted'}
@@ -40,8 +42,7 @@ def _decode(k,v):
 
 def sync_learning_once(batch=750):
  if not enabled():return {'enabled':False}
- init_db();init_learning_db();payload={'node_id':NODE_ID};c=con();counts={}
- # model versions are tiny and version itself is the durable key; origin_id is omitted intentionally.
+ init_db();init_learning_db();init_reputation_v2_db();payload={'node_id':NODE_ID};c=con();counts={}
  rows=c.execute('select version,created_at,parent_version,status,weights,metrics,notes from model_versions').fetchall();payload['model_versions']=[{'version':r[0],'created_at':r[1],'parent_version':r[2],'status':r[3],'weights':_decode('metadata',r[4]),'metrics':_decode('metadata',r[5]),'notes':r[6],'origin_node':NODE_ID,'origin_id':i+1} for i,r in enumerate(rows)];counts['model_versions']=len(rows)
  for table,cols in TABLES.items():
   key='learning_sync_'+table;after=_get(key);idcol='rowid' if table=='prediction_outcomes' else 'id';q=f"select {','.join(cols)} from {table} where {idcol}>? order by {idcol} limit ?";rs=c.execute(q,(after,batch)).fetchall();out=[]
