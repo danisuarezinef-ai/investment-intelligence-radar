@@ -10,9 +10,10 @@ from radar_core import con, fetch, init_db, log, now, write_status
 from radar_supabase_sync import enabled as supabase_sync_enabled, sync_once, _post as forward_supabase
 from radar_learning_sync import enabled as learning_sync_enabled, sync_learning_once
 from radar_learning import (
-    init_learning_db, run_learning_cycle, dashboard_v2, capture_predictions,
+    init_learning_db, run_learning_cycle, capture_predictions,
     evaluate_predictions, backtest_point_in_time, calibration_summary
 )
+from radar_dashboard_v2 import dashboard_payload as intelligence_dashboard
 from radar_causal import build_causal_graph, graph_summary, symbol_causal_summary
 from radar_benchmark import benchmark_agents
 from radar_scoring_v2 import lists_369_v2, multihorizon_rankings
@@ -39,19 +40,6 @@ def collect_science_safe():
         log('science','OK',f'{added} eventos nuevos de {seen} recuperados');write_status(science_status='OK',science_seen=seen,last_error='')
     except Exception as exc:log('science','ERROR',str(exc));write_status(science_status='ERROR',last_error=str(exc))
     return added
-
-
-def intelligence_dashboard():
-    d=dashboard_v2()
-    try:d['lists_369_v2']=lists_369_v2()
-    except Exception as exc:d['lists_369_v2_error']=str(exc)[:300]
-    try:d['benchmarks']=benchmark_agents()
-    except Exception as exc:d['benchmarks_error']=str(exc)[:300]
-    try:d['source_dimensions']=top_source_dimensions(20)
-    except Exception as exc:d['source_dimensions_error']=str(exc)[:300]
-    try:d['causal_summary']=graph_summary()
-    except Exception as exc:d['causal_error']=str(exc)[:300]
-    return d
 
 
 run_worker.collect_science=collect_science_safe
