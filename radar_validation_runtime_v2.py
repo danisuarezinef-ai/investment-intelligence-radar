@@ -4,6 +4,7 @@ from radar_shadow_experiment_v2 import shadow_experiment_evidence
 from radar_promotion_attribution_v1 import promotion_gate
 from radar_forward_engine import forward_health
 from radar_historical_lab import historical_lab_health
+from radar_decision_lab_v5 import decision_lab_v5_snapshot
 
 REAL_TRADING=False
 
@@ -14,6 +15,7 @@ def validation_runtime_snapshot():
         'forward_days','matured_predictions','decisions','max_drawdown_pct','brier','hit_rate',
         'excess_return_pct','positive_months','ledger_integrity','pit_verified','costs_included')})
     return {
+        'decision_lab_v5':decision_lab_v5_snapshot(),
         'shadow':shadow,
         'promotion':promotion,
         'forward':forward_health(),
