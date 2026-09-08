@@ -13,9 +13,8 @@ const INSERT_ONLY_TABLES = [
   "predictions", "learning_cycles", "model_evaluations", "market_regimes",
   "causal_edges", "thesis_history", "portfolio_recommendations",
   "signal_weak_events", "audit_events", "historical_lab_runs",
-  "historical_fold_results", "historical_challenger_results", "brain_lineages",
-  "brain_evidence", "brain_transfer", "brain_meta_methods", "brain_vault_registry",
-  "brain_vault_events", "brain_hall_of_fame", "brain_graveyard",
+  "historical_fold_results", "historical_challenger_results",
+  "brain_evidence", "brain_transfer", "brain_vault_events",
   "brain_generation_runs", "decision_research_ledger", "decision_committee_votes",
   "decision_negative_results", "decision_audit_bundles",
 ] as const;
@@ -43,6 +42,12 @@ async function insertOnly(table: string, input: Record<string, unknown>[]) {
   if (error) throw new Error(`${table}: ${error.message}`);
   return input.length;
 }
+async function converge(table: string, input: Record<string, unknown>[], naturalKey: string) {
+  if (!input.length) return 0;
+  const { error } = await sb.from(table).upsert(input, { onConflict: naturalKey });
+  if (error) throw new Error(`${table}: ${error.message}`);
+  return input.length;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -63,6 +68,16 @@ Deno.serve(async (req) => {
     for (const table of INSERT_ONLY_TABLES) {
       const input = rows(body, table, node);
       out[table] = await insertOnly(table, input);
+    }
+    // These registries also have globally unique semantic keys. Converging on the
+    // natural key handles pre-seeded rows while still recording origin identity.
+    for (const [table, key] of [
+      ["brain_lineages", "lineage"], ["brain_meta_methods", "method"],
+      ["brain_vault_registry", "vault_key"], ["brain_hall_of_fame", "lineage"],
+      ["brain_graveyard", "lineage"],
+    ] as const) {
+      const input = rows(body, table, node);
+      out[table] = await converge(table, input, key);
     }
 
     // This dimension table intentionally converges on its natural key.
