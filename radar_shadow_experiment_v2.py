@@ -1,7 +1,7 @@
 """Serious shadow-forward experiment evidence builder.
 
-Reads only the immutable forward ledger and paper/shadow records already persisted.
-It does not backfill, does not synthesize benchmark evidence, and never trades.
+Reads only the immutable forward ledger and recorded market evidence. It does not
+backfill, does not synthesize benchmark/cost evidence, and never trades.
 """
 from __future__ import annotations
 import json
@@ -9,6 +9,7 @@ from datetime import datetime,timezone
 from radar_core import con
 from radar_investment_memory import init_memory
 from radar_promotion_attribution_v1 import confidence_calibration
+from radar_forward_benchmark_v2 import benchmarked_forward_record
 
 REAL_TRADING=False
 CONTROL_KEY='shadow_forward_started_at'
@@ -50,7 +51,7 @@ def shadow_experiment_evidence():
                       from prediction_ledger order by created_at,id''').fetchall()
     decisions=c.execute('select count(*) from decision_journal').fetchone()[0]
     c.close()
-    records=[];integrity_errors=[];calibration=[];returns=[];months=set()
+    records=[];integrity_errors=[];calibration=[];returns=[];months=set();benchmarked=[]
     for row in rows:
         pid,created,target,asset,horizon,model,confidence,prov_raw,payload_raw,outcome_raw,evaluated=row
         created_dt=_dt(created);target_dt=_dt(target);eval_dt=_dt(evaluated)
@@ -66,9 +67,12 @@ def shadow_experiment_evidence():
             integrity_errors.append({'prediction_id':pid,'no_backfill':no_backfill,'lookahead_false':lookahead_false,'immutable':immutable,'maturity_order':maturity_order})
         out=_outcome(outcome_raw) if outcome_raw is not None else None
         matured=out is not None and eval_dt is not None
-        rec={'prediction_id':pid,'created_at':created,'evaluated_at':evaluated,'asset':asset,'horizon':horizon,
+        rec={'prediction_id':pid,'created_at':created,'target_date':target,'evaluated_at':evaluated,'asset':asset,'horizon':horizon,
              'model_version':model,'confidence':confidence,'immutable':immutable,'matured':matured,
-             'return_pct':out['return_pct'] if out else None,'no_backfill':no_backfill,'lookahead_false':lookahead_false}
+             'return_pct':out['return_pct'] if out else None,'no_backfill':no_backfill,'lookahead_false':lookahead_false,
+             'payload':payload_raw,'outcome':outcome_raw}
+        if matured:
+            attribution=benchmarked_forward_record(rec);rec['attribution']=attribution;benchmarked.append(attribution)
         records.append(rec)
         if out:
             returns.append(out['return_pct']);calibration.append({'confidence':confidence,'hit':out['hit']})
@@ -83,14 +87,20 @@ def shadow_experiment_evidence():
             if r['return_pct'] is None or not r['evaluated_at']:continue
             d=_dt(r['evaluated_at']);monthly.setdefault(d.strftime('%Y-%m'),[]).append(float(r['return_pct']))
         positive_months=sum(1 for vals in monthly.values() if vals and sum(vals)>0)
-    return {'forward_days':forward_days,'predictions':len(records),'matured_predictions':len(returns),'decisions':int(decisions or 0),
+    benchmark_coverage=sum(1 for x in benchmarked if x['benchmark']['available'])
+    cost_coverage=sum(1 for x in benchmarked if x['costs']['available'])
+    attributable=[x['excess_return_pct'] for x in benchmarked if x['fully_attributable'] and x['excess_return_pct'] is not None]
+    matured_n=len(returns)
+    return {'forward_days':forward_days,'predictions':len(records),'matured_predictions':matured_n,'decisions':int(decisions or 0),
             'max_drawdown_pct':_max_drawdown(returns) if returns else None,
             'brier':cal.get('brier'),'hit_rate':cal.get('hit_rate'),
-            'excess_return_pct':None,
+            'excess_return_pct':sum(attributable)/len(attributable) if attributable else None,
             'positive_months':positive_months,
             'ledger_integrity':bool(boundary and not integrity_errors),
             'pit_verified':bool(boundary and not integrity_errors),
-            'costs_included':False,
-            'benchmark_evidence_available':False,
+            'costs_included':bool(matured_n and cost_coverage==matured_n),
+            'benchmark_evidence_available':bool(matured_n and benchmark_coverage==matured_n),
+            'fully_attributable_predictions':len(attributable),
+            'benchmark_coverage':benchmark_coverage,'cost_coverage':cost_coverage,
             'integrity_errors':integrity_errors,'records':records,
             'real_trading':False}
