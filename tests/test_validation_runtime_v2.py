@@ -1,6 +1,10 @@
 import radar_validation_runtime_v2 as vr
 
 
+def _decision_v5():
+    return {'version':'v5','cards':[],'can_trade':False,'real_trading':False}
+
+
 def test_runtime_snapshot_is_read_only_and_fail_closed(monkeypatch):
     monkeypatch.setattr(vr,'shadow_experiment_evidence',lambda:{
       'forward_days':1,'matured_predictions':0,'decisions':0,'max_drawdown_pct':None,
@@ -8,11 +12,13 @@ def test_runtime_snapshot_is_read_only_and_fail_closed(monkeypatch):
       'ledger_integrity':True,'pit_verified':True,'costs_included':False,'real_trading':False})
     monkeypatch.setattr(vr,'forward_health',lambda:{'started':True,'real_trading':False})
     monkeypatch.setattr(vr,'historical_lab_health',lambda n=8:{'runs':[]})
+    monkeypatch.setattr(vr,'decision_lab_v5_snapshot',_decision_v5)
     out=vr.validation_runtime_snapshot()
     assert out['ready_for_live_review'] is False
     assert out['can_trade'] is False
     assert out['auto_promote'] is False
     assert out['real_trading'] is False
+    assert out['decision_lab_v5']['version']=='v5'
     assert 'costs_included' in out['promotion']['failed']
 
 
@@ -23,7 +29,9 @@ def test_runtime_snapshot_can_mark_review_ready_but_never_trade(monkeypatch):
       'ledger_integrity':True,'pit_verified':True,'costs_included':True,'real_trading':False})
     monkeypatch.setattr(vr,'forward_health',lambda:{'started':True,'real_trading':False})
     monkeypatch.setattr(vr,'historical_lab_health',lambda n=8:{'runs':[]})
+    monkeypatch.setattr(vr,'decision_lab_v5_snapshot',_decision_v5)
     out=vr.validation_runtime_snapshot()
     assert out['ready_for_live_review'] is True
     assert out['can_trade'] is False
+    assert out['decision_lab_v5']['can_trade'] is False
     assert out['real_trading'] is False
