@@ -27,7 +27,18 @@ def test_simulator_has_separate_activate_deactivate_restart_controls():
     assert "('DESACTIVAR',sim_deactivate" in s
     assert "('ACTIVAR',sim_activate" in s
     assert 'paper_start(value)' in s
-    assert 'paper_toggle()' in s
+    assert 'paper_set_enabled(True)' in s
+    assert 'paper_set_enabled(False)' in s
+
+
+def test_update_button_is_conditional_and_lists_start_collapsed():
+    s=source()
+    assert "text='ACTUALIZACIÓN'" in s
+    assert 'BUSCAR ACTUALIZACIÓN' not in s
+    assert 'check_for_update_async()' in s
+    assert 'def collapsed_list_card' in s
+    assert "collapsed_list_card(body,'Últimos precios · PC local'" in s
+    assert "collapsed_list_card(body,'Últimos eventos · PC local'" in s
 
 
 def test_rankings_have_independent_vertical_scrollbars():

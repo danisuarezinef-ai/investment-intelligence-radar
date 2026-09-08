@@ -220,6 +220,14 @@ def paper_toggle():
     init_db(); c=con(); row=c.execute('select enabled from paper_account where id=1').fetchone()
     if not row:c.close(); return paper_start(1000.0)
     v=0 if row[0] else 1; c.execute('update paper_account set enabled=? where id=1',(v,)); c.commit(); c.close(); return paper_status()
+def paper_set_enabled(enabled):
+    """Set (rather than toggle) paper activity while preserving the portfolio."""
+    init_db(); c=con(); row=c.execute('select 1 from paper_account where id=1').fetchone()
+    if not row:
+        c.close()
+        if not enabled:return paper_status()
+        return paper_start(1000.0)
+    c.execute('update paper_account set enabled=? where id=1',(1 if enabled else 0,)); c.commit(); c.close(); return paper_status()
 def _latest_prices():
     c=con(); d={}
     for s in ASSETS:

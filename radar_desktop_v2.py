@@ -3,8 +3,9 @@ import tkinter as tk
 
 from radar_core import (
     init_db, stats, STATUS, PID, DATA, profitability_leaders, opportunity_rankings,
-    paper_status, paper_start, paper_toggle, paper_step, history_ready, collect_history
+    paper_status, paper_start, paper_set_enabled, paper_step, history_ready, collect_history
 )
+from radar_ui_state import update_available
 
 APP_VERSION = '1.3.0'
 APPDIR = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
@@ -134,6 +135,17 @@ def launch_updater():
     if not os.path.exists(exe):styled_dialog('Actualizaciones','El actualizador no está disponible.','error'); return
     subprocess.Popen([exe],cwd=APPDIR,creationflags=0x08000000 if os.name=='nt' else 0); root.after(600,root.destroy)
 
+def check_for_update_async():
+    def work():
+        visible=False
+        try:
+            req=urllib.request.Request(UPDATE_MANIFEST,headers={'User-Agent':'InvestmentIntelligenceRadarDesktop/1.5','Cache-Control':'no-cache'})
+            manifest=json.loads(urllib.request.urlopen(req,timeout=12).read().decode('utf-8-sig'))
+            visible=update_available(APP_VERSION,manifest.get('version'))
+        except Exception:visible=False
+        root.after(0,lambda:update_btn.pack(side='right',anchor='n') if visible else update_btn.pack_forget())
+    threading.Thread(target=work,daemon=True).start()
+
 def card(parent,padx=16,pady=14):return tk.Frame(parent,bg=PANEL,highlightthickness=1,highlightbackground=BORDER,padx=padx,pady=pady)
 def title(parent,text,size=12):return tk.Label(parent,text=text,bg=PANEL,fg=TEXT,font=('Segoe UI',size,'bold'))
 def small(parent,text='',var=None):return tk.Label(parent,text=text if var is None else None,textvariable=var,bg=PANEL,fg=MUTED,font=('Segoe UI',9),justify='left')
@@ -167,7 +179,7 @@ header=tk.Frame(main,bg=BG); header.pack(fill='x')
 hl=tk.Frame(header,bg=BG); hl.pack(side='left',fill='x',expand=True)
 tk.Label(hl,text='Investment Intelligence Radar',bg=BG,fg=TEXT,font=('Segoe UI',24,'bold')).pack(anchor='w')
 tk.Label(hl,text=f'Centro de inversión · Windows v{APP_VERSION} · trading real OFF',bg=BG,fg=MUTED,font=('Segoe UI',10)).pack(anchor='w',pady=(2,10))
-tk.Button(header,text='BUSCAR ACTUALIZACIÓN',command=launch_updater,font=('Segoe UI',9,'bold'),fg='white',bg=BLUE,relief='flat',bd=0,padx=16,pady=8,cursor='hand2').pack(side='right',anchor='n')
+update_btn=tk.Button(header,text='ACTUALIZACIÓN',command=launch_updater,font=('Segoe UI',9,'bold'),fg='white',bg=BLUE,relief='flat',bd=0,padx=16,pady=8,cursor='hand2')
 
 controls=tk.Frame(main,bg=BG); controls.pack(fill='x',pady=(0,10))
 def control_card(parent,name,desc,command):
@@ -207,13 +219,13 @@ def sim_activate():
     try:
         st=paper_status()
         if not st.get('configured'):paper_start(float(amount.get().replace(',','.')))
-        elif not st.get('enabled'):paper_toggle()
+        elif not st.get('enabled'):paper_set_enabled(True)
         refresh_investment()
     except Exception as e:styled_dialog('Simulador','No se pudo activar:\n'+str(e),'error')
 def sim_deactivate():
     try:
         st=paper_status()
-        if st.get('configured') and st.get('enabled'):paper_toggle()
+        if st.get('configured') and st.get('enabled'):paper_set_enabled(False)
         refresh_investment()
     except Exception as e:styled_dialog('Simulador','No se pudo desactivar:\n'+str(e),'error')
 def sim_restart():
@@ -226,6 +238,9 @@ def sim_restart():
         amount.set(f'{value:.2f}'); paper_start(value); refresh_investment()
     except Exception as e:styled_dialog('Simulador','Capital no válido:\n'+str(e),'error')
 def step_sim():
+    status=paper_status()
+    if not status.get('configured'):styled_dialog('Simulador','Primero activa o reinicia el simulador.','info'); return
+    if not status.get('enabled'):styled_dialog('Simulador','El simulador está pausado. Pulsa ACTIVAR antes de decidir.','info'); return
     def work():
         try:paper_step(force=True); root.after(0,refresh_investment)
         except Exception as e:root.after(0,lambda:styled_dialog('Simulador','No se pudo ejecutar decisión:\n'+str(e),'error'))
@@ -238,10 +253,15 @@ positions=tk.Listbox(sim,height=4,bg=PANEL2,fg=TEXT,highlightthickness=0,bd=0,fo
 rankrow=tk.Frame(main,bg=BG); rankrow.pack(fill='both',expand=True,pady=(0,10)); rankrow.grid_columnconfigure(0,weight=1,uniform='rank'); rankrow.grid_columnconfigure(1,weight=1,uniform='rank')
 def scroll_text_card(parent,column,heading):
     c=card(parent); c.grid(row=0,column=column,sticky='nsew',padx=(0,5) if column==0 else (5,0)); title(c,heading,12).pack(anchor='w'); wrap=tk.Frame(c,bg=PANEL2); wrap.pack(fill='both',expand=True,pady=(8,0)); sb=tk.Scrollbar(wrap,orient='vertical'); sb.pack(side='right',fill='y'); txt=tk.Text(wrap,height=11,bg=PANEL2,fg=TEXT,highlightthickness=0,bd=0,font=('Consolas',9),yscrollcommand=sb.set,wrap='none'); txt._local_scroll=True; txt.pack(side='left',fill='both',expand=True); sb.configure(command=txt.yview); return txt
-hist_text=scroll_text_card(rankrow,0,'Más rentables según histórico'); opp_text=scroll_text_card(rankrow,1,'Mejores inversiones potenciales')
+hist_text=scroll_text_card(rankrow,0,'Más rentables según histórico'); opp_text=scroll_text_card(rankrow,1,'Mejores inversiones potenciales · ranking exploratorio')
 
-body=tk.Frame(main,bg=BG); body.pack(fill='x',pady=(0,10)); left=card(body); left.pack(side='left',fill='both',expand=True,padx=(0,5)); right=card(body); right.pack(side='left',fill='both',expand=True,padx=(5,0)); title(left,'Últimos precios · PC local',11).pack(anchor='w'); title(right,'Últimos eventos · PC local',11).pack(anchor='w')
-prices=tk.Listbox(left,height=7,bg=PANEL2,fg=TEXT,highlightthickness=0,bd=0,font=('Consolas',9)); prices.pack(fill='both',expand=True,pady=(7,0)); events=tk.Listbox(right,height=7,bg=PANEL2,fg=TEXT,highlightthickness=0,bd=0,font=('Segoe UI',8)); events.pack(fill='both',expand=True,pady=(7,0))
+def collapsed_list_card(parent,heading,font):
+    c=card(parent,14,9); header=tk.Frame(c,bg=PANEL); header.pack(fill='x'); title(header,heading,11).pack(side='left'); button=tk.Button(header,text='▾ MOSTRAR',bg=PANEL2,fg=TEXT,relief='flat',bd=0,padx=10,pady=5); button.pack(side='right'); content=tk.Frame(c,bg=PANEL2); sb=tk.Scrollbar(content,orient='vertical'); lb=tk.Listbox(content,height=7,bg=PANEL2,fg=TEXT,highlightthickness=0,bd=0,font=font,yscrollcommand=sb.set); lb._local_scroll=True; sb.configure(command=lb.yview); sb.pack(side='right',fill='y'); lb.pack(side='left',fill='both',expand=True)
+    def toggle():
+        if content.winfo_manager():content.pack_forget();button.configure(text='▾ MOSTRAR')
+        else:content.pack(fill='both',expand=True,pady=(7,0));button.configure(text='▴ OCULTAR')
+    button.configure(command=toggle); return c,lb
+body=tk.Frame(main,bg=BG); body.pack(fill='x',pady=(0,10)); left,prices=collapsed_list_card(body,'Últimos precios · PC local',('Consolas',9)); left.pack(side='left',fill='both',expand=True,padx=(0,5)); right,events=collapsed_list_card(body,'Últimos eventos · PC local',('Segoe UI',8)); right.pack(side='left',fill='both',expand=True,padx=(5,0))
 tk.Label(main,text='Trading real: OFF · El simulador utiliza únicamente dinero ficticio.',bg=BG,fg=MUTED,font=('Segoe UI',9)).pack(anchor='w',pady=(2,12))
 
 def set_pc(desired):
@@ -284,7 +304,7 @@ def refresh_cloud():
         d=cloud_get('/health'); enabled=bool(d.get('cloud_enabled',True)); snap=cloud_get('/snapshot'); c=snap.get('counts',{}); st=snap.get('status',{})
         cloud_toggle.set(enabled); cloud_state.configure(text='ACTIVO 24/7' if enabled else 'PAUSADO',fg='#4ade80' if enabled else '#f87171'); metric_vars['cloud'].set('ONLINE' if enabled else 'PAUSADO'); cloud_counts.set(f"Mercado {c.get('prices',0)} · Eventos {c.get('events',0)} · Ciclos {c.get('runs',0)}")
         cloud_detail.configure(text=('Cloud activo · '+str(st.get('last_detail') or st.get('state') or 'Servicio disponible'))[:180]); refresh_intelligence(snap); maybe_node_heartbeat()
-    except Exception as e:cloud_toggle.set(False); cloud_state.configure(text='SIN CONEXIÓN',fg='#f87171'); metric_vars['cloud'].set('OFFLINE'); cloud_detail.configure(text=str(e)[:160])
+    except Exception as e:cloud_state.configure(text='SIN CONEXIÓN',fg='#f87171'); metric_vars['cloud'].set('OFFLINE'); cloud_detail.configure(text=str(e)[:160])
     root.after(5000,refresh_cloud)
 def refresh_investment():
     try:
@@ -314,4 +334,4 @@ def ensure_history_bg():
         except Exception:pass
     threading.Thread(target=work,daemon=True).start()
 
-start_worker(); ensure_history_bg(); refresh_local(); refresh_cloud(); refresh_investment(); root.mainloop()
+start_worker(); check_for_update_async(); ensure_history_bg(); refresh_local(); refresh_cloud(); refresh_investment(); root.mainloop()

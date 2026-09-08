@@ -43,10 +43,6 @@ jobs:
         shell: powershell
         run: python -m pytest -q
 
-      - name: Select desktop UI v2
-        shell: powershell
-        run: Copy-Item 'radar_desktop_v2.py' 'radar_desktop.py' -Force
-
       - name: Build application, updater and Setup.exe
         shell: powershell
         run: .\build_windows.ps1

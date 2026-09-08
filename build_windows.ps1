@@ -11,7 +11,7 @@ New-Item -ItemType Directory -Path assets -Force | Out-Null
 $version=(Get-Content version.json -Raw -Encoding UTF8 | ConvertFrom-Json).version
 if(!$version){throw 'version.json no contiene version'}
 
-$desktopPath=Join-Path $PSScriptRoot 'radar_desktop.py'
+$desktopPath=Join-Path $PSScriptRoot 'radar_desktop_v2.py'
 $desktop=Get-Content $desktopPath -Raw -Encoding UTF8
 $desktop=[regex]::Replace($desktop,"APP_VERSION\s*=\s*'[^']+'","APP_VERSION='$version'")
 [System.IO.File]::WriteAllText($desktopPath,$desktop,(New-Object System.Text.UTF8Encoding($false)))
@@ -55,7 +55,7 @@ $trend=New-Object System.Drawing.Pen $green,8; $pts=[System.Drawing.Point[]]@((N
 $pngStream=New-Object System.IO.MemoryStream; $bmp.Save($pngStream,[System.Drawing.Imaging.ImageFormat]::Png); $png=$pngStream.ToArray(); $pngStream.Dispose(); $g.Dispose(); $bmp.Dispose()
 $icoPath=Join-Path $PSScriptRoot 'assets\radar.ico'; $fs=[System.IO.File]::Create($icoPath); $bw=New-Object System.IO.BinaryWriter($fs); $bw.Write([UInt16]0); $bw.Write([UInt16]1); $bw.Write([UInt16]1); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([UInt16]1); $bw.Write([UInt16]32); $bw.Write([UInt32]$png.Length); $bw.Write([UInt32]22); $bw.Write($png); $bw.Close(); $fs.Close()
 
-python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop_v2.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name RadarSimulationLab radar_simulation_desktop.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarWorker run_worker.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarUpdater radar_updater_v2.py
