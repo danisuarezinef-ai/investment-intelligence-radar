@@ -7,6 +7,7 @@ import radar_benchmark as rb
 import radar_dashboard_v2 as dash
 import radar_audit_v15 as audit
 import radar_agents as agents
+import radar_intelligence as ri
 
 
 def _tmp(tmp_path, monkeypatch):
@@ -14,7 +15,7 @@ def _tmp(tmp_path, monkeypatch):
     monkeypatch.setattr(radar_core,'STATUS',str(tmp_path/'status.json'))
     monkeypatch.setattr(radar_core,'LOG',str(tmp_path/'worker.log'))
     monkeypatch.setattr(radar_core,'PID',str(tmp_path/'worker.pid'))
-    radar_core.init_db();rl.init_learning_db();agents.ensure_agents()
+    radar_core.init_db();ri.init_intelligence_db();rl.init_learning_db();agents.ensure_agents()
 
 
 def _seed(days=130):
