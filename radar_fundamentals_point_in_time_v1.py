@@ -23,7 +23,7 @@ TAGS={
     'capex':['PaymentsToAcquirePropertyPlantAndEquipment'],
     'cash':['CashAndCashEquivalentsAtCarryingValue','CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents'],
     'debt':['LongTermDebtAndFinanceLeaseObligationsCurrent','LongTermDebtCurrent','LongTermDebtNoncurrent','LongTermDebt'],
-    'shares':['EntityCommonStockSharesOutstanding','CommonStocksIncludingAdditionalPaidInCapitalMember'],
+    'shares':['EntityCommonStockSharesOutstanding'],
 }
 
 
@@ -38,30 +38,29 @@ def _init_table():
 
 def _units_for(facts:dict[str,Any], tag:str):
     item=(facts.get('us-gaap') or {}).get(tag) or (facts.get('dei') or {}).get(tag) or {}
-    units=item.get('units') or {}
-    out=[]
-    for rows in units.values():
-        if isinstance(rows,list): out.extend(x for x in rows if isinstance(x,dict))
+    units=item.get('units') or {};out=[]
+    for unit,rows in units.items():
+        if isinstance(rows,list):
+            for x in rows:
+                if isinstance(x,dict):out.append({**x,'_unit':unit})
     return out
 
 
-def _latest_fact(facts:dict[str,Any], tags:list[str], *, instant:bool|None=None):
+def _latest_fact(facts:dict[str,Any], tags:list[str], *, instant:bool|None=None, allowed_units:tuple[str,...]|None=None):
     candidates=[]
     for tag in tags:
         for row in _units_for(facts,tag):
-            if row.get('val') is None or not row.get('filed'): continue
-            start=row.get('start'); end=row.get('end')
-            is_instant=not bool(start)
-            if instant is not None and is_instant!=instant: continue
-            form=str(row.get('form') or '')
-            if form not in ('10-K','10-Q','20-F','40-F'): continue
+            if row.get('val') is None or not row.get('filed'):continue
+            if allowed_units and str(row.get('_unit') or '') not in allowed_units:continue
+            is_instant=not bool(row.get('start'))
+            if instant is not None and is_instant!=instant:continue
+            if str(row.get('form') or '') not in ('10-K','10-Q','20-F','40-F'):continue
             candidates.append({**row,'tag':tag})
     if not candidates:return None
-    candidates.sort(key=lambda x:(str(x.get('filed')),str(x.get('end') or '')),reverse=True)
-    return candidates[0]
+    candidates.sort(key=lambda x:(str(x.get('filed')),str(x.get('end') or '')),reverse=True);return candidates[0]
 
 
-def _annual_or_ttm_pair(facts:dict[str,Any], tags:list[str]):
+def _annual_pair(facts:dict[str,Any], tags:list[str]):
     rows=[]
     for tag in tags:
         for row in _units_for(facts,tag):
@@ -73,7 +72,13 @@ def _annual_or_ttm_pair(facts:dict[str,Any], tags:list[str]):
             except Exception:days=0
             if days>=250:rows.append({**row,'tag':tag,'days':days})
     rows.sort(key=lambda x:(str(x.get('filed')),str(x.get('end'))),reverse=True)
-    return rows[:2]
+    unique=[];seen=set()
+    for row in rows:
+        period=(str(row.get('start')),str(row.get('end')))
+        if period in seen:continue
+        seen.add(period);unique.append(row)
+        if len(unique)>=2:break
+    return unique
 
 
 def _safe_float(x):
@@ -82,49 +87,39 @@ def _safe_float(x):
 
 
 def _build_payload(symbol:str,data:dict[str,Any])->dict[str,Any]:
-    facts=data.get('facts') or {}
-    revs=_annual_or_ttm_pair(facts,TAGS['revenue'])
-    revenue=_safe_float(revs[0]['val']) if revs else None
-    prior_revenue=_safe_float(revs[1]['val']) if len(revs)>1 else None
+    facts=data.get('facts') or {};revs=_annual_pair(facts,TAGS['revenue']);revenue=_safe_float(revs[0]['val']) if revs else None;prior_revenue=_safe_float(revs[1]['val']) if len(revs)>1 else None
     revenue_growth=((revenue/prior_revenue)-1.0) if revenue is not None and prior_revenue not in (None,0) else None
-    op=_latest_fact(facts,TAGS['operating_income'],instant=False); opv=_safe_float(op.get('val')) if op else None
-    ocf=_latest_fact(facts,TAGS['operating_cash_flow'],instant=False); ocfv=_safe_float(ocf.get('val')) if ocf else None
-    capex=_latest_fact(facts,TAGS['capex'],instant=False); capexv=_safe_float(capex.get('val')) if capex else None
-    cash=_latest_fact(facts,TAGS['cash'],instant=True); cashv=_safe_float(cash.get('val')) if cash else None
+    op=_latest_fact(facts,TAGS['operating_income'],instant=False);opv=_safe_float(op.get('val')) if op else None
+    ocf=_latest_fact(facts,TAGS['operating_cash_flow'],instant=False);ocfv=_safe_float(ocf.get('val')) if ocf else None
+    capex=_latest_fact(facts,TAGS['capex'],instant=False);capexv=_safe_float(capex.get('val')) if capex else None
+    cash=_latest_fact(facts,TAGS['cash'],instant=True);cashv=_safe_float(cash.get('val')) if cash else None
     debt_rows=[]
     for tag in TAGS['debt']:
         r=_latest_fact(facts,[tag],instant=True)
-        if r and _safe_float(r.get('val')) is not None: debt_rows.append(r)
+        if r and _safe_float(r.get('val')) is not None:debt_rows.append(r)
     debt=sum(float(r['val']) for r in debt_rows) if debt_rows else None
-    shares=_latest_fact(facts,TAGS['shares'],instant=True); sharesv=_safe_float(shares.get('val')) if shares else None
+    shares=_latest_fact(facts,TAGS['shares'],instant=True,allowed_units=('shares',));sharesv=_safe_float(shares.get('val')) if shares else None
     known=[str(x.get('filed')) for x in ([op,ocf,capex,cash,shares]+debt_rows+revs[:1]) if isinstance(x,dict) and x.get('filed')]
-    known_at=max(known) if known else None
     period=[str(x.get('end')) for x in ([op,ocf,capex,cash,shares]+debt_rows+revs[:1]) if isinstance(x,dict) and x.get('end')]
-    period_end=max(period) if period else None
-    return {
-      'symbol':symbol,'known_at':known_at,'period_end':period_end,
+    return {'symbol':symbol,'known_at':max(known) if known else None,'period_end':max(period) if period else None,
       'revenue':revenue,'prior_revenue':prior_revenue,'revenue_growth':revenue_growth,
       'operating_income':opv,'operating_margin':(opv/revenue if opv is not None and revenue not in (None,0) else None),
       'operating_cash_flow':ocfv,'capex':capexv,'free_cash_flow':(ocfv-capexv if ocfv is not None and capexv is not None else None),
       'cash':cashv,'debt':debt,'net_debt':(debt-cashv if debt is not None and cashv is not None else None),
-      'shares_outstanding':sharesv,'source':'SEC_COMPANYFACTS_POINT_IN_TIME','real_trading':False,
-    }
+      'shares_outstanding':sharesv,'shares_unit':'shares' if sharesv is not None else None,
+      'source':'SEC_COMPANYFACTS_POINT_IN_TIME','real_trading':False}
 
 
 def collect_fundamentals()->dict[str,Any]:
-    _init_table(); stored=0; failures=[]; unsupported=[s for s in core.ASSETS if s not in SEC_CIK]
+    _init_table();stored=0;failures=[];unsupported=[s for s in core.ASSETS if s not in SEC_CIK]
     for symbol,cik in SEC_CIK.items():
         try:
-            raw=core.fetch(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json',25,{'Accept-Encoding':'identity','User-Agent':core.UA})
-            payload=_build_payload(symbol,json.loads(raw))
-            if not payload.get('known_at'):
-                failures.append(symbol+': no filed facts');continue
-            c=core.con();c.execute('insert or ignore into fundamental_snapshots(symbol,known_at,period_end,source,payload) values(?,?,?,?,?)',
-              (symbol,payload['known_at'],payload.get('period_end'),payload['source'],json.dumps(payload,ensure_ascii=False)));stored+=c.total_changes;c.commit();c.close()
+            raw=core.fetch(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json',25,{'Accept-Encoding':'identity','User-Agent':core.UA});payload=_build_payload(symbol,json.loads(raw))
+            if not payload.get('known_at'):failures.append(symbol+': no filed facts');continue
+            c=core.con();c.execute('insert or ignore into fundamental_snapshots(symbol,known_at,period_end,source,payload) values(?,?,?,?,?)',(symbol,payload['known_at'],payload.get('period_end'),payload['source'],json.dumps(payload,ensure_ascii=False)));stored+=c.total_changes;c.commit();c.close()
         except Exception as exc:failures.append(symbol+': '+str(exc)[:300])
     core.log('fundamentals','OK' if stored or not failures else 'ERROR',f'{stored} snapshots nuevos · unsupported={len(unsupported)}'+((' · '+failures[0]) if failures else ''))
-    return {'stored':stored,'supported_symbols':sorted(SEC_CIK),'unsupported_symbols':unsupported,'failures':failures[:10],
-            'source':'SEC_COMPANYFACTS_POINT_IN_TIME','can_trade':False,'real_trading':False}
+    return {'stored':stored,'supported_symbols':sorted(SEC_CIK),'unsupported_symbols':unsupported,'failures':failures[:10],'source':'SEC_COMPANYFACTS_POINT_IN_TIME','can_trade':False,'real_trading':False}
 
 
 def latest_fundamental(symbol:str)->dict[str,Any]|None:
@@ -135,10 +130,7 @@ def latest_fundamental(symbol:str)->dict[str,Any]|None:
 
 
 def fundamental_coverage()->dict[str,Any]:
-    _init_table(); rows=[]
+    _init_table();rows=[]
     for symbol in core.ASSETS:
-        p=latest_fundamental(symbol)
-        rows.append({'symbol':symbol,'available':bool(p),'known_at':p.get('known_at') if p else None,'period_end':p.get('period_end') if p else None,
-                     'source':p.get('source') if p else None,'valuation_multiple_available':False})
-    return {'assets_expected':len(core.ASSETS),'fundamentals_observed':sum(1 for x in rows if x['available']),
-            'assets':rows,'valuation_multiple':'NOT_YET_DERIVED_WITH_VERIFIED_MARKET_CAP','can_trade':False,'real_trading':False}
+        p=latest_fundamental(symbol);rows.append({'symbol':symbol,'available':bool(p),'known_at':p.get('known_at') if p else None,'period_end':p.get('period_end') if p else None,'source':p.get('source') if p else None,'valuation_multiple_available':False})
+    return {'assets_expected':len(core.ASSETS),'fundamentals_observed':sum(1 for x in rows if x['available']),'assets':rows,'valuation_multiple':'DERIVED_ONLY_WHEN_VERIFIED_SHARES_AND_REVENUE_EXIST','can_trade':False,'real_trading':False}
