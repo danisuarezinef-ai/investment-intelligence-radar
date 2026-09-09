@@ -36,9 +36,7 @@ Source: "..\dist\RadarWorker.exe"; DestDir: "{app}"; Flags: ignoreversion restar
 Source: "..\dist\RadarUpdater.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
 Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
 [InstallDelete]
-; Purge every desktop shortcut name emitted by previous releases from both
-; per-user and common desktop locations. 1.5.12 only cleaned {autodesktop},
-; which can leave a legacy shortcut in the other Windows desktop scope.
+; Purge every desktop shortcut name emitted by previous releases from both scopes.
 Type: files; Name: "{userdesktop}\Investment Intelligence Radar.lnk"
 Type: files; Name: "{commondesktop}\Investment Intelligence Radar.lnk"
 Type: files; Name: "{userdesktop}\Radar de Inversión.lnk"
@@ -54,7 +52,7 @@ Type: files; Name: "{commondesktop}\Radar de InversiÃ³n - Simulation Lab.lnk"
 Type: files; Name: "{userdesktop}\Radar de InversiÃƒÂ³n - Simulation Lab.lnk"
 Type: files; Name: "{commondesktop}\Radar de InversiÃƒÂ³n - Simulation Lab.lnk"
 [Icons]
-; Exactly one desktop shortcut. Simulation Lab stays available from the Start menu.
+; Exactly one desktop shortcut. Simulation Lab stays in the Start menu.
 Name: "{userdesktop}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Radar de Inversión - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
