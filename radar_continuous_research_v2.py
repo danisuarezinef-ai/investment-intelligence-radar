@@ -3,9 +3,9 @@ from __future__ import annotations
 import time
 from radar_core import collect_history
 from radar_simulation_v2 import _series_by_day
-from radar_experiment_brain_v1 import generate_experiments,rank_experiments
+from radar_experiment_brain_v1 import generate_experiments
 from radar_experiment_memory_v2 import diversity_filter,remember,memory_snapshot
-from radar_simulation_research_v3 import evaluate_config,walk_forward,stress_suite,overfit_gate
+from radar_simulation_research_v4 import research_protocol
 REAL_TRADING=False
 
 
@@ -16,12 +16,11 @@ def run_research_batch(generation=1,max_experiments=6,min_history_days=90):
     if len(days)<int(min_history_days):return {'status':'HOLD','reason':'INSUFFICIENT_HISTORY','history_days':len(days),'real_trading':False}
     candidates=diversity_filter(generate_experiments(generation))[:int(max_experiments)];results=[]
     for e in candidates:
-        cfg=e['configuration'];base=evaluate_config(cfg,days);wf=walk_forward(cfg,days);stress=stress_suite(cfg,days);gate=overfit_gate(wf,stress)
-        row={'experiment_id':e['experiment_id'],'configuration':cfg,'completed':base.get('completed',False),'return_pct':base.get('return_pct'),'alpha_pct':0.0,'max_drawdown_pct':base.get('max_drawdown_pct'),'costs':base.get('costs'),'stability_score':wf.get('stability_score'),'walk_forward':wf,'stress':stress,'gate':gate,'real_trading':False}
-        ranked=rank_experiments([row]);score=ranked[0]['research_score'] if ranked else None
-        remember(cfg,status='PASS' if gate['status']=='PASS_RESEARCH' else 'REJECTED',reason=','.join(gate['blockers']) if gate['blockers'] else None,generation=generation,research_score=score,stage='SHADOW_REVIEW' if gate['status']=='PASS_RESEARCH' else 'GRAVEYARD');row['research_score']=score;results.append(row)
+        cfg=e['configuration'];protocol=research_protocol(cfg,days);base=protocol['base'];wf=protocol['walk_forward'];stress=protocol['stress'];gate=protocol['gate'];score=protocol['research_score']
+        row={'experiment_id':e['experiment_id'],'configuration':cfg,'completed':base.get('completed',False),'return_pct':base.get('return_pct'),'alpha_pct':0.0,'max_drawdown_pct':base.get('max_drawdown_pct'),'costs':base.get('costs'),'sharpe':base.get('sharpe'),'stability_score':wf.get('stability_score'),'walk_forward':wf,'stress':stress,'gate':gate,'research_score':score,'real_trading':False}
+        remember(cfg,status='PASS' if gate['status']=='PASS_RESEARCH' else 'REJECTED',reason=','.join(gate['blockers']) if gate['blockers'] else None,generation=generation,research_score=score,stage='SHADOW_REVIEW' if gate['status']=='PASS_RESEARCH' else 'GRAVEYARD');results.append(row)
     winners=sorted([r for r in results if r['gate']['status']=='PASS_RESEARCH'],key=lambda r:float(r.get('research_score') or -1e9),reverse=True)
-    return {'status':'COMPLETED','generation':int(generation),'history_days':len(days),'tested':len(results),'shadow_candidates':[{'experiment_id':r['experiment_id'],'research_score':r['research_score'],'configuration':r['configuration']} for r in winners[:3]],'results':results,'memory':memory_snapshot(10),'evidence_class':'SIMULATED_RESEARCH_ONLY','real_trading':False}
+    return {'status':'COMPLETED','generation':int(generation),'history_days':len(days),'tested':len(results),'shadow_candidates':[{'experiment_id':r['experiment_id'],'research_score':r['research_score'],'configuration':r['configuration']} for r in winners[:3]],'results':results,'memory':memory_snapshot(10),'research_protocol':'STRICT_CHRONOLOGICAL_V4','evidence_class':'SIMULATED_RESEARCH_ONLY','real_trading':False}
 
 
 def continuous_research_loop(interval_seconds=21600):
