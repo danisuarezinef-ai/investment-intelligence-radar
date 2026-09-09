@@ -10,10 +10,11 @@ on:
 permissions:
   contents: write
 
-# Only the newest main build may publish the stable update channel.
-# This prevents two near-simultaneous pushes from racing on the updates branch.
+# PR validation must never cancel a main release, and one PR must not cancel
+# another PR. Only a newer run for the same exact ref is allowed to supersede
+# an older run for that ref.
 concurrency:
-  group: radar-windows-stable
+  group: radar-windows-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
