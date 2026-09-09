@@ -18,14 +18,16 @@ def test_priority_endpoint_is_read_only_and_exposes_wiring(monkeypatch):
     assert sent[0][1]['can_trade'] is False and sent[0][1]['real_trading'] is False
 
 
-def test_priority_live_marks_unwired_modules_explicitly(monkeypatch):
+def test_priority_live_marks_runtime_modules_explicitly(monkeypatch):
     monkeypatch.setattr(cloud,'validation_runtime_v3',lambda:{'paper_gate_evidence':{}})
     monkeypatch.setattr(cloud,'ops_health',lambda validation:{'freshness':{},'shadow_portfolio':{}})
+    monkeypatch.setattr(cloud,'operational_pipeline',lambda:{'forward_records':[],'universe':{'screened':[]},'real_trading':False})
     out=cloud.priority_runtime_live()
     assert out['wiring']['priority_runtime']=='LIVE'
-    assert out['wiring']['global_universe_v3']=='VERIFIED_CODE_ONLY'
-    assert out['wiring']['valuation_engine_v1']=='VERIFIED_CODE_ONLY'
-    assert out['wiring']['portfolio_optimizer_v3']=='VERIFIED_CODE_ONLY'
+    assert out['wiring']['global_universe_v3']=='LIVE_READ_ONLY_OBSERVED_STATE'
+    assert out['wiring']['valuation_engine_v1']=='LIVE_FAIL_CLOSED_MISSING_FUNDAMENTALS'
+    assert out['wiring']['portfolio_optimizer_v3']=='LIVE_FAIL_CLOSED_EVIDENCE_GATED'
+    assert out['wiring']['priority_forward_records'].startswith('LIVE_MATURED_LEDGER_ONLY')
     assert out['wiring']['generic_forward_autonomy_v1']=='VERIFIED_CODE_ONLY'
     assert out['strategy_performance_verified'] is False
     assert out['can_trade'] is False and out['real_trading'] is False
