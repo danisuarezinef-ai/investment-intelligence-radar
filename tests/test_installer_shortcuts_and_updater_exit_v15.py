@@ -7,10 +7,11 @@ def test_installer_cleans_legacy_desktop_shortcuts_and_creates_one_primary_short
     assert 'Investment Intelligence Radar.lnk' in text
     assert 'Radar de InversiÃ³n.lnk' in text or 'Radar de InversiÃƒÂ³n.lnk' in text
     assert 'Radar de Inversión.lnk' in text
-    # Desktop should only create the main Radar shortcut.
-    desktop_icons = [line for line in text.splitlines() if line.strip().startswith('Name: "{autodesktop}')]
+    # Exactly one desktop shortcut is created, explicitly in the per-user scope.
+    desktop_icons = [line for line in text.splitlines() if line.strip().startswith('Name: "{userdesktop}')]
     assert len(desktop_icons) == 1
     assert 'Radar de Inversión' in desktop_icons[0]
+    assert not any(line.strip().startswith('Name: "{commondesktop}') for line in text.splitlines())
 
 
 def test_updater_exits_cleanly_when_already_current():
