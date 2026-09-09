@@ -1,5 +1,5 @@
 #define MyAppName "Radar de Inversión"
-#define MyAppVersion "1.3.3"
+#define MyAppVersion "1.5.10"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 #define SimExeName "RadarSimulationLab.exe"
 [Setup]
@@ -14,9 +14,24 @@ OutputBaseFilename=Radar_de_Inversion_Setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-CloseApplications=yes
+; Radar owns background/hidden processes that may keep its one-file executables locked.
+; Stop only Radar processes before files are replaced instead of asking the user to
+; ignore a partial upgrade. The updater uses the same controlled shutdown policy.
+CloseApplications=no
 RestartApplications=no
 SetupIconFile=..\assets\radar.ico
+[Code]
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
+begin
+  Exec(ExpandConstant('{cmd}'), '/C taskkill /F /IM InvestmentIntelligenceRadar.exe >nul 2>&1', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Exec(ExpandConstant('{cmd}'), '/C taskkill /F /IM RadarSimulationLab.exe >nul 2>&1', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Exec(ExpandConstant('{cmd}'), '/C taskkill /F /IM RadarWorker.exe >nul 2>&1', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Exec(ExpandConstant('{cmd}'), '/C taskkill /F /IM RadarUpdater.exe >nul 2>&1', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Sleep(1200);
+  Result := '';
+end;
 [Files]
 Source: "..\dist\InvestmentIntelligenceRadar.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
 Source: "..\dist\RadarSimulationLab.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
