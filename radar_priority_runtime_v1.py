@@ -8,6 +8,9 @@ from radar_cloud_contract_v4 import audit_contract
 from radar_investment_ui_v4 import investment_home
 REAL_TRADING=False
 
+def _coalesce(value,fallback):
+    return fallback if value is None else value
+
 def priority_snapshot(*, account:dict[str,Any], decision:dict[str,Any]|None, opportunities:list[dict[str,Any]],
                       forward_records:list[dict[str,Any]], models:list[dict[str,Any]], endpoint_status:dict[str,Any],
                       freshness:dict[str,Any], promotion_metrics:dict[str,Any])->dict[str,Any]:
@@ -16,10 +19,10 @@ def priority_snapshot(*, account:dict[str,Any], decision:dict[str,Any]|None, opp
     competition=compete(observed_models)
     cloud=audit_contract(endpoint_status,freshness)
     merged_metrics={**promotion_metrics,
-                    'days':promotion_metrics.get('days',sc.get('forward_days')),
-                    'decisions':promotion_metrics.get('decisions',sc.get('matured_decisions')),
-                    'benchmark_coverage':promotion_metrics.get('benchmark_coverage',sc.get('benchmark_coverage')),
-                    'cost_coverage':promotion_metrics.get('cost_coverage',sc.get('cost_coverage')),
+                    'days':_coalesce(promotion_metrics.get('days'),sc.get('forward_days')),
+                    'decisions':_coalesce(promotion_metrics.get('decisions'),sc.get('matured_decisions')),
+                    'benchmark_coverage':_coalesce(promotion_metrics.get('benchmark_coverage'),sc.get('benchmark_coverage')),
+                    'cost_coverage':_coalesce(promotion_metrics.get('cost_coverage'),sc.get('cost_coverage')),
                     'performance_verified':sc['performance_verified'],
                     'backfill_used':sc.get('backfill_used'),
                     'model_competition_ready':competition.get('status')=='READY'}
