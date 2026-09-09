@@ -66,12 +66,16 @@ def matured_forward_records():
  except Exception:c.close();return []
  c.close();out=[]
  for row in rows:
-  try:p=json.loads(row[7]) if isinstance(row[7],str) else (row[7] or {})
+  if len(row)>=10:
+   ledger_id,asset,horizon,model_version,confidence,created_at,target_date,payload,outcome,evaluated_at=row[:10]
+  else:
+   ledger_id,asset,created_at,target_date,payload,outcome,evaluated_at=row[:7];horizon=model_version=confidence=None
+  try:p=json.loads(payload) if isinstance(payload,str) else (payload or {})
   except Exception:p={}
-  try:o=json.loads(row[8]) if isinstance(row[8],str) else (row[8] or {})
+  try:o=json.loads(outcome) if isinstance(outcome,str) else (outcome or {})
   except Exception:o={}
-  out.append({'ledger_id':row[0],'symbol':row[1],'horizon':row[2],'model_version':row[3],'confidence':row[4],
-              'created_at':row[5],'target_date':row[6],'evaluated_at':row[9],
+  out.append({'ledger_id':ledger_id,'symbol':asset,'horizon':horizon,'model_version':model_version,'confidence':confidence,
+              'created_at':created_at,'target_date':target_date,'evaluated_at':evaluated_at,
               'return_pct':o.get('return'),'net_return':o.get('net_return'),'excess_return':o.get('excess_return'),
               'cost':o.get('cost'),'cost_model':o.get('cost_model'),'benchmark_return':o.get('benchmark_return'),
               'benchmark_name':o.get('benchmark_name'),'decision_state':p.get('decision_state'),
