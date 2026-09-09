@@ -50,9 +50,10 @@ def test_ops_health_is_read_only_and_fail_closed(tmp_path,monkeypatch):
     assert out['status'] in ('HEALTHY','DEGRADED','INSUFFICIENT_DATA','FAILED')
     assert out['asset_coverage']['configured']==len(radar_core.ASSETS)
     assert out['validation_status']=='INSUFFICIENT_DATA'
-    assert len(out['providers'])==4
-    assert all(item['circuit_breaker']=='NOT_IMPLEMENTED' for item in out['providers'])
-    assert out['circuit_breakers']['active'] is None
+    assert len(out['providers'])==6
+    assert all(item['circuit_breaker']=='NOT_VERIFIED' for item in out['providers'])
+    assert out['circuit_breakers']['status']=='LIVE_PERSISTED_STATE'
+    assert out['circuit_breakers']['active']==[]
     assert out['can_trade'] is False and out['real_trading'] is False
 
 

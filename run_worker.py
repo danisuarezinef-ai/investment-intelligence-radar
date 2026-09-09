@@ -1,6 +1,9 @@
 import json, os, time, traceback, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from radar_core import (init_db,collect_market,collect_sec,collect_science,collect_history,history_ready,write_status,PID,LOG,STATUS,stats,now,profitability_leaders,opportunity_rankings,paper_status,paper_step,con)
+from radar_core import (init_db,collect_sec,collect_science,collect_history,history_ready,write_status,PID,LOG,STATUS,stats,now,profitability_leaders,opportunity_rankings,paper_status,con)
+from radar_market_runtime_v2 import collect_market
+from radar_fundamentals_point_in_time_v1 import collect_fundamentals
+from radar_paper_authority_v1 import paper_authority_step
 from radar_intelligence import (init_intelligence_db,detect_silence,evaluate_source_reputation,list_notifications,mark_notifications_read,source_reputation,silence_alerts,sync_node_heartbeat,sync_nodes,intelligence_summary)
 from radar_feeds import collect_news,collect_arxiv
 from radar_agents import ensure_agents,agents_status,step_all_agents,reset_agents
@@ -30,7 +33,7 @@ def snapshot_payload():
  return {'counts':{'prices':prices,'events':events,'runs':runs},'latest_prices':[{'symbol':r[0],'price':r[1],'source':r[2],'ts':r[3]} for r in latest],'latest_events':[{'source':r[0],'title':r[1],'ts':r[2]} for r in news],'status':_read_status(),'leaders':{'week':profitability_leaders(7),'month':profitability_leaders(30),'year':profitability_leaders(365)},'opportunities':opportunity_rankings(),'paper':paper_status(),'paper_agents':agents_status(),'intelligence':intelligence_summary(),'decision_v2':runtime_snapshot()}
 def worker_loop():
  init_db(); init_intelligence_db(); ensure_agents(); open(PID,'w').write(str(os.getpid())); write_status(version='1.4.0',state='INICIANDO',started_at=now(),last_error='',cloud_enabled=cloud_enabled())
- next_market=next_sec=next_science=next_news=next_arxiv=next_silence=next_reputation=next_deep=0; history_attempted=False
+ next_market=next_sec=next_fundamentals=next_science=next_news=next_arxiv=next_silence=next_reputation=next_deep=0; history_attempted=False
  try:
   while True:
    if not cloud_enabled():write_status(state='PAUSADO CLOUD',cloud_enabled=False,current_job=''); time.sleep(2); continue
@@ -38,8 +41,9 @@ def worker_loop():
    try:
     if not history_attempted and not history_ready():history_attempted=True; write_status(state='CARGANDO HISTÓRICO',current_job='history'); collect_history()
     if t>=next_market:
-     write_status(state='RECOPILANDO MERCADO',current_job='market'); collect_market(); next_market=t+300; paper_step(); agents=step_all_agents(); v2=safe_fast_cycle(); print(f'[paper] agents={len(agents)} champion={v2.get("champion",{}).get("action","?")}',flush=True)
+     write_status(state='RECOPILANDO MERCADO',current_job='market'); collect_market(); next_market=t+300; authority=paper_authority_step(); agents=step_all_agents(); v2=safe_fast_cycle(); print(f'[paper-authority] status={authority.get("status")} agents={len(agents)} champion={v2.get("champion",{}).get("action","?")}',flush=True)
     if t>=next_sec:write_status(state='RECOPILANDO SEC',current_job='sec'); collect_sec(); next_sec=t+900
+    if t>=next_fundamentals:write_status(state='RECOPILANDO FUNDAMENTALES',current_job='fundamentals'); collect_fundamentals(); next_fundamentals=t+21600
     if t>=next_science:write_status(state='RECOPILANDO CIENCIA',current_job='science'); collect_science(); next_science=t+1800
     if t>=next_news:write_status(state='RECOPILANDO NOTICIAS',current_job='news'); collect_news(); next_news=t+900
     if t>=next_arxiv:write_status(state='RECOPILANDO ARXIV',current_job='arxiv'); collect_arxiv(); next_arxiv=t+3600
@@ -97,7 +101,7 @@ class _Handler(BaseHTTPRequestHandler):
   if p=='/decision-v2/deep':return self._send(200,safe_deep_cycle())
   if p=='/collect-now':
    if not history_ready():collect_history()
-   results={'market':collect_market(),'sec':collect_sec(),'science':collect_science(),'news':collect_news(),'arxiv':collect_arxiv(),'silence':len(detect_silence()),'source_reputation':len(evaluate_source_reputation())}; paper_step(force=True); results['paper_agents']=len(step_all_agents(force=True)); results['decision_v2']=safe_fast_cycle(); return self._send(200,{'ok':True,'results':results,'snapshot':snapshot_payload()})
+   results={'market':collect_market(),'sec':collect_sec(),'fundamentals':collect_fundamentals(),'science':collect_science(),'news':collect_news(),'arxiv':collect_arxiv(),'silence':len(detect_silence()),'source_reputation':len(evaluate_source_reputation())}; results['paper_authority']=paper_authority_step(force=True); results['paper_agents']=len(step_all_agents(force=True)); results['decision_v2']=safe_fast_cycle(); return self._send(200,{'ok':True,'results':results,'snapshot':snapshot_payload()})
   if p=='/paper-agents/step':return self._send(200,{'ok':True,'agents':step_all_agents(force=True),'decision_v2':safe_fast_cycle()})
   if p=='/paper-agents/reset':return self._send(200,{'ok':True,'agents':reset_agents(float(_read_json(self).get('initial_cash',200.0)))})
   self._send(404,{'ok':False,'error':'not found'})

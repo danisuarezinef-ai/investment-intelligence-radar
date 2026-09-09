@@ -1,10 +1,12 @@
 """24/7 shadow-forward capture. No backfill and no execution capability."""
 import json,os
-from radar_core import con,now
+from radar_core import con,now,ASSETS
 from radar_investment_memory import init_memory,freeze_prediction,evaluate_prediction,ledger_status
 
 REAL_TRADING=False
 CONTROL_KEY='shadow_forward_started_at'
+PAPER_ROUND_TRIP_COST=0.001
+BENCHMARK_NAME='RADAR_EQUAL_WEIGHT_OBSERVED_UNIVERSE'
 
 def enabled():return os.environ.get('SHADOW_FORWARD_LEDGER_ENABLED','').lower() in ('1','true','yes')
 
@@ -42,15 +44,45 @@ def capture_forward_predictions():
         except Exception as exc:errors.append({'prediction_id':r[0],'error':str(exc)})
     c.close();return {'captured':captured,'errors':errors,'real_trading':False}
 
+def _benchmark_return(c,created_at,target_date):
+    returns=[]
+    for symbol in ASSETS:
+        entry=c.execute('select price from market_snapshots where symbol=? and ts<=? order by ts desc,id desc limit 1',(symbol,created_at)).fetchone()
+        exitp=c.execute('select price from market_snapshots where symbol=? and ts>=? order by ts,id limit 1',(symbol,target_date)).fetchone()
+        if not entry or not exitp:continue
+        try:
+            a=float(entry[0]);b=float(exitp[0])
+            if a>0 and b>0:returns.append(b/a-1.0)
+        except Exception:pass
+    if len(returns)<max(3,len(ASSETS)//2):return None,len(returns)
+    return sum(returns)/len(returns),len(returns)
+
 def mature_forward_outcomes():
-    c=con();init_memory(c);stamp=now();rows=c.execute('select id,asset,target_date,payload from prediction_ledger where outcome is null and target_date<=? order by target_date',(stamp,)).fetchall();done=0;pending=0
-    for pid,asset,target,payload in rows:
+    """Mature only previously frozen decisions. Benchmark/cost evidence is created prospectively here, never backfilled."""
+    c=con();init_memory(c);stamp=now();rows=c.execute('select id,asset,created_at,target_date,payload from prediction_ledger where outcome is null and target_date<=? order by target_date',(stamp,)).fetchall();done=0;pending=0;benchmark_pending=0
+    for pid,asset,created_at,target,payload in rows:
         p=json.loads(payload);entry=float(p.get('entry_price') or 0)
         price=c.execute('select price,ts from market_snapshots where symbol=? and ts>=? order by ts,id limit 1',(asset,target)).fetchone()
         if not price or entry<=0:pending+=1;continue
-        ret=float(price[0])/entry-1
-        evaluate_prediction(c,pid,{'exit_price':float(price[0]),'price_timestamp':price[1],'return':ret},evaluated_at=stamp);done+=1
-    c.close();return {'evaluated':done,'pending_market_data':pending,'real_trading':False}
+        asset_return=float(price[0])/entry-1
+        decision=str(p.get('decision_state') or 'WAIT').upper()
+        gross_strategy_return=asset_return if decision=='BUY' else 0.0
+        cost=PAPER_ROUND_TRIP_COST if decision=='BUY' else 0.0
+        net_return=gross_strategy_return-cost
+        benchmark_return,benchmark_assets=_benchmark_return(c,created_at,target)
+        excess_return=(net_return-benchmark_return) if benchmark_return is not None else None
+        if benchmark_return is None:benchmark_pending+=1
+        evaluate_prediction(c,pid,{
+          'exit_price':float(price[0]),'price_timestamp':price[1],'return':asset_return,
+          'gross_strategy_return':gross_strategy_return,'cost':cost,'cost_model':'PAPER_ROUND_TRIP_10BPS',
+          'cost_evidence':'EXPLICIT_PAPER_MODEL_NOT_LIVE_BROKER_COST','net_return':net_return,
+          'benchmark_name':BENCHMARK_NAME,'benchmark_return':benchmark_return,'benchmark_assets':benchmark_assets,
+          'benchmark_evidence':'OBSERVED_POINT_IN_TIME_MARKET_DATA' if benchmark_return is not None else 'INSUFFICIENT_BENCHMARK_COVERAGE',
+          'excess_return':excess_return,'backfilled':False,
+        },evaluated_at=stamp);done+=1
+    c.close();return {'evaluated':done,'pending_market_data':pending,'pending_benchmark':benchmark_pending,
+                       'cost_model':'PAPER_ROUND_TRIP_10BPS','benchmark':BENCHMARK_NAME,
+                       'backfill_used':False,'real_trading':False}
 
 def forward_health():
-    c=con();status=ledger_status(c);status['started_at']=_start_boundary(c);status['enabled']=enabled();c.close();return status
+    c=con();status=ledger_status(c);status['started_at']=_start_boundary(c);status['enabled']=enabled();status['prospective_cost_model']='PAPER_ROUND_TRIP_10BPS';status['prospective_benchmark']=BENCHMARK_NAME;c.close();return status
