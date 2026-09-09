@@ -4,15 +4,16 @@ from pathlib import Path
 def test_installer_cleans_legacy_desktop_shortcuts_and_creates_one_primary_shortcut():
     text = Path('installer/Radar.iss').read_text(encoding='utf-8')
     assert '[InstallDelete]' in text
-    assert 'Investment Intelligence Radar.lnk' in text
-    assert 'Radar de InversiÃ³n.lnk' in text or 'Radar de InversiÃƒÂ³n.lnk' in text
-    assert 'Radar de Inversión.lnk' in text
-    # 1.5.13 deliberately targets the per-user desktop so common/user scope can
-    # be cleaned independently and only one primary shortcut is recreated.
+    # 1.5.14 intentionally uses wildcard cleanup so both correctly encoded and
+    # mojibake shortcut names from older releases are removed in either scope.
+    assert '{userdesktop}\\Radar de Invers*.lnk' in text
+    assert '{commondesktop}\\Radar de Invers*.lnk' in text
+    assert '{userdesktop}\\Investment Intelligence Radar*.lnk' in text
+    assert '{commondesktop}\\Investment Intelligence Radar*.lnk' in text
     desktop_icons = [line for line in text.splitlines() if line.strip().startswith('Name: "{userdesktop}')]
     assert len(desktop_icons) == 1
     assert 'Radar de Inversión' in desktop_icons[0]
-    assert 'Radar de Inversión - Simulation Lab' not in desktop_icons[0]
+    assert 'Simulation Lab' not in desktop_icons[0]
 
 
 def test_updater_exits_cleanly_when_already_current():
