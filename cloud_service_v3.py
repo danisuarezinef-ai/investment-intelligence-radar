@@ -10,6 +10,7 @@ from radar_priority_runtime_v1 import priority_snapshot
 from radar_operational_pipeline_v1 import operational_pipeline, market_telemetry
 from radar_market_runtime_v2 import provider_telemetry
 from radar_fundamentals_point_in_time_v1 import fundamental_coverage
+from radar_forward_outcome_sync_v1 import sync_forward_outcomes_once
 
 REAL_TRADING=False
 BaseHandler=base_v2.ValidationHandler
@@ -25,7 +26,7 @@ def priority_runtime_live():
     opportunities=[{'symbol':row.get('symbol'),'score':row.get('score'),'risk':row.get('risk')} for row in operational.get('universe',{}).get('screened',[])[:12]]
     payload=priority_snapshot(account=account,decision=None,opportunities=opportunities,forward_records=operational.get('forward_records') or [],models=[],endpoint_status=endpoint_status,freshness=freshness,promotion_metrics=promotion_metrics)
     payload['operational_pipeline']=operational
-    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'NOT_WIRED_TO_FORWARD_MODEL_METRICS','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
+    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','forward_outcome_sync':'LIVE_IDEMPOTENT_MATURE_OUTCOME_RESEND','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'NOT_WIRED_TO_FORWARD_MODEL_METRICS','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
     payload['can_trade']=False;payload['real_trading']=False;return payload
 
 
@@ -60,6 +61,17 @@ def _resilient_learning_loop(max_schema_retries=3):
             time.sleep(.25*retries)
 
 
+def _forward_outcome_sync_loop(interval_seconds=60):
+    """Resend only already-matured immutable outcomes; never creates/backfills decisions."""
+    while True:
+        try:
+            result=sync_forward_outcomes_once(750)
+            print(f'[forward-outcome-sync] sent={result.get("sent",0)} idempotent={result.get("idempotent",False)}',flush=True)
+        except Exception as exc:
+            print('[forward-outcome-sync] ERROR '+repr(exc),flush=True)
+        time.sleep(max(30,int(interval_seconds)))
+
+
 base_v2.base.run_worker._Handler=ValidationV3Handler
 
 if __name__=='__main__':
@@ -67,4 +79,5 @@ if __name__=='__main__':
     threading.Thread(target=base.supabase_sync_loop,name='supabase-sync',daemon=True).start()
     threading.Thread(target=base.learning_sync_loop,name='learning-sync',daemon=True).start()
     threading.Thread(target=_resilient_learning_loop,name='learning-engine',daemon=True).start()
+    threading.Thread(target=_forward_outcome_sync_loop,name='forward-outcome-sync',daemon=True).start()
     base.run_worker.main()
