@@ -14,6 +14,9 @@ if(!$version){throw 'version.json no contiene version'}
 $desktopPath=Join-Path $PSScriptRoot 'radar_desktop_v2.py'
 $desktop=Get-Content $desktopPath -Raw -Encoding UTF8
 $desktop=[regex]::Replace($desktop,"APP_VERSION\s*=\s*'[^']+'","APP_VERSION='$version'")
+$desktop=$desktop.Replace("root.title('Investment Intelligence Radar')","root.title('Radar de Inversión')")
+$desktop=$desktop.Replace("text='Investment Intelligence Radar'","text='Radar de Inversión'")
+$desktop=$desktop.Replace("'Investment Intelligence Radar.lnk'","'Radar de Inversión.lnk'")
 [System.IO.File]::WriteAllText($desktopPath,$desktop,(New-Object System.Text.UTF8Encoding($false)))
 
 $simDesktopPath=Join-Path $PSScriptRoot 'radar_simulation_desktop.py'
