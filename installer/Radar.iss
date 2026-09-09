@@ -1,5 +1,5 @@
 #define MyAppName "Radar de Inversión"
-#define MyAppVersion "1.5.10"
+#define MyAppVersion "1.5.12"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 #define SimExeName "RadarSimulationLab.exe"
 [Setup]
@@ -14,9 +14,6 @@ OutputBaseFilename=Radar_de_Inversion_Setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-; Radar owns background/hidden processes that may keep its one-file executables locked.
-; Stop only Radar processes before files are replaced instead of asking the user to
-; ignore a partial upgrade. The updater uses the same controlled shutdown policy.
 CloseApplications=no
 RestartApplications=no
 SetupIconFile=..\assets\radar.ico
@@ -38,9 +35,18 @@ Source: "..\dist\RadarSimulationLab.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\RadarWorker.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
 Source: "..\dist\RadarUpdater.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
 Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
+[InstallDelete]
+; Remove shortcut names created by older builds, including mojibake variants.
+Type: files; Name: "{autodesktop}\Investment Intelligence Radar.lnk"
+Type: files; Name: "{autodesktop}\Radar de Inversión.lnk"
+Type: files; Name: "{autodesktop}\Radar de Inversión - Simulation Lab.lnk"
+Type: files; Name: "{autodesktop}\Radar de InversiÃ³n.lnk"
+Type: files; Name: "{autodesktop}\Radar de InversiÃƒÂ³n.lnk"
+Type: files; Name: "{autodesktop}\Radar de InversiÃ³n - Simulation Lab.lnk"
+Type: files; Name: "{autodesktop}\Radar de InversiÃƒÂ³n - Simulation Lab.lnk"
 [Icons]
+; Exactly one desktop shortcut. Simulation Lab stays available from the Start menu.
 Name: "{autodesktop}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\Radar de Inversión - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Radar de Inversión - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 [Run]
