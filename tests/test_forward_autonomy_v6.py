@@ -27,9 +27,24 @@ def test_optimizer_requires_drawdown_and_keeps_live_off():
     assert x['status']=='BLOCKED' and x['real_trading'] is False
 
 def test_scorecard_rejects_backfill_and_requires_sample():
-    rows=[{'matured':True,'backfilled':True,'net_return':9}]
+    rows=[{'matured':True,'backfilled':True,'net_return':9,'excess_return':8}]
     x=scorecard(rows,min_decisions=1)
     assert x['matured_decisions']==0 and x['performance_verified'] is False
+
+def test_scorecard_missing_cost_or_benchmark_evidence_fails_closed():
+    rows=[{'matured':True,'backfilled':False,'return_pct':5.0} for _ in range(30)]
+    x=scorecard(rows,min_decisions=30)
+    assert x['matured_decisions']==30
+    assert x['net_return_observations']==0 and x['excess_return_observations']==0
+    assert x['mean_net_return'] is None and x['mean_excess_return'] is None
+    assert x['benchmark_and_cost_evidence_complete'] is False
+    assert x['status']=='INSUFFICIENT_EVIDENCE' and x['performance_verified'] is False
+
+def test_scorecard_requires_both_net_and_excess_sample():
+    rows=[{'matured':True,'backfilled':False,'net_return':.01} for _ in range(30)]
+    x=scorecard(rows,min_decisions=30)
+    assert x['net_return_observations']==30 and x['excess_return_observations']==0
+    assert x['performance_verified'] is False
 
 def test_challenger_never_auto_replaces():
     x=compete([{'name':'a','forward_n':50,'mean_excess_return':.03},{'name':'b','forward_n':50,'mean_excess_return':.01}],min_forward_n=40)
