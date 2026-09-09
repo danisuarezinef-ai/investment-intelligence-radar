@@ -62,15 +62,24 @@ def _portfolio_drawdown_pct():
 
 def matured_forward_records():
  c=con()
- try:rows=c.execute('select id,asset,created_at,target_date,payload,outcome,evaluated_at from prediction_ledger where outcome is not null order by id').fetchall()
+ try:rows=c.execute('select id,asset,horizon,model_version,confidence,created_at,target_date,payload,outcome,evaluated_at from prediction_ledger where outcome is not null order by id').fetchall()
  except Exception:c.close();return []
  c.close();out=[]
  for row in rows:
-  try:p=json.loads(row[4]) if isinstance(row[4],str) else (row[4] or {})
+  if len(row)>=10:
+   ledger_id,asset,horizon,model_version,confidence,created_at,target_date,payload,outcome,evaluated_at=row[:10]
+  else:
+   ledger_id,asset,created_at,target_date,payload,outcome,evaluated_at=row[:7];horizon=model_version=confidence=None
+  try:p=json.loads(payload) if isinstance(payload,str) else (payload or {})
   except Exception:p={}
-  try:o=json.loads(row[5]) if isinstance(row[5],str) else (row[5] or {})
+  try:o=json.loads(outcome) if isinstance(outcome,str) else (outcome or {})
   except Exception:o={}
-  out.append({'ledger_id':row[0],'symbol':row[1],'created_at':row[2],'target_date':row[3],'evaluated_at':row[6],'return_pct':o.get('return'),'net_return':o.get('net_return'),'excess_return':o.get('excess_return'),'cost':o.get('cost'),'cost_model':o.get('cost_model'),'benchmark_return':o.get('benchmark_return'),'benchmark_name':o.get('benchmark_name'),'decision_state':p.get('decision_state'),'matured':True,'backfilled':bool(o.get('backfilled',False))})
+  out.append({'ledger_id':ledger_id,'symbol':asset,'horizon':horizon,'model_version':model_version,'confidence':confidence,
+              'created_at':created_at,'target_date':target_date,'evaluated_at':evaluated_at,
+              'return_pct':o.get('return'),'net_return':o.get('net_return'),'excess_return':o.get('excess_return'),
+              'cost':o.get('cost'),'cost_model':o.get('cost_model'),'benchmark_return':o.get('benchmark_return'),
+              'benchmark_name':o.get('benchmark_name'),'decision_state':p.get('decision_state'),
+              'matured':True,'backfilled':bool(o.get('backfilled',False))})
  return out
 
 def operational_pipeline():

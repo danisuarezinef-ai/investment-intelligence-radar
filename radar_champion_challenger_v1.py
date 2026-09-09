@@ -5,6 +5,7 @@ model. Automatic replacement remains disabled; this module only recommends chang
 inside SHADOW/PAPER governance.
 """
 from __future__ import annotations
+from datetime import datetime
 from typing import Any, Iterable
 REAL_TRADING=False
 
@@ -18,6 +19,31 @@ def _eligible(m:dict[str,Any],min_forward_n:int,min_forward_days:int)->bool:
         m.get('matured_only') is True and
         isinstance(m.get('mean_excess_return'),(int,float))
     )
+
+
+def derive_forward_model_metrics(records:Iterable[dict[str,Any]])->list[dict[str,Any]]:
+    groups:dict[str,list[dict[str,Any]]]={}
+    for raw in records:
+        r=dict(raw)
+        if r.get('matured') is not True or r.get('backfilled') is True:continue
+        model=str(r.get('model_version') or '').strip()
+        if not model:continue
+        groups.setdefault(model,[]).append(r)
+    out=[]
+    for model,rows in groups.items():
+        excess=[float(r['excess_return']) for r in rows if isinstance(r.get('excess_return'),(int,float))]
+        dates=[]
+        for r in rows:
+            try:dates.append(datetime.fromisoformat(str(r.get('created_at')).replace('Z','+00:00')))
+            except Exception:pass
+        days=max(0,(max(dates)-min(dates)).days+1) if dates else 0
+        out.append({'model_version':model,'forward_n':len(rows),'forward_days':days,
+                    'mean_excess_return':sum(excess)/len(excess) if excess else None,
+                    'forward_only':True,'matured_only':True,'backfilled':False,
+                    'benchmark_aware':len(excess)==len(rows) and len(rows)>0,
+                    'cost_aware':all(r.get('cost') is not None for r in rows),
+                    'can_trade':False,'real_trading':False})
+    return out
 
 
 def compete(models:Iterable[dict[str,Any]],*,min_forward_n:int=40,min_forward_days:int=14,margin:float=.01)->dict[str,Any]:
