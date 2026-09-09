@@ -1,4 +1,4 @@
-"""Cloud service v3 — unified validation and autonomous research runtime."""
+"""Cloud service v3 — unified validation and autonomous simulator runtime."""
 import json
 import sqlite3
 import threading
@@ -12,7 +12,6 @@ from radar_operational_pipeline_v1 import operational_pipeline, market_telemetry
 from radar_market_runtime_v2 import provider_telemetry
 from radar_fundamentals_point_in_time_v1 import fundamental_coverage
 from radar_forward_outcome_sync_v1 import sync_forward_outcomes_once
-from radar_continuous_research_v2 import continuous_research_loop
 from radar_brain_dashboard_v1 import brain_dashboard
 from radar_autonomous_simulator_v1 import autonomous_simulator_loop, simulator_status
 
@@ -32,7 +31,7 @@ def priority_runtime_live():
     payload['operational_pipeline']=operational
     payload['brain']=brain_dashboard(forward_status={'records':len(operational.get('forward_records') or [])},paper_status=paper,cloud_status={'freshness':freshness})
     payload['autonomous_simulator']=simulator_status()
-    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','forward_outcome_sync':'LIVE_IDEMPOTENT_MATURE_OUTCOME_RESEND','continuous_research_brain':'LIVE_DAEMON_SIMULATED_RESEARCH_ONLY','autonomous_simulator':'LIVE_PERSISTENT_PAPER_AND_RESEARCH_DAEMON','brain_research_endpoint':'LIVE_READ_ONLY','simulator_status_endpoint':'LIVE_READ_ONLY','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'LIVE_DERIVED_FROM_MATURE_FORWARD_MODEL_METRICS_FAIL_CLOSED','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
+    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','forward_outcome_sync':'LIVE_IDEMPOTENT_MATURE_OUTCOME_RESEND','continuous_research_brain':'INTEGRATED_IN_AUTONOMOUS_SIMULATOR','autonomous_simulator':'LIVE_PERSISTENT_PAPER_AND_RESEARCH_DAEMON','brain_research_endpoint':'LIVE_READ_ONLY','simulator_status_endpoint':'LIVE_READ_ONLY','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'LIVE_DERIVED_FROM_MATURE_FORWARD_MODEL_METRICS_FAIL_CLOSED','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
     payload['can_trade']=False;payload['real_trading']=False;return payload
 
 
@@ -56,7 +55,6 @@ class ValidationV3Handler(BaseHandler):
 
 
 def _resilient_learning_loop(max_schema_retries=3):
-    """Retry only the known concurrent SQLite ADD COLUMN race during startup."""
     retries=0
     while True:
         try:return base_v2.base.learning_loop()
@@ -66,7 +64,6 @@ def _resilient_learning_loop(max_schema_retries=3):
 
 
 def _forward_outcome_sync_loop(interval_seconds=60):
-    """Resend only already-matured immutable outcomes; never creates/backfills decisions."""
     while True:
         try:
             result=sync_forward_outcomes_once(750);print(f'[forward-outcome-sync] sent={result.get("sent",0)} idempotent={result.get("idempotent",False)}',flush=True)
@@ -74,14 +71,11 @@ def _forward_outcome_sync_loop(interval_seconds=60):
         time.sleep(max(30,int(interval_seconds)))
 
 
-# Desktop 1.5.14 sends structured heartbeat detail. SQLite TEXT parameters must
-# be normalized before the legacy heartbeat writer sees them.
 _original_sync_node_heartbeat=base_v2.base.run_worker.sync_node_heartbeat
 
-def _safe_sync_node_heartbeat(*args, **kwargs):
+def _safe_sync_node_heartbeat(*args,**kwargs):
     detail=kwargs.get('detail')
-    if detail is not None and not isinstance(detail,str):
-        kwargs['detail']=json.dumps(detail,ensure_ascii=False,sort_keys=True)
+    if detail is not None and not isinstance(detail,str):kwargs['detail']=json.dumps(detail,ensure_ascii=False,sort_keys=True)
     return _original_sync_node_heartbeat(*args,**kwargs)
 
 base_v2.base.run_worker.sync_node_heartbeat=_safe_sync_node_heartbeat
@@ -93,6 +87,5 @@ if __name__=='__main__':
     threading.Thread(target=base.learning_sync_loop,name='learning-sync',daemon=True).start()
     threading.Thread(target=_resilient_learning_loop,name='learning-engine',daemon=True).start()
     threading.Thread(target=_forward_outcome_sync_loop,name='forward-outcome-sync',daemon=True).start()
-    threading.Thread(target=continuous_research_loop,name='continuous-research-brain',daemon=True).start()
     threading.Thread(target=autonomous_simulator_loop,name='autonomous-simulator',daemon=True).start()
     base.run_worker.main()
