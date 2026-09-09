@@ -2,7 +2,7 @@ import os, sys, json, hashlib, tempfile, urllib.request, zipfile, shutil, subpro
 import tkinter as tk
 from tkinter import ttk
 
-APP='Investment Intelligence Radar'
+APP='Radar de Inversión'
 UPDATE_MANIFEST='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/update_manifest.json'
 APPDIR=os.path.dirname(os.path.abspath(sys.executable if getattr(sys,'frozen',False) else __file__))
 DATA=os.path.join(os.environ.get('LOCALAPPDATA',os.path.expanduser('~')),'InvestmentIntelligenceRadarData')
@@ -70,40 +70,29 @@ def install(pkg,version):
     finally:shutil.rmtree(tmp,ignore_errors=True)
 
 def main():
-    root=tk.Tk(); root.title('Investment Intelligence Radar · Actualizador'); root.geometry('760x560'); root.minsize(640,500); root.configure(bg=BG)
+    root=tk.Tk(); root.title('Radar de Inversión · Actualizador'); root.geometry('760x560'); root.minsize(640,500); root.configure(bg=BG)
     root.lift(); root.attributes('-topmost',True); root.after(1200,lambda:root.attributes('-topmost',False))
     frame=tk.Frame(root,bg=PANEL,padx=26,pady=24); frame.pack(fill='both',expand=True,padx=24,pady=24)
-    title=tk.Label(frame,text='ACTUALIZADOR DE INVESTMENT INTELLIGENCE RADAR',bg=PANEL,fg=TEXT,font=('Segoe UI',16,'bold')); title.pack(anchor='w')
+    title=tk.Label(frame,text='ACTUALIZADOR DE RADAR DE INVERSIÓN',bg=PANEL,fg=TEXT,font=('Segoe UI',16,'bold')); title.pack(anchor='w')
     status=tk.StringVar(value='Comprobando actualizaciones…')
     msg=tk.Label(frame,textvariable=status,bg=PANEL,fg=MUTED,font=('Segoe UI',10),justify='left',wraplength=650); msg.pack(anchor='w',fill='x',pady=(14,12))
     prog=ttk.Progressbar(frame,mode='indeterminate'); prog.pack(fill='x',pady=(0,16)); prog.start(12)
     buttons=tk.Frame(frame,bg=PANEL); buttons.pack(side='bottom',fill='x')
-    install_btn=tk.Button(buttons,text='INSTALAR ACTUALIZACIÓN',state='disabled',bg=BLUE,fg='white',relief='flat',bd=0,padx=20,pady=10,font=('Segoe UI',10,'bold')); install_btn.pack(side='right')
-    close_btn=tk.Button(buttons,text='CERRAR',command=root.destroy,bg=BG,fg=TEXT,relief='flat',bd=0,padx=16,pady=10); close_btn.pack(side='right',padx=(0,10))
-    state={'manifest':None}
-    root.update_idletasks()
-    def check():
+    def run():
         try:
-            m=getjson(UPDATE_MANIFEST); state['manifest']=m; latest=str(m.get('version','0.0.0')); cur=curver(); notes=str(m.get('notes','')).strip()
-            prog.stop(); prog.configure(mode='determinate',value=100)
-            if vt(latest)<=vt(cur):status.set(f'Radar está actualizado.\n\nVersión instalada: {cur}\n\nNo hay una versión más reciente en el canal estable.'); install_btn.configure(state='disabled')
-            else:
-                status.set(f'Nueva versión disponible: {latest}\nVersión instalada: {cur}\n\n{notes}\n\nLa base de datos y la configuración se conservarán.')
-                install_btn.configure(state='normal',command=lambda:do_install())
-        except Exception as e:
-            log('CHECK ERROR '+repr(e)); prog.stop(); status.set('No se pudo comprobar la actualización.\n\n'+str(e)+'\n\nEl programa principal no se ha modificado.'); install_btn.configure(state='disabled')
-    def do_install():
-        m=state.get('manifest') or {}; url=m.get('package_url'); expected=str(m.get('sha256','')).lower().strip(); latest=str(m.get('version','0.0.0'))
-        if not url or not expected:return
-        install_btn.configure(state='disabled'); close_btn.configure(state='disabled'); prog.configure(mode='indeterminate'); prog.start(12); status.set('Descargando y verificando la actualización…'); root.update_idletasks()
-        try:
-            td=tempfile.mkdtemp(prefix='radar_pkg_'); pkg=os.path.join(td,'RadarUpdate.zip')
+            m=getjson(UPDATE_MANIFEST); rv=m.get('version','0.0.0'); cv=curver()
+            if vt(rv)<=vt(cv):status.set(f'Radar de Inversión ya está actualizado (v{cv}).'); prog.stop(); return
+            url=m.get('package_url'); expected=(m.get('sha256') or '').lower()
+            if not url or not expected:raise RuntimeError('Manifest incompleto')
+            status.set(f'Descargando Radar de Inversión v{rv}…'); root.update_idletasks()
+            pkg=os.path.join(tempfile.gettempdir(),'RadarUpdate.zip')
             req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.0','Cache-Control':'no-cache'})
-            with urllib.request.urlopen(req,timeout=90) as r,open(pkg,'wb') as f:shutil.copyfileobj(r,f)
-            if filehash(pkg)!=expected:raise RuntimeError('La firma SHA-256 no coincide')
-            status.set('Instalando…'); root.update_idletasks(); install(pkg,latest); shutil.rmtree(td,ignore_errors=True)
-            prog.stop(); prog.configure(mode='determinate',value=100); status.set(f'Actualización completada correctamente a la versión {latest}.\n\nRadar volverá a abrirse ahora.'); close_btn.configure(state='normal'); root.update_idletasks(); time.sleep(1.0); launch_app(); root.after(1200,root.destroy)
+            with urllib.request.urlopen(req,timeout=60) as r, open(pkg,'wb') as f:shutil.copyfileobj(r,f)
+            if filehash(pkg)!=expected:raise RuntimeError('La firma SHA-256 del paquete no coincide')
+            status.set('Instalando actualización…'); root.update_idletasks(); install(pkg,rv)
+            status.set(f'Radar de Inversión actualizado correctamente a v{rv}.'); prog.stop(); launch_app(); root.after(1000,root.destroy)
         except Exception as e:
-            log('INSTALL ERROR '+traceback.format_exc()); prog.stop(); status.set('La actualización no se instaló.\n\nLa instalación anterior se conserva.\n\n'+str(e)); close_btn.configure(state='normal'); install_btn.configure(state='normal')
-    root.after(250,check); root.mainloop()
+            log(traceback.format_exc()); status.set('No se pudo actualizar:\n'+str(e)); prog.stop()
+    threading.Thread(target=run,daemon=True).start(); root.mainloop()
+
 if __name__=='__main__':main()
