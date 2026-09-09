@@ -51,24 +51,24 @@ jobs:
       - name: Verify outputs
         shell: powershell
         run: |
-          if (!(Test-Path 'release/Investment_Intelligence_Radar_Setup.exe')) { throw 'Setup.exe no generado' }
+          if (!(Test-Path 'release/Radar_de_Inversion_Setup.exe')) { throw 'Radar de Inversion Setup.exe no generado' }
           if (!(Test-Path 'release/update-channel/RadarUpdate.zip')) { throw 'RadarUpdate.zip no generado' }
           if (!(Test-Path 'release/update-channel/update_manifest.json')) { throw 'update_manifest.json no generado' }
-          Get-FileHash 'release/Investment_Intelligence_Radar_Setup.exe' -Algorithm SHA256 | Format-List
+          Get-FileHash 'release/Radar_de_Inversion_Setup.exe' -Algorithm SHA256 | Format-List
           Get-Content 'release/update-channel/update_manifest.json'
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: Investment_Intelligence_Radar_Setup
-          path: release/Investment_Intelligence_Radar_Setup.exe
+          name: Radar_de_Inversion_Setup
+          path: release/Radar_de_Inversion_Setup.exe
           if-no-files-found: error
           retention-days: 30
 
       - name: Upload update package
         uses: actions/upload-artifact@v4
         with:
-          name: Investment_Intelligence_Radar_Update
+          name: Radar_de_Inversion_Update
           path: release/update-channel/*
           if-no-files-found: error
           retention-days: 30
@@ -81,4 +81,4 @@ jobs:
           publish_branch: updates
           publish_dir: ./release/update-channel
           force_orphan: true
-          commit_message: Publish stable Radar update
+          commit_message: Publish stable Radar de Inversion update
