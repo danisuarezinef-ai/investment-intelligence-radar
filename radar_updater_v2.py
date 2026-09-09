@@ -1,4 +1,4 @@
-import os, sys, json, hashlib, tempfile, urllib.request, zipfile, shutil, subprocess, time, traceback
+import os, sys, json, hashlib, tempfile, urllib.request, zipfile, shutil, subprocess, time, traceback, threading
 import tkinter as tk
 from tkinter import ttk
 
@@ -10,6 +10,7 @@ VERSION_FILE=os.path.join(APPDIR,'version.json')
 LOG=os.path.join(DATA,'updater_v2.log')
 PID_FILE=os.path.join(DATA,'worker.pid')
 BG='#0f172a'; PANEL='#1e293b'; TEXT='#f8fafc'; MUTED='#94a3b8'; BLUE='#2563eb'; GREEN='#16a34a'; RED='#dc2626'; AMBER='#f59e0b'
+PAYLOAD_BINARIES=('InvestmentIntelligenceRadar.exe','RadarSimulationLab.exe','RadarWorker.exe')
 os.makedirs(DATA,exist_ok=True)
 
 def log(s):
@@ -29,7 +30,7 @@ def curver():
     except:return '0.0.0'
 
 def getjson(url):
-    r=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.0','Cache-Control':'no-cache'})
+    r=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.1','Cache-Control':'no-cache'})
     return json.loads(urllib.request.urlopen(r,timeout=20).read().decode('utf-8-sig'))
 
 def filehash(p):
@@ -40,7 +41,7 @@ def filehash(p):
 
 def stop_processes():
     if os.name!='nt':return
-    for name in ('RadarWorker.exe','InvestmentIntelligenceRadar.exe'):
+    for name in ('RadarSimulationLab.exe','RadarWorker.exe','InvestmentIntelligenceRadar.exe'):
         try:subprocess.run(['taskkill','/F','/IM',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=0x08000000)
         except:pass
     try:os.remove(PID_FILE)
@@ -54,12 +55,12 @@ def install(pkg,version):
     tmp=tempfile.mkdtemp(prefix='radar_update_')
     try:
         z=os.path.join(tmp,'payload'); os.makedirs(z,exist_ok=True); zipfile.ZipFile(pkg).extractall(z)
-        for name in ('InvestmentIntelligenceRadar.exe','RadarWorker.exe'):
+        for name in PAYLOAD_BINARIES:
             src=os.path.join(z,name)
             if not os.path.isfile(src):raise RuntimeError('Falta '+name+' en el paquete')
         stop_processes(); time.sleep(1.5)
         backup=os.path.join(DATA,'update_backup'); os.makedirs(backup,exist_ok=True)
-        for name in ('InvestmentIntelligenceRadar.exe','RadarWorker.exe'):
+        for name in PAYLOAD_BINARIES:
             src=os.path.join(z,name); dst=os.path.join(APPDIR,name)
             if os.path.exists(dst):shutil.copy2(dst,os.path.join(backup,name+'.bak'))
             new=dst+'.new'; shutil.copy2(src,new); os.replace(new,dst)
@@ -67,6 +68,7 @@ def install(pkg,version):
         if os.path.exists(up):shutil.copy2(up,os.path.join(DATA,'RadarUpdater.next.exe'))
         with open(VERSION_FILE+'.new','w',encoding='utf-8') as f:json.dump({'version':version,'channel':'stable'},f,indent=2)
         os.replace(VERSION_FILE+'.new',VERSION_FILE)
+        log('installed '+version+' binaries='+','.join(PAYLOAD_BINARIES))
     finally:shutil.rmtree(tmp,ignore_errors=True)
 
 def main():
@@ -86,11 +88,11 @@ def main():
             if not url or not expected:raise RuntimeError('Manifest incompleto')
             status.set(f'Descargando Radar de Inversión v{rv}…'); root.update_idletasks()
             pkg=os.path.join(tempfile.gettempdir(),'RadarUpdate.zip')
-            req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.0','Cache-Control':'no-cache'})
+            req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.1','Cache-Control':'no-cache'})
             with urllib.request.urlopen(req,timeout=60) as r, open(pkg,'wb') as f:shutil.copyfileobj(r,f)
             if filehash(pkg)!=expected:raise RuntimeError('La firma SHA-256 del paquete no coincide')
-            status.set('Instalando actualización…'); root.update_idletasks(); install(pkg,rv)
-            status.set(f'Radar de Inversión actualizado correctamente a v{rv}.'); prog.stop(); launch_app(); root.after(1000,root.destroy)
+            status.set('Instalando aplicación, simulador y worker…'); root.update_idletasks(); install(pkg,rv)
+            status.set(f'Radar de Inversión y Simulation Lab actualizados correctamente a v{rv}.'); prog.stop(); launch_app(); root.after(1000,root.destroy)
         except Exception as e:
             log(traceback.format_exc()); status.set('No se pudo actualizar:\n'+str(e)); prog.stop()
     threading.Thread(target=run,daemon=True).start(); root.mainloop()
