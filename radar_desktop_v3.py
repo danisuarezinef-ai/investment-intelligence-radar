@@ -1,13 +1,11 @@
 """Radar de Inversión desktop v3 adapter.
 
-Patches PAPER-simulator startup/cycle behavior and hardens the Windows update UX
-before loading the canonical v2 UI. The update control is always visible and the
-app re-checks the stable channel while it stays open; no restart is required just
-to discover an update.
+Patches PAPER-simulator startup/cycle behavior and hardens Windows update UX
+before loading the canonical v2 UI. Update discovery is hot, manual refresh is
+real (not a disguised updater launch), and the control never disappears.
 """
 import json
 import threading
-import time
 import urllib.request
 import tkinter as tk
 
@@ -33,8 +31,8 @@ def _start_nonblocking(amount=1000.0):
         try:
             if not radar_core.history_ready():radar_core.collect_history()
             run_simulator_cycle(force=True)
-        except Exception as e:
-            try:radar_core.log('paper_simulator','ERROR',str(e))
+        except Exception as exc:
+            try:radar_core.log('paper_simulator','ERROR',str(exc))
             except Exception:pass
     threading.Thread(target=warm_and_cycle,daemon=True).start()
     return radar_core.paper_status()
@@ -45,14 +43,74 @@ def _step_v3(force=False):
 
 
 def _is_update_button(widget):
-    try:return str(widget.cget('text')) in ('ACTUALIZACIÓN','BUSCAR ACTUALIZACIÓN') or str(widget.cget('text')).startswith('ACTUALIZAR A v')
+    try:
+        text=str(widget.cget('text'))
+        return (text in ('ACTUALIZACIÓN','BUSCAR ACTUALIZACIÓN','COMPROBANDO…') or
+                text.startswith('ACTUALIZAR A v') or text.startswith('ACTUALIZADO · v') or
+                text.startswith('ERROR · REINTENTAR'))
     except Exception:return False
 
 
+def _walk(widget):
+    yield widget
+    for child in widget.winfo_children():yield from _walk(child)
+
+
+def _find_update_button(root):
+    for widget in _walk(root):
+        if isinstance(widget,tk.Button) and _is_update_button(widget):return widget
+    return None
+
+
+def _local_version():
+    try:
+        import radar_desktop_v2 as ui
+        return str(getattr(ui,'APP_VERSION','0.0.0'))
+    except Exception:return '0.0.0'
+
+
+def _check_update(root,manual=False):
+    btn=_find_update_button(root)
+    if manual and btn:
+        try:btn.configure(text='COMPROBANDO…',bg='#2563eb');btn.pack(side='right',anchor='n')
+        except Exception:pass
+    def work():
+        try:
+            req=urllib.request.Request(_UPDATE_MANIFEST,headers={'User-Agent':'InvestmentIntelligenceRadarDesktop/1.6','Cache-Control':'no-cache'})
+            manifest=json.loads(urllib.request.urlopen(req,timeout=12).read().decode('utf-8-sig'))
+            remote=str(manifest.get('version') or '').strip();local=_local_version();available=update_available(local,remote)
+            def apply():
+                button=_find_update_button(root)
+                if not button:return
+                button.configure(text=(f'ACTUALIZAR A v{remote}' if available else f'ACTUALIZADO · v{local}'),bg=('#16a34a' if available else '#2563eb'))
+                button.pack(side='right',anchor='n')
+            root.after(0,apply)
+        except Exception as exc:
+            def fail():
+                button=_find_update_button(root)
+                if button:
+                    button.configure(text='ERROR · REINTENTAR',bg='#dc2626')
+                    button.pack(side='right',anchor='n')
+                try:radar_core.log('update_check','ERROR',str(exc))
+                except Exception:pass
+            root.after(0,fail)
+    threading.Thread(target=work,daemon=True).start()
+
+
+def _manual_update(button):
+    text=str(button.cget('text'))
+    if text.startswith('ACTUALIZAR A v'):
+        launch=getattr(button,'_radar_launch_updater',None)
+        if callable(launch):return launch()
+    _check_update(button.winfo_toplevel(),manual=True)
+
+
 def _button_init(self,*args,**kwargs):
+    launch=kwargs.get('command')
     _ORIGINAL_BUTTON_INIT(self,*args,**kwargs)
     if _is_update_button(self):
-        self.configure(text='BUSCAR ACTUALIZACIÓN')
+        self._radar_launch_updater=launch
+        self.configure(text='BUSCAR ACTUALIZACIÓN',command=lambda b=self:_manual_update(b))
         self.after_idle(lambda:self.pack(side='right',anchor='n') if self.winfo_exists() else None)
 
 
@@ -62,44 +120,6 @@ def _button_forget(self,*args,**kwargs):
         except Exception:pass
         return None
     return _ORIGINAL_BUTTON_FORGET(self,*args,**kwargs)
-
-
-def _walk(widget):
-    yield widget
-    for child in widget.winfo_children():
-        yield from _walk(child)
-
-
-def _find_update_button(root):
-    for widget in _walk(root):
-        if isinstance(widget,tk.Button) and _is_update_button(widget):return widget
-    return None
-
-
-def _check_update(root):
-    def work():
-        try:
-            req=urllib.request.Request(_UPDATE_MANIFEST,headers={'User-Agent':'InvestmentIntelligenceRadarDesktop/1.5','Cache-Control':'no-cache'})
-            manifest=json.loads(urllib.request.urlopen(req,timeout=12).read().decode('utf-8-sig'))
-            remote=str(manifest.get('version') or '').strip()
-            def apply():
-                btn=_find_update_button(root)
-                if not btn:return
-                try:
-                    import radar_desktop_v2 as ui
-                    local=str(getattr(ui,'APP_VERSION','0.0.0'))
-                    btn.configure(text=(f'ACTUALIZAR A v{remote}' if update_available(local,remote) else 'BUSCAR ACTUALIZACIÓN'),bg=('#16a34a' if update_available(local,remote) else '#2563eb'))
-                    btn.pack(side='right',anchor='n')
-                except Exception:
-                    btn.configure(text='BUSCAR ACTUALIZACIÓN');btn.pack(side='right',anchor='n')
-            root.after(0,apply)
-        except Exception:
-            def fail():
-                btn=_find_update_button(root)
-                if btn:
-                    btn.configure(text='BUSCAR ACTUALIZACIÓN');btn.pack(side='right',anchor='n')
-            root.after(0,fail)
-    threading.Thread(target=work,daemon=True).start()
 
 
 def _hot_mainloop(self,*args,**kwargs):
@@ -116,5 +136,4 @@ tk.Button.__init__=_button_init
 tk.Button.pack_forget=_button_forget
 tk.Tk.mainloop=_hot_mainloop
 
-# Importing the canonical UI after patching binds its callbacks to the hardened adapter.
 from radar_desktop_v2 import *  # noqa: F401,F403,E402

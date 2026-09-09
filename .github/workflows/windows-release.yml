@@ -10,9 +10,6 @@ on:
 permissions:
   contents: write
 
-# PR validation must never cancel a main release, and one PR must not cancel
-# another PR. Only a newer run for the same exact ref is allowed to supersede
-# an older run for that ref.
 concurrency:
   group: radar-windows-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -47,6 +44,17 @@ jobs:
       - name: Build application, updater and Setup.exe
         shell: powershell
         run: .\build_windows.ps1
+
+      - name: Smoke launch Simulation Lab
+        shell: powershell
+        run: |
+          if (!(Test-Path 'dist/RadarSimulationLab.exe')) { throw 'RadarSimulationLab.exe no generado' }
+          $p = Start-Process -FilePath (Resolve-Path 'dist/RadarSimulationLab.exe') -PassThru
+          Start-Sleep -Seconds 6
+          $p.Refresh()
+          if ($p.HasExited) { throw "RadarSimulationLab.exe terminó prematuramente con código $($p.ExitCode)" }
+          Stop-Process -Id $p.Id -Force
+          Write-Host 'Simulation Lab packaged executable stayed alive for smoke window.'
 
       - name: Verify outputs
         shell: powershell
