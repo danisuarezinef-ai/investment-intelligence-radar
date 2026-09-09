@@ -55,7 +55,7 @@ $trend=New-Object System.Drawing.Pen $green,8; $pts=[System.Drawing.Point[]]@((N
 $pngStream=New-Object System.IO.MemoryStream; $bmp.Save($pngStream,[System.Drawing.Imaging.ImageFormat]::Png); $png=$pngStream.ToArray(); $pngStream.Dispose(); $g.Dispose(); $bmp.Dispose()
 $icoPath=Join-Path $PSScriptRoot 'assets\radar.ico'; $fs=[System.IO.File]::Create($icoPath); $bw=New-Object System.IO.BinaryWriter($fs); $bw.Write([UInt16]0); $bw.Write([UInt16]1); $bw.Write([UInt16]1); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([UInt16]1); $bw.Write([UInt16]32); $bw.Write([UInt32]$png.Length); $bw.Write([UInt32]22); $bw.Write($png); $bw.Close(); $fs.Close()
 
-python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop_v2.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop_v3.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name RadarSimulationLab radar_simulation_desktop.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarWorker run_worker.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarUpdater radar_updater_v2.py
@@ -65,7 +65,7 @@ $updateZip='release\update-channel\RadarUpdate.zip'
 Compress-Archive -Path dist\InvestmentIntelligenceRadar.exe,dist\RadarSimulationLab.exe,dist\RadarWorker.exe,dist\RadarUpdater.exe -DestinationPath $updateZip -CompressionLevel Optimal -Force
 Copy-Item dist\RadarUpdater.exe release\update-channel\RadarUpdater.exe -Force
 $hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant(); $updaterHash=(Get-FileHash 'release\update-channel\RadarUpdater.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Simulation Lab nativo, Champion adaptativo, memoria episódica y aprendizaje protegido integrados. Trading real permanece OFF.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
+$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Radar de Inversión: simulador paper no bloqueante, decisiones prospectivas y autonomía shadow/paper. Trading real permanece OFF.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
 $inno="${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"; if(!(Test-Path $inno)){throw 'Inno Setup 6 not found'}; & $inno installer\Radar.iss
 Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"; Write-Host "Updater SHA256: $updaterHash"
