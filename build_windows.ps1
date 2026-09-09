@@ -14,9 +14,10 @@ if(!$version){throw 'version.json no contiene version'}
 $desktopPath=Join-Path $PSScriptRoot 'radar_desktop_v2.py'
 $desktop=Get-Content $desktopPath -Raw -Encoding UTF8
 $desktop=[regex]::Replace($desktop,"APP_VERSION\s*=\s*'[^']+'","APP_VERSION='$version'")
-$desktop=$desktop.Replace("root.title('Investment Intelligence Radar')","root.title('Radar de Inversión')")
-$desktop=$desktop.Replace("text='Investment Intelligence Radar'","text='Radar de Inversión'")
-$desktop=$desktop.Replace("'Investment Intelligence Radar.lnk'","'Radar de Inversión.lnk'")
+# Keep this script ASCII-safe: Python interprets \u00f3 when the generated source is compiled.
+$desktop=$desktop.Replace("root.title('Investment Intelligence Radar')","root.title('Radar de Inversi\u00f3n')")
+$desktop=$desktop.Replace("text='Investment Intelligence Radar'","text='Radar de Inversi\u00f3n'")
+$desktop=$desktop.Replace("'Investment Intelligence Radar.lnk'","'Radar de Inversi\u00f3n.lnk'")
 [System.IO.File]::WriteAllText($desktopPath,$desktop,(New-Object System.Text.UTF8Encoding($false)))
 
 $simDesktopPath=Join-Path $PSScriptRoot 'radar_simulation_desktop.py'
@@ -68,7 +69,7 @@ $updateZip='release\update-channel\RadarUpdate.zip'
 Compress-Archive -Path dist\InvestmentIntelligenceRadar.exe,dist\RadarSimulationLab.exe,dist\RadarWorker.exe,dist\RadarUpdater.exe -DestinationPath $updateZip -CompressionLevel Optimal -Force
 Copy-Item dist\RadarUpdater.exe release\update-channel\RadarUpdater.exe -Force
 $hash=(Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant(); $updaterHash=(Get-FileHash 'release\update-channel\RadarUpdater.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Radar de Inversión: simulador paper no bloqueante, decisiones prospectivas y autonomía shadow/paper. Trading real permanece OFF.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
+$manifest=[ordered]@{version=$version;channel='stable';package_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip';sha256=$hash;updater_url='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe';updater_sha256=$updaterHash;notes='Radar stable: PAPER/SHADOW autonomy and prospective evidence. REAL_TRADING remains OFF.';published_at=(Get-Date).ToUniversalTime().ToString('o')}
 $manifest | ConvertTo-Json | Set-Content -Path 'release\update-channel\update_manifest.json' -Encoding UTF8
 $inno="${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"; if(!(Test-Path $inno)){throw 'Inno Setup 6 not found'}; & $inno installer\Radar.iss
 Write-Host "Built Radar version $version"; Write-Host "Update SHA256: $hash"; Write-Host "Updater SHA256: $updaterHash"
