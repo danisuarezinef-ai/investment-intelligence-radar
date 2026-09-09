@@ -38,9 +38,9 @@ def test_priority_live_marks_runtime_modules_explicitly(monkeypatch):
 def test_windows_build_enforces_visible_radar_identity_without_renaming_executable():
     build=open('build_windows.ps1',encoding='utf-8').read()
     installer=open('installer/Radar.iss',encoding='utf-8').read()
-    assert "root.title('Radar de Inversión')" in build
-    assert "text='Radar de Inversión'" in build
-    assert "'Radar de Inversión.lnk'" in build
+    # Branding is generated with a Python Unicode escape so PowerShell code pages
+    # cannot re-encode the accented product name into mojibake.
+    assert "Radar de Inversi\\u00f3n" in build
     assert '--name InvestmentIntelligenceRadar' in build
     assert '#define MyAppName "Radar de Inversión"' in installer
     assert '#define MyAppExeName "InvestmentIntelligenceRadar.exe"' in installer
