@@ -1,5 +1,5 @@
 #define MyAppName "Radar de Inversión"
-#define MyAppVersion "1.5.13"
+#define MyAppVersion "1.5.14"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 #define SimExeName "RadarSimulationLab.exe"
 [Setup]
@@ -36,23 +36,13 @@ Source: "..\dist\RadarWorker.exe"; DestDir: "{app}"; Flags: ignoreversion restar
 Source: "..\dist\RadarUpdater.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
 Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
 [InstallDelete]
-; Purge every desktop shortcut name emitted by previous releases from both scopes.
-Type: files; Name: "{userdesktop}\Investment Intelligence Radar.lnk"
-Type: files; Name: "{commondesktop}\Investment Intelligence Radar.lnk"
-Type: files; Name: "{userdesktop}\Radar de Inversión.lnk"
-Type: files; Name: "{commondesktop}\Radar de Inversión.lnk"
-Type: files; Name: "{userdesktop}\Radar de Inversión - Simulation Lab.lnk"
-Type: files; Name: "{commondesktop}\Radar de Inversión - Simulation Lab.lnk"
-Type: files; Name: "{userdesktop}\Radar de InversiÃ³n.lnk"
-Type: files; Name: "{commondesktop}\Radar de InversiÃ³n.lnk"
-Type: files; Name: "{userdesktop}\Radar de InversiÃƒÂ³n.lnk"
-Type: files; Name: "{commondesktop}\Radar de InversiÃƒÂ³n.lnk"
-Type: files; Name: "{userdesktop}\Radar de InversiÃ³n - Simulation Lab.lnk"
-Type: files; Name: "{commondesktop}\Radar de InversiÃ³n - Simulation Lab.lnk"
-Type: files; Name: "{userdesktop}\Radar de InversiÃƒÂ³n - Simulation Lab.lnk"
-Type: files; Name: "{commondesktop}\Radar de InversiÃƒÂ³n - Simulation Lab.lnk"
+; Wildcard purge is intentional: old builds created both correctly encoded and mojibake names.
+Type: files; Name: "{userdesktop}\Radar de Invers*.lnk"
+Type: files; Name: "{commondesktop}\Radar de Invers*.lnk"
+Type: files; Name: "{userdesktop}\Investment Intelligence Radar*.lnk"
+Type: files; Name: "{commondesktop}\Investment Intelligence Radar*.lnk"
 [Icons]
-; Exactly one desktop shortcut. Simulation Lab stays in the Start menu.
+; Exactly one desktop shortcut. Simulation Lab remains in Start Menu only.
 Name: "{userdesktop}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{userprograms}\Radar de Inversión - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
