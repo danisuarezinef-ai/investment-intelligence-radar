@@ -56,6 +56,14 @@ def _authorized(h):return bool(CONTROL_TOKEN) and h.headers.get('Authorization',
 def _read_json(h):
  try:n=int(h.headers.get('Content-Length','0') or 0); return json.loads(h.rfile.read(n).decode()) if n else {}
  except Exception:return {}
+def _read_json_checked(h):
+ try:
+  n=int(h.headers.get('Content-Length','0') or 0)
+  if n<=0:return None,'payload requerido'
+  value=json.loads(h.rfile.read(n).decode())
+  if not isinstance(value,dict):return None,'payload debe ser un objeto JSON'
+  return value,None
+ except Exception:return None,'JSON inválido'
 class _Handler(BaseHTTPRequestHandler):
  def _send(self,code,payload):
   body=json.dumps(payload,ensure_ascii=False).encode(); self.send_response(code); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(body))); self.send_header('Cache-Control','no-store'); self.send_header('Access-Control-Allow-Origin','*'); self.send_header('Access-Control-Allow-Headers','Authorization, Content-Type'); self.end_headers(); self.wfile.write(body)
@@ -75,6 +83,15 @@ class _Handler(BaseHTTPRequestHandler):
  def do_POST(self):
   p=self.path.split('?',1)[0]
   if not _authorized(self):return self._send(401,{'ok':False,'error':'unauthorized'})
+  if p=='/node-heartbeat':
+   data,error=_read_json_checked(self)
+   if error:return self._send(400,{'ok':False,'error':error})
+   node_id=str(data.get('node_id') or '').strip()
+   if not node_id:return self._send(400,{'ok':False,'error':'node_id requerido'})
+   try:
+    node=sync_node_heartbeat(node_id,node_type=str(data.get('node_type') or 'desktop'),name=data.get('name'),capabilities=data.get('capabilities'),app_version=data.get('app_version'),detail=data.get('detail'))
+    return self._send(200,{'ok':True,'node':node,'real_trading':False})
+   except (TypeError,ValueError) as exc:return self._send(400,{'ok':False,'error':str(exc)[:300]})
   if p=='/toggle':return self._send(200,{'ok':True,'cloud_enabled':set_cloud_enabled(not cloud_enabled()),'status':_read_status()})
   if p=='/decision-v2/fast':return self._send(200,safe_fast_cycle())
   if p=='/decision-v2/deep':return self._send(200,safe_deep_cycle())
