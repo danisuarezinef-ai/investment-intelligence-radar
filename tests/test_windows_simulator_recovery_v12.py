@@ -21,9 +21,9 @@ def test_replay_attempts_history_recovery_once(monkeypatch):
     def series(*args,**kwargs):
         calls['series']+=1
         return [] if calls['series']==1 else fake_days
+    monkeypatch.setattr(sim,'init_simulation_db',lambda:None)
     monkeypatch.setattr(sim,'_series_by_day',series)
     monkeypatch.setattr(sim,'collect_history',lambda: calls.__setitem__('history',calls['history']+1))
-    # stop after recovery before DB-dependent body; this proves the recovery branch is entered
     class Stop(Exception): pass
     monkeypatch.setattr(sim,'con',lambda: (_ for _ in ()).throw(Stop()))
     try:
@@ -35,6 +35,7 @@ def test_replay_attempts_history_recovery_once(monkeypatch):
 
 
 def test_replay_fails_clearly_after_unsuccessful_recovery(monkeypatch):
+    monkeypatch.setattr(sim,'init_simulation_db',lambda:None)
     monkeypatch.setattr(sim,'_series_by_day',lambda *a,**k: [])
     calls={'n':0}
     monkeypatch.setattr(sim,'collect_history',lambda: calls.__setitem__('n',calls['n']+1))
