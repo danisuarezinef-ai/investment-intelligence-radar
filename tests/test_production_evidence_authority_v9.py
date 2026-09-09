@@ -35,14 +35,21 @@ def test_fundamental_payload_never_invents_missing_values():
     payload=fundamentals._build_payload('MSFT',{'facts':{}})
     assert payload['revenue_growth'] is None and payload['operating_margin'] is None
     assert payload['free_cash_flow'] is None and payload['net_debt'] is None
+    assert payload['shares_outstanding'] is None
     assert payload['real_trading'] is False
+
+
+def test_share_fact_requires_shares_unit():
+    data={'facts':{'dei':{'EntityCommonStockSharesOutstanding':{'units':{'USD':[{'val':999,'filed':'2026-01-01','end':'2025-12-31','form':'10-K'}]}}}}}
+    payload=fundamentals._build_payload('MSFT',data)
+    assert payload['shares_outstanding'] is None
 
 
 def test_fundamental_coverage_is_explicit_for_unsupported_assets(tmp_path,monkeypatch):
     _db(tmp_path,monkeypatch);out=fundamentals.fundamental_coverage()
     assert out['assets_expected']==len(radar_core.ASSETS)
     assert out['fundamentals_observed']==0
-    assert out['valuation_multiple']=='NOT_YET_DERIVED_WITH_VERIFIED_MARKET_CAP'
+    assert out['valuation_multiple']=='DERIVED_ONLY_WHEN_VERIFIED_SHARES_AND_REVENUE_EXIST'
 
 
 def test_operational_valuation_uses_only_persisted_fundamentals(monkeypatch):
