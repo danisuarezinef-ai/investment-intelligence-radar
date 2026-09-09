@@ -30,7 +30,7 @@ def curver():
     except:return '0.0.0'
 
 def getjson(url):
-    r=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.1','Cache-Control':'no-cache'})
+    r=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.2','Cache-Control':'no-cache'})
     return json.loads(urllib.request.urlopen(r,timeout=20).read().decode('utf-8-sig'))
 
 def filehash(p):
@@ -80,21 +80,42 @@ def main():
     msg=tk.Label(frame,textvariable=status,bg=PANEL,fg=MUTED,font=('Segoe UI',10),justify='left',wraplength=650); msg.pack(anchor='w',fill='x',pady=(14,12))
     prog=ttk.Progressbar(frame,mode='indeterminate'); prog.pack(fill='x',pady=(0,16)); prog.start(12)
     buttons=tk.Frame(frame,bg=PANEL); buttons.pack(side='bottom',fill='x')
+
+    def already_current(version):
+        status.set(f'ACTUALIZADO · Radar de Inversión v{version}')
+        prog.stop()
+        prog.configure(mode='determinate',maximum=100,value=100)
+        root.after(1800,root.destroy)
+
+    def show_error(message):
+        status.set('No se pudo actualizar:\n'+message)
+        prog.stop()
+        prog.configure(mode='determinate',maximum=100,value=0)
+
     def run():
         try:
             m=getjson(UPDATE_MANIFEST); rv=m.get('version','0.0.0'); cv=curver()
-            if vt(rv)<=vt(cv):status.set(f'Radar de Inversión ya está actualizado (v{cv}).'); prog.stop(); return
+            if vt(rv)<=vt(cv):
+                log('already_current '+cv)
+                root.after(0,lambda:already_current(cv))
+                return
             url=m.get('package_url'); expected=(m.get('sha256') or '').lower()
             if not url or not expected:raise RuntimeError('Manifest incompleto')
-            status.set(f'Descargando Radar de Inversión v{rv}…'); root.update_idletasks()
+            root.after(0,lambda:status.set(f'Descargando Radar de Inversión v{rv}…'))
             pkg=os.path.join(tempfile.gettempdir(),'RadarUpdate.zip')
-            req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.1','Cache-Control':'no-cache'})
+            req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.2','Cache-Control':'no-cache'})
             with urllib.request.urlopen(req,timeout=60) as r, open(pkg,'wb') as f:shutil.copyfileobj(r,f)
             if filehash(pkg)!=expected:raise RuntimeError('La firma SHA-256 del paquete no coincide')
-            status.set('Instalando aplicación, simulador y worker…'); root.update_idletasks(); install(pkg,rv)
-            status.set(f'Radar de Inversión y Simulation Lab actualizados correctamente a v{rv}.'); prog.stop(); launch_app(); root.after(1000,root.destroy)
+            root.after(0,lambda:status.set('Instalando aplicación, simulador y worker…'))
+            install(pkg,rv)
+            def done():
+                status.set(f'Radar de Inversión y Simulation Lab actualizados correctamente a v{rv}.')
+                prog.stop(); prog.configure(mode='determinate',maximum=100,value=100)
+                launch_app(); root.after(1000,root.destroy)
+            root.after(0,done)
         except Exception as e:
-            log(traceback.format_exc()); status.set('No se pudo actualizar:\n'+str(e)); prog.stop()
+            log(traceback.format_exc())
+            root.after(0,lambda:show_error(str(e)))
     threading.Thread(target=run,daemon=True).start(); root.mainloop()
 
 if __name__=='__main__':main()
