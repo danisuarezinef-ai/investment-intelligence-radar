@@ -1,5 +1,7 @@
 """Cloud service v3 — read-only unified validation runtime endpoint."""
+import sqlite3
 import threading
+import time
 
 import cloud_service_v2 as base_v2
 from radar_validation_runtime_v3 import validation_runtime_v3
@@ -44,11 +46,25 @@ class ValidationV3Handler(BaseHandler):
         super().do_GET()
 
 
+def _resilient_learning_loop(max_schema_retries=3):
+    """Retry only the known concurrent SQLite ADD COLUMN race during startup."""
+    retries=0
+    while True:
+        try:
+            return base_v2.base.learning_loop()
+        except sqlite3.OperationalError as exc:
+            if 'duplicate column name' not in str(exc).lower() or retries>=max_schema_retries:
+                raise
+            retries+=1
+            print(f'[learning] schema init race detected; retry={retries}',flush=True)
+            time.sleep(.25*retries)
+
+
 base_v2.base.run_worker._Handler=ValidationV3Handler
 
 if __name__=='__main__':
     base=base_v2.base
     threading.Thread(target=base.supabase_sync_loop,name='supabase-sync',daemon=True).start()
     threading.Thread(target=base.learning_sync_loop,name='learning-sync',daemon=True).start()
-    threading.Thread(target=base.learning_loop,name='learning-engine',daemon=True).start()
+    threading.Thread(target=_resilient_learning_loop,name='learning-engine',daemon=True).start()
     base.run_worker.main()
