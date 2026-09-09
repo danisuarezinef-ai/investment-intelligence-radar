@@ -25,9 +25,11 @@ def test_priority_live_marks_runtime_modules_explicitly(monkeypatch):
     out=cloud.priority_runtime_live()
     assert out['wiring']['priority_runtime']=='LIVE'
     assert out['wiring']['global_universe_v3']=='LIVE_READ_ONLY_OBSERVED_STATE'
-    assert out['wiring']['valuation_engine_v1']=='LIVE_FAIL_CLOSED_MISSING_FUNDAMENTALS'
-    assert out['wiring']['portfolio_optimizer_v3']=='LIVE_FAIL_CLOSED_EVIDENCE_GATED'
-    assert out['wiring']['priority_forward_records'].startswith('LIVE_MATURED_LEDGER_ONLY')
+    assert out['wiring']['valuation_engine_v1']=='LIVE_FAIL_CLOSED'
+    assert out['wiring']['portfolio_optimizer_v3']=='LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN'
+    assert out['wiring']['priority_forward_records'].startswith('LIVE_MATURED_LEDGER_')
+    assert out['wiring']['provider_attempt_telemetry']=='LIVE_OBSERVED_ATTEMPTS'
+    assert out['wiring']['paper_authority']=='OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK'
     assert out['wiring']['generic_forward_autonomy_v1']=='VERIFIED_CODE_ONLY'
     assert out['strategy_performance_verified'] is False
     assert out['can_trade'] is False and out['real_trading'] is False
