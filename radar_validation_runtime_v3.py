@@ -30,11 +30,12 @@ def _derived_paper_evidence(base_shadow, shadow_portfolio, degradation):
         'decisions':int(p.get('decisions') or 0),
         'marks':int(p.get('marks') or 0),
         'max_drawdown_pct':s.get('max_drawdown_pct'),
-        'benchmark_coverage':(benchmark_n/matured) if matured>0 else 0.0,
-        'cost_coverage':(cost_n/matured) if matured>0 else 0.0,
+        'benchmark_coverage':(benchmark_n/matured) if matured>0 else None,
+        'cost_coverage':(cost_n/matured) if matured>0 else None,
         'positive_months':int(s.get('positive_months') or 0),
         'oos_pass':bool(s.get('ledger_integrity') is True and s.get('pit_verified') is True),
         'degradation_clear':bool((degradation or {}).get('status')=='STABLE'),
+        'evidence_status':'VERIFIED_FORWARD' if matured>0 else 'INSUFFICIENT_EVIDENCE',
     }
 
 

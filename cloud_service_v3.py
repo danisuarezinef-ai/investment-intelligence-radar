@@ -3,6 +3,7 @@ import threading
 
 import cloud_service_v2 as base_v2
 from radar_validation_runtime_v3 import validation_runtime_v3
+from radar_ops_health_v1 import ops_health
 
 REAL_TRADING=False
 BaseHandler=base_v2.ValidationHandler
@@ -11,6 +12,10 @@ BaseHandler=base_v2.ValidationHandler
 class ValidationV3Handler(BaseHandler):
     def do_GET(self):
         path=self.path.split('?',1)[0]
+        if path=='/ops-health':
+            try:self._send(200,ops_health(validation_runtime_v3()))
+            except Exception as exc:self._send(500,{'status':'FAILED','error':str(exc)[:800],'can_trade':False,'real_trading':False})
+            return
         if path=='/validation-v3':
             try:
                 payload=validation_runtime_v3()
