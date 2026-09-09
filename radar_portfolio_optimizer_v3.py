@@ -20,13 +20,11 @@ def optimize_capital(*, cash: float, equity: float, opportunities: Iterable[dict
         x=dict(raw)
         # Only prospectively calibrated expected returns may receive new capital.
         if x.get('evidence_complete') is not True:continue
-        if x.get('prediction_evidence') not in (None,'VERIFIED_FORWARD'):continue
+        if x.get('prediction_evidence')!='VERIFIED_FORWARD':continue
         er=x.get('expected_return');risk=x.get('risk_score')
         if not isinstance(er,(int,float)) or not isinstance(risk,(int,float)):continue
         er=float(er);risk=max(0.0,min(1.0,float(risk)))
         if er<=0:continue
-        # risk_score is a 0..1 proxy, not a return. Multiplying avoids the old unit mismatch
-        # (e.g. 2% expected return - 0.40 risk score), while keeping cash as the default.
         utility=er*(1.0-risk)
         eligible.append((utility,x))
     eligible.sort(key=lambda z:z[0],reverse=True)
@@ -36,6 +34,7 @@ def optimize_capital(*, cash: float, equity: float, opportunities: Iterable[dict
         amount=min(remaining,equity*max_position)
         allocations.append({'symbol':x['symbol'],'amount':round(amount,2),'utility':utility,
                             'expected_return':float(x['expected_return']),'risk_score':float(x['risk_score']),
+                            'prediction_evidence':'VERIFIED_FORWARD','evidence_complete':True,
                             'source':'OPTIMIZER_V3_FORWARD_GATED'})
         remaining-=amount
     return {'status':'READY' if allocations else 'HOLD_CASH','deployable_capital':round(deploy_cap,2),
