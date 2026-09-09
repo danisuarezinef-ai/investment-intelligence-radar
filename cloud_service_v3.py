@@ -1,4 +1,5 @@
 """Cloud service v3 — unified validation and autonomous research runtime."""
+import json
 import sqlite3
 import threading
 import time
@@ -70,6 +71,17 @@ def _forward_outcome_sync_loop(interval_seconds=60):
         time.sleep(max(30,int(interval_seconds)))
 
 
+# Desktop 1.5.14 sends structured heartbeat detail. SQLite TEXT parameters must
+# be normalized before the legacy heartbeat writer sees them.
+_original_sync_node_heartbeat=base_v2.base.run_worker.sync_node_heartbeat
+
+def _safe_sync_node_heartbeat(*args, **kwargs):
+    detail=kwargs.get('detail')
+    if detail is not None and not isinstance(detail,str):
+        kwargs['detail']=json.dumps(detail,ensure_ascii=False,sort_keys=True)
+    return _original_sync_node_heartbeat(*args,**kwargs)
+
+base_v2.base.run_worker.sync_node_heartbeat=_safe_sync_node_heartbeat
 base_v2.base.run_worker._Handler=ValidationV3Handler
 
 if __name__=='__main__':
