@@ -1,4 +1,4 @@
-#define MyAppName "Investment Intelligence Radar"
+#define MyAppName "Radar de Inversión"
 #define MyAppVersion "1.3.3"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 #define SimExeName "RadarSimulationLab.exe"
@@ -10,7 +10,7 @@ DefaultDirName={localappdata}\Programs\Investment Intelligence Radar
 PrivilegesRequired=lowest
 DisableProgramGroupPage=yes
 OutputDir=..\release
-OutputBaseFilename=Investment_Intelligence_Radar_Setup
+OutputBaseFilename=Radar_de_Inversion_Setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -24,9 +24,9 @@ Source: "..\dist\RadarWorker.exe"; DestDir: "{app}"; Flags: ignoreversion restar
 Source: "..\dist\RadarUpdater.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
 Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
-Name: "{autodesktop}\Investment Intelligence Radar"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\Investment Radar - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{userprograms}\Investment Intelligence Radar"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{userprograms}\Investment Intelligence Radar - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{autodesktop}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{autodesktop}\Radar de Inversión - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{userprograms}\Radar de Inversión"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{userprograms}\Radar de Inversión - Simulation Lab"; Filename: "{app}\{#SimExeName}"; IconFilename: "{app}\{#MyAppExeName}"
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Abrir Investment Intelligence Radar"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Abrir Radar de Inversión"; Flags: nowait postinstall skipifsilent
