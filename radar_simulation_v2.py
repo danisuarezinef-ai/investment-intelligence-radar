@@ -3,7 +3,7 @@ from __future__ import annotations
 import json, math, statistics, uuid
 from datetime import datetime, timezone
 
-from radar_core import con, init_db, now, ASSETS
+from radar_core import con, init_db, now, ASSETS, collect_history
 from radar_agents import AGENTS, agents_status
 
 REAL_TRADING=False
@@ -75,19 +75,24 @@ def _momentum(history,symbol,lookback=20):
 
 
 def replay_historical(start_date=None,end_date=None,initial_cash=200.0,run_id=None):
-    """Point-in-time replay: each decision uses only prices observed before/on that date."""
+    """Point-in-time replay. Missing local history is fetched once before failing closed."""
     init_simulation_db(); run_id=run_id or 'hist-'+uuid.uuid4().hex[:12]; days=_series_by_day(start_date,end_date)
-    if len(days)<5:raise ValueError('insufficient historical observations for replay')
+    history_recovery_attempted=False
+    if len(days)<5:
+        history_recovery_attempted=True
+        collect_history()
+        days=_series_by_day(start_date,end_date)
+    if len(days)<5:
+        raise ValueError('insufficient historical observations for replay after automatic history recovery')
     initial_cash=max(50.0,float(initial_cash)); states={aid:{'cash':initial_cash,'pos':{},'peak':initial_cash} for aid in AGENTS}
     first_prices=days[0][1]; benchmark_symbols=[s for s in ASSETS if s in first_prices]; benchmark_units={s:(initial_cash/max(1,len(benchmark_symbols)))/first_prices[s] for s in benchmark_symbols}
-    c=con(); c.execute('insert into simulation_runs(run_id,created_at,mode,status,start_date,end_date,initial_cash,configuration,real_trading) values(?,?,?,?,?,?,?,?,0)',(run_id,now(),'historical','RUNNING',days[0][0],days[-1][0],initial_cash,json.dumps({'lookahead':False,'agents':list(AGENTS)},sort_keys=True))); c.commit()
+    c=con(); c.execute('insert into simulation_runs(run_id,created_at,mode,status,start_date,end_date,initial_cash,configuration,real_trading) values(?,?,?,?,?,?,?,?,0)',(run_id,now(),'historical','RUNNING',days[0][0],days[-1][0],initial_cash,json.dumps({'lookahead':False,'agents':list(AGENTS),'history_recovery_attempted':history_recovery_attempted},sort_keys=True))); c.commit()
     history=[]
     for day,prices in days:
         history.append((day,prices))
         bench=sum(benchmark_units[s]*prices.get(s,first_prices[s]) for s in benchmark_units)
         for aid,cfg in AGENTS.items():
             st=states[aid]
-            # sell: stop-loss or strongly negative 20-session momentum
             for sym in list(st['pos']):
                 if sym not in prices:continue
                 pos=st['pos'][sym]; pnl=(prices[sym]/pos['avg']-1)*100; mom=_momentum(history,sym,20)
