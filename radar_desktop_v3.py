@@ -1,8 +1,8 @@
 """Radar de Inversión desktop v3 adapter.
 
-Patches PAPER-simulator startup/cycle behavior and hardens Windows update UX
-before loading the canonical v2 UI. Update discovery is hot, manual refresh is
-real (not a disguised updater launch), and the control never disappears.
+Patches PAPER-simulator startup/cycle behavior, starts the persistent autonomous
+simulator independently of the Simulation Lab window, and hardens Windows update
+UX. REAL_TRADING remains disabled.
 """
 import json
 import threading
@@ -11,6 +11,7 @@ import tkinter as tk
 
 import radar_core
 from radar_simulator_engine_v3 import run_simulator_cycle
+from radar_autonomous_simulator_v1 import autonomous_simulator_loop, simulator_status
 from radar_ui_state import update_available
 
 _ORIGINAL_START=radar_core.paper_start
@@ -19,6 +20,8 @@ _UPDATE_CHECK_INTERVAL_MS=5*60*1000
 _ORIGINAL_BUTTON_INIT=tk.Button.__init__
 _ORIGINAL_BUTTON_FORGET=tk.Button.pack_forget
 _ORIGINAL_MAINLOOP=tk.Tk.mainloop
+_ORIGINAL_STRINGVAR_SET=tk.StringVar.set
+_SIMULATOR_THREAD_STARTED=False
 
 
 def _start_nonblocking(amount=1000.0):
@@ -122,7 +125,25 @@ def _button_forget(self,*args,**kwargs):
     return _ORIGINAL_BUTTON_FORGET(self,*args,**kwargs)
 
 
+def _simulator_aware_stringvar_set(self,value):
+    # The canonical UI writes ACTIVA/PAUSADA into the simulator status variable.
+    # Enrich that existing label without coupling the background worker to the UI.
+    if value in ('ACTIVA','PAUSADA','Sin iniciar'):
+        try:
+            s=simulator_status()
+            if s.get('active'):
+                value='ACTIVA · gen {} · {} exp · {} ciclos'.format(
+                    s.get('generation',1),s.get('completed_experiments',0),s.get('completed_cycles',0))
+            elif value=='ACTIVA':value='PAUSADA'
+        except Exception:pass
+    return _ORIGINAL_STRINGVAR_SET(self,value)
+
+
 def _hot_mainloop(self,*args,**kwargs):
+    global _SIMULATOR_THREAD_STARTED
+    if not _SIMULATOR_THREAD_STARTED:
+        _SIMULATOR_THREAD_STARTED=True
+        threading.Thread(target=autonomous_simulator_loop,name='desktop-autonomous-simulator',daemon=True).start()
     def periodic():
         _check_update(self)
         if self.winfo_exists():self.after(_UPDATE_CHECK_INTERVAL_MS,periodic)
@@ -134,6 +155,7 @@ radar_core.paper_start=_start_nonblocking
 radar_core.paper_step=_step_v3
 tk.Button.__init__=_button_init
 tk.Button.pack_forget=_button_forget
+tk.StringVar.set=_simulator_aware_stringvar_set
 tk.Tk.mainloop=_hot_mainloop
 
 from radar_desktop_v2 import *  # noqa: F401,F403,E402
