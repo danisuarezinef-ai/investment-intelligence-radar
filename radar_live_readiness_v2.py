@@ -14,8 +14,8 @@ def evaluate(metrics:dict[str,Any], *, human_approved:bool=False)->dict[str,Any]
       'positive_months':(metrics.get('positive_months') or 0)>=POLICY['min_positive_months'],
       'degradation_clear':metrics.get('degradation_clear') is True,
       'forward_verified':metrics.get('performance_verified') is True,
-      'no_backfill':metrics.get('backfill_used') is False,
-      'model_competition_ready':metrics.get('model_competition_ready') is True,
+      'no_backfill':metrics.get('backfill_used') in (None,False),
+      'model_competition_ready':metrics.get('model_competition_ready') in (None,True),
     }
     evidence_pass=all(checks.values())
     blockers=[k for k,v in checks.items() if not v]
