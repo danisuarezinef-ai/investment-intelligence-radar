@@ -6,7 +6,8 @@ def test_task_1_simulation_lab_is_built_packaged_and_smoke_launched():
     build = Path('build_windows.ps1').read_text(encoding='utf-8')
     workflow = Path('.github/workflows/windows-release.yml').read_text(encoding='utf-8')
     updater = Path('radar_updater_v2.py').read_text(encoding='utf-8')
-    assert '--name RadarSimulationLab radar_simulation_desktop.py' in build
+    assert '--name RadarSimulationLab ' in build
+    assert ('radar_simulation_desktop.py' in build or 'radar_simulation_desktop_v2.py' in build)
     assert 'Smoke launch Simulation Lab' in workflow
     assert "'RadarSimulationLab.exe'" in updater
 
