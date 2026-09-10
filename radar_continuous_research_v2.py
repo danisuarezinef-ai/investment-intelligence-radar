@@ -5,7 +5,7 @@ from radar_core import collect_history
 from radar_simulation_v2 import _series_by_day
 from radar_experiment_brain_v1 import generate_experiments
 from radar_experiment_memory_v2 import diversity_filter,remember,memory_snapshot
-from radar_simulation_research_v4 import research_protocol
+from radar_simulation_research_v5 import research_protocol
 REAL_TRADING=False
 
 
@@ -17,10 +17,10 @@ def run_research_batch(generation=1,max_experiments=6,min_history_days=90):
     candidates=diversity_filter(generate_experiments(generation))[:int(max_experiments)];results=[]
     for e in candidates:
         cfg=e['configuration'];protocol=research_protocol(cfg,days);base=protocol['base'];wf=protocol['walk_forward'];stress=protocol['stress'];gate=protocol['gate'];score=protocol['research_score']
-        row={'experiment_id':e['experiment_id'],'configuration':cfg,'completed':base.get('completed',False),'return_pct':base.get('return_pct'),'alpha_pct':0.0,'max_drawdown_pct':base.get('max_drawdown_pct'),'costs':base.get('costs'),'sharpe':base.get('sharpe'),'stability_score':wf.get('stability_score'),'walk_forward':wf,'stress':stress,'gate':gate,'research_score':score,'real_trading':False}
+        row={'experiment_id':e['experiment_id'],'configuration':cfg,'completed':base.get('completed',False),'return_pct':base.get('return_pct'),'alpha_pct':0.0,'max_drawdown_pct':base.get('max_drawdown_pct'),'costs':base.get('costs'),'sharpe':base.get('sharpe'),'sortino':base.get('sortino'),'walk_forward':wf,'stress':stress,'gate':gate,'research_score':score,'ranking_dimensions':protocol.get('ranking_dimensions'),'evidence_class':'SIMULATED_RESEARCH_OOS_ONLY','real_trading':False}
         remember(cfg,status='PASS' if gate['status']=='PASS_RESEARCH' else 'REJECTED',reason=','.join(gate['blockers']) if gate['blockers'] else None,generation=generation,research_score=score,stage='SHADOW_REVIEW' if gate['status']=='PASS_RESEARCH' else 'GRAVEYARD');results.append(row)
     winners=sorted([r for r in results if r['gate']['status']=='PASS_RESEARCH'],key=lambda r:float(r.get('research_score') or -1e9),reverse=True)
-    return {'status':'COMPLETED','generation':int(generation),'history_days':len(days),'tested':len(results),'shadow_candidates':[{'experiment_id':r['experiment_id'],'research_score':r['research_score'],'configuration':r['configuration']} for r in winners[:3]],'results':results,'memory':memory_snapshot(10),'research_protocol':'STRICT_CHRONOLOGICAL_V4','evidence_class':'SIMULATED_RESEARCH_ONLY','real_trading':False}
+    return {'status':'COMPLETED','generation':int(generation),'history_days':len(days),'tested':len(results),'shadow_candidates':[{'experiment_id':r['experiment_id'],'research_score':r['research_score'],'configuration':r['configuration']} for r in winners[:3]],'results':results,'memory':memory_snapshot(10),'research_protocol':'STRICT_OOS_CHRONOLOGICAL_V5','funnel':'SIMULATED→SHADOW_REVIEW_OR_GRAVEYARD; PAPER_REQUIRES_FORWARD_GATE','evidence_class':'SIMULATED_RESEARCH_OOS_ONLY','automatic_live_promotion':False,'real_trading':False}
 
 
 def continuous_research_loop(interval_seconds=21600):
