@@ -12,11 +12,12 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 
-from radar_agents import AGENTS, agents_status
+from radar_agents import agents_status
 from radar_champion_portfolio import champion_status
 
 REAL_TRADING = False
-SYNC_URL = os.environ.get('SUPABASE_LEARNING_SYNC_URL', '').strip()
+DEFAULT_LEAGUE_URL = 'https://wvmiludqzdepqmjhfwos.supabase.co/functions/v1/radar-simulator-league'
+LEAGUE_URL = os.environ.get('SUPABASE_SIMULATOR_LEAGUE_URL', DEFAULT_LEAGUE_URL).strip()
 SYNC_TOKEN = os.environ.get('RADAR_SYNC_TOKEN', '').strip()
 NODE_ID = os.environ.get('RADAR_NODE_ID', 'cloud-primary').strip() or 'cloud-primary'
 DISPLAY_BASE_EQUITY = 1000.0
@@ -195,11 +196,11 @@ def current_competitors():
 
 
 def _post(payload, timeout=40):
-    if not (SYNC_URL and SYNC_TOKEN):
+    if not (LEAGUE_URL and SYNC_TOKEN):
         return {'ok': False, 'status': 'AUTHORITY_DISABLED', 'real_trading': False}
     data = json.dumps(payload, ensure_ascii=False, default=str).encode('utf-8')
     req = urllib.request.Request(
-        SYNC_URL, data=data, method='POST',
+        LEAGUE_URL, data=data, method='POST',
         headers={
             'Content-Type': 'application/json',
             'X-Radar-Token': SYNC_TOKEN,
