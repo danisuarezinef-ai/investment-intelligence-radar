@@ -30,7 +30,7 @@ def curver():
     except:return '0.0.0'
 
 def getjson(url):
-    r=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.2','Cache-Control':'no-cache'})
+    r=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.3','Cache-Control':'no-cache'})
     return json.loads(urllib.request.urlopen(r,timeout=20).read().decode('utf-8-sig'))
 
 def filehash(p):
@@ -51,24 +51,66 @@ def launch_app():
     exe=os.path.join(APPDIR,'InvestmentIntelligenceRadar.exe')
     if os.path.exists(exe):subprocess.Popen([exe],cwd=APPDIR,creationflags=0x08000000 if os.name=='nt' else 0)
 
+def _snapshot_installation(backup):
+    if os.path.isdir(backup):shutil.rmtree(backup,ignore_errors=True)
+    os.makedirs(backup,exist_ok=True)
+    state={'binaries':{},'version_existed':os.path.isfile(VERSION_FILE)}
+    for name in PAYLOAD_BINARIES:
+        dst=os.path.join(APPDIR,name); existed=os.path.isfile(dst); state['binaries'][name]=existed
+        if existed:shutil.copy2(dst,os.path.join(backup,name+'.bak'))
+    if state['version_existed']:shutil.copy2(VERSION_FILE,os.path.join(backup,'version.json.bak'))
+    with open(os.path.join(backup,'transaction.json'),'w',encoding='utf-8') as f:json.dump(state,f,indent=2)
+    return state
+
+def _rollback_installation(backup,state):
+    errors=[]
+    for name,existed in state.get('binaries',{}).items():
+        dst=os.path.join(APPDIR,name); new=dst+'.new'; bak=os.path.join(backup,name+'.bak')
+        try:
+            if os.path.exists(new):os.remove(new)
+            if existed:
+                restored=dst+'.rollback'; shutil.copy2(bak,restored); os.replace(restored,dst)
+            elif os.path.exists(dst):os.remove(dst)
+        except Exception as exc:errors.append(name+': '+str(exc))
+    try:
+        vnew=VERSION_FILE+'.new'
+        if os.path.exists(vnew):os.remove(vnew)
+        if state.get('version_existed'):
+            restored=VERSION_FILE+'.rollback'; shutil.copy2(os.path.join(backup,'version.json.bak'),restored); os.replace(restored,VERSION_FILE)
+        elif os.path.exists(VERSION_FILE):os.remove(VERSION_FILE)
+    except Exception as exc:errors.append('version.json: '+str(exc))
+    try:
+        nxt=os.path.join(DATA,'RadarUpdater.next.exe')
+        if os.path.exists(nxt):os.remove(nxt)
+    except Exception as exc:errors.append('RadarUpdater.next.exe: '+str(exc))
+    if errors:
+        log('ROLLBACK_FAILED '+' | '.join(errors))
+        raise RuntimeError('Rollback incompleto: '+' | '.join(errors))
+    log('ROLLBACK_OK binaries='+','.join(PAYLOAD_BINARIES))
+    return True
+
 def install(pkg,version):
-    tmp=tempfile.mkdtemp(prefix='radar_update_')
+    tmp=tempfile.mkdtemp(prefix='radar_update_'); backup=os.path.join(DATA,'update_backup'); state=None
     try:
         z=os.path.join(tmp,'payload'); os.makedirs(z,exist_ok=True); zipfile.ZipFile(pkg).extractall(z)
         for name in PAYLOAD_BINARIES:
             src=os.path.join(z,name)
             if not os.path.isfile(src):raise RuntimeError('Falta '+name+' en el paquete')
         stop_processes(); time.sleep(1.5)
-        backup=os.path.join(DATA,'update_backup'); os.makedirs(backup,exist_ok=True)
-        for name in PAYLOAD_BINARIES:
-            src=os.path.join(z,name); dst=os.path.join(APPDIR,name)
-            if os.path.exists(dst):shutil.copy2(dst,os.path.join(backup,name+'.bak'))
-            new=dst+'.new'; shutil.copy2(src,new); os.replace(new,dst)
-        up=os.path.join(z,'RadarUpdater.exe')
-        if os.path.exists(up):shutil.copy2(up,os.path.join(DATA,'RadarUpdater.next.exe'))
-        with open(VERSION_FILE+'.new','w',encoding='utf-8') as f:json.dump({'version':version,'channel':'stable'},f,indent=2)
-        os.replace(VERSION_FILE+'.new',VERSION_FILE)
-        log('installed '+version+' binaries='+','.join(PAYLOAD_BINARIES))
+        state=_snapshot_installation(backup)
+        try:
+            for name in PAYLOAD_BINARIES:
+                src=os.path.join(z,name); dst=os.path.join(APPDIR,name); new=dst+'.new'
+                shutil.copy2(src,new); os.replace(new,dst)
+            up=os.path.join(z,'RadarUpdater.exe')
+            if os.path.exists(up):shutil.copy2(up,os.path.join(DATA,'RadarUpdater.next.exe'))
+            with open(VERSION_FILE+'.new','w',encoding='utf-8') as f:json.dump({'version':version,'channel':'stable'},f,indent=2)
+            os.replace(VERSION_FILE+'.new',VERSION_FILE)
+            log('installed '+version+' binaries='+','.join(PAYLOAD_BINARIES))
+        except Exception as install_exc:
+            try:_rollback_installation(backup,state)
+            except Exception as rollback_exc:raise RuntimeError(str(install_exc)+'; '+str(rollback_exc)) from install_exc
+            raise
     finally:shutil.rmtree(tmp,ignore_errors=True)
 
 def main():
@@ -83,39 +125,32 @@ def main():
 
     def already_current(version):
         status.set(f'ACTUALIZADO · Radar de Inversión v{version}')
-        prog.stop()
-        prog.configure(mode='determinate',maximum=100,value=100)
-        root.after(1800,root.destroy)
+        prog.stop(); prog.configure(mode='determinate',maximum=100,value=100); root.after(1800,root.destroy)
 
     def show_error(message):
-        status.set('No se pudo actualizar:\n'+message)
-        prog.stop()
-        prog.configure(mode='determinate',maximum=100,value=0)
+        status.set('No se pudo actualizar. La instalación anterior se conserva o se ha restaurado:\n'+message)
+        prog.stop(); prog.configure(mode='determinate',maximum=100,value=0)
 
     def run():
         try:
             m=getjson(UPDATE_MANIFEST); rv=m.get('version','0.0.0'); cv=curver()
             if vt(rv)<=vt(cv):
-                log('already_current '+cv)
-                root.after(0,lambda:already_current(cv))
-                return
+                log('already_current '+cv); root.after(0,lambda:already_current(cv)); return
             url=m.get('package_url'); expected=(m.get('sha256') or '').lower()
             if not url or not expected:raise RuntimeError('Manifest incompleto')
             root.after(0,lambda:status.set(f'Descargando Radar de Inversión v{rv}…'))
             pkg=os.path.join(tempfile.gettempdir(),'RadarUpdate.zip')
-            req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.2','Cache-Control':'no-cache'})
+            req=urllib.request.Request(url,headers={'User-Agent':'InvestmentIntelligenceRadarUpdater/2.3','Cache-Control':'no-cache'})
             with urllib.request.urlopen(req,timeout=60) as r, open(pkg,'wb') as f:shutil.copyfileobj(r,f)
             if filehash(pkg)!=expected:raise RuntimeError('La firma SHA-256 del paquete no coincide')
-            root.after(0,lambda:status.set('Instalando aplicación, simulador y worker…'))
+            root.after(0,lambda:status.set('Instalando aplicación, simulador y worker de forma transaccional…'))
             install(pkg,rv)
             def done():
                 status.set(f'Radar de Inversión y Simulation Lab actualizados correctamente a v{rv}.')
-                prog.stop(); prog.configure(mode='determinate',maximum=100,value=100)
-                launch_app(); root.after(1000,root.destroy)
+                prog.stop(); prog.configure(mode='determinate',maximum=100,value=100); launch_app(); root.after(1000,root.destroy)
             root.after(0,done)
         except Exception as e:
-            log(traceback.format_exc())
-            root.after(0,lambda:show_error(str(e)))
+            log(traceback.format_exc()); root.after(0,lambda:show_error(str(e)))
     threading.Thread(target=run,daemon=True).start(); root.mainloop()
 
 if __name__=='__main__':main()
