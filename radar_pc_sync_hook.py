@@ -83,9 +83,7 @@ def _heartbeat(token,node_id,cloud_cache):
 
 def _sync_once():
     from radar_core import con, init_db
-    data_dir=_data_dir();settings_path=os.path.join(data_dir(),'desktop_settings.json') if callable(data_dir) else os.path.join(data_dir,'desktop_settings.json')
-    if callable(data_dir):data_dir=data_dir()
-    settings_path=os.path.join(data_dir,'desktop_settings.json');state_path=os.path.join(data_dir,'pc_sync_state.json')
+    data_dir=_data_dir();settings_path=os.path.join(data_dir,'desktop_settings.json');state_path=os.path.join(data_dir,'pc_sync_state.json')
     settings=_read_json(settings_path);token=str(settings.get('cloud_control_token') or '').strip();node_id=str(settings.get('node_id') or '').strip();cloud_cache=_pull_cloud_cache()
     if not token or not node_id:return {'enabled':False,'reason':'waiting_for_cloud_control','cloud_pull':bool(cloud_cache)}
     state=_read_json(state_path,{'market_id':0,'event_id':0,'run_id':0});market_after=int(state.get('market_id') or 0);event_after=int(state.get('event_id') or 0);run_after=int(state.get('run_id') or 0)
