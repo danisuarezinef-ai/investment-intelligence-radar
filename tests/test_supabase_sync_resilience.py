@@ -82,3 +82,26 @@ def test_timeout_retries_but_eventually_fails(monkeypatch):
 
 def test_sync_batch_is_conservatively_capped():
     assert sync.MAX_SYNC_BATCH == 250
+
+
+def test_origin_id_is_bigint_safe_and_preserves_local_order(monkeypatch):
+    monkeypatch.setattr(sync, '_SYNC_PREFIX', 123456)
+    first = sync._origin_id(1)
+    second = sync._origin_id(2)
+    assert first != 1
+    assert second == first + 1
+    assert 0 <= first < 2**63
+
+
+def test_ephemeral_sessions_cannot_reuse_same_remote_origin_key(monkeypatch):
+    monkeypatch.setattr(sync, '_SYNC_PREFIX', 111)
+    old_deploy = sync._origin_id(1)
+    monkeypatch.setattr(sync, '_SYNC_PREFIX', 222)
+    new_deploy = sync._origin_id(1)
+    assert old_deploy != new_deploy
+
+
+def test_origin_id_rejects_values_outside_uint32(monkeypatch):
+    monkeypatch.setattr(sync, '_SYNC_PREFIX', 1)
+    with pytest.raises(ValueError):
+        sync._origin_id(2**32)
