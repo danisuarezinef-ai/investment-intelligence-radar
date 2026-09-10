@@ -18,8 +18,8 @@ from radar_champion_portfolio import init_champion_db
 
 REAL_TRADING = False
 SCHEMA_VERSION = 1
-DEFAULT_CHECKPOINT_URL = 'https://wvmiludqzdepqmjhfwos.supabase.co/functions/v1/radar-simulator-league'
-CHECKPOINT_URL = os.environ.get('SUPABASE_SIMULATOR_LEAGUE_URL', DEFAULT_CHECKPOINT_URL).strip()
+DEFAULT_CHECKPOINT_URL = 'https://wvmiludqzdepqmjhfwos.supabase.co/functions/v1/radar-paper-engine-checkpoint'
+CHECKPOINT_URL = os.environ.get('SUPABASE_PAPER_CHECKPOINT_URL', DEFAULT_CHECKPOINT_URL).strip()
 SYNC_TOKEN = os.environ.get('RADAR_SYNC_TOKEN', '').strip()
 NODE_ID = os.environ.get('RADAR_NODE_ID', 'cloud-primary').strip() or 'cloud-primary'
 
