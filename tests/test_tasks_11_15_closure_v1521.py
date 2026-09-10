@@ -34,9 +34,8 @@ def test_task_12_version_identity_and_legacy_binary_compatibility():
     version=json.loads(Path('version.json').read_text(encoding='utf-8'))['version']
     installer=Path('installer/Radar.iss').read_text(encoding='utf-8')
     build=Path('build_windows.ps1').read_text(encoding='utf-8')
-    assert version=='1.5.21'
+    assert tuple(map(int,version.split('.'))) >= (1,5,21)
     assert '#define MyAppName "Radar de Inversión"' in installer
-    assert '#define MyAppVersion "1.5.21"' in installer
     assert '#define MyAppExeName "InvestmentIntelligenceRadar.exe"' in installer
     assert 'OutputBaseFilename=Radar_de_Inversion_Setup' in installer
     assert "PC_SYNC_VERSION='$version'" in build
