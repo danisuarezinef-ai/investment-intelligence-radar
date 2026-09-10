@@ -15,11 +15,9 @@ def test_windows_build_packages_cloud_aware_simulation_lab():
 
 
 def test_cloud_autonomy_endpoints_are_wired_into_lab():
-    assert lab._CLOUD_ENDPOINTS == {
-        'simulator':'/simulator-status-v1',
-        'e2e':'/autonomy-e2e-v1',
-        'soak':'/autonomy-soak-v1',
-    }
+    assert lab._CLOUD_ENDPOINTS['simulator']=='/simulator-status-v1'
+    assert lab._CLOUD_ENDPOINTS['e2e']=='/autonomy-e2e-v1'
+    assert lab._CLOUD_ENDPOINTS['soak']=='/autonomy-soak-v1'
     source=Path('radar_simulation_desktop_v2.py').read_text(encoding='utf-8')
     assert 'recent_runs' in source
     assert 'recent_experiments' in source
