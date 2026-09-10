@@ -61,8 +61,8 @@ def test_lab_renders_native_canvas_chart_and_fetches_equity():
     source=Path('radar_simulation_desktop_v2.py').read_text(encoding='utf-8')
     assert lab._CLOUD_ENDPOINTS['equity']=='/simulator-equity-v1'
     assert 'Canvas' in source
-    assert 'EVOLUCIÓN PAPER · ÚLTIMOS 30 DÍAS' in source
-    assert 'base.GREEN if rising else base.RED' in source
+    assert 'EVOLUCIÓN PAPER AGREGADA · ÚLTIMOS 30 DÍAS' in source
+    assert "base.GREEN if current['equity']>=previous['equity'] else base.RED" in source
     assert 'month_change_pct' in source
     assert 'month_high' in source and 'month_low' in source
     assert 'sin backfill' in source
