@@ -21,6 +21,13 @@ async function persistAutonomy(body:Record<string,unknown>,node:string){
   return out;
 }
 
+async function paperEquityDaily(body:Record<string,unknown>,node:string){
+  const requested=Number(body.days||30);const days=Math.min(90,Math.max(1,Number.isFinite(requested)?Math.trunc(requested):30));
+  const {data,error}=await sb.rpc("radar_paper_equity_daily",{p_days:days,p_origin_node:node});
+  if(error)throw new Error(`paper_equity_daily: ${error.message}`);
+  return {ok:true,action:"paper_equity_daily",window_days:days,daily_equity:data||[],source:"SUPABASE_PERSISTED_PAPER_AGENT_MARKS",backfilled:false,reconstructed:false,real_trading:false};
+}
+
 async function rehydrate(node:string){
   const {data:forward,error:fe}=await sb.from("decision_forward_ledger").select("origin_node,origin_id,created_at,symbol,horizon,target_date,model_version,prediction_hash,payload,outcome,evaluated_at,local_prediction_id,feature_fingerprint,thesis_fingerprint,confidence,uncertainty,decision_state,paper_allocation,data_cutoff,known_at_boundary,provenance_snapshot").order("created_at",{ascending:true}).limit(5000);if(fe)throw fe;
   const {data:state,error:se}=await sb.from("radar_autonomy_state").select("payload").eq("origin_node",node).limit(1);if(se)throw se;
@@ -34,6 +41,7 @@ Deno.serve(async(req)=>{
   const body=await req.json() as Record<string,unknown>;const node=String(body.node_id||"cloud-primary");const action=String(body.action||"sync");
   if(action==="rehydrate_authority")return response(200,await rehydrate(node));
   if(action==="persist_autonomy")return response(200,await persistAutonomy(body,node));
+  if(action==="paper_equity_daily")return response(200,await paperEquityDaily(body,node));
   const out:Record<string,unknown>={ok:true};
   const models=rows(body,"model_versions",node);if(models.length){const {error}=await sb.from("model_versions").upsert(models,{onConflict:"version"});if(error)throw new Error(`model_versions: ${error.message}`);}out.model_versions=models.length;
   for(const table of INSERT_ONLY_TABLES){const input=rows(body,table,node);out[table]=await insertOnly(table,input);}

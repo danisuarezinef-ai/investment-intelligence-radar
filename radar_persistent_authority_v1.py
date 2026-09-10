@@ -28,6 +28,50 @@ def _post(payload):
         body=exc.read().decode('utf-8','replace');raise RuntimeError(f'authority HTTP {exc.code}: {body[:1000]}')
 
 
+def summarize_paper_equity_daily(rows,days=30):
+    """Normalize observed daily aggregate PAPER marks without synthesizing gaps."""
+    window=max(1,min(int(days or 30),90));clean={}
+    for raw in rows or []:
+        if not isinstance(raw,dict):continue
+        day=str(raw.get('day') or '')[:10]
+        if len(day)!=10:continue
+        try:equity=float(raw.get('equity'));agents=int(raw.get('agents') or 0)
+        except (TypeError,ValueError):continue
+        if equity<0 or agents<=0:continue
+        clean[day]={'date':day,'equity':equity,'agents':agents}
+    series=[clean[k] for k in sorted(clean)]
+    values=[row['equity'] for row in series]
+    current=values[-1] if values else None;first=values[0] if values else None
+    change=((current/first)-1.0)*100.0 if current is not None and first not in (None,0) and len(values)>=2 else None
+    return {
+        'status':'OK' if series else 'WAITING_FOR_HISTORY',
+        'window_days':window,
+        'observed_days':len(series),
+        'first_date':series[0]['date'] if series else None,
+        'last_date':series[-1]['date'] if series else None,
+        'daily_equity_30d':series,
+        'current_equity':current,
+        'month_change_pct':change,
+        'month_high':max(values) if values else None,
+        'month_low':min(values) if values else None,
+        'source':'SUPABASE_PERSISTED_PAPER_AGENT_MARKS',
+        'backfilled':False,
+        'reconstructed':False,
+        'real_trading':False,
+    }
+
+
+def paper_equity_curve(days=30):
+    """Read the durable observed PAPER equity curve from Supabase authority."""
+    window=max(1,min(int(days or 30),90))
+    if not enabled():
+        out=summarize_paper_equity_daily([],window);out['status']='AUTHORITY_DISABLED';return out
+    remote=_post({'action':'paper_equity_daily','node_id':NODE_ID,'days':window,'real_trading':False})
+    out=summarize_paper_equity_daily(remote.get('daily_equity') or [],window)
+    out['authority_ok']=bool(remote.get('ok'));out['real_trading']=False
+    return out
+
+
 def _j(value):
     if value is None:return None
     if isinstance(value,str):return value

@@ -15,16 +15,32 @@ from radar_forward_outcome_sync_v1 import sync_forward_outcomes_once
 from radar_brain_dashboard_v1 import brain_dashboard
 from radar_autonomous_simulator_v1 import autonomous_simulator_loop, simulator_status, init_autonomous_simulator
 from radar_autonomy_e2e_v1 import soak_loop,soak_status,e2e_cycle_status,init_e2e
-from radar_persistent_authority_v1 import rehydrate_authority,push_autonomy_snapshot
+from radar_persistent_authority_v1 import rehydrate_authority,push_autonomy_snapshot,paper_equity_curve
 
 REAL_TRADING=False
 BaseHandler=base_v2.ValidationHandler
 _AUTHORITY_STATUS={'status':'NOT_STARTED','real_trading':False}
+_EQUITY_CACHE={'at':0.0,'payload':None}
+_EQUITY_CACHE_SECONDS=60.0
+
+
+def paper_equity_runtime():
+    """Read durable PAPER equity with a short cache to protect Supabase."""
+    current=time.monotonic();cached=_EQUITY_CACHE.get('payload')
+    if cached is not None and current-float(_EQUITY_CACHE.get('at') or 0)<_EQUITY_CACHE_SECONDS:
+        return dict(cached)
+    try:
+        payload=paper_equity_curve(30);payload['cache_seconds']=int(_EQUITY_CACHE_SECONDS);payload['real_trading']=False
+        _EQUITY_CACHE['payload']=dict(payload);_EQUITY_CACHE['at']=current;return payload
+    except Exception as exc:
+        if cached is not None:
+            payload=dict(cached);payload['status']='STALE_CACHE';payload['error']=str(exc)[:500];payload['real_trading']=False;return payload
+        return {'status':'DEGRADED','window_days':30,'observed_days':0,'daily_equity_30d':[],'current_equity':None,'month_change_pct':None,'month_high':None,'month_low':None,'source':'SUPABASE_PERSISTED_PAPER_AGENT_MARKS','backfilled':False,'reconstructed':False,'error':str(exc)[:500],'real_trading':False}
 
 
 def priority_runtime_live():
     validation=validation_runtime_v3();health=ops_health(validation);operational=operational_pipeline();fresh=health.get('freshness') or {};gate=validation.get('paper_gate_evidence') or {};shadow=health.get('shadow_portfolio') or {}
-    endpoint_status={'/health':'NOT_VERIFIED','/snapshot':'NOT_VERIFIED','/dashboard-v2':'NOT_VERIFIED','/notifications':'NOT_VERIFIED','/pc-sync':'NOT_VERIFIED','/node-heartbeat':'CLIENT_AUTH_REQUIRED_NOT_LIVE_VERIFIED','/validation-v3':200,'/ops-health':200,'/operational-pipeline-v1':200,'/market-telemetry-v1':200,'/provider-telemetry-v1':200,'/fundamentals-v1':200,'/brain-research-v1':200,'/simulator-status-v1':200,'/autonomy-e2e-v1':200,'/autonomy-soak-v1':200,'/persistent-authority-v1':200}
+    endpoint_status={'/health':'NOT_VERIFIED','/snapshot':'NOT_VERIFIED','/dashboard-v2':'NOT_VERIFIED','/notifications':'NOT_VERIFIED','/pc-sync':'NOT_VERIFIED','/node-heartbeat':'CLIENT_AUTH_REQUIRED_NOT_LIVE_VERIFIED','/validation-v3':200,'/ops-health':200,'/operational-pipeline-v1':200,'/market-telemetry-v1':200,'/provider-telemetry-v1':200,'/fundamentals-v1':200,'/brain-research-v1':200,'/simulator-status-v1':200,'/simulator-equity-v1':200,'/autonomy-e2e-v1':200,'/autonomy-soak-v1':200,'/persistent-authority-v1':200}
     freshness={'market':(fresh.get('market_data') or {}).get('status','NOT_VERIFIED'),'events':(fresh.get('events') or {}).get('status','NOT_VERIFIED'),'predictions':(fresh.get('predictions') or {}).get('status','NOT_VERIFIED'),'cloud_sync':(fresh.get('cloud_sync') or {}).get('status','NOT_VERIFIED'),'forward_outcomes':(fresh.get('forward_outcomes') or {}).get('status','NOT_VERIFIED')}
     promotion_metrics={'days':gate.get('forward_days'),'decisions':gate.get('decisions'),'max_drawdown':gate.get('max_drawdown_pct'),'benchmark_coverage':gate.get('benchmark_coverage'),'cost_coverage':gate.get('cost_coverage'),'positive_months':gate.get('positive_months'),'degradation_clear':gate.get('degradation_clear')}
     account={'equity':None,'cash':None,'invested':shadow.get('approved_budget_total')};paper=validation.get('paper') or {}
@@ -34,7 +50,7 @@ def priority_runtime_live():
     payload['operational_pipeline']=operational
     payload['brain']=brain_dashboard(forward_status={'records':len(operational.get('forward_records') or [])},paper_status=paper,cloud_status={'freshness':freshness})
     payload['autonomous_simulator']=simulator_status();payload['autonomy_e2e']=e2e_cycle_status();payload['autonomy_soak']=soak_status();payload['persistent_authority']=dict(_AUTHORITY_STATUS)
-    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','forward_outcome_sync':'LIVE_IDEMPOTENT_MATURE_OUTCOME_RESEND','continuous_research_brain':'INTEGRATED_IN_AUTONOMOUS_SIMULATOR','autonomous_simulator':'LIVE_PERSISTENT_PAPER_AND_RESEARCH_DAEMON','strict_research_protocol':'CHRONOLOGICAL_WALK_FORWARD_STRESS_ANTIOVERFIT_V4','autonomy_soak':'LIVE_REAL_TIME_NO_BACKFILL','persistent_authority':'SUPABASE_EXACT_RESTORE_AND_IDEMPOTENT_AUTONOMY_PERSISTENCE','brain_research_endpoint':'LIVE_READ_ONLY','simulator_status_endpoint':'LIVE_READ_ONLY','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'LIVE_DERIVED_FROM_MATURE_FORWARD_MODEL_METRICS_FAIL_CLOSED','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
+    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','forward_outcome_sync':'LIVE_IDEMPOTENT_MATURE_OUTCOME_RESEND','continuous_research_brain':'INTEGRATED_IN_AUTONOMOUS_SIMULATOR','autonomous_simulator':'LIVE_PERSISTENT_PAPER_AND_RESEARCH_DAEMON','strict_research_protocol':'CHRONOLOGICAL_WALK_FORWARD_STRESS_ANTIOVERFIT_V4','autonomy_soak':'LIVE_REAL_TIME_NO_BACKFILL','persistent_authority':'SUPABASE_EXACT_RESTORE_AND_IDEMPOTENT_AUTONOMY_PERSISTENCE','paper_equity_curve':'SUPABASE_PERSISTED_DAILY_COMPLETE_AGENT_MARKS_NO_BACKFILL','brain_research_endpoint':'LIVE_READ_ONLY','simulator_status_endpoint':'LIVE_READ_ONLY','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'LIVE_DERIVED_FROM_MATURE_FORWARD_MODEL_METRICS_FAIL_CLOSED','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
     payload['can_trade']=False;payload['real_trading']=False;return payload
 
 
@@ -48,6 +64,7 @@ class ValidationV3Handler(BaseHandler):
             if path=='/priority-v1':self._send(200,priority_runtime_live());return
             if path=='/brain-research-v1':self._send(200,brain_dashboard());return
             if path=='/simulator-status-v1':self._send(200,simulator_status());return
+            if path=='/simulator-equity-v1':self._send(200,paper_equity_runtime());return
             if path=='/autonomy-e2e-v1':self._send(200,e2e_cycle_status());return
             if path=='/autonomy-soak-v1':self._send(200,soak_status());return
             if path=='/persistent-authority-v1':self._send(200,dict(_AUTHORITY_STATUS));return
