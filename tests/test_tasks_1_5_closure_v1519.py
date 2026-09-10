@@ -13,9 +13,16 @@ def test_task_1_simulation_lab_is_built_packaged_and_smoke_launched():
 
 def test_task_2_functional_controls_have_regression_coverage():
     source = Path('radar_desktop_v2.py').read_text(encoding='utf-8')
+    regression = Path('tests/test_work01_ui_and_simulator.py').read_text(encoding='utf-8')
     for label in ('ACTIVAR', 'DESACTIVAR', 'REINICIAR', 'DECIDIR AHORA'):
         assert label in source
-    assert 'REAL_TRADING' not in source or True  # execution safety is asserted in dedicated suites
+    for behavior in (
+        'test_paper_activate_and_deactivate_preserve_portfolio',
+        'test_paper_reset_uses_new_capital_and_clears_active_portfolio',
+        'test_step_is_noop_while_disabled',
+        'test_real_trading_remains_off',
+    ):
+        assert behavior in regression
 
 
 def test_task_3_hot_updater_replaces_complete_runtime_atomically():
@@ -23,8 +30,8 @@ def test_task_3_hot_updater_replaces_complete_runtime_atomically():
     build = Path('build_windows.ps1').read_text(encoding='utf-8')
     for binary in ('InvestmentIntelligenceRadar.exe', 'RadarSimulationLab.exe', 'RadarWorker.exe'):
         assert binary in updater
-    assert "os.replace(new,dst)" in updater
-    assert "RadarUpdater.exe" in build
+    assert 'os.replace(new,dst)' in updater
+    assert 'RadarUpdater.exe' in build
     assert 'RadarUpdate.zip' in build
     assert 'sha256' in updater.lower()
 
