@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-09-10",
+  "base_main": "e22d5670fd12b07e0ec1b60d402f0932e181efe9",
+  "branch": "audit-forward-integrity-v29",
+  "tasks": {
+    "1_production_audit": "PARTIAL_VERIFIED",
+    "2_persistence_across_deploy": "VERIFIED_CORE",
+    "3_forward_evidence": "VERIFIED_INSUFFICIENT_MATURITY",
+    "4_autonomous_simulator_e2e": "VERIFIED_RUNNING",
+    "5_24h_soak": "COLLECTING_EVIDENCE",
+    "6_market_provider": "PARTIAL_VERIFIED",
+    "7_research_v28_oos": "DEFECT_FOUND_AND_PATCHED_ON_BRANCH",
+    "8_champion_challenger": "VERIFIED_FAIL_CLOSED"
+  },
+  "forward_ledger": {
+    "total": 196,
+    "matured": 13,
+    "horizon_1d_matured": 13,
+    "horizon_1w_matured": 0,
+    "horizon_1m_matured": 0,
+    "horizon_3m_matured": 0,
+    "duplicates": 0,
+    "backfill_true": 0
+  },
+  "soak": {
+    "ticks_observed": 88,
+    "max_gap_seconds": 300.032484,
+    "duplicates": 0,
+    "real_trading_true": 0,
+    "status": "NOT_YET_24H"
+  },
+  "safety": {
+    "real_trading": false,
+    "automatic_live_promotion": false
+  },
+  "known_runtime_findings": [
+    "Transient forward-outcome sync HTTP 500/timeout observed and subsequently recovered idempotently.",
+    "Supabase market snapshot persistence lagged the cloud runtime during audit; investigate generic supabase-sync errors.",
+    "Research v28 base simulator used same-close signal/execution lookahead; patched on audit-forward-integrity-v29 with one-session signal lag."
+  ],
+  "merge_status": "NOT_MERGED",
+  "deployment_status": "NOT_DEPLOYED"
+}

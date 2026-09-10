@@ -1,4 +1,5 @@
 import radar_simulation_research_v5 as r
+from radar_simulation_research_v3 import evaluate_config
 from radar_experiment_memory_v2 import stage_funnel
 
 
@@ -16,11 +17,25 @@ def _cfg():
 def test_task6_walk_forward_is_oos_and_chronological():
     w=r.chronological_walk_forward(_cfg(),_days(),folds=3,min_train=90,validation_days=20,test_days=20)
     assert w['completed'] is True and w['lookahead'] is False
+    assert w['signal_lag_days']==1 and w['sealed_final_test'] is False
     assert len(w['folds'])>=2
     for f in w['folds']:
         assert f['validation']['evidence_class']=='SIMULATED_OOS_ONLY'
         assert f['test']['evidence_class']=='SIMULATED_OOS_ONLY'
+        assert f['validation']['lookahead'] is False and f['test']['lookahead'] is False
         assert f['train_end'] < f['validation_end'] < f['test_end']
+
+
+def test_current_close_cannot_create_same_close_signal():
+    days=[]
+    for i in range(19):
+        days.append((f'2026-01-{i+1:02d}',{'AAA':100.0}))
+    days.append(('2026-01-20',{'AAA':1000.0}))
+    cfg={'lookback_fast':4,'lookback_slow':4,'fast_weight':1.0,'slow_weight':0.0,'exit_momentum':-5,'cost_multiplier':1,'max_positions':1,'per_position':.12}
+    result=evaluate_config(cfg,days)
+    assert result['lookahead'] is False
+    assert result['signal_lag_days']==1
+    assert result['trades']==0
 
 
 def test_task7_stress_has_required_failure_modes():
@@ -34,6 +49,7 @@ def test_task8_ranking_includes_sortino_and_tail_risk():
     p=r.research_protocol(_cfg(),_days())
     assert {'SHARPE','SORTINO','TAIL_RISK','MAX_DRAWDOWN'} <= set(p['ranking_dimensions'])
     assert isinstance(p['research_score'],float)
+    assert p['signal_lag_days']==1 and p['sealed_final_test'] is False
 
 
 def test_task9_overfit_gate_rejects_bad_oos_and_stress():

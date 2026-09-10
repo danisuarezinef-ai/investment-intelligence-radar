@@ -1,0 +1,4 @@
+READY_FOR_CI
+REAL_TRADING=false
+BRANCH=audit-forward-integrity-v29
+BASE=e22d5670fd12b07e0ec1b60d402f0932e181efe9

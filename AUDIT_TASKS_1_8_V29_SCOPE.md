@@ -1,0 +1,1 @@
+Scope: production/read-path audit for priorities 1-8 plus correction of the same-close lookahead discovered in Research v28. No production configuration changes, no Railway deployment, no Supabase schema mutation, and no real trading capability.
