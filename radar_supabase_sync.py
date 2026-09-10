@@ -1,4 +1,4 @@
-import json, os, time, urllib.request, urllib.error
+import hashlib, json, os, secrets, time, urllib.request, urllib.error
 
 from radar_core import con, init_db, now
 
@@ -7,6 +7,31 @@ SYNC_TOKEN = os.environ.get('RADAR_SYNC_TOKEN', '').strip()
 NODE_ID = os.environ.get('RADAR_NODE_ID', 'cloud-primary').strip() or 'cloud-primary'
 MAX_SYNC_BATCH = 250
 RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
+
+# SQLite ids are local to one ephemeral runtime. Railway redeploys may recreate the
+# database and restart ids from 1, so sending the raw local id with a stable NODE_ID
+# collides with prior Supabase (origin_node, origin_id) keys and silently drops new
+# rows under ignoreDuplicates=True. A per-process session prefix preserves NODE_ID
+# while making append-only origin ids globally unique across deploys/restarts.
+_SYNC_SESSION = (
+    os.environ.get('RADAR_SYNC_SESSION_ID', '').strip()
+    or ':'.join(
+        x for x in (
+            os.environ.get('RAILWAY_DEPLOYMENT_ID', '').strip(),
+            os.environ.get('RAILWAY_REPLICA_ID', '').strip(),
+            secrets.token_hex(8),
+        ) if x
+    )
+)
+_SYNC_PREFIX = int.from_bytes(hashlib.sha256(_SYNC_SESSION.encode('utf-8')).digest()[:4], 'big') & 0x7FFFFFFF
+
+
+def _origin_id(local_id):
+    """Map a positive local SQLite id to a signed-bigint-safe globally unique id."""
+    local_id = int(local_id)
+    if local_id < 0 or local_id >= 2**32:
+        raise ValueError('local origin id out of supported range')
+    return (_SYNC_PREFIX << 32) | local_id
 
 
 def enabled():
@@ -164,15 +189,15 @@ def sync_once(batch=500):
     payload = {
         'node_id': NODE_ID,
         'market_snapshots': [
-            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'symbol': r[2], 'price': r[3], 'volume': r[4], 'source': r[5]}
+            {'id': r[0], 'origin_id': _origin_id(r[0]), 'ts': r[1], 'symbol': r[2], 'price': r[3], 'volume': r[4], 'source': r[5]}
             for r in market_rows
         ],
         'information_events': [
-            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'source': r[2], 'title': r[3], 'url': r[4], 'category': r[5]}
+            {'id': r[0], 'origin_id': _origin_id(r[0]), 'ts': r[1], 'source': r[2], 'title': r[3], 'url': r[4], 'category': r[5]}
             for r in event_rows
         ],
         'system_runs': [
-            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'node_id': NODE_ID, 'kind': r[2], 'status': r[3], 'message': r[4]}
+            {'id': r[0], 'origin_id': _origin_id(r[0]), 'ts': r[1], 'node_id': NODE_ID, 'kind': r[2], 'status': r[3], 'message': r[4]}
             for r in run_rows
         ],
         'source_reputation': [
@@ -180,11 +205,11 @@ def sync_once(batch=500):
             for r in reputation_rows
         ],
         'silence_alerts': [
-            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'symbol': r[2], 'return_pct': r[3], 'z_score': r[4], 'recent_public_catalyst': bool(r[5]), 'status': r[6], 'detail': r[7]}
+            {'id': r[0], 'origin_id': _origin_id(r[0]), 'ts': r[1], 'symbol': r[2], 'return_pct': r[3], 'z_score': r[4], 'recent_public_catalyst': bool(r[5]), 'status': r[6], 'detail': r[7]}
             for r in alert_rows
         ],
         'notifications': [
-            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'kind': r[2], 'severity': r[3], 'title': r[4], 'body': r[5], 'symbol': r[6], 'read': bool(r[7]), 'dedupe_key': r[8]}
+            {'id': r[0], 'origin_id': _origin_id(r[0]), 'ts': r[1], 'kind': r[2], 'severity': r[3], 'title': r[4], 'body': r[5], 'symbol': r[6], 'read': bool(r[7]), 'dedupe_key': r[8]}
             for r in notification_rows
         ],
         'nodes': [
@@ -200,11 +225,11 @@ def sync_once(batch=500):
             for r in position_rows
         ],
         'paper_trades': [
-            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'agent_id': r[2], 'symbol': r[3], 'side': r[4], 'qty': r[5], 'price': r[6], 'gross_value': r[7], 'fees': r[8], 'spread_cost': r[9], 'fx_cost': r[10], 'reason': r[11]}
+            {'id': r[0], 'origin_id': _origin_id(r[0]), 'ts': r[1], 'agent_id': r[2], 'symbol': r[3], 'side': r[4], 'qty': r[5], 'price': r[6], 'gross_value': r[7], 'fees': r[8], 'spread_cost': r[9], 'fx_cost': r[10], 'reason': r[11]}
             for r in trade_rows
         ],
         'portfolio_values': [
-            {'id': r[0], 'origin_id': r[0], 'ts': r[1], 'agent_id': r[2], 'total': r[3], 'cash': r[4], 'invested': r[5], 'drawdown_pct': r[6]}
+            {'id': r[0], 'origin_id': _origin_id(r[0]), 'ts': r[1], 'agent_id': r[2], 'total': r[3], 'cash': r[4], 'invested': r[5], 'drawdown_pct': r[6]}
             for r in mark_rows
         ],
         'node': {
@@ -247,5 +272,6 @@ def sync_once(batch=500):
         'positions': len(position_rows),
         'trades': len(trade_rows),
         'marks': len(mark_rows),
+        'origin_session_prefix': _SYNC_PREFIX,
         'remote': result,
     }
