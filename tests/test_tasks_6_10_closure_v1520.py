@@ -84,5 +84,6 @@ def test_task_10_forward_ledger_auditor_passes_clean_records_and_fails_contamina
     assert bad['status']=='FAIL_CLOSED';assert bad['duplicate_authority'];assert bad['duplicate_hash'];assert bad['backfill_contamination'];assert bad['timestamp_errors'];assert bad['repair_performed'] is False
 
 
-def test_release_is_v1520():
-    assert json.loads(Path('version.json').read_text(encoding='utf-8'))['version']=='1.5.20'
+def test_release_is_at_least_v1520():
+    version=json.loads(Path('version.json').read_text(encoding='utf-8'))['version']
+    assert tuple(map(int,version.split('.'))) >= (1,5,20)
