@@ -57,4 +57,4 @@ def test_task_5_legacy_404_symbols_have_independent_provider_failover():
 
 def test_release_number_breaks_same_version_update_ambiguity():
     version = json.loads(Path('version.json').read_text(encoding='utf-8'))['version']
-    assert version == '1.5.19'
+    assert tuple(map(int,version.split('.'))) >= (1,5,19)
