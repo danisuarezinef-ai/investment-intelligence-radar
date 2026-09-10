@@ -15,7 +15,7 @@ def _momentum(history,symbol,lookback):
     return (pts[-1]/pts[0]-1) if len(pts)>=4 and pts[0] else None
 
 
-def evaluate_config(config, days=None, initial_cash=1000.0, stress=None):
+def evaluate_config(config, days=None, initial_cash=1000.0, stress=None, return_marks=False):
     days=list(days or _series_by_day())
     if len(days)<20:return {'completed':False,'reason':'INSUFFICIENT_HISTORY','real_trading':False}
     stress=stress or {};cash=float(initial_cash);positions={};peak=cash;marks=[];costs=0.0;trades=0
@@ -42,12 +42,14 @@ def evaluate_config(config, days=None, initial_cash=1000.0, stress=None):
             budget=min(equity*per_position,cash*.95)
             if budget<10:break
             gross=budget/(1+fee);c=gross*fee;qty=gross/prices[sym];cash-=gross+c;costs+=c;trades+=1;positions[sym]=qty;slots-=1
-        equity=cash+sum(q*prices.get(s,0) for s,q in positions.items());
+        equity=cash+sum(q*prices.get(s,0) for s,q in positions.items())
         if stress.get('shock_pct') and len(history)==max(1,len(days)//2):equity*=1+float(stress['shock_pct'])/100
         peak=max(peak,equity);marks.append(equity)
     rets=[marks[i]/marks[i-1]-1 for i in range(1,len(marks)) if marks[i-1]>0];ret=(marks[-1]/marks[0]-1)*100 if marks and marks[0] else 0;dd=min((m/max(marks[:i+1])-1)*100 for i,m in enumerate(marks)) if marks else 0
     sd=statistics.pstdev(rets) if len(rets)>1 else 0;sharpe=(statistics.mean(rets)/sd*math.sqrt(252)) if sd else 0
-    return {'completed':True,'return_pct':ret,'max_drawdown_pct':dd,'sharpe':sharpe,'costs':costs,'trades':trades,'marks':len(marks),'evidence_class':'SIMULATED_HISTORICAL_ONLY','real_trading':False}
+    result={'completed':True,'return_pct':ret,'max_drawdown_pct':dd,'sharpe':sharpe,'costs':costs,'trades':trades,'marks':len(marks),'evidence_class':'SIMULATED_HISTORICAL_ONLY','real_trading':False}
+    if return_marks:result['equity_marks']=marks
+    return result
 
 
 def walk_forward(config, days=None, folds=4, min_train=60):
