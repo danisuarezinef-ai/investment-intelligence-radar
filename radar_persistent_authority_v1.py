@@ -46,15 +46,12 @@ def _table_payload(c,table,limit=2000):
 def push_autonomy_snapshot(limit=2000):
     if not enabled():return {'enabled':False,'real_trading':False}
     init_db();c=con();state=_table_payload(c,'autonomous_simulator_state',1);runs=_table_payload(c,'autonomous_simulator_runs',limit);experiments=_table_payload(c,'autonomous_experiment_results',limit);ticks=_table_payload(c,'autonomy_soak_ticks',limit);c.close()
-    # Remote authority uses a generic origin_id. Preserve the true local run_id as
-    # both payload data and transport identity; no synthetic run is created.
     runs=[dict(r,id=r.get('run_id')) if r.get('run_id') is not None else r for r in runs]
     payload={'action':'persist_autonomy','node_id':NODE_ID,'real_trading':False,'state':state[0] if state else None,'runs':runs,'experiments':experiments,'soak_ticks':ticks}
     result=_post(payload);result['real_trading']=False;return result
 
 
-def _unpack(raw):
-    return raw.get('payload') if isinstance(raw,dict) and isinstance(raw.get('payload'),dict) else raw
+def _unpack(raw):return raw.get('payload') if isinstance(raw,dict) and isinstance(raw.get('payload'),dict) else raw
 
 
 def _restore_generic(c,table,rows):
@@ -67,8 +64,8 @@ def _restore_generic(c,table,rows):
         keys=[k for k in row if k in allowed]
         if not keys:continue
         vals=[_j(row[k]) if isinstance(row[k],(dict,list)) else row[k] for k in keys]
-        try:c.execute(f"insert or ignore into {table}({','.join(keys)}) values({','.join('?' for _ in keys)})",vals);done+=c.rowcount
-        except Exception:continue
+        cur=c.execute(f"insert or ignore into {table}({','.join(keys)}) values({','.join('?' for _ in keys)})",vals)
+        done+=max(0,int(cur.rowcount or 0))
     return done
 
 
@@ -80,8 +77,8 @@ def _restore_state(c,rows):
     keys=[k for k in row if k in allowed and k!='id']
     if not keys:return 0
     vals=[_j(row[k]) if isinstance(row[k],(dict,list)) else row[k] for k in keys]
-    c.execute('update autonomous_simulator_state set '+','.join(f'{k}=?' for k in keys)+' where id=1',vals)
-    return c.rowcount
+    cur=c.execute('update autonomous_simulator_state set '+','.join(f'{k}=?' for k in keys)+' where id=1',vals)
+    return max(0,int(cur.rowcount or 0))
 
 
 def restore_forward_authority(rows):
