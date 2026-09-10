@@ -6,8 +6,10 @@ import time
 import urllib.error
 import urllib.request
 
-PC_SYNC_VERSION = '1.4.1'
+PC_SYNC_VERSION = '1.5.20'
 CLOUD_BASE = 'https://radar-cloud-production.up.railway.app'
+OPTIONAL_404_BACKOFF_SECONDS = 15 * 60
+_OPTIONAL_BLOCKED_UNTIL = {}
 
 
 def _data_dir():
@@ -31,8 +33,18 @@ def _get(path,timeout=20):
     with urllib.request.urlopen(req,timeout=timeout) as r:return json.loads(r.read().decode('utf-8'))
 
 def _get_optional(path,timeout=20):
-    try:return {'ok':True,'payload':_get(path,timeout)}
-    except Exception as exc:return {'ok':False,'error':str(exc)[:300],'payload':None}
+    now=time.time();blocked_until=float(_OPTIONAL_BLOCKED_UNTIL.get(path) or 0)
+    if blocked_until>now:
+        return {'ok':False,'status':'BACKOFF_404','http_status':404,'blocked_until':blocked_until,'error':'HTTP 404 backoff active','payload':None}
+    try:
+        payload=_get(path,timeout);_OPTIONAL_BLOCKED_UNTIL.pop(path,None)
+        return {'ok':True,'status':'OK','http_status':200,'blocked_until':None,'error':None,'payload':payload}
+    except urllib.error.HTTPError as exc:
+        if exc.code==404:_OPTIONAL_BLOCKED_UNTIL[path]=now+OPTIONAL_404_BACKOFF_SECONDS
+        return {'ok':False,'status':'HTTP_404_BACKOFF' if exc.code==404 else 'HTTP_ERROR','http_status':exc.code,
+                'blocked_until':_OPTIONAL_BLOCKED_UNTIL.get(path),'error':'HTTP '+str(exc.code),'payload':None}
+    except Exception as exc:
+        return {'ok':False,'status':'ERROR','http_status':None,'blocked_until':None,'error':str(exc)[:300],'payload':None}
 
 def _post_path(path,token,payload,timeout=35):
     data=json.dumps(payload,ensure_ascii=False).encode('utf-8');req=urllib.request.Request(CLOUD_BASE+path,data=data,method='POST',headers={'Authorization':'Bearer '+token,'Content-Type':'application/json','User-Agent':'InvestmentIntelligenceRadarDesktopSync/'+PC_SYNC_VERSION})
@@ -43,11 +55,21 @@ def _post(token,payload,timeout=35):return _post_path('/pc-sync',token,payload,t
 def _pull_cloud_cache():
     cache_path=os.path.join(_data_dir(),'cloud_intelligence_cache.json')
     try:
-        snapshot=_get('/snapshot');learning=_get('/dashboard-v2');notifications=_get('/notifications')
-        priority=_get_optional('/priority-v1');operational=_get_optional('/operational-pipeline-v1');market=_get_optional('/market-telemetry-v1');ops=_get_optional('/ops-health')
-        payload={'fetched_at':time.time(),'snapshot':snapshot,'learning':learning,'notifications':notifications,
-                 'priority':priority.get('payload'),'operational_pipeline':operational.get('payload'),'market_telemetry':market.get('payload'),'ops_health':ops.get('payload'),
-                 'endpoint_health':{'priority-v1':priority['ok'],'operational-pipeline-v1':operational['ok'],'market-telemetry-v1':market['ok'],'ops-health':ops['ok']},
+        health=_get('/health');snapshot=_get('/snapshot');learning=_get('/dashboard-v2');notifications=_get('/notifications')
+        validation=_get_optional('/validation-v3');priority=_get_optional('/priority-v1');operational=_get_optional('/operational-pipeline-v1');market=_get_optional('/market-telemetry-v1');ops=_get_optional('/ops-health')
+        payload={'fetched_at':time.time(),'health':health,'snapshot':snapshot,'learning':learning,'notifications':notifications,
+                 'validation_v3':validation.get('payload'),'priority':priority.get('payload'),'operational_pipeline':operational.get('payload'),
+                 'market_telemetry':market.get('payload'),'ops_health':ops.get('payload'),
+                 'endpoint_health':{
+                     'health':True,'snapshot':True,'dashboard-v2':True,'notifications':True,
+                     'validation-v3':validation['ok'],'priority-v1':priority['ok'],'operational-pipeline-v1':operational['ok'],
+                     'market-telemetry-v1':market['ok'],'ops-health':ops['ok']},
+                 'endpoint_detail':{
+                     'validation-v3':{k:validation.get(k) for k in ('status','http_status','blocked_until','error')},
+                     'priority-v1':{k:priority.get(k) for k in ('status','http_status','blocked_until','error')},
+                     'operational-pipeline-v1':{k:operational.get(k) for k in ('status','http_status','blocked_until','error')},
+                     'market-telemetry-v1':{k:market.get(k) for k in ('status','http_status','blocked_until','error')},
+                     'ops-health':{k:ops.get(k) for k in ('status','http_status','blocked_until','error')}},
                  'sync_health':{'cloud':True,'learning_model':(learning.get('model') or {}).get('version'),'trading_real':False}}
         _write_json_atomic(cache_path,payload);return payload
     except Exception as exc:
@@ -56,7 +78,7 @@ def _pull_cloud_cache():
 def _heartbeat(token,node_id,cloud_cache):
     detail={'cache_fetched_at':cloud_cache.get('fetched_at'),'endpoint_health':cloud_cache.get('endpoint_health') or {},'real_trading':False}
     return _post_path('/node-heartbeat',token,{'node_id':node_id,'node_type':'desktop','name':os.environ.get('COMPUTERNAME','Windows PC'),
-                                               'app_version':PC_SYNC_VERSION,'capabilities':['local-collector','paper-simulator','desktop-ui','persistent-sync','cloud-cache','priority-v1','operational-pipeline-v1','market-telemetry-v1'],
+                                               'app_version':PC_SYNC_VERSION,'capabilities':['local-collector','paper-simulator','desktop-ui','persistent-sync','cloud-cache','validation-v3','priority-v1','operational-pipeline-v1','market-telemetry-v1'],
                                                'detail':detail},20)
 
 def _sync_once():
@@ -69,7 +91,7 @@ def _sync_once():
     try:
         market=c.execute('select id,ts,symbol,price,volume,source from market_snapshots where id>? order by id limit 300',(market_after,)).fetchall();events=c.execute('select id,ts,source,title,url,category from information_events where id>? order by id limit 300',(event_after,)).fetchall();runs=c.execute('select id,ts,job,status,detail from system_runs where id>? order by id limit 300',(run_after,)).fetchall()
     finally:c.close()
-    payload={'node_id':node_id,'name':os.environ.get('COMPUTERNAME','Windows PC'),'app_version':PC_SYNC_VERSION,'capabilities':['local-collector','paper-simulator','desktop-ui','persistent-sync','cloud-cache','intelligence-v2','priority-v1','operational-pipeline-v1'],
+    payload={'node_id':node_id,'name':os.environ.get('COMPUTERNAME','Windows PC'),'app_version':PC_SYNC_VERSION,'capabilities':['local-collector','paper-simulator','desktop-ui','persistent-sync','cloud-cache','intelligence-v2','validation-v3','priority-v1','operational-pipeline-v1'],
       'market_snapshots':[{'id':r[0],'origin_id':r[0],'origin_node':node_id,'ts':r[1],'symbol':r[2],'price':r[3],'volume':r[4],'source':r[5]} for r in market],
       'information_events':[{'id':r[0],'origin_id':r[0],'origin_node':node_id,'ts':r[1],'source':r[2],'title':r[3],'url':r[4],'category':r[5]} for r in events],
       'system_runs':[{'id':r[0],'origin_id':r[0],'origin_node':node_id,'ts':r[1],'node_id':node_id,'kind':r[2],'status':r[3],'message':r[4]} for r in runs]}
@@ -78,7 +100,7 @@ def _sync_once():
     if market:state['market_id']=market[-1][0]
     if events:state['event_id']=events[-1][0]
     if runs:state['run_id']=runs[-1][0]
-    state['last_success']=time.time();state['last_error']='';state['last_counts']={'market':len(market),'events':len(events),'runs':len(runs)};state['cloud_cache_fetched_at']=cloud_cache.get('fetched_at');state['heartbeat_ok']=bool(heartbeat.get('ok'));state['endpoint_health']=cloud_cache.get('endpoint_health') or {};_write_json_atomic(state_path,state);return {'enabled':True,**state['last_counts'],'heartbeat_ok':state['heartbeat_ok']}
+    state['last_success']=time.time();state['last_error']='';state['last_counts']={'market':len(market),'events':len(events),'runs':len(runs)};state['cloud_cache_fetched_at']=cloud_cache.get('fetched_at');state['heartbeat_ok']=bool(heartbeat.get('ok'));state['endpoint_health']=cloud_cache.get('endpoint_health') or {};state['endpoint_detail']=cloud_cache.get('endpoint_detail') or {};_write_json_atomic(state_path,state);return {'enabled':True,**state['last_counts'],'heartbeat_ok':state['heartbeat_ok']}
 
 def _loop():
     time.sleep(8)
@@ -104,9 +126,9 @@ def _install_native_panel():
                     status=tk.StringVar(value='Cargando estado central…');detail=tk.StringVar(value='')
                     tk.Label(box,textvariable=status,bg=panel,fg=cyan,font=('Segoe UI',9,'bold')).pack(anchor='w',pady=(4,0));tk.Label(box,textvariable=detail,bg=panel,fg=muted,font=('Segoe UI',8),justify='left',wraplength=1080).pack(anchor='w',pady=(2,0))
                     def refresh():
-                        cache=_read_json(os.path.join(_data_dir(),'cloud_intelligence_cache.json'));sync=_read_json(os.path.join(_data_dir(),'pc_sync_state.json'));learning=cache.get('learning') or {};model=learning.get('model') or {};brain=learning.get('brain_evolution') or {};priority=cache.get('priority') or {};operational=cache.get('operational_pipeline') or {};telemetry=cache.get('market_telemetry') or {};last=sync.get('last_success');age=(time.time()-last) if last else 1e9;ok=age<180 and not sync.get('last_error');coverage=f"{telemetry.get('assets_observed','—')}/{telemetry.get('assets_expected','—')}";valuation=operational.get('valuation_complete_count','—');performance='verificada' if priority.get('strategy_performance_verified') else 'evidencia insuficiente'
+                        cache=_read_json(os.path.join(_data_dir(),'cloud_intelligence_cache.json'));sync=_read_json(os.path.join(_data_dir(),'pc_sync_state.json'));learning=cache.get('learning') or {};model=learning.get('model') or {};brain=learning.get('brain_evolution') or {};priority=cache.get('priority') or {};operational=cache.get('operational_pipeline') or {};telemetry=cache.get('market_telemetry') or {};last=sync.get('last_success');age=(time.time()-last) if last else 1e9;ok=age<180 and not sync.get('last_error');coverage=f"{telemetry.get('assets_observed','—')}/{telemetry.get('assets_expected','—')}";valuation=operational.get('valuation_complete_count','—');performance='verificada' if priority.get('strategy_performance_verified') else 'evidencia insuficiente';validation_ok=(cache.get('endpoint_health') or {}).get('validation-v3')
                         status.set(('SINCRONIZACIÓN OK · ' if ok else 'REVISAR SINCRONIZACIÓN · ')+f"mercado {coverage} · valoración {valuation}")
-                        detail.set(f"Champion {model.get('version','—')} · generación {brain.get('current_generation','—')} · forward {performance} · heartbeat {'OK' if sync.get('heartbeat_ok') else 'pendiente'} · REAL TRADING OFF")
+                        detail.set(f"Champion {model.get('version','—')} · generación {brain.get('current_generation','—')} · forward {performance} · validation-v3 {'OK' if validation_ok else 'pendiente'} · heartbeat {'OK' if sync.get('heartbeat_ok') else 'pendiente'} · REAL TRADING OFF")
                         try:root.after(10000,refresh)
                         except Exception:pass
                     refresh()
