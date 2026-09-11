@@ -1,3 +1,5 @@
+import math
+
 import radar_mobile_contract_v2 as mobile
 import radar_reports_v1 as reports
 import radar_learning_journal_v1 as journal
@@ -63,6 +65,6 @@ def test_multiwindow_and_ranking_do_not_change_roles():
     series=[{'date':'2026-01-01T00:00:00Z','equity':1000},{'date':'2026-01-08T00:00:00Z','equity':1050},{'date':'2026-02-01T00:00:00Z','equity':1100}]
     perf=windows.multiwindow_performance(series)
     ranked=windows.multidimensional_ranking([{'competitor_key':'a','v_score':300},{'competitor_key':'b','v_score':250}],mode='v')
-    assert perf['since_inception']['change_pct']==10
+    assert math.isclose(perf['since_inception']['change_pct'],10,abs_tol=1e-9)
     assert ranked['ranking'][0]['competitor_key']=='a'
     assert ranked['changes_role'] is False
