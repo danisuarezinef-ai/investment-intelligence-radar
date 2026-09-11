@@ -31,12 +31,15 @@ def test_learning_and_competition_fail_closed_on_immature_evidence():
     assert comp['automatic_replacement'] is False and comp['real_trading'] is False
 
 
-def test_production_entrypoint_runs_maturity_sync_and_closed_loop():
+def test_production_entrypoint_runs_delegated_sync_and_closed_loop():
     src=Path('cloud_service_v4.py').read_text(encoding='utf-8')
+    v3=Path('cloud_service_v3.py').read_text(encoding='utf-8')
+    assert 'import cloud_service_v3 as base3' in src
+    assert 'base3._forward_outcome_sync_loop' in src
+    assert 'sync_forward_outcomes_once(750)' in v3
     assert 'mature_forward_outcomes()' in src
-    assert 'sync_forward_outcomes_once()' in src
     assert "closed_loop_cycle('1d')" in src
-    assert 'time.sleep(300)' in src
+    assert 'def closed_loop_runtime_loop(interval_seconds=300)' in src
     assert 'REAL_TRADING=False' in src
     assert 'exec python cloud_service_v4.py' in Path('start.sh').read_text(encoding='utf-8')
 
