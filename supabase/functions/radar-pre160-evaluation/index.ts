@@ -53,12 +53,25 @@ async function persistLesson(node:string,body:Record<string,unknown>){
   return {ok:true,status:"LEARNING_JOURNAL_PERSISTED",lesson_id:id,automatic_strategy_change:false,can_trade:false,real_trading:false};
 }
 
+async function persistArchiveCandidate(node:string,body:Record<string,unknown>){
+  const candidate=(body.candidate&&typeof body.candidate==="object")?body.candidate as Record<string,unknown>:{};
+  const id=String(candidate.archive_id||candidate.candidate_id||"");const key=String(candidate.competitor_key||candidate.lineage||"");
+  const kind=String(candidate.archive_kind||"");if(!id||!key||!["HALL_CANDIDATE","GRAVEYARD_CANDIDATE"].includes(kind))throw new Error("invalid archive candidate");
+  const now=new Date().toISOString();const row={origin_node:node,candidate_id:id,competitor_key:key,archive_kind:kind,
+    last_observed_at:now,eligible:candidate.eligible===true,reason:text(candidate.reason),payload:candidate,reviewed:false,applied:false,real_trading:false};
+  const {data:existing,error:readError}=await sb.from("radar_strategy_archive_candidates").select("first_observed_at").eq("origin_node",node).eq("candidate_id",id).maybeSingle();if(readError)throw readError;
+  const write={...row,first_observed_at:existing?.first_observed_at||now};
+  const {error}=await sb.from("radar_strategy_archive_candidates").upsert(write,{onConflict:"origin_node,candidate_id"});if(error)throw error;
+  return {ok:true,status:"ARCHIVE_CANDIDATE_PERSISTED",candidate_id:id,archive_kind:kind,applied:false,automatic_strategy_change:false,can_trade:false,real_trading:false};
+}
+
 async function status(node:string,days:number){
   const state=await ensureState(node);const since=new Date(Date.now()-Math.max(1,Math.min(365,days))*86400000).toISOString();
   const {data:daily,error}=await sb.from("radar_strategy_evaluation_daily").select("*").eq("origin_node",node).gte("observed_at",since).order("observed_at",{ascending:true});if(error)throw error;
-  const {data:decisions,error:de}=await sb.from("radar_strategy_decision_outcomes").select("competitor_key,decision_fingerprint,first_observed_at,entry_ts,exit_ts,symbol,realized_pnl,return_pct,costs,duration_hours,outcome_class,evidence_class,forward_eligible").eq("origin_node",node).gte("exit_ts",since).order("exit_ts",{ascending:false}).limit(500);if(de)throw de;
+  const {data:decisions,error:de}=await sb.from("radar_strategy_decision_outcomes").select("competitor_key,decision_fingerprint,first_observed_at,entry_ts,exit_ts,symbol,qty,entry_price,exit_price,entry_capital,exit_value_net,realized_pnl,return_pct,costs,duration_hours,outcome_class,entry_reason,exit_reason,evidence_class,forward_eligible,payload").eq("origin_node",node).gte("exit_ts",since).order("exit_ts",{ascending:false}).limit(500);if(de)throw de;
   const {data:lessons,error:le}=await sb.from("radar_learning_journal").select("lesson_id,subject,claim,status,created_at,updated_at,regime,horizon,confidence,validation").eq("origin_node",node).order("updated_at",{ascending:false}).limit(100);if(le)throw le;
-  return {ok:true,status:"PRE160_EVALUATION_AUTHORITY",capture_started_at:state.capture_started_at,daily:daily||[],decisions:decisions||[],lessons:lessons||[],backfilled:false,can_trade:false,real_trading:false};
+  const {data:archive,error:ae}=await sb.from("radar_strategy_archive_candidates").select("candidate_id,competitor_key,archive_kind,first_observed_at,last_observed_at,eligible,reason,reviewed,applied,payload").eq("origin_node",node).order("last_observed_at",{ascending:false}).limit(100);if(ae)throw ae;
+  return {ok:true,status:"PRE160_EVALUATION_AUTHORITY",capture_started_at:state.capture_started_at,daily:daily||[],decisions:decisions||[],lessons:lessons||[],archive_candidates:archive||[],backfilled:false,can_trade:false,real_trading:false};
 }
 
 Deno.serve(async(req)=>{
@@ -68,6 +81,7 @@ Deno.serve(async(req)=>{
     const body=await req.json() as Record<string,unknown>;const node=String(body.node_id||"cloud-primary");const action=String(body.action||"");
     if(action==="persist_pre160_evaluation")return reply(200,await persist(node,body));
     if(action==="persist_learning_lesson")return reply(200,await persistLesson(node,body));
+    if(action==="persist_archive_candidate")return reply(200,await persistArchiveCandidate(node,body));
     if(action==="pre160_evaluation_status")return reply(200,await status(node,Number(body.days||30)));
     return reply(400,{ok:false,error:"unsupported_action",can_trade:false,real_trading:false});
   }catch(error){return reply(500,{ok:false,error:String((error as Error)?.message||error),can_trade:false,real_trading:false});}
