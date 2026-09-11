@@ -68,7 +68,7 @@ class ExplainableVScoreLab(cockpit.VScoreLab):
     def _render_league(self):
         super()._render_league()
         league = self.cloud_league or {}
-        details = ((league.get('live_details') or {}).get('competitors') or {})
+        details = (((self.cloud_simulator or {}).get('competitor_details') or {}).get('competitors') or {})
         watches = {str(x.get('competitor_key')): x for x in (league.get('promotion_watch') or [])}
         champion_key = str(league.get('champion_key') or 'champion')
         for key, item in self.league_widgets.items():
