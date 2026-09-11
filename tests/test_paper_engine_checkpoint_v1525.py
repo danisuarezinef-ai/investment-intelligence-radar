@@ -15,6 +15,12 @@ def _use_tmp_db(monkeypatch,tmp_path):
     return db
 
 
+def test_checkpoint_hash_is_stable_across_jsonb_numeric_normalization():
+    left={'paper_agents':[{'agent_id':'aggressive','cash':200.0,'ratio':0.5}]}
+    right={'paper_agents':[{'agent_id':'aggressive','cash':200,'ratio':0.5000000000000000}]}
+    assert persistence.state_hash(left)==persistence.state_hash(right)
+
+
 def test_checkpoint_roundtrip_restores_exact_accounts_positions_trades_and_marks(monkeypatch,tmp_path):
     _use_tmp_db(monkeypatch,tmp_path)
     radar_agents.ensure_agents(reset=True,initial_cash=200)
