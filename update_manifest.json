@@ -1,0 +1,10 @@
+﻿{
+    "version":  "1.5.28",
+    "channel":  "stable",
+    "package_url":  "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdate.zip",
+    "sha256":  "d9cd3ad7bcb7a5aa1d332c7a8b7553b0eb26cb26ac109e3cdf108246016ba517",
+    "updater_url":  "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/updates/RadarUpdater.exe",
+    "updater_sha256":  "e592dca44902a0019fd7cfe94dd45fa49390d61f87272751942f44d46b678685",
+    "notes":  "Radar stable: PAPER/SHADOW autonomy and prospective evidence. REAL_TRADING remains OFF.",
+    "published_at":  "2026-09-11T20:32:12.9379853Z"
+}
