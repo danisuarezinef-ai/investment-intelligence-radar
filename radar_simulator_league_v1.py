@@ -1,12 +1,13 @@
-"""PAPER Simulation League: one Champion plus risk-labelled Challengers.
+"""PAPER Simulation League: Champion plus risk-labelled Challengers.
 
-This module only observes existing PAPER engines and sends their current state to
-the durable Supabase authority. It cannot place trades and cannot promote any model
-outside the Simulation League.
+The league observes existing PAPER engines, calculates an evidence-adjusted v-score,
+and sends current state to durable Supabase authority. Promotion is dynamic and
+limited to the Simulation League. It cannot place trades or promote production models.
 """
 from __future__ import annotations
 
 import json
+import math
 import os
 import urllib.error
 import urllib.request
@@ -14,6 +15,7 @@ from datetime import datetime, timezone
 
 from radar_agents import agents_status
 from radar_champion_portfolio import champion_status
+from radar_simulator_vscore_v1 import competitor_observations
 
 REAL_TRADING = False
 DEFAULT_LEAGUE_URL = 'https://wvmiludqzdepqmjhfwos.supabase.co/functions/v1/radar-simulator-league'
@@ -21,8 +23,11 @@ LEAGUE_URL = os.environ.get('SUPABASE_SIMULATOR_LEAGUE_URL', DEFAULT_LEAGUE_URL)
 SYNC_TOKEN = os.environ.get('RADAR_SYNC_TOKEN', '').strip()
 NODE_ID = os.environ.get('RADAR_NODE_ID', 'cloud-primary').strip() or 'cloud-primary'
 DISPLAY_BASE_EQUITY = 1000.0
-PROMOTION_DAYS = 10
 RISK_GUARD_PP = 10.0
+PROMOTION_THRESHOLD = 88.0
+MIN_PROMOTION_CONFIDENCE = 0.55
+MIN_V_ADVANTAGE = 4.0
+PROMOTION_POLICY_VERSION = 'dynamic_v1'
 
 RISK_PROFILES = {
     'champion': {
@@ -75,11 +80,8 @@ DEFAULT_CHALLENGER_ORDER = [
 
 
 def normalize_equity(equity, initial_equity, base=DISPLAY_BASE_EQUITY):
-    """Convert different PAPER account sizes to a comparable 1,000-euro baseline."""
     try:
-        equity = float(equity)
-        initial = float(initial_equity)
-        base = float(base)
+        equity = float(equity); initial = float(initial_equity); base = float(base)
     except (TypeError, ValueError):
         return None
     if initial <= 0 or equity < 0 or base <= 0:
@@ -88,26 +90,21 @@ def normalize_equity(equity, initial_equity, base=DISPLAY_BASE_EQUITY):
 
 
 def daily_move_counts(series):
-    """Count equity up/down observations; these are UI 'hits/errors', not forecast accuracy."""
+    """Count equity up/down observations; UI hits/errors, not prediction accuracy."""
     values = []
     for row in series or []:
-        try:
-            values.append(float(row.get('normalized_equity', row.get('equity'))))
-        except (AttributeError, TypeError, ValueError):
-            continue
+        try: values.append(float(row.get('normalized_equity', row.get('equity'))))
+        except (AttributeError, TypeError, ValueError): continue
     up = down = neutral = 0
     for previous, current in zip(values, values[1:]):
-        if current > previous:
-            up += 1
-        elif current < previous:
-            down += 1
-        else:
-            neutral += 1
+        if current > previous: up += 1
+        elif current < previous: down += 1
+        else: neutral += 1
     return {'up_days': up, 'down_days': down, 'neutral_days': neutral}
 
 
 def consecutive_lead_days(challenger, champion):
-    """Count consecutive latest common weekdays with challenger equity above Champion."""
+    """Compatibility diagnostic only; no longer the promotion rule."""
     c = {str(r.get('date') or r.get('day'))[:10]: r for r in challenger or []}
     h = {str(r.get('date') or r.get('day'))[:10]: r for r in champion or []}
     common = []
@@ -118,34 +115,55 @@ def consecutive_lead_days(challenger, champion):
             hv = float(h[day].get('normalized_equity', h[day].get('equity')))
         except (TypeError, ValueError):
             continue
-        if dt.weekday() < 5:
-            common.append((day, cv, hv))
+        if dt.weekday() < 5: common.append((day, cv, hv))
     streak = 0
     for _day, cv, hv in reversed(common):
-        if cv > hv:
-            streak += 1
-        else:
-            break
+        if cv > hv: streak += 1
+        else: break
     return streak
 
 
-def promotion_candidate(streak, challenger_drawdown, champion_drawdown,
-                        promotion_days=PROMOTION_DAYS, risk_guard_pp=RISK_GUARD_PP):
-    """Simulation-only promotion gate. No model/live authority is granted."""
-    streak = max(0, int(streak or 0))
+def dynamic_required_days(v_gap, confidence, equity_gap_pct=0.0):
+    """Evidence horizon chosen from advantage magnitude and confidence, not a fixed rule."""
     try:
-        challenger_dd = float(challenger_drawdown or 0.0)
-        champion_dd = float(champion_drawdown or 0.0)
+        gap = float(v_gap); conf = max(0.0, min(1.0, float(confidence))); equity_gap = float(equity_gap_pct)
+    except (TypeError, ValueError):
+        gap, conf, equity_gap = 0.0, 0.0, 0.0
+    days = 4.0 + (1.0 - conf) * 18.0 + max(0.0, 10.0 - gap) * 0.65 + max(0.0, 1.5 - equity_gap) * 1.5
+    return max(2, min(30, int(math.ceil(days))))
+
+
+def promotion_candidate(readiness, challenger_drawdown, champion_drawdown, *, v_gap=0.0,
+                        confidence=0.0, equity_gap_pct=0.0, common_days=0,
+                        risk_guard_pp=RISK_GUARD_PP,
+                        threshold=PROMOTION_THRESHOLD):
+    """Reference dynamic promotion gate; actual durable decision is repeated in Edge."""
+    try:
+        challenger_dd = float(challenger_drawdown or 0.0); champion_dd = float(champion_drawdown or 0.0)
     except (TypeError, ValueError):
         challenger_dd = champion_dd = 0.0
     risk_ok = challenger_dd >= champion_dd - float(risk_guard_pp)
-    remaining = max(0, int(promotion_days) - streak)
+    required = dynamic_required_days(v_gap, confidence, equity_gap_pct)
+    evidence_ok = int(common_days or 0) >= required
+    quality_ok = float(v_gap or 0.0) >= MIN_V_ADVANTAGE
+    confidence_ok = float(confidence or 0.0) >= MIN_PROMOTION_CONFIDENCE
+    eligible = (
+        float(readiness or 0.0) >= float(threshold) and risk_ok and evidence_ok and quality_ok and
+        confidence_ok and float(equity_gap_pct or 0.0) > 0.0
+    )
     return {
-        'streak_days': streak,
-        'required_days': int(promotion_days),
-        'days_remaining': remaining,
+        'readiness': round(float(readiness or 0.0), 2),
+        'threshold': float(threshold),
+        'v_gap': round(float(v_gap or 0.0), 2),
+        'confidence': round(float(confidence or 0.0), 4),
+        'common_days': int(common_days or 0),
+        'dynamic_required_days': required,
         'risk_guard_ok': risk_ok,
-        'eligible': streak >= int(promotion_days) and risk_ok,
+        'evidence_ok': evidence_ok,
+        'quality_ok': quality_ok,
+        'confidence_ok': confidence_ok,
+        'eligible': eligible,
+        'promotion_policy': PROMOTION_POLICY_VERSION,
         'promotion_scope': 'SIMULATION_LEAGUE_ONLY',
         'automatic_model_promotion': False,
         'can_trade': False,
@@ -155,16 +173,13 @@ def promotion_candidate(streak, challenger_drawdown, champion_drawdown,
 
 def _competitor_row(key, status):
     profile = RISK_PROFILES[key]
-    initial = status.get('initial')
-    equity = status.get('total')
+    initial = status.get('initial'); equity = status.get('total')
     normalized = normalize_equity(equity, initial)
-    invested = status.get('invested')
-    invested_pct = None
+    invested = status.get('invested'); invested_pct = None
     try:
-        if float(equity) > 0:
-            invested_pct = float(invested or 0.0) / float(equity) * 100.0
-    except (TypeError, ValueError):
-        pass
+        if float(equity) > 0: invested_pct = float(invested or 0.0) / float(equity) * 100.0
+    except (TypeError, ValueError): pass
+    quality = competitor_observations(key, status, profile['target_invested_pct'])
     return {
         'competitor_key': key,
         'display_name': profile['display_name'],
@@ -179,19 +194,26 @@ def _competitor_row(key, status):
         'invested_pct': invested_pct,
         'target_invested_pct': profile['target_invested_pct'],
         'drawdown_pct': status.get('max_drawdown_pct', status.get('drawdown_pct')),
+        'v_score': quality['v_score'],
+        'v_band': quality['v_band'],
+        'v_confidence': quality['v_confidence'],
+        'v_raw_quality': quality['v_raw_quality'],
+        'v_components': quality['v_components'],
+        'v_generalization_status': quality['generalization_status'],
         'observed_at': datetime.now(timezone.utc).isoformat(),
+        'score_semantics': quality['score_semantics'],
+        'automatic_model_promotion': False,
+        'can_trade': False,
         'real_trading': False,
     }
 
 
 def current_competitors():
-    """Observe the six genuinely running PAPER strategies."""
     rows = [_competitor_row('champion', champion_status())]
     by_key = {row.get('agent_id'): row for row in agents_status() if row.get('configured')}
     for key in DEFAULT_CHALLENGER_ORDER:
         status = by_key.get(key)
-        if status:
-            rows.append(_competitor_row(key, status))
+        if status: rows.append(_competitor_row(key, status))
     return rows
 
 
@@ -201,11 +223,7 @@ def _post(payload, timeout=40):
     data = json.dumps(payload, ensure_ascii=False, default=str).encode('utf-8')
     req = urllib.request.Request(
         LEAGUE_URL, data=data, method='POST',
-        headers={
-            'Content-Type': 'application/json',
-            'X-Radar-Token': SYNC_TOKEN,
-            'User-Agent': 'RadarSimulationLeague/1.0',
-        },
+        headers={'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'RadarSimulationLeague/2.0'},
     )
     try:
         with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -222,24 +240,22 @@ def push_league_snapshot():
         'competitors': current_competitors(),
         'default_champion_key': 'champion',
         'challenger_order': DEFAULT_CHALLENGER_ORDER,
-        'promotion_days': PROMOTION_DAYS,
+        'promotion_threshold': PROMOTION_THRESHOLD,
+        'min_promotion_confidence': MIN_PROMOTION_CONFIDENCE,
+        'min_v_advantage': MIN_V_ADVANTAGE,
         'risk_guard_pp': RISK_GUARD_PP,
+        'promotion_policy': PROMOTION_POLICY_VERSION,
         'display_base_equity': DISPLAY_BASE_EQUITY,
         'real_trading': False,
     }
-    out = _post(payload)
-    out['real_trading'] = False
-    return out
+    out = _post(payload); out['real_trading'] = False; return out
 
 
 def league_status(days=30):
     window = max(1, min(int(days or 30), 90))
     out = _post({
-        'action': 'simulator_league',
-        'node_id': NODE_ID,
-        'days': window,
-        'display_base_equity': DISPLAY_BASE_EQUITY,
-        'real_trading': False,
+        'action': 'simulator_league','node_id': NODE_ID,'days': window,
+        'display_base_equity': DISPLAY_BASE_EQUITY,'real_trading': False,
     })
     out['real_trading'] = False
     return out

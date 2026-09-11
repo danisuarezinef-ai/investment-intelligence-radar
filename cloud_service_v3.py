@@ -17,10 +17,12 @@ from radar_autonomous_simulator_v1 import autonomous_simulator_loop, simulator_s
 from radar_autonomy_e2e_v1 import soak_loop,soak_status,e2e_cycle_status,init_e2e
 from radar_persistent_authority_v1 import rehydrate_authority,push_autonomy_snapshot,paper_equity_curve
 from radar_simulator_league_v1 import push_league_snapshot,league_status
+from radar_paper_engine_persistence_v1 import rehydrate_engine_checkpoint,push_engine_checkpoint
 
 REAL_TRADING=False
 BaseHandler=base_v2.ValidationHandler
 _AUTHORITY_STATUS={'status':'NOT_STARTED','real_trading':False}
+_PAPER_ENGINE_STATUS={'status':'NOT_STARTED','real_trading':False}
 _EQUITY_CACHE={'at':0.0,'payload':None}
 _LEAGUE_CACHE={'at':0.0,'payload':None}
 _EQUITY_CACHE_SECONDS=60.0
@@ -47,7 +49,7 @@ def simulation_league_runtime():
     if cached is not None and current-float(_LEAGUE_CACHE.get('at') or 0)<_LEAGUE_CACHE_SECONDS:
         return dict(cached)
     try:
-        payload=league_status(30);payload['cache_seconds']=int(_LEAGUE_CACHE_SECONDS);payload['real_trading']=False
+        payload=league_status(30);payload['cache_seconds']=int(_LEAGUE_CACHE_SECONDS);payload['paper_engine_checkpoint']=dict(_PAPER_ENGINE_STATUS);payload['real_trading']=False
         _LEAGUE_CACHE['payload']=dict(payload);_LEAGUE_CACHE['at']=current;return payload
     except Exception as exc:
         if cached is not None:
@@ -55,7 +57,7 @@ def simulation_league_runtime():
         return {'status':'DEGRADED','window_days':30,'display_base_equity':1000.0,'leaderboard':[],'promotion_watch':[],
                 'best_promotion_watch':None,'source':'SUPABASE_OBSERVED_PAPER_SIMULATION_LEAGUE','backfilled':False,
                 'reconstructed':False,'promotion_scope':'SIMULATION_LEAGUE_ONLY','automatic_model_promotion':False,
-                'live_execution_allowed':False,'can_trade':False,'error':str(exc)[:500],'real_trading':False}
+                'paper_engine_checkpoint':dict(_PAPER_ENGINE_STATUS),'live_execution_allowed':False,'can_trade':False,'error':str(exc)[:500],'real_trading':False}
 
 
 def priority_runtime_live():
@@ -69,8 +71,8 @@ def priority_runtime_live():
     payload=priority_snapshot(account=account,decision=None,opportunities=opportunities,forward_records=operational.get('forward_records') or [],models=[],endpoint_status=endpoint_status,freshness=freshness,promotion_metrics=promotion_metrics)
     payload['operational_pipeline']=operational
     payload['brain']=brain_dashboard(forward_status={'records':len(operational.get('forward_records') or [])},paper_status=paper,cloud_status={'freshness':freshness})
-    payload['autonomous_simulator']=simulator_status();payload['autonomy_e2e']=e2e_cycle_status();payload['autonomy_soak']=soak_status();payload['persistent_authority']=dict(_AUTHORITY_STATUS)
-    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','forward_outcome_sync':'LIVE_IDEMPOTENT_MATURE_OUTCOME_RESEND','continuous_research_brain':'INTEGRATED_IN_AUTONOMOUS_SIMULATOR','autonomous_simulator':'LIVE_PERSISTENT_PAPER_AND_RESEARCH_DAEMON','strict_research_protocol':'CHRONOLOGICAL_WALK_FORWARD_STRESS_ANTIOVERFIT_V4','autonomy_soak':'LIVE_REAL_TIME_NO_BACKFILL','persistent_authority':'SUPABASE_EXACT_RESTORE_AND_IDEMPOTENT_AUTONOMY_PERSISTENCE','paper_equity_curve':'SUPABASE_PERSISTED_DAILY_COMPLETE_AGENT_MARKS_NO_BACKFILL','simulation_league':'CHAMPION_PLUS_RISK_CHALLENGERS_PAPER_ONLY_PERSISTED_NO_BACKFILL','brain_research_endpoint':'LIVE_READ_ONLY','simulator_status_endpoint':'LIVE_READ_ONLY','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'LIVE_DERIVED_FROM_MATURE_FORWARD_MODEL_METRICS_FAIL_CLOSED','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
+    payload['autonomous_simulator']=simulator_status();payload['autonomy_e2e']=e2e_cycle_status();payload['autonomy_soak']=soak_status();payload['persistent_authority']=dict(_AUTHORITY_STATUS);payload['paper_engine_checkpoint']=dict(_PAPER_ENGINE_STATUS)
+    payload['wiring']={'source':'LIVE_READ_ONLY_OBSERVED_STATE','priority_runtime':'LIVE','forward_capture_engine':'radar_forward_engine','forward_outcome_sync':'LIVE_IDEMPOTENT_MATURE_OUTCOME_RESEND','continuous_research_brain':'INTEGRATED_IN_AUTONOMOUS_SIMULATOR','autonomous_simulator':'LIVE_PERSISTENT_PAPER_AND_RESEARCH_DAEMON','strict_research_protocol':'CHRONOLOGICAL_WALK_FORWARD_STRESS_ANTIOVERFIT_V4','autonomy_soak':'LIVE_REAL_TIME_NO_BACKFILL','persistent_authority':'SUPABASE_EXACT_RESTORE_AND_IDEMPOTENT_AUTONOMY_PERSISTENCE','paper_engine_checkpoint':'SUPABASE_EXACT_ACCOUNT_POSITION_TRADE_MARK_RESTORE_BEFORE_WORKERS','paper_equity_curve':'SUPABASE_PERSISTED_DAILY_COMPLETE_AGENT_MARKS_NO_BACKFILL','simulation_league':'CHAMPION_PLUS_RISK_CHALLENGERS_PAPER_ONLY_PERSISTED_NO_BACKFILL','brain_research_endpoint':'LIVE_READ_ONLY','simulator_status_endpoint':'LIVE_READ_ONLY','priority_forward_records':'LIVE_MATURED_LEDGER_WITH_PROSPECTIVE_BENCHMARK_AND_PAPER_COST_MODEL','priority_model_competition':'LIVE_DERIVED_FROM_MATURE_FORWARD_MODEL_METRICS_FAIL_CLOSED','provider_attempt_telemetry':'LIVE_OBSERVED_ATTEMPTS','provider_circuit_breaker':'LIVE_PERSISTED_STATE','fundamentals':'LIVE_POINT_IN_TIME_SEC_SUPPORTED_ASSETS','global_universe_v3':'LIVE_READ_ONLY_OBSERVED_STATE','valuation_engine_v1':'LIVE_FAIL_CLOSED','portfolio_optimizer_v3':'LIVE_FAIL_CLOSED_MISSING_VERIFIED_EXPECTED_RETURN','paper_authority':'OPERATIONAL_PIPELINE_V1_NO_LEGACY_MOMENTUM_FALLBACK','generic_forward_autonomy_v1':'VERIFIED_CODE_ONLY'}
     payload['can_trade']=False;payload['real_trading']=False;return payload
 
 
@@ -88,7 +90,8 @@ class ValidationV3Handler(BaseHandler):
             if path=='/simulator-league-v1':self._send(200,simulation_league_runtime());return
             if path=='/autonomy-e2e-v1':self._send(200,e2e_cycle_status());return
             if path=='/autonomy-soak-v1':self._send(200,soak_status());return
-            if path=='/persistent-authority-v1':self._send(200,dict(_AUTHORITY_STATUS));return
+            if path=='/persistent-authority-v1':
+                payload=dict(_AUTHORITY_STATUS);payload['paper_engine_checkpoint']=dict(_PAPER_ENGINE_STATUS);self._send(200,payload);return
             if path=='/operational-pipeline-v1':self._send(200,operational_pipeline());return
             if path=='/market-telemetry-v1':self._send(200,market_telemetry());return
             if path=='/provider-telemetry-v1':self._send(200,provider_telemetry(24));return
@@ -116,16 +119,17 @@ def _forward_outcome_sync_loop(interval_seconds=60):
 
 
 def _authority_sync_loop(interval_seconds=60):
-    global _AUTHORITY_STATUS
+    global _AUTHORITY_STATUS,_PAPER_ENGINE_STATUS
     while True:
         try:
             result=push_autonomy_snapshot()
+            checkpoint=push_engine_checkpoint();_PAPER_ENGINE_STATUS={'status':'SYNCED','last_sync':time.time(),'result':checkpoint,'real_trading':False}
             try:
                 league=push_league_snapshot();league_status_text='SYNCED' if league.get('ok') else league.get('status','DEGRADED')
             except Exception as league_exc:
                 league={'status':'DEGRADED_RETRY','error':str(league_exc)[:500],'real_trading':False};league_status_text='DEGRADED_RETRY'
-            _AUTHORITY_STATUS={'status':'SYNCED' if league_status_text=='SYNCED' else 'SYNCED_LEAGUE_DEGRADED','last_sync':time.time(),'result':result,'simulation_league':league,'real_trading':False}
-            print('[authority] autonomy persisted runs={} experiments={} ticks={} league={}'.format(result.get('runs',0),result.get('experiments',0),result.get('soak_ticks',0),league_status_text),flush=True)
+            _AUTHORITY_STATUS={'status':'SYNCED' if league_status_text=='SYNCED' else 'SYNCED_LEAGUE_DEGRADED','last_sync':time.time(),'result':result,'simulation_league':league,'paper_engine_checkpoint':checkpoint,'real_trading':False}
+            print('[authority] autonomy persisted runs={} experiments={} ticks={} league={} paper_engine_hash={}'.format(result.get('runs',0),result.get('experiments',0),result.get('soak_ticks',0),league_status_text,str(checkpoint.get('local_state_hash') or '')[:12]),flush=True)
         except Exception as exc:
             _AUTHORITY_STATUS={'status':'DEGRADED_RETRY','error':str(exc)[:700],'real_trading':False};print('[authority] ERROR '+repr(exc),flush=True)
         time.sleep(max(30,int(interval_seconds)))
@@ -150,6 +154,13 @@ if __name__=='__main__':
     except Exception as exc:
         _AUTHORITY_STATUS={'status':'RESTORE_FAILED_FAIL_CLOSED','error':str(exc)[:700],'real_trading':False}
         print('[authority] RESTORE ERROR '+repr(exc),flush=True)
+    try:
+        engine_restored=rehydrate_engine_checkpoint();_PAPER_ENGINE_STATUS=dict(engine_restored)
+        print('[paper-engine] restore '+json.dumps(engine_restored,ensure_ascii=False)[:2200],flush=True)
+    except Exception as exc:
+        _PAPER_ENGINE_STATUS={'status':'RESTORE_FAILED_FAIL_CLOSED','error':str(exc)[:700],'real_trading':False}
+        print('[paper-engine] RESTORE ERROR '+repr(exc),flush=True)
+        raise
     threading.Thread(target=base.supabase_sync_loop,name='supabase-sync',daemon=True).start()
     threading.Thread(target=base.learning_sync_loop,name='learning-sync',daemon=True).start()
     threading.Thread(target=_resilient_learning_loop,name='learning-engine',daemon=True).start()

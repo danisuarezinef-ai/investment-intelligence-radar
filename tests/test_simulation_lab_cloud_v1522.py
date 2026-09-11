@@ -11,7 +11,11 @@ def test_release_is_v1522_or_newer():
 
 def test_windows_build_packages_cloud_aware_simulation_lab():
     build=Path('build_windows.ps1').read_text(encoding='utf-8')
-    assert '--name RadarSimulationLab radar_simulation_desktop_v2.py' in build
+    assert '--name RadarSimulationLab ' in build
+    assert ('radar_simulation_desktop_v2.py' in build or 'radar_simulation_desktop_v3.py' in build)
+    if 'radar_simulation_desktop_v3.py' in build:
+        v3=Path('radar_simulation_desktop_v3.py').read_text(encoding='utf-8')
+        assert 'legacy.CloudAwareLab' in v3
 
 
 def test_cloud_autonomy_endpoints_are_wired_into_lab():
