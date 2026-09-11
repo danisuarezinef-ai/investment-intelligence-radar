@@ -9,7 +9,7 @@ from radar_forward_engine import mature_forward_outcomes
 from radar_closed_loop_runtime_v1 import closed_loop_cycle
 from radar_pre160_cloud_v2 import runtime_snapshot,readiness_snapshot,mobile_runtime_summary
 from radar_pre160_cloud_v3 import evidence_snapshot_v3,persist_evidence_cycle,evidence_authority_report,tasks_91_110_audit
-from radar_pre160_cloud_v4 import hardening_snapshot_v4,persist_hardening_cycle,hardening_authority_report,tasks_111_130_audit
+from radar_pre160_cloud_v4 import hardening_snapshot_v4,persist_hardening_cycle,hardening_authority_report,tasks_111_130_audit,tasks_131_150_audit
 
 REAL_TRADING=False
 _V4_RUNTIME_STARTED=False
@@ -17,7 +17,7 @@ _PRE160_V2_CACHE={'at':0.0,'runtime':None,'readiness':None,'mobile':None}
 _PRE160_V2_CACHE_SECONDS=60.0
 _PRE160_V3_CACHE={'at':0.0,'evidence':None,'authority':None,'audit':None}
 _PRE160_V3_CACHE_SECONDS=60.0
-_PRE160_V4_CACHE={'at':0.0,'hardening':None,'authority':None,'audit':None}
+_PRE160_V4_CACHE={'at':0.0,'hardening':None,'authority':None,'audit':None,'audit_131_150':None}
 _PRE160_V4_CACHE_SECONDS=60.0
 
 
@@ -73,9 +73,9 @@ def pre160_hardening_cached(force=False):
     current=time.monotonic();cached=_PRE160_V4_CACHE.get('hardening')
     if not force and cached is not None and current-float(_PRE160_V4_CACHE.get('at') or 0)<_PRE160_V4_CACHE_SECONDS:return dict(cached)
     try:
-        hardening=hardening_snapshot_v4();authority=hardening_authority_report(500);audit=tasks_111_130_audit()
-        for payload in (hardening,authority,audit):payload['cache_seconds']=int(_PRE160_V4_CACHE_SECONDS);payload['real_trading']=False
-        _PRE160_V4_CACHE.update({'at':current,'hardening':dict(hardening),'authority':dict(authority),'audit':dict(audit)})
+        hardening=hardening_snapshot_v4();authority=hardening_authority_report(500);audit=tasks_111_130_audit();audit_131_150=tasks_131_150_audit()
+        for payload in (hardening,authority,audit,audit_131_150):payload['cache_seconds']=int(_PRE160_V4_CACHE_SECONDS);payload['real_trading']=False
+        _PRE160_V4_CACHE.update({'at':current,'hardening':dict(hardening),'authority':dict(authority),'audit':dict(audit),'audit_131_150':dict(audit_131_150)})
         return hardening
     except Exception as exc:
         if cached is not None:
@@ -90,6 +90,11 @@ def pre160_hardening_authority_cached():
 
 def tasks_111_130_cached():
     pre160_hardening_cached();payload=_PRE160_V4_CACHE.get('audit')
+    return dict(payload) if payload is not None else {'status':'DEGRADED','tasks':{},'setup_allowed':False,'can_trade':False,'real_trading':False}
+
+
+def tasks_131_150_cached():
+    pre160_hardening_cached();payload=_PRE160_V4_CACHE.get('audit_131_150')
     return dict(payload) if payload is not None else {'status':'DEGRADED','tasks':{},'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
@@ -109,6 +114,7 @@ class ValidationV4Handler(base3.ValidationV3Handler):
             if path=='/pre160-hardening-v1':self._send(200,pre160_hardening_cached());return
             if path=='/pre160-hardening-authority-v1':self._send(200,pre160_hardening_authority_cached());return
             if path=='/pre160-audit-111-130-v1':self._send(200,tasks_111_130_cached());return
+            if path=='/pre160-audit-131-150-v1':self._send(200,tasks_131_150_cached());return
         except Exception as exc:
             self._send(500,{'status':'FAILED','error':str(exc)[:800],'setup_allowed':False,'can_trade':False,'real_trading':False});return
         super().do_GET()
@@ -139,7 +145,7 @@ def pre160_evidence_loop(interval_seconds=300):
 
 
 def pre160_hardening_loop(interval_seconds=300):
-    print('[pre160-hardening] v4 checkpoint/envelope loop enabled; Setup blocked; REAL_TRADING OFF',flush=True);time.sleep(75);base=base3.base_v2.base
+    print('[pre160-hardening] v5 checkpoint/provenance loop enabled; Setup blocked; REAL_TRADING OFF',flush=True);time.sleep(75);base=base3.base_v2.base
     while True:
         try:
             result=persist_hardening_cycle();_PRE160_V4_CACHE['at']=0.0
@@ -165,7 +171,7 @@ def start_v3_runtime():
         base3._PAPER_ENGINE_STATUS={'status':'RESTORE_FAILED_FAIL_CLOSED','error':str(exc)[:700],'real_trading':False};print('[paper-engine] RESTORE ERROR '+repr(exc),flush=True);raise
     workers=((base.supabase_sync_loop,'supabase-sync'),(base.learning_sync_loop,'learning-sync'),(base3._resilient_learning_loop,'learning-engine'),(base3._forward_outcome_sync_loop,'forward-outcome-sync'),
              (base3.autonomous_simulator_loop,'autonomous-simulator'),(base3.soak_loop,'autonomy-soak'),(base3._authority_sync_loop,'persistent-authority'),(closed_loop_runtime_loop,'closed-loop-paper'),
-             (pre160_evidence_loop,'pre160-evidence-v3'),(pre160_hardening_loop,'pre160-hardening-v4'))
+             (pre160_evidence_loop,'pre160-evidence-v3'),(pre160_hardening_loop,'pre160-hardening-v5'))
     for target,name in workers:threading.Thread(target=target,name=name,daemon=True).start()
     return base
 
