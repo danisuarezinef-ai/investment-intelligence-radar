@@ -1,7 +1,7 @@
 name: Brain Decision Integration CI
 on:
   push:
-    branches: [integration-brain-decision-v4, integration-v4-clean, integration-decision-lab-v5]
+    branches: [integration-brain-decision-v4, integration-v4-clean, integration-decision-lab-v5, next-pre160-integration]
   pull_request:
     branches: [main]
 permissions:
@@ -9,7 +9,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,3 +20,7 @@ jobs:
         run: python -m compileall -q .
       - name: Full test suite
         run: python -m pytest -q
+      - name: Pre-1.6 debt audit
+        run: python tools/pre160_debt_audit.py
+      - name: Pre-1.6 backend integrity audit
+        run: python tools/pre160_integrity_ci.py
