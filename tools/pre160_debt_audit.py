@@ -8,14 +8,15 @@ from pathlib import Path
 import re,json
 
 PRODUCTS=('InvestmentIntelligenceRadarDesktop','InvestmentIntelligenceRadarDesktopSync','RadarSimulationLab')
+SELF=Path(__file__).name
 
 
 def audit(root='.'):
     root=Path(root);version=json.loads((root/'version.json').read_text(encoding='utf-8-sig'))['version']
     findings=[];paths=list(root.glob('*.py'))+list((root/'tests').glob('*.py'))+list((root/'tools').glob('*.py'))
     for path in paths:
-        text=path.read_text(encoding='utf-8-sig',errors='replace');is_test=path.parent.name=='tests'
-        if re.search(r'REAL_TRADING\s*=\s*True',text):
+        text=path.read_text(encoding='utf-8-sig',errors='replace');is_test=path.parent.name=='tests';is_self=path.parent.name=='tools' and path.name==SELF
+        if not is_self and re.search(r'REAL_TRADING\s*=\s*True',text):
             findings.append({'severity':'LOW' if is_test else 'CRITICAL',
                              'code':'ADVERSARIAL_REAL_TRADING_TEST_LITERAL' if is_test else 'REAL_TRADING_TRUE',
                              'path':str(path)})
