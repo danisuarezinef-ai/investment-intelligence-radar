@@ -85,8 +85,26 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Publish stable update channel
+      - name: Decide stable publication
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: powershell
+        run: |
+          $candidate = [version]((Get-Content version.json -Raw -Encoding UTF8 | ConvertFrom-Json).version)
+          $publish = 'false'
+          try {
+            git fetch origin updates:refs/remotes/origin/updates --depth=1
+            $raw = git show origin/updates:update_manifest.json
+            $stable = [version](($raw | ConvertFrom-Json).version)
+            if ($candidate -gt $stable) { $publish = 'true' }
+            Write-Host "Candidate=$candidate Stable=$stable Publish=$publish"
+          } catch {
+            Write-Warning "Could not verify stable channel version; fail-closed and do not publish. $($_.Exception.Message)"
+            $publish = 'false'
+          }
+          "PUBLISH_STABLE=$publish" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Publish stable update channel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.PUBLISH_STABLE == 'true'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
