@@ -1,5 +1,5 @@
 #define MyAppName "Radar de Inversión"
-#define MyAppVersion "1.5.27"
+#define MyAppVersion "1.5.28"
 #define MyAppExeName "InvestmentIntelligenceRadar.exe"
 #define SimExeName "RadarSimulationLab.exe"
 [Setup]
