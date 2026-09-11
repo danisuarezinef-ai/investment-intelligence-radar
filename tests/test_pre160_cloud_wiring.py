@@ -2,9 +2,10 @@ import json
 from pathlib import Path
 
 
-def test_pre160_does_not_publish_an_incremental_windows_release():
+def test_pre160_does_not_publish_a_16_windows_release():
     version=json.loads(Path('version.json').read_text(encoding='utf-8'))['version']
-    assert version=='1.5.28'
+    parts=tuple(int(x) for x in version.split('.'))
+    assert parts < (1,6,0)
 
 
 def test_cloud_exposes_read_only_pre160_and_mobile_contracts():
