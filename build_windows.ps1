@@ -47,6 +47,8 @@ $iss=[regex]::Replace($iss,'#define MyAppVersion "[^"]+"','#define MyAppVersion 
 
 Add-Type -AssemblyName System.Drawing
 $bmp=New-Object System.Drawing.Bitmap 256,256
+$g=New-Object System.Drawing.Graphics $([System.Drawing.Graphics]::FromImage($bmp))
+$g.Dispose()
 $g=[System.Drawing.Graphics]::FromImage($bmp); $g.SmoothingMode=[System.Drawing.Drawing2D.SmoothingMode]::AntiAlias; $g.Clear([System.Drawing.Color]::Transparent)
 $navy=[System.Drawing.Color]::FromArgb(255,8,24,52); $cyan=[System.Drawing.Color]::FromArgb(255,27,210,255); $green=[System.Drawing.Color]::FromArgb(255,34,238,146); $muted=[System.Drawing.Color]::FromArgb(180,34,211,238)
 $g.FillEllipse((New-Object System.Drawing.SolidBrush $navy),8,8,240,240); $g.DrawEllipse((New-Object System.Drawing.Pen $cyan,9),12,12,232,232); $g.DrawEllipse((New-Object System.Drawing.Pen $green,3),20,20,216,216)
@@ -60,7 +62,7 @@ $pngStream=New-Object System.IO.MemoryStream; $bmp.Save($pngStream,[System.Drawi
 $icoPath=Join-Path $PSScriptRoot 'assets\radar.ico'; $fs=[System.IO.File]::Create($icoPath); $bw=New-Object System.IO.BinaryWriter($fs); $bw.Write([UInt16]0); $bw.Write([UInt16]1); $bw.Write([UInt16]1); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([Byte]0); $bw.Write([UInt16]1); $bw.Write([UInt16]32); $bw.Write([UInt32]$png.Length); $bw.Write([UInt32]22); $bw.Write($png); $bw.Close(); $fs.Close()
 
 python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name InvestmentIntelligenceRadar radar_desktop_v3.py
-python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name RadarSimulationLab radar_simulation_desktop_v3.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --runtime-hook radar_pc_sync_hook.py --icon assets\radar.ico --name RadarSimulationLab radar_simulation_desktop_v4.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarWorker run_worker.py
 python -m PyInstaller --noconfirm --clean --onefile --windowed --icon assets\radar.ico --name RadarUpdater radar_updater_v2.py
 
