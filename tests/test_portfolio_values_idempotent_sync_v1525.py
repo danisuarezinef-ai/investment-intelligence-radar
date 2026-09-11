@@ -4,6 +4,13 @@ from pathlib import Path
 import radar_supabase_sync as sync
 
 
+def test_release_identity_is_v1526():
+    version = json.loads(Path('version.json').read_text(encoding='utf-8'))['version']
+    installer = Path('installer/Radar.iss').read_text(encoding='utf-8')
+    assert version == '1.5.26'
+    assert '#define MyAppVersion "1.5.26"' in installer
+
+
 def test_radar_sync_replays_restored_portfolio_marks_by_natural_identity():
     source = Path('supabase/functions/radar-sync/index.ts').read_text(encoding='utf-8')
     mark_block = source.split('const marks=Array.isArray(b.portfolio_values)', 1)[1].split('const nodes=', 1)[0]
