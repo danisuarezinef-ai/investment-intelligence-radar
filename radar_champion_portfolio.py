@@ -3,6 +3,7 @@ from __future__ import annotations
 import math, statistics
 from radar_core import con, init_db, now, _latest_prices
 from radar_risk_engine_v1 import portfolio_risk_gate
+from radar_decision_provenance_v1 import init_decision_provenance_db, capture_trade_envelope
 
 REAL_TRADING=False
 INITIAL_CASH=200.0
@@ -14,19 +15,29 @@ FEE_PCT=.0010
 SPREAD_PCT=.0010
 FX_PCT=.0007
 
+
+def _strategy_config():
+    return {'target_invested':TARGET_INVESTED,'max_position':MAX_POSITION,'max_positions':MAX_POSITIONS,'stop_loss':STOP_LOSS,
+            'fee_pct':FEE_PCT,'spread_pct':SPREAD_PCT,'fx_pct':FX_PCT,'risk_gate':'portfolio_risk_gate_v1'}
+
+
 def init_champion_db():
     init_db(); c=con()
     c.execute('''create table if not exists champion_paper_account(id integer primary key check(id=1),initial_cash real not null,cash real not null,enabled integer not null default 1,created_at text not null,last_step text)''')
     c.execute('''create table if not exists champion_paper_positions(symbol text primary key,qty real not null,avg_price real not null,updated_at text not null)''')
     c.execute('''create table if not exists champion_paper_trades(id integer primary key,ts text not null,symbol text not null,side text not null,qty real not null,price real not null,gross real not null,costs real not null,reason text)''')
     c.execute('''create table if not exists champion_paper_marks(id integer primary key,ts text not null,total real not null,cash real not null,invested real not null,drawdown_pct real not null default 0)''')
+    init_decision_provenance_db(c)
     if not c.execute('select 1 from champion_paper_account where id=1').fetchone():c.execute('insert into champion_paper_account(id,initial_cash,cash,enabled,created_at) values(1,?,?,1,?)',(INITIAL_CASH,INITIAL_CASH,now()))
     c.commit();c.close()
 
 def reset_champion(initial_cash=INITIAL_CASH):
-    init_champion_db();amount=max(50.0,float(initial_cash));c=con();c.execute('delete from champion_paper_positions');c.execute('delete from champion_paper_trades');c.execute('delete from champion_paper_marks');c.execute('update champion_paper_account set initial_cash=?,cash=?,enabled=1,created_at=?,last_step=null where id=1',(amount,amount,now()));c.commit();c.close();return champion_status()
+    init_champion_db();amount=max(50.0,float(initial_cash));c=con();c.execute('delete from champion_paper_positions');c.execute('delete from champion_paper_trades');c.execute('delete from champion_paper_marks');c.execute("delete from paper_decision_envelopes_local where source_key='champion'");c.execute('update champion_paper_account set initial_cash=?,cash=?,enabled=1,created_at=?,last_step=null where id=1',(amount,amount,now()));c.commit();c.close();return champion_status()
 
 def _cost(gross):return gross*(FEE_PCT+SPREAD_PCT+FX_PCT)
+def _cost_snapshot(gross):
+    fees=gross*FEE_PCT;spread=gross*SPREAD_PCT;fx=gross*FX_PCT
+    return {'gross_value':gross,'fees':fees,'spread_cost':spread,'fx_cost':fx,'total':fees+spread+fx,'cost_model':'CHAMPION_EXPLICIT_FEE_SPREAD_FX_V1'}
 def _risk_metrics(vals):
     vals=[float(x) for x in vals if x and float(x)>0]
     if not vals:return {'max_drawdown_pct':0.0,'sharpe':0.0,'marks':0}
@@ -57,7 +68,13 @@ def step_champion(decision):
         if not px:continue
         weak=(p['symbol'] not in allowed and bool(candidates)) or p['pnl_pct']<=STOP_LOSS
         if not weak:continue
-        gross=p['qty']*px;costs=_cost(gross);net=max(0.0,gross-costs);c.execute('update champion_paper_account set cash=cash+? where id=1',(net,));c.execute('delete from champion_paper_positions where symbol=?',(p['symbol'],));c.execute('insert into champion_paper_trades(ts,symbol,side,qty,price,gross,costs,reason) values(?,?,?,?,?,?,?,?)',(now(),p['symbol'],'SELL',p['qty'],px,gross,costs,'Champion risk/ranking exit'))
+        gross=p['qty']*px;costs=_cost(gross);net=max(0.0,gross-costs);trade_ts=now()
+        c.execute('update champion_paper_account set cash=cash+? where id=1',(net,));c.execute('delete from champion_paper_positions where symbol=?',(p['symbol'],))
+        cur=c.execute('insert into champion_paper_trades(ts,symbol,side,qty,price,gross,costs,reason) values(?,?,?,?,?,?,?,?)',(trade_ts,p['symbol'],'SELL',p['qty'],px,gross,costs,'Champion risk/ranking exit'))
+        capture_trade_envelope(c,source_key='champion',trade_id=cur.lastrowid,trade_ts=trade_ts,competitor_key='champion',strategy_identity='champion_paper',
+            strategy_config=_strategy_config(),symbol=p['symbol'],side='SELL',cost_snapshot=_cost_snapshot(gross),
+            decision_payload={'reason':'Champion risk/ranking exit','pnl_pct':p.get('pnl_pct'),'stop_loss':STOP_LOSS,
+                              'candidate_set':[str(x) for x in sorted(allowed)],'current_decision_action':decision.get('action'),'confidence':decision.get('confidence')})
     c.commit();c.close();st=champion_status()
     if decision.get('action')!='PAPER_BUY_CANDIDATE' or not decision.get('symbol'):
         c=con();c.execute('update champion_paper_account set last_step=? where id=1',(now(),));c.commit();c.close();return _mark()
@@ -67,7 +84,15 @@ def step_champion(decision):
     risk=portfolio_risk_gate(st,decision,limits={'max_position':MAX_POSITION,'max_invested':TARGET_INVESTED,'max_positions':MAX_POSITIONS})
     budget=float(risk['allowed_budget'])
     if budget>=10:
-        rate=FEE_PCT+SPREAD_PCT+FX_PCT;gross=budget/(1+rate);costs=_cost(gross);qty=gross/px;c=con();c.execute('update champion_paper_account set cash=cash-?,last_step=? where id=1',(gross+costs,now()));c.execute('insert into champion_paper_positions(symbol,qty,avg_price,updated_at) values(?,?,?,?)',(sym,qty,px,now()));c.execute('insert into champion_paper_trades(ts,symbol,side,qty,price,gross,costs,reason) values(?,?,?,?,?,?,?,?)',(now(),sym,'BUY',qty,px,gross,costs,f"Champion risk-gated confidence {float(decision.get('confidence') or 0):.3f}; multiplier {risk['risk_multiplier']:.3f}"));c.commit();c.close()
+        rate=FEE_PCT+SPREAD_PCT+FX_PCT;gross=budget/(1+rate);costs=_cost(gross);qty=gross/px;trade_ts=now();c=con()
+        c.execute('update champion_paper_account set cash=cash-?,last_step=? where id=1',(gross+costs,trade_ts));c.execute('insert into champion_paper_positions(symbol,qty,avg_price,updated_at) values(?,?,?,?)',(sym,qty,px,trade_ts))
+        cur=c.execute('insert into champion_paper_trades(ts,symbol,side,qty,price,gross,costs,reason) values(?,?,?,?,?,?,?,?)',(trade_ts,sym,'BUY',qty,px,gross,costs,f"Champion risk-gated confidence {float(decision.get('confidence') or 0):.3f}; multiplier {risk['risk_multiplier']:.3f}"))
+        capture_trade_envelope(c,source_key='champion',trade_id=cur.lastrowid,trade_ts=trade_ts,competitor_key='champion',strategy_identity='champion_paper',
+            strategy_config=_strategy_config(),symbol=sym,side='BUY',cost_snapshot=_cost_snapshot(gross),
+            decision_payload={'action':decision.get('action'),'symbol':sym,'confidence':decision.get('confidence'),'allocation_fraction':decision.get('allocation_fraction'),
+                              'allowed_budget':risk.get('allowed_budget'),'risk_multiplier':risk.get('risk_multiplier'),'risk_gate':risk,
+                              'candidates':[{'symbol':x.get('symbol'),'champion_score':x.get('champion_score')} for x in candidates[:5]]})
+        c.commit();c.close()
     else:
         c=con();c.execute('update champion_paper_account set last_step=? where id=1',(now(),));c.commit();c.close()
     return _mark()
