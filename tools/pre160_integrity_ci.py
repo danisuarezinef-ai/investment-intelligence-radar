@@ -9,15 +9,23 @@ def audit(root='.'):
     if 'cloud_service_v4.py' not in start:findings.append('START_NOT_V4')
     if 'import cloud_service_v3 as base3' not in v4:findings.append('V4_NOT_COMPOSED_OVER_V3')
     if 'import cloud_service as base' in v4:findings.append('V4_LEGACY_BASE_IMPORT')
-    for endpoint in ('/pre160-runtime-v2','/pre160-readiness-v1','/mobile-summary-v2','/pre160-evidence-v1','/pre160-readiness-v2','/pre160-evidence-authority-v1','/pre160-audit-v1'):
+    for endpoint in ('/pre160-runtime-v2','/pre160-readiness-v1','/mobile-summary-v2','/pre160-evidence-v1','/pre160-readiness-v2','/pre160-evidence-authority-v1','/pre160-audit-v1',
+                     '/pre160-hardening-v1','/pre160-hardening-authority-v1','/pre160-audit-111-130-v1'):
         if endpoint not in v4:findings.append('MISSING_V4_ENDPOINT:'+endpoint)
     for endpoint in ('/pre160-evaluation-v1','/simulator-league-v1','/persistent-authority-v1'):
         if endpoint not in v3:findings.append('MISSING_V3_ENDPOINT:'+endpoint)
     for path in ('radar_pre160_runtime_v3.py','radar_pre160_cloud_v3.py','radar_pre160_evidence_persistence_v1.py','PRE160_TASKS_91_110.md','supabase/functions/radar-pre160-evidence/index.ts'):
         if not (root/path).exists():findings.append('MISSING_91_110_COMPONENT:'+path)
+    for path in ('radar_pre160_runtime_v4.py','radar_pre160_runtime_v4_linkage.py','radar_pre160_cloud_v4.py','radar_pre160_hardening_persistence_v1.py','PRE160_TASKS_111_130.md',
+                 'supabase/functions/radar-pre160-hardening/index.ts','supabase/migrations/20260912003000_pre160_evidence_v4.sql'):
+        if not (root/path).exists():findings.append('MISSING_111_130_COMPONENT:'+path)
     edge=(root/'supabase/functions/radar-pre160-evidence/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-evidence/index.ts').exists() else ''
     if 'appendProspectiveChain' not in edge or 'PIT_REGIME_NOT_CAPTURED' not in edge:findings.append('EVIDENCE_AUTHORITY_INCOMPLETE')
+    hard=(root/'supabase/functions/radar-pre160-hardening/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-hardening/index.ts').exists() else ''
+    for token in ('appendCheckpoint','freezeEnvelopes','radar_pre160_evidence_checkpoints','radar_pre160_decision_envelopes','real_trading:false'):
+        if token not in hard:findings.append('HARDENING_AUTHORITY_INCOMPLETE:'+token)
     if 'pre160_evidence_loop' not in v4:findings.append('EVIDENCE_WORKER_MISSING')
+    if 'pre160_hardening_loop' not in v4:findings.append('HARDENING_WORKER_MISSING')
     if 'REAL_TRADING=False' not in v4.replace(' ',''):findings.append('V4_TRADING_BOUNDARY_MISSING')
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
     if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
