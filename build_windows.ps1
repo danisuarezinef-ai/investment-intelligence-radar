@@ -47,8 +47,6 @@ $iss=[regex]::Replace($iss,'#define MyAppVersion "[^"]+"','#define MyAppVersion 
 
 Add-Type -AssemblyName System.Drawing
 $bmp=New-Object System.Drawing.Bitmap 256,256
-$g=New-Object System.Drawing.Graphics $([System.Drawing.Graphics]::FromImage($bmp))
-$g.Dispose()
 $g=[System.Drawing.Graphics]::FromImage($bmp); $g.SmoothingMode=[System.Drawing.Drawing2D.SmoothingMode]::AntiAlias; $g.Clear([System.Drawing.Color]::Transparent)
 $navy=[System.Drawing.Color]::FromArgb(255,8,24,52); $cyan=[System.Drawing.Color]::FromArgb(255,27,210,255); $green=[System.Drawing.Color]::FromArgb(255,34,238,146); $muted=[System.Drawing.Color]::FromArgb(180,34,211,238)
 $g.FillEllipse((New-Object System.Drawing.SolidBrush $navy),8,8,240,240); $g.DrawEllipse((New-Object System.Drawing.Pen $cyan,9),12,12,232,232); $g.DrawEllipse((New-Object System.Drawing.Pen $green,3),20,20,216,216)
