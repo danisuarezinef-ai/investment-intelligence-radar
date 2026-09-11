@@ -8,6 +8,7 @@ from radar_pre160_cloud_v3 import evidence_snapshot_v3
 from radar_pre160_hardening_persistence_v1 import hardening_status,persist_hardening_snapshot
 from radar_pre160_persistence_v1 import pre160_evaluation_status
 from radar_pre160_runtime_v4 import build_hardening_snapshot
+from radar_pre160_runtime_v4_linkage import apply_safe_linkage
 
 REAL_TRADING=False
 
@@ -18,9 +19,13 @@ def hardening_snapshot_v4():
     except Exception as exc:authority={'status':'HARDENING_AUTHORITY_DEGRADED','checkpoints':[],'envelopes':[],'error':str(exc)[:500],'real_trading':False}
     snapshot=build_hardening_snapshot(evidence_v3=evidence,durable_eval=durable,evidence_authority=authority,
                                       forward_records=operational.get('forward_records') or [],base_runtime=base)
+    envelopes=(authority.get('envelopes') or []) or (snapshot.get('envelopes_to_freeze') or [])
+    snapshot=apply_safe_linkage(snapshot,(durable or {}).get('decisions') or [],envelopes)
     snapshot['authority_before_persist']={'status':authority.get('status'),'checkpoint_records':authority.get('checkpoint_records',0),
                                           'checkpoint_integrity':authority.get('checkpoint_integrity'),'envelope_records':authority.get('envelope_records',0)}
-    snapshot['real_trading']=False;return snapshot
+    # authority_before_persist is diagnostic and part of the persisted object, so hash it too.
+    from radar_pre160_runtime_v4 import _hash
+    snapshot['real_trading']=False;snapshot['snapshot_hash']=_hash({k:v for k,v in snapshot.items() if k!='snapshot_hash'});return snapshot
 
 
 def persist_hardening_cycle():
