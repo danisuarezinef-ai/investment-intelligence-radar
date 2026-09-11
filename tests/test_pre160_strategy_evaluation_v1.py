@@ -42,8 +42,8 @@ def test_drawdown_profile_measures_depth_duration_and_recovery():
         {'ts':'2026-01-04T00:00:00+00:00','total':101},
     ]
     d=ev.drawdown_profile(marks)
-    assert d['max_drawdown_pct']==-10
-    assert d['current_drawdown_pct']==0
+    assert math.isclose(d['max_drawdown_pct'],-10,abs_tol=1e-9)
+    assert math.isclose(d['current_drawdown_pct'],0,abs_tol=1e-9)
     assert d['max_drawdown_duration_hours']>=48
     assert d['max_recovery_hours']>=72
 
