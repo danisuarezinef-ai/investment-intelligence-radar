@@ -1,7 +1,7 @@
 name: Brain Decision Integration CI
 on:
   push:
-    branches: [integration-brain-decision-v4, integration-v4-clean, integration-decision-lab-v5, next-pre160-integration]
+    branches: [integration-brain-decision-v4, integration-v4-clean, integration-decision-lab-v5, next-pre160-integration, pre160-91-110]
   pull_request:
     branches: [main]
 permissions:
