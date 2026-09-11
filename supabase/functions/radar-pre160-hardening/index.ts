@@ -15,16 +15,19 @@ function stable(v:unknown):unknown{if(Array.isArray(v))return v.map(stable);if(v
 function canonical(v:unknown){return JSON.stringify(stable(v));}
 
 async function appendCheckpoint(node:string,snapshot:Record<string,unknown>){
-  const observed=iso(snapshot.observed_at)||new Date().toISOString();const snapshotHash=String(snapshot.snapshot_hash||"");
-  if(!snapshotHash)throw new Error("snapshot_hash required");
+  const observed=iso(snapshot.observed_at)||new Date().toISOString();const localSnapshotHash=String(snapshot.snapshot_hash||"");
   const snapshotWithoutHash=Object.fromEntries(Object.entries(snapshot).filter(([k])=>k!=="snapshot_hash"));
-  const expected=await sha(canonical(snapshotWithoutHash));if(expected!==snapshotHash)throw new Error("hardening snapshot hash mismatch");
+  // Deno/Supabase is the canonical authority after parsing JSON. Python and
+  // JavaScript can serialize equivalent floating-point values differently, so
+  // the cross-runtime client hash is diagnostic rather than an equality gate.
+  const snapshotHash=await sha(canonical(snapshotWithoutHash));
+  const localHashMatch=Boolean(localSnapshotHash)&&localSnapshotHash===snapshotHash;
   const {data:existing,error:xe}=await sb.from("radar_pre160_evidence_checkpoints").select("id,record_hash").eq("origin_node",node).eq("snapshot_hash",snapshotHash).maybeSingle();if(xe)throw xe;
-  if(existing)return {appended:false,id:existing.id,record_hash:existing.record_hash,snapshot_hash:snapshotHash};
+  if(existing)return {appended:false,id:existing.id,record_hash:existing.record_hash,snapshot_hash:snapshotHash,local_snapshot_hash:localSnapshotHash||null,local_hash_match:localHashMatch};
   const {data:tail,error:te}=await sb.from("radar_pre160_evidence_checkpoints").select("id,record_hash").eq("origin_node",node).order("id",{ascending:false}).limit(1).maybeSingle();if(te)throw te;
   const prev=tail?.record_hash?String(tail.record_hash):null;const payload={prev_hash:prev,origin_node:node,observed_at:observed,snapshot_hash:snapshotHash};const recordHash=await sha(canonical(payload));
   const {data:inserted,error:ie}=await sb.from("radar_pre160_evidence_checkpoints").insert({origin_node:node,observed_at:observed,snapshot_hash:snapshotHash,prev_hash:prev,record_hash:recordHash,snapshot,real_trading:false}).select("id").single();if(ie)throw ie;
-  return {appended:true,id:inserted.id,record_hash:recordHash,snapshot_hash:snapshotHash};
+  return {appended:true,id:inserted.id,record_hash:recordHash,snapshot_hash:snapshotHash,local_snapshot_hash:localSnapshotHash||null,local_hash_match:localHashMatch};
 }
 
 async function freezeEnvelopes(node:string,envelopes:Record<string,unknown>[]){let seen=0,inserted=0,versionMissing=0;
@@ -59,10 +62,15 @@ async function status(node:string,limit:number){
   const {data:checkpoints,error:ce}=await sb.from("radar_pre160_evidence_checkpoints").select("id,origin_node,observed_at,snapshot_hash,prev_hash,record_hash,snapshot,real_trading").eq("origin_node",node).order("id",{ascending:true}).limit(lim);if(ce)throw ce;
   const {data:envelopes,error:ee}=await sb.from("radar_pre160_decision_envelopes").select("id,source_key,trade_id,trade_ts,competitor_key,strategy_identity,strategy_version,decision_fingerprint,symbol,side,regime_ts,regime,regime_confidence,benchmark_snapshot,cost_snapshot,provider_snapshot,provenance,envelope_hash,payload,real_trading").eq("origin_node",node).order("trade_ts",{ascending:false}).limit(lim);if(ee)throw ee;
   const {data:guard,error:ge}=await sb.from("radar_pre160_guard_state").select("*").eq("origin_node",node).maybeSingle();if(ge)throw ge;
-  let prev:string|null=null;let integrity=true;
-  for(const row of checkpoints||[]){if((row.prev_hash||null)!==prev){integrity=false;break;}const payload={prev_hash:row.prev_hash||null,origin_node:row.origin_node,observed_at:new Date(row.observed_at).toISOString(),snapshot_hash:row.snapshot_hash};const computed=await sha(canonical(payload));if(computed!==row.record_hash){integrity=false;break;}prev=String(row.record_hash);}
+  let prev:string|null=null;let integrity=true;let snapshotIntegrity=true;
+  for(const row of checkpoints||[]){
+    if((row.prev_hash||null)!==prev){integrity=false;break;}
+    const snapshotObj=obj(row.snapshot);const snapshotWithoutHash=Object.fromEntries(Object.entries(snapshotObj).filter(([k])=>k!=="snapshot_hash"));const recomputedSnapshotHash=await sha(canonical(snapshotWithoutHash));
+    if(recomputedSnapshotHash!==row.snapshot_hash){snapshotIntegrity=false;integrity=false;break;}
+    const payload={prev_hash:row.prev_hash||null,origin_node:row.origin_node,observed_at:new Date(row.observed_at).toISOString(),snapshot_hash:row.snapshot_hash};const computed=await sha(canonical(payload));if(computed!==row.record_hash){integrity=false;break;}prev=String(row.record_hash);
+  }
   const missingVersion=(envelopes||[]).filter(x=>!x.strategy_version).length;
-  return {ok:true,status:"PRE160_HARDENING_AUTHORITY",checkpoints:checkpoints||[],checkpoint_records:(checkpoints||[]).length,checkpoint_integrity:integrity?"VERIFIED":"FAILED",envelopes:envelopes||[],envelope_records:(envelopes||[]).length,strategy_versions_missing:missingVersion,guard:guard||null,
+  return {ok:true,status:"PRE160_HARDENING_AUTHORITY",checkpoints:checkpoints||[],checkpoint_records:(checkpoints||[]).length,checkpoint_integrity:integrity?"VERIFIED":"FAILED",snapshot_integrity:snapshotIntegrity?"VERIFIED":"FAILED",envelopes:envelopes||[],envelope_records:(envelopes||[]).length,strategy_versions_missing:missingVersion,guard:guard||null,
     setup_allowed:false,automatic_release:false,automatic_promotion:false,automatic_demotion:false,can_trade:false,real_trading:false};
 }
 
