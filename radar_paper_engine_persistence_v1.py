@@ -31,12 +31,14 @@ _TABLES = (
 
 
 def _table_rows(c, table, limit=None):
-    cols = [r[1] for r in c.execute(f'pragma table_info({table})').fetchall()]
+    cols=[r[1] for r in c.execute(f'pragma table_info({table})').fetchall()]
     if not cols:return []
-    sql=f'select * from {table} order by rowid';params=()
-    if limit is not None:
-        sql=f'select * from (select * from {table} order by rowid desc limit ?) order by rowid';params=(int(limit),)
-    return [{k:v for k,v in zip(cols,row)} for row in c.execute(sql,params).fetchall()]
+    if limit is None:
+        rows=c.execute(f'select * from {table} order by rowid').fetchall()
+    else:
+        rows=c.execute(f'select * from {table} order by rowid desc limit ?',(int(limit),)).fetchall()
+        rows=list(reversed(rows))
+    return [{k:v for k,v in zip(cols,row)} for row in rows]
 
 
 def _normalize_number(value):
