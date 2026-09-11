@@ -27,11 +27,16 @@ _SYNC_PREFIX = int.from_bytes(hashlib.sha256(_SYNC_SESSION.encode('utf-8')).dige
 
 
 def _origin_id(local_id):
-    """Map a positive local SQLite id to a signed-bigint-safe globally unique id."""
+    """Return an exact bigint-safe decimal string for JSON/Deno/PostgREST transport.
+
+    The composite value can exceed JavaScript's 53-bit safe integer range. Sending it
+    as a JSON number lets Deno round adjacent ids to the same value. PostgreSQL bigint
+    accepts the decimal string without loss, preserving the exact provenance key.
+    """
     local_id = int(local_id)
     if local_id < 0 or local_id >= 2**32:
         raise ValueError('local origin id out of supported range')
-    return (_SYNC_PREFIX << 32) | local_id
+    return str((_SYNC_PREFIX << 32) | local_id)
 
 
 def enabled():
