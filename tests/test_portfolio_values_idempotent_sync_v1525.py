@@ -10,6 +10,8 @@ def test_radar_sync_replays_restored_portfolio_marks_by_natural_identity():
     assert 'eq("agent_id",row.agent_id).eq("ts",row.ts).maybeSingle()' in mark_block
     assert 'portfolio_values immutable mismatch' in mark_block
     assert 'sameNumeric(existing.equity,row.equity)' in mark_block
+    assert 'sameNumeric(existing.drawdown,row.drawdown,1e-9)' in mark_block
+    assert 'tolerance=1e-6' in source
 
 
 def test_radar_sync_checks_provenance_identity_without_weakening_unique_indexes():
