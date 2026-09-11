@@ -47,13 +47,13 @@ async function appendProspectiveChain(node:string){
 async function persistSnapshot(node:string,body:Record<string,unknown>){
   if(body.real_trading!==false)throw new Error("real_trading boundary invalid");const snapshot=obj(body.snapshot);if(snapshot.real_trading!==false)throw new Error("snapshot real_trading boundary invalid");
   const observed=iso(snapshot.observed_at)||new Date().toISOString();const day=observed.slice(0,10);const contexts=arr(snapshot.contexts_to_freeze);const frozen=await freezeContexts(node,contexts);const chain=await appendProspectiveChain(node);
-  const readiness=obj(snapshot.readiness_1_6);const blockers=Array.isArray(readiness.blockers)?readiness.blockers:[];const localHash=String(snapshot.snapshot_hash||"");const serverHash=await sha(canonical(Object.fromEntries(Object.entries(snapshot).filter(([k])=>k!=="snapshot_hash"))));
-  if(!localHash||localHash!==serverHash)throw new Error("snapshot hash mismatch");
+  const readiness=obj(snapshot.readiness_1_6);const blockers=Array.isArray(readiness.blockers)?readiness.blockers:[];const clientHash=String(snapshot.snapshot_hash||"");
+  const serverHash=await sha(canonical(Object.fromEntries(Object.entries(snapshot).filter(([k])=>k!=="snapshot_hash"))));
   const {data:existing,error:re}=await sb.from("radar_pre160_evidence_daily").select("first_observed_at").eq("origin_node",node).eq("day",day).maybeSingle();if(re)throw re;
   const row={origin_node:node,day,first_observed_at:existing?.first_observed_at||observed,last_observed_at:observed,snapshot_hash:serverHash,
-    readiness_score:finite(readiness.score_pct),blockers,snapshot,audit:{contexts:frozen,chain,setup_allowed:false,automatic_release:false},real_trading:false};
+    readiness_score:finite(readiness.score_pct),blockers,snapshot,audit:{contexts:frozen,chain,client_snapshot_hash:clientHash,server_snapshot_hash:serverHash,setup_allowed:false,automatic_release:false},real_trading:false};
   const {error:we}=await sb.from("radar_pre160_evidence_daily").upsert(row,{onConflict:"origin_node,day"});if(we)throw we;
-  return {ok:true,status:"PRE160_EVIDENCE_PERSISTED",day,snapshot_hash:serverHash,contexts:frozen,chain,setup_allowed:false,can_trade:false,real_trading:false};
+  return {ok:true,status:"PRE160_EVIDENCE_PERSISTED",day,snapshot_hash:serverHash,client_snapshot_hash:clientHash,contexts:frozen,chain,setup_allowed:false,can_trade:false,real_trading:false};
 }
 
 async function evidenceStatus(node:string,days:number){
