@@ -88,9 +88,11 @@ def test_origin_id_is_bigint_safe_and_preserves_local_order(monkeypatch):
     monkeypatch.setattr(sync, '_SYNC_PREFIX', 123456)
     first = sync._origin_id(1)
     second = sync._origin_id(2)
-    assert first != 1
-    assert second == first + 1
-    assert 0 <= first < 2**63
+    assert isinstance(first, str) and isinstance(second, str)
+    assert int(first) != 1
+    assert int(second) == int(first) + 1
+    assert 0 <= int(first) < 2**63
+    assert json.loads(json.dumps({'origin_id': first}))['origin_id'] == first
 
 
 def test_ephemeral_sessions_cannot_reuse_same_remote_origin_key(monkeypatch):
