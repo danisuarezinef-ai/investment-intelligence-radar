@@ -27,6 +27,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Normalize runtime identity
+        shell: powershell
+        run: python tools/normalize_windows_identity.py
+
       - name: Install Inno Setup
         shell: powershell
         run: choco install innosetup --no-progress -y
