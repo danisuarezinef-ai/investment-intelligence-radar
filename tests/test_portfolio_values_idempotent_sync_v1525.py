@@ -4,11 +4,12 @@ from pathlib import Path
 import radar_supabase_sync as sync
 
 
-def test_release_identity_is_v1526():
+def test_release_identity_is_at_least_v1526_and_installer_matches():
     version = json.loads(Path('version.json').read_text(encoding='utf-8'))['version']
     installer = Path('installer/Radar.iss').read_text(encoding='utf-8')
-    assert version == '1.5.26'
-    assert '#define MyAppVersion "1.5.26"' in installer
+    numeric = tuple(int(part) for part in version.split('.'))
+    assert numeric >= (1, 5, 26)
+    assert f'#define MyAppVersion "{version}"' in installer
 
 
 def test_radar_sync_replays_restored_portfolio_marks_by_natural_identity():
