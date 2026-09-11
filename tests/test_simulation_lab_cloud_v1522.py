@@ -12,8 +12,12 @@ def test_release_is_v1522_or_newer():
 def test_windows_build_packages_cloud_aware_simulation_lab():
     build=Path('build_windows.ps1').read_text(encoding='utf-8')
     assert '--name RadarSimulationLab ' in build
-    assert ('radar_simulation_desktop_v2.py' in build or 'radar_simulation_desktop_v3.py' in build)
-    if 'radar_simulation_desktop_v3.py' in build:
+    entrypoints=('radar_simulation_desktop_v2.py','radar_simulation_desktop_v3.py','radar_simulation_desktop_v4.py')
+    assert any(name in build for name in entrypoints)
+    if 'radar_simulation_desktop_v4.py' in build:
+        v4=Path('radar_simulation_desktop_v4.py').read_text(encoding='utf-8')
+        assert 'cockpit.VScoreLab' in v4
+    elif 'radar_simulation_desktop_v3.py' in build:
         v3=Path('radar_simulation_desktop_v3.py').read_text(encoding='utf-8')
         assert 'legacy.CloudAwareLab' in v3
 

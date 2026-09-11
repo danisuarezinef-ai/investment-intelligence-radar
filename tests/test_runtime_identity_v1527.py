@@ -9,8 +9,14 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = str(json.loads((ROOT / 'version.json').read_text(encoding='utf-8-sig'))['version'])
 
 
-def test_release_is_v1527():
-    assert VERSION == '1.5.27'
+def _version_tuple(value):
+    return tuple(int(part) for part in str(value).split('.'))
+
+
+def test_release_is_at_least_v1527_and_installer_matches():
+    assert _version_tuple(VERSION) >= (1, 5, 27)
+    installer = (ROOT / 'installer' / 'Radar.iss').read_text(encoding='utf-8')
+    assert f'#define MyAppVersion "{VERSION}"' in installer
 
 
 def test_normalizer_rewrites_stale_desktop_user_agents():

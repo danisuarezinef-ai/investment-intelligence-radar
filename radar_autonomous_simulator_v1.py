@@ -16,6 +16,7 @@ from radar_core import con, init_db, now, paper_status, paper_start
 from radar_simulator_engine_v3 import run_simulator_cycle
 from radar_continuous_research_v2 import run_research_batch
 from radar_experiment_memory_v2 import memory_snapshot
+from radar_competitor_explainability_v1 import competitor_live_details
 
 REAL_TRADING=False
 _LOCK=threading.Lock()
@@ -120,19 +121,37 @@ def _recent_experiments(limit=20):
     return out
 
 
+def _competitor_details_fail_soft():
+    try:
+        return competitor_live_details()
+    except Exception as exc:
+        return {
+            'status':'DEGRADED',
+            'error':str(exc)[:500],
+            'source':'LIVE_LOCAL_PAPER_ENGINE_READ_ONLY',
+            'competitors':{},
+            'durable_authority':False,
+            'automatic_model_promotion':False,
+            'live_execution_allowed':False,
+            'can_trade':False,
+            'real_trading':False,
+        }
+
+
 def simulator_status():
     init_autonomous_simulator();c=con();r=c.execute('''select enabled,status,generation,completed_cycles,
         completed_experiments,queued_experiments,last_cycle_at,last_research_at,next_cycle_at,next_research_at,
         last_result,last_error,updated_at from autonomous_simulator_state where id=1''').fetchone();c.close()
     try:last_result=json.loads(r[10]) if r and r[10] else None
     except Exception:last_result=None
-    paper=paper_status();runs=_recent_runs(10);experiments=_recent_experiments(20)
+    paper=paper_status();runs=_recent_runs(10);experiments=_recent_experiments(20);competitors=_competitor_details_fail_soft()
     return {'active':bool(r[0]) if r else False,'status':r[1] if r else 'NOT_CONFIGURED','generation':int(r[2] or 1) if r else 1,
         'completed_cycles':int(r[3] or 0) if r else 0,'completed_experiments':int(r[4] or 0) if r else 0,
         'queued_experiments':int(r[5] or 0) if r else 0,'last_cycle_at':r[6] if r else None,'last_research_at':r[7] if r else None,
         'next_cycle_at':r[8] if r else None,'next_research_at':r[9] if r else None,'last_result':last_result,
         'last_error':r[11] if r else None,'updated_at':r[12] if r else None,
         'paper':{'configured':paper.get('configured',False),'enabled':paper.get('enabled',False),'total':paper.get('total'),'cash':paper.get('cash'),'invested':paper.get('invested'),'pnl_pct':paper.get('pnl_pct')},
+        'competitor_details':competitors,
         'recent_runs':runs,'recent_experiments':experiments,'experiment_memory':memory_snapshot(10),
         'evidence_class':'SIMULATED_HISTORICAL_AND_PAPER_ONLY','forward_evidence_mutated':False,
         'automatic_live_promotion':False,'real_trading':False}

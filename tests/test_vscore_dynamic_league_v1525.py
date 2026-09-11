@@ -81,4 +81,5 @@ def test_vscore_history_schema_is_private_and_bounded():
 
 def test_windows_build_uses_vscore_cockpit_entrypoint():
     build=Path('build_windows.ps1').read_text(encoding='utf-8')
-    assert '--name RadarSimulationLab radar_simulation_desktop_v3.py' in build
+    assert ('--name RadarSimulationLab radar_simulation_desktop_v3.py' in build or
+            '--name RadarSimulationLab radar_simulation_desktop_v4.py' in build)
