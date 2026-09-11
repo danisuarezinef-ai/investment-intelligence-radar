@@ -10,7 +10,7 @@ def audit(root='.'):
     if 'import cloud_service_v3 as base3' not in v4:findings.append('V4_NOT_COMPOSED_OVER_V3')
     if 'import cloud_service as base' in v4:findings.append('V4_LEGACY_BASE_IMPORT')
     for endpoint in ('/pre160-runtime-v2','/pre160-readiness-v1','/mobile-summary-v2','/pre160-evidence-v1','/pre160-readiness-v2','/pre160-evidence-authority-v1','/pre160-audit-v1',
-                     '/pre160-hardening-v1','/pre160-hardening-authority-v1','/pre160-audit-111-130-v1'):
+                     '/pre160-hardening-v1','/pre160-hardening-authority-v1','/pre160-audit-111-130-v1','/pre160-audit-131-150-v1'):
         if endpoint not in v4:findings.append('MISSING_V4_ENDPOINT:'+endpoint)
     for endpoint in ('/pre160-evaluation-v1','/simulator-league-v1','/persistent-authority-v1'):
         if endpoint not in v3:findings.append('MISSING_V3_ENDPOINT:'+endpoint)
@@ -19,13 +19,24 @@ def audit(root='.'):
     for path in ('radar_pre160_runtime_v4.py','radar_pre160_runtime_v4_linkage.py','radar_pre160_cloud_v4.py','radar_pre160_hardening_persistence_v1.py','PRE160_TASKS_111_130.md',
                  'supabase/functions/radar-pre160-hardening/index.ts','supabase/migrations/20260912003000_pre160_evidence_v4.sql'):
         if not (root/path).exists():findings.append('MISSING_111_130_COMPONENT:'+path)
+    for path in ('radar_decision_provenance_v1.py','radar_pre160_runtime_v5.py','PRE160_TASKS_131_150.md','tests/test_decision_provenance_v1.py'):
+        if not (root/path).exists():findings.append('MISSING_131_150_COMPONENT:'+path)
     edge=(root/'supabase/functions/radar-pre160-evidence/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-evidence/index.ts').exists() else ''
     if 'appendProspectiveChain' not in edge or 'PIT_REGIME_NOT_CAPTURED' not in edge:findings.append('EVIDENCE_AUTHORITY_INCOMPLETE')
     hard=(root/'supabase/functions/radar-pre160-hardening/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-hardening/index.ts').exists() else ''
     for token in ('appendCheckpoint','freezeEnvelopes','radar_pre160_evidence_checkpoints','radar_pre160_decision_envelopes','real_trading:false'):
         if token not in hard:findings.append('HARDENING_AUTHORITY_INCOMPLETE:'+token)
+    paper_edge_path=root/'supabase/functions/radar-paper-engine-checkpoint/index.ts';paper_edge=paper_edge_path.read_text(encoding='utf-8-sig') if paper_edge_path.exists() else ''
+    for token in ('[1,2].includes(schema)','paper_decision_envelopes_local','real_trading:false'):
+        if token not in paper_edge:findings.append('PAPER_CHECKPOINT_V2_AUTHORITY_INCOMPLETE:'+token)
+    agents=(root/'radar_agents.py').read_text(encoding='utf-8-sig');champ=(root/'radar_champion_portfolio.py').read_text(encoding='utf-8-sig');persist=(root/'radar_paper_engine_persistence_v1.py').read_text(encoding='utf-8-sig');runtime5=(root/'radar_pre160_runtime_v5.py').read_text(encoding='utf-8-sig')
+    if 'capture_trade_envelope' not in agents:findings.append('AGENT_TRANSACTIONAL_PROVENANCE_MISSING')
+    if 'capture_trade_envelope' not in champ:findings.append('CHAMPION_TRANSACTIONAL_PROVENANCE_MISSING')
+    if "SCHEMA_VERSION = 2" not in persist or 'paper_decision_envelopes_local' not in persist or 'LEGACY_SCHEMA_VERSION = 1' not in persist:findings.append('PAPER_CHECKPOINT_SCHEMA2_MISSING')
+    if 'uses_exit_fields_for_entry_linkage' not in runtime5 or "'competitor_key'" not in runtime5 and 'competitor_key' not in runtime5:findings.append('ENTRY_ONLY_LINKAGE_AUDIT_MISSING')
     if 'pre160_evidence_loop' not in v4:findings.append('EVIDENCE_WORKER_MISSING')
     if 'pre160_hardening_loop' not in v4:findings.append('HARDENING_WORKER_MISSING')
+    if 'tasks_131_150_audit' not in v4:findings.append('TASKS_131_150_AUDIT_NOT_WIRED')
     if 'REAL_TRADING=False' not in v4.replace(' ',''):findings.append('V4_TRADING_BOUNDARY_MISSING')
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
     if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
