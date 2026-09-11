@@ -2,6 +2,7 @@ import math, statistics
 from datetime import datetime, timezone
 
 from radar_core import con, init_db, now, history_ready, collect_history, opportunity_rankings, _latest_prices
+from radar_decision_provenance_v1 import init_decision_provenance_db, capture_trade_envelope
 
 AGENTS = {
     'conservative': {
@@ -82,6 +83,7 @@ def init_agents_db():
     )""")
     c.execute("create index if not exists idx_agent_marks on paper_agent_marks(agent_id,ts)")
     c.execute("create index if not exists idx_agent_trades on paper_agent_trades(agent_id,ts)")
+    init_decision_provenance_db(c)
     c.commit()
     c.close()
 
@@ -92,6 +94,7 @@ def ensure_agents(reset=False, initial_cash=200.0):
         c.execute('delete from paper_agent_positions')
         c.execute('delete from paper_agent_trades')
         c.execute('delete from paper_agent_marks')
+        c.execute("delete from paper_decision_envelopes_local where source_key like 'agent:%'")
         c.execute('delete from paper_agents')
     for agent_id, cfg in AGENTS.items():
         amount = max(50.0, float(initial_cash if initial_cash is not None else cfg['initial_cash']))
@@ -285,14 +288,19 @@ def step_agent(agent_id, force=False):
         gross = p['qty'] * price
         fees, spread, fx = _costs(cfg, gross)
         net = max(0.0, gross - fees - spread - fx)
+        trade_ts=now()
         c.execute('update paper_agents set cash=cash+? where agent_id=?', (net, agent_id))
         c.execute('delete from paper_agent_positions where agent_id=? and symbol=?', (agent_id, p['symbol']))
-        c.execute(
+        cur=c.execute(
             """insert into paper_agent_trades(ts,agent_id,symbol,side,qty,price,gross_value,fees,spread_cost,fx_cost,reason)
                values(?,?,?,?,?,?,?,?,?,?,?)""",
-            (now(), agent_id, p['symbol'], 'SELL', p['qty'], price, gross,
+            (trade_ts, agent_id, p['symbol'], 'SELL', p['qty'], price, gross,
              fees, spread, fx, 'Salida por deterioro, riesgo o stop-loss'),
         )
+        capture_trade_envelope(c,source_key='agent:'+agent_id,trade_id=cur.lastrowid,trade_ts=trade_ts,competitor_key=agent_id,
+            strategy_identity='paper_agent:'+agent_id,strategy_config=cfg,symbol=p['symbol'],side='SELL',
+            cost_snapshot={'gross_value':gross,'fees':fees,'spread_cost':spread,'fx_cost':fx,'total':fees+spread+fx,'cost_model':'AGENT_EXPLICIT_FEE_SPREAD_FX_V1'},
+            decision_payload={'reason':'Salida por deterioro, riesgo o stop-loss','score':score,'pnl_pct':p.get('pnl_pct'),'min_score':cfg['min_score'],'stop_loss':cfg['stop_loss']})
     c.commit()
     c.close()
 
@@ -323,18 +331,24 @@ def step_agent(agent_id, force=False):
         if total_cost > cash or gross < 8:
             continue
         qty = gross / price
+        trade_ts=now()
         c.execute('update paper_agents set cash=cash-? where agent_id=?', (total_cost, agent_id))
         c.execute(
             """insert or replace into paper_agent_positions(agent_id,symbol,qty,avg_price,updated_at)
                values(?,?,?,?,?)""",
-            (agent_id, symbol, qty, price, now()),
+            (agent_id, symbol, qty, price, trade_ts),
         )
-        c.execute(
+        cur=c.execute(
             """insert into paper_agent_trades(ts,agent_id,symbol,side,qty,price,gross_value,fees,spread_cost,fx_cost,reason)
                values(?,?,?,?,?,?,?,?,?,?,?)""",
-            (now(), agent_id, symbol, 'BUY', qty, price, gross, fees, spread, fx,
+            (trade_ts, agent_id, symbol, 'BUY', qty, price, gross, fees, spread, fx,
              f"Score {r['score']:.2f} · riesgo {r['risk']} · estrategia {cfg['name']}"),
         )
+        capture_trade_envelope(c,source_key='agent:'+agent_id,trade_id=cur.lastrowid,trade_ts=trade_ts,competitor_key=agent_id,
+            strategy_identity='paper_agent:'+agent_id,strategy_config=cfg,symbol=symbol,side='BUY',
+            cost_snapshot={'gross_value':gross,'fees':fees,'spread_cost':spread,'fx_cost':fx,'total':fees+spread+fx,'cost_model':'AGENT_EXPLICIT_FEE_SPREAD_FX_V1'},
+            decision_payload={'score':r.get('score'),'risk':r.get('risk'),'volatility':r.get('volatility'),'target_invested':cfg['target_invested'],
+                              'per_position':cfg['per_position'],'gross_budget':gross_budget,'available_cash_before':cash})
         cash -= total_cost
         need -= gross
         held.add(symbol)
