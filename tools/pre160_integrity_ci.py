@@ -5,18 +5,22 @@ import json
 
 def audit(root='.'):
     root=Path(root);findings=[]
-    start=(root/'start.sh').read_text(encoding='utf-8-sig')
-    v4=(root/'cloud_service_v4.py').read_text(encoding='utf-8-sig')
-    v3=(root/'cloud_service_v3.py').read_text(encoding='utf-8-sig')
+    start=(root/'start.sh').read_text(encoding='utf-8-sig');v4=(root/'cloud_service_v4.py').read_text(encoding='utf-8-sig');v3=(root/'cloud_service_v3.py').read_text(encoding='utf-8-sig')
     if 'cloud_service_v4.py' not in start:findings.append('START_NOT_V4')
     if 'import cloud_service_v3 as base3' not in v4:findings.append('V4_NOT_COMPOSED_OVER_V3')
     if 'import cloud_service as base' in v4:findings.append('V4_LEGACY_BASE_IMPORT')
-    for endpoint in ('/pre160-runtime-v2','/pre160-readiness-v1','/mobile-summary-v2'):
+    for endpoint in ('/pre160-runtime-v2','/pre160-readiness-v1','/mobile-summary-v2','/pre160-evidence-v1','/pre160-readiness-v2','/pre160-evidence-authority-v1','/pre160-audit-v1'):
         if endpoint not in v4:findings.append('MISSING_V4_ENDPOINT:'+endpoint)
     for endpoint in ('/pre160-evaluation-v1','/simulator-league-v1','/persistent-authority-v1'):
         if endpoint not in v3:findings.append('MISSING_V3_ENDPOINT:'+endpoint)
+    for path in ('radar_pre160_runtime_v3.py','radar_pre160_cloud_v3.py','radar_pre160_evidence_persistence_v1.py','PRE160_TASKS_91_110.md','supabase/functions/radar-pre160-evidence/index.ts'):
+        if not (root/path).exists():findings.append('MISSING_91_110_COMPONENT:'+path)
+    edge=(root/'supabase/functions/radar-pre160-evidence/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-evidence/index.ts').exists() else ''
+    if 'appendProspectiveChain' not in edge or 'PIT_REGIME_NOT_CAPTURED' not in edge:findings.append('EVIDENCE_AUTHORITY_INCOMPLETE')
+    if 'pre160_evidence_loop' not in v4:findings.append('EVIDENCE_WORKER_MISSING')
     if 'REAL_TRADING=False' not in v4.replace(' ',''):findings.append('V4_TRADING_BOUNDARY_MISSING')
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
+    if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
     return {'status':'PASS' if not findings else 'FAIL','version':version,'findings':findings,'setup_built':False,'real_trading':False}
 
 
