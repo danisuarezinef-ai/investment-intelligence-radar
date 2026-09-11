@@ -3,8 +3,24 @@ name: Build Windows Setup
 on:
   push:
     branches: [main]
+    paths:
+      - 'version.json'
+      - 'build_windows.ps1'
+      - 'installer/**'
+      - 'radar_desktop*.py'
+      - 'radar_simulation_desktop*.py'
+      - 'radar_updater*.py'
+      - 'START_RADAR.cmd'
   pull_request:
     branches: [main]
+    paths:
+      - 'version.json'
+      - 'build_windows.ps1'
+      - 'installer/**'
+      - 'radar_desktop*.py'
+      - 'radar_simulation_desktop*.py'
+      - 'radar_updater*.py'
+      - 'START_RADAR.cmd'
   workflow_dispatch:
 
 permissions:
