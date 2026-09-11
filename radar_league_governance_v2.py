@@ -47,7 +47,7 @@ def quality_readiness(challenger,champion,*,common_days=0,persistence_score=0,
     cal=50.0 if calibration_score is None else clamp(calibration_score)
     stability=50.0 if stability_score is None else clamp(stability_score)
     anti_luck=50.0 if anti_luck_score is None else clamp(anti_luck_score)
-    quality_adv=clamp(50+v_gap*1.5);performance_adv=clamp(50+equity_gap*4)
+    quality_adv=clamp(50+v_gap*1.7);performance_adv=clamp(50+equity_gap*4)
     evidence=clamp(min(_value((ch.get('v_components') or {}),'evidence',0) or 0,_value((cp.get('v_components') or {}),'evidence',0) or 0))
     robustness=.25*risk_score+.18*stability+.15*anti_luck+.12*cal+.10*b+.20*clamp(persistence_score)
     readiness=clamp(.28*quality_adv+.22*performance_adv+.22*evidence+.28*robustness)
