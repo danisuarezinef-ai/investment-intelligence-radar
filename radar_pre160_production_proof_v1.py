@@ -21,7 +21,7 @@ PROTECTED_PATHS=(
  'radar_paper_engine_persistence_v1.py','radar_agents.py','radar_champion_portfolio.py','radar_causal_scoring_v2.py','radar_promotion_governance_v2.py',
  'supabase/functions/radar-sync/index.ts','supabase/functions/radar-learning-sync/index.ts','supabase/functions/radar-retry-queue/index.ts','supabase/functions/radar-brain-evidence/index.ts','supabase/functions/radar-paper-engine-checkpoint/index.ts','supabase/functions/radar-pre160-evidence/index.ts','supabase/functions/radar-pre160-hardening/index.ts',
  'supabase/migrations/20260912093000_pre160_remote_retry_queue_v3.sql','supabase/migrations/20260912110000_pre160_brain_evidence_snapshots_v1.sql',
- '.github/workflows/pre160-hardening-production-audit.yml','.github/workflows/pre160-201-270-production-audit.yml','.github/workflows/pre160-271-310-production-audit.yml','.github/workflows/pre160-311-370-production-audit.yml','.github/workflows/integration-ci.yml',
+ '.github/workflows/pre160-hardening-production-audit.yml','.github/workflows/pre160-201-270-production-audit.yml','.github/workflows/pre160-271-310-production-audit.yml','.github/workflows/pre160-311-370-production-audit.yml','.github/workflows/autonomous-paper-production-audit.yml','.github/workflows/integration-ci.yml',
  'tools/pre160_integrity_ci.py','tools/pre160_201_270_integrity_ci.py','tools/pre160_271_310_integrity_ci.py','tools/pre160_311_370_integrity_ci.py','tools/pre160_repo_audit_v2.py','PRE160_LEGACY_PR_RECONCILIATION.md','PRE160_TASKS_311_370.md',
 )
 
