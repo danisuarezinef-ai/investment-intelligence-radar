@@ -3,7 +3,7 @@
 V9 does not alter investment execution. It reads the immutable forward ledger,
 computes tasks 311-370, persists content-addressed evidence snapshots, serves
 read-only readiness endpoints, supervises the existing autonomous PAPER daemon,
-and exposes priorities 16-40 without starting a duplicate simulator loop.
+and exposes priorities 16-60 without starting a duplicate simulator loop.
 """
 from __future__ import annotations
 
@@ -18,13 +18,15 @@ from radar_brain_readiness_v1 import build_tasks_311_370
 import radar_brain_persistence_v1 as brain_persistence
 import radar_autonomous_paper_control_v1 as autonomous_paper
 import radar_autonomous_learning_16_40_v1 as learning1640
+import radar_autonomous_learning_41_60_v1 as learning4160
 from radar_pre160_production_proof_v1 import protected_digest
 
 REAL_TRADING=False
 _LOCK=threading.RLock()
 _STATE={'ready':False,'building':False,'rows':[],'evidence':None,'analytics':None,'competition':None,
-       'readiness':None,'autonomous_learning':None,'last_epoch':None,'last_error':None,
-       'source_max_evaluated_at':None,'persistence':brain_persistence.telemetry()}
+       'readiness':None,'autonomous_learning':None,'autonomous_learning_41_60':None,
+       'last_epoch':None,'last_error':None,'source_max_evaluated_at':None,
+       'persistence':brain_persistence.telemetry()}
 _STARTED=False
 _START_LOCK=threading.Lock()
 
@@ -71,6 +73,8 @@ def _build_once(persist=True):
         readiness=build_tasks_311_370(technical=_technical_snapshot(),evidence=evidence,analytics=analytics,
                                       competition=competition,rows=rows,persistence=ptele,external={})
         autonomous_learning=learning1640.build_priorities_16_40(rows,analytics,competition,persist=persist)
+        autonomous_learning_41_60=learning4160.build_priorities_41_60(
+            rows,analytics,competition,autonomous_learning,persist=persist)
         if persist and brain_persistence.enabled():
             try:
                 brain_persistence.put_snapshot('reliability_v2',analytics.get('calibration') or {},source_max_evaluated_at=source)
@@ -85,6 +89,7 @@ def _build_once(persist=True):
         with _LOCK:
             _STATE.update({'ready':True,'rows':rows,'evidence':evidence,'analytics':analytics,'competition':competition,
                            'readiness':readiness,'autonomous_learning':autonomous_learning,
+                           'autonomous_learning_41_60':autonomous_learning_41_60,
                            'last_epoch':time.time(),'last_error':None,'source_max_evaluated_at':source,'persistence':ptele})
         return True
     except Exception as exc:
@@ -116,6 +121,7 @@ def brain_status():
                 'last_error':_STATE['last_error'],'source_max_evaluated_at':_STATE['source_max_evaluated_at'],
                 'rows':len(_STATE['rows']),'persistence':dict(_STATE['persistence']),
                 'autonomous_learning_ready':isinstance(_STATE.get('autonomous_learning'),dict),
+                'autonomous_learning_41_60_ready':isinstance(_STATE.get('autonomous_learning_41_60'),dict),
                 'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
@@ -138,15 +144,34 @@ def autonomous_learning():
     return _get('autonomous_learning')
 
 
+def autonomous_learning_41_60():
+    return _get('autonomous_learning_41_60')
+
+
+def autonomous_learning_16_60():
+    a=autonomous_learning();b=autonomous_learning_41_60()
+    if a.get('source_ready') is not True or b.get('source_ready') is not True:
+        return {'status':'WARMING_FAIL_CLOSED','source_ready':False,'deep_ready':False,
+                'automatic_promotion':False,'automatic_release':False,'live_execution_allowed':False,
+                'setup_allowed':False,'can_trade':False,'real_trading':False}
+    return {'status':'AUTONOMOUS_PAPER_LEARNING_16_60','source_ready':True,'deep_ready':True,
+            'priorities_16_40':a,'priorities_41_60':b,'dashboard_v3':b.get('dashboard_v3') or {},
+            'automatic_promotion':False,'automatic_release':False,'live_execution_allowed':False,
+            'setup_allowed':False,'can_trade':False,'real_trading':False}
+
+
 def simulator_gate():
     return autonomous_paper.simulator_gate(technical=base8.operational_health_v8(),brain=brain_readiness())
 
 
 def simulator_dashboard():
     out=autonomous_paper.dashboard(technical=base8.operational_health_v8(),brain=brain_readiness())
-    learn=autonomous_learning();out['learning_16_40']=learn
+    learn=autonomous_learning();advanced=autonomous_learning_41_60()
+    out['learning_16_40']=learn;out['learning_41_60']=advanced
     if isinstance(learn,dict) and isinstance(learn.get('balance_indicator'),dict):out['balance_indicator']=learn['balance_indicator']
-    out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V2';out['real_trading']=False
+    out['advanced_learning_summary']=advanced.get('dashboard_v3') if isinstance(advanced,dict) else None
+    out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V3';out['real_trading']=False
+    out['automatic_promotion']=False;out['automatic_release']=False;out['live_execution_allowed']=False
     return out
 
 
@@ -166,6 +191,8 @@ class ValidationV9Handler(base8.ValidationV8Handler):
             if path=='/autonomous-simulator/gate-v1':self._send(200,simulator_gate());return
             if path=='/autonomous-simulator/dashboard-v1':self._send(200,simulator_dashboard());return
             if path=='/autonomous-simulator/learning-v2':self._send(200,autonomous_learning());return
+            if path=='/autonomous-simulator/learning-41-60-v1':self._send(200,autonomous_learning_41_60());return
+            if path=='/autonomous-simulator/learning-v3':self._send(200,autonomous_learning_16_60());return
             if path=='/autonomous-simulator/watchdog-v1':self._send(200,autonomous_paper.watchdog_status());return
             if path=='/autonomous-simulator/milestones-v1':self._send(200,autonomous_paper.milestones());return
             if path=='/autonomous-simulator/control-v1':self._send(200,autonomous_paper.control_status());return
