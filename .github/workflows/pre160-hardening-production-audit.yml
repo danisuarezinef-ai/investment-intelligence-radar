@@ -83,7 +83,11 @@ jobs:
               assert data.get('status') in ('NOT_VERIFIED','PASS'),data
               assert data.get('verified') in (False,True),data
               assert len(str(data.get('protected_digest') or ''))==64,data
+              assert int(data.get('protected_files') or 0)>=35,data
+              assert data.get('digest_algorithm')=='SHA-256',data
+              assert data.get('proof_json_excluded') is True or data.get('proof_file_excluded_from_digest') is True,data
               if data.get('status')=='PASS': assert data.get('verified') is True and all((data.get('checks') or {}).values()),data
+              print('PRODUCTION_PROOF_JSON='+json.dumps(data,sort_keys=True,separators=(',',':')))
           print(name,'HTTP 200',data.get('status'),'REAL_TRADING=false')
           PY
           done
