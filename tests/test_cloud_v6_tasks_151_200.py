@@ -9,9 +9,10 @@ def test_cloud_v6_composes_v5_and_preserves_safety_boundary():
     for endpoint in (
         '/pre160-audit-151-200-v1', '/pre160-slo-v1', '/pre160-data-integrity-v1',
         '/pre160-evidence-maturity-v3', '/pre160-governance-v3', '/pre160-recovery-v2',
-        '/pre160-release-authority-v2',
+        '/pre160-release-authority-v2', '/pre160-production-proof-v1',
     ):
         assert endpoint in src
+    assert 'production_proof_status' in src
     assert "'setup_allowed': False" in src
     assert "'automatic_release': False" in src
     assert "'automatic_promotion': False" in src
