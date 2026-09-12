@@ -24,13 +24,35 @@ jobs:
           print('PROTECTED_DIGEST='+d['digest'])
           print('PROTECTED_FILES='+str(d['files']))
           PY
-      - name: Verify tiered production surfaces, durable queue and exact deployed SHA
+      - name: Wait for exact Railway deployment before sampling production
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          endpoints=(pre160-readiness-v4 pre160-queue-v3 pre160-provider-resilience-v2 pre160-sync-partitions-v2 pre160-audit-271-310-v1 pre160-master-gate-v4 pre160-deployment-v7)
+          matched=0
+          for attempt in $(seq 1 72); do
+            code=$(curl -sS -o /tmp/pre160-deployment-v7.json -w '%{http_code}' --max-time 10 "$BASE_URL/pre160-deployment-v7" || true)
+            if [ "$code" = "200" ]; then
+              if EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/pre160-deployment-v7.json'))
+          assert d.get('deployed_sha')==os.environ['EXPECTED_SHA'],(d.get('deployed_sha'),os.environ['EXPECTED_SHA'])
+          assert d.get('real_trading') is False
+          PY
+              then matched=1; break; fi
+            fi
+            sleep 5
+          done
+          test "$matched" = "1" || { echo 'exact Railway SHA never became active'; cat /tmp/pre160-deployment-v7.json 2>/dev/null || true; exit 1; }
+          echo "DEPLOYMENT_BARRIER=PASS sha=$EXPECTED_SHA"
+      - name: Verify tiered production surfaces and durable queue
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          endpoints=(pre160-readiness-v4 pre160-provider-resilience-v2 pre160-sync-partitions-v2 pre160-audit-271-310-v1 pre160-master-gate-v4)
           for endpoint in "${endpoints[@]}"; do
             ok=0
             for attempt in $(seq 1 24); do
@@ -40,12 +62,29 @@ jobs:
             done
             test "$ok" = "1" || { echo "$endpoint failed"; cat "/tmp/$endpoint.json" 2>/dev/null || true; exit 1; }
           done
+          queue_ready=0
+          for attempt in $(seq 1 60); do
+            code=$(curl -sS -o /tmp/pre160-queue-v3.json -w '%{http_code}' --max-time 10 "$BASE_URL/pre160-queue-v3" || true)
+            if [ "$code" = "200" ]; then
+              if python - <<'PY'
+          import json
+          q=json.load(open('/tmp/pre160-queue-v3.json'))
+          assert q.get('durable_backend')=='SUPABASE' and q.get('configured') is True and q.get('remote_stats_verified') is True,q
+          assert q.get('cross_redeploy_verified') is True,q
+          assert q.get('previous_deployment') not in (None,'') and q.get('current_deployment') not in (None,''),q
+          assert q.get('previous_deployment') != q.get('current_deployment'),q
+          assert q.get('real_trading') is False
+          PY
+              then queue_ready=1; break; fi
+            fi
+            sleep 5
+          done
+          test "$queue_ready" = "1" || { echo 'cross-redeploy queue proof never became ready'; cat /tmp/pre160-queue-v3.json; exit 1; }
           EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
           import json,os
           dep=json.load(open('/tmp/pre160-deployment-v7.json'));assert dep.get('deployed_sha')==os.environ['EXPECTED_SHA'],(dep,os.environ['EXPECTED_SHA'])
           r=json.load(open('/tmp/pre160-readiness-v4.json'));assert r.get('source_ready') is True and r.get('lite_ready') is True and r.get('real_trading') is False
-          q=json.load(open('/tmp/pre160-queue-v3.json'));assert q.get('durable_backend')=='SUPABASE' and q.get('configured') is True and q.get('remote_stats_verified') is True,q
-          assert q.get('cross_redeploy_verified') is True,q
+          q=json.load(open('/tmp/pre160-queue-v3.json'))
           p=json.load(open('/tmp/pre160-provider-resilience-v2.json'));assert p.get('wired') is True and p.get('bulkhead_isolation') is True,p
           s=json.load(open('/tmp/pre160-sync-partitions-v2.json'));assert s.get('partitioned') is True and s.get('cursor_policy')=='PER_FAMILY_AFTER_ALL_CHUNKS_REMOTE_SUCCESS',s
           m=json.load(open('/tmp/pre160-audit-271-310-v1.json'));assert set(m.get('tasks') or {})=={str(i) for i in range(271,311)};assert m.get('stable_windows_version')=='1.5.28';assert m.get('setup_allowed') is False and m.get('real_trading') is False
