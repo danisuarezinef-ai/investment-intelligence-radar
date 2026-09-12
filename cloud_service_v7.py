@@ -129,12 +129,17 @@ def _build_lite_snapshot():
     return _READINESS.set_lite(value)
 
 
+def _source_inputs():
+    """Legacy-compatible expensive hook; only the background deep worker may call it."""
+    return base6._inputs()
+
+
 def _collect_deep():
     global _DEEP_MATRIX
     _READINESS.mark_deep_started()
     started = time.monotonic()
     try:
-        evidence, hardening, runtime, health = _PROFILER.timed('deep_inputs', base6._inputs)
+        evidence, hardening, runtime, health = _PROFILER.timed('deep_inputs', _source_inputs)
         proof = _PROFILER.timed('deep_proof_v1', base6.production_proof_cached)
         prior = _PROFILER.timed('deep_tasks_151_200', base6.tasks_151_200_cached)
         identity = deployment_identity()
@@ -164,6 +169,9 @@ def _collect_deep():
 def tasks_201_270_cached(force=False):
     if force:
         _CACHE.invalidate('201-270')
+    cached = _CACHE.peek('201-270')
+    if isinstance(cached, dict):
+        return dict(cached)
     with _DEEP_MATRIX_LOCK:
         if isinstance(_DEEP_MATRIX, dict):
             return dict(_DEEP_MATRIX)
