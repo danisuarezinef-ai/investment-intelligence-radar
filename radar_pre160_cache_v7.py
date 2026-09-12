@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable
 
 REAL_TRADING=False
@@ -23,6 +23,16 @@ class AsyncSnapshotCache:
 
     def _entry(self,key):
         with self._lock:return self._entries.setdefault(str(key),CacheEntry())
+
+    def peek(self,key):
+        """Return the latest completed value without computing or waiting."""
+        with self._lock:
+            e=self._entries.get(str(key))
+            return e.value if e is not None else None
+
+    def ready(self,key):
+        with self._lock:
+            e=self._entries.get(str(key));return bool(e is not None and e.value is not None)
 
     def invalidate(self,key):
         with self._lock:
@@ -71,6 +81,6 @@ class AsyncSnapshotCache:
         with self._lock:
             for k,e in self._entries.items():
                 out[k]={'age_seconds':None if not e.updated_at else round(now-e.updated_at,3),'refresh_running':e.refresh_running,
-                        'last_compute_ms':e.last_compute_ms,'last_error':e.last_error,'dependency_token':e.dependency_token}
+                        'ready':e.value is not None,'last_compute_ms':e.last_compute_ms,'last_error':e.last_error,'dependency_token':e.dependency_token}
         return {'entries':out,'prewarm_enabled':True,'async_refresh':True,'stale_while_revalidate':True,
-                'dependency_keys':True,'ttl_seconds':self.ttl,'stale_seconds':self.stale,'real_trading':False}
+                'dependency_keys':True,'nonblocking_peek':True,'ttl_seconds':self.ttl,'stale_seconds':self.stale,'real_trading':False}
