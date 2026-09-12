@@ -15,7 +15,7 @@ def audit(root='.'):
     v7=(root/'cloud_service_v7.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v7.py').exists() else ''
     if 'cloud_service_v7.py' not in start:findings.append('START_NOT_V7')
     if 'import cloud_service_v6 as base6' not in v7 or 'base6.start_runtime()' not in v7:findings.append('V7_NOT_COMPOSED_OVER_V6')
-    for endpoint in ('/pre160-audit-201-270-v1','/pre160-resilience-v7','/pre160-data-authority-v7','/pre160-statistical-validity-v7','/pre160-autonomy-v7','/pre160-master-gate-v3','/pre160-cache-v7'):
+    for endpoint in ('/pre160-audit-201-270-v1','/pre160-resilience-v7','/pre160-data-authority-v7','/pre160-statistical-validity-v7','/pre160-autonomy-v7','/pre160-master-gate-v3','/pre160-cache-v7','/pre160-deployment-v7'):
         if endpoint not in v7:findings.append('MISSING_V7_ENDPOINT:'+endpoint)
     for p,tokens in {
         'radar_pre160_resilience_v7.py':('classify_retry','COLD_ENDPOINT_BUDGET_MS','ROUNDTRIP_BUDGET_MS','automatic_release'),
@@ -35,6 +35,7 @@ def audit(root='.'):
     compact=controls.replace(' ','')
     for token in ('range(201,271)','stable_windows_version','automatic_release','live_execution_allowed','REAL_TRADING=False','reconciliation_contract'):
         if token not in compact:findings.append('V7_MATRIX_INCOMPLETE:'+token)
+    if 'RAILWAY_GIT_COMMIT_SHA' not in v7 or 'deployed_sha' not in v7:findings.append('V7_DEPLOYMENT_IDENTITY_MISSING')
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
     if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
     if 'REAL_TRADING=False' not in v7.replace(' ',''):findings.append('V7_TRADING_BOUNDARY_MISSING')
