@@ -19,7 +19,7 @@ PROTECTED_PATHS=(
  'radar_pre160_recovery_v2.py','radar_pre160_release_authority_v2.py','radar_pre160_production_proof_v1.py','radar_pre160_persistence_v1.py','radar_pre160_evidence_persistence_v1.py','radar_pre160_hardening_persistence_v1.py',
  'radar_paper_engine_persistence_v1.py','radar_agents.py','radar_champion_portfolio.py','radar_causal_scoring_v2.py','radar_promotion_governance_v2.py',
  'supabase/functions/radar-sync/index.ts','supabase/functions/radar-learning-sync/index.ts','supabase/functions/radar-paper-engine-checkpoint/index.ts','supabase/functions/radar-pre160-evidence/index.ts','supabase/functions/radar-pre160-hardening/index.ts',
- '.github/workflows/pre160-hardening-production-audit.yml','.github/workflows/integration-ci.yml','tools/pre160_integrity_ci.py','tools/pre160_201_270_integrity_ci.py',
+ '.github/workflows/pre160-hardening-production-audit.yml','.github/workflows/pre160-201-270-production-audit.yml','.github/workflows/integration-ci.yml','tools/pre160_integrity_ci.py','tools/pre160_201_270_integrity_ci.py',
 )
 
 def protected_digest(root='.',paths=PROTECTED_PATHS):
