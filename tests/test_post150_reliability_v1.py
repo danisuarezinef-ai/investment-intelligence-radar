@@ -1,6 +1,11 @@
 import cloud_service_v5 as v5
 
 
+def _healthy_learning():
+    return {'status': 'HEALTHY', 'configured': True, 'timeout_means_missing_data': False,
+            'cursors_advance_only_after_remote_success': True, 'real_trading': False}
+
+
 def test_readiness_board_separates_time_sample_and_pass(monkeypatch):
     monkeypatch.setattr(v5.base4, 'pre160_evidence_cached', lambda: {
         'status': 'PRE160_EVIDENCE',
@@ -22,7 +27,8 @@ def test_readiness_board_separates_time_sample_and_pass(monkeypatch):
         'transactional_exact': 0,
         'decision_trace': {'status': 'EVIDENCE_PENDING', 'blockers': ['NO_LINKED_PROSPECTIVE_CLOSES']},
     })
-    monkeypatch.setattr(v5, 'sync_telemetry', lambda: {'status': 'HEALTHY', 'real_trading': False})
+    monkeypatch.setattr(v5, 'sync_telemetry', lambda: {'status': 'HEALTHY', 'configured': True, 'real_trading': False})
+    monkeypatch.setattr(v5, 'learning_sync_telemetry', _healthy_learning)
 
     board = v5.readiness_board()
     states = {row['check']: row['state'] for row in board['checks']}
@@ -30,6 +36,7 @@ def test_readiness_board_separates_time_sample_and_pass(monkeypatch):
     assert states['benchmark_coverage'] == 'PASS'
     assert states['calibration_mature'] == 'PENDING_SAMPLE'
     assert board['task_150']['state'] == 'PENDING_SAMPLE'
+    assert board['supabase']['all_configured_syncs_healthy'] is True
     assert board['setup_allowed'] is False
     assert board['real_trading'] is False
 
@@ -41,10 +48,26 @@ def test_readiness_degraded_never_claims_pass(monkeypatch):
     })
     monkeypatch.setattr(v5.base4, 'pre160_hardening_cached', lambda: {})
     monkeypatch.setattr(v5.base4, 'tasks_131_150_cached', lambda: {'decision_trace': {}})
-    monkeypatch.setattr(v5, 'sync_telemetry', lambda: {'status': 'DEGRADED', 'real_trading': False})
+    monkeypatch.setattr(v5, 'sync_telemetry', lambda: {'status': 'DEGRADED', 'configured': True, 'real_trading': False})
+    monkeypatch.setattr(v5, 'learning_sync_telemetry', _healthy_learning)
     board = v5.readiness_board()
     assert board['checks'][0]['state'] == 'NOT_VERIFIED'
+    assert board['supabase']['all_configured_syncs_healthy'] is False
     assert board['real_trading'] is False
+
+
+def test_combined_supabase_health_requires_all_configured_syncs(monkeypatch):
+    monkeypatch.setattr(v5, 'sync_telemetry', lambda: {
+        'status': 'HEALTHY', 'configured': True, 'timeout_means_missing_data': False,
+        'empty_response_means_zero_evidence': False, 'cursors_advance_only_after_remote_success': True,
+        'real_trading': False,
+    })
+    monkeypatch.setattr(v5, 'learning_sync_telemetry', _healthy_learning)
+    payload=v5.supabase_health()
+    assert payload['status']=='HEALTHY'
+    assert payload['learning_status']=='HEALTHY'
+    assert payload['all_configured_syncs_healthy'] is True
+    assert payload['real_trading'] is False
 
 
 def test_provenance_endpoint_preserves_pending_evidence(monkeypatch):
@@ -80,5 +103,6 @@ def test_task150_can_only_pass_with_observed_envelope_and_closed_trace(monkeypat
         'transactional_exact': 1,
         'decision_trace': {'status': 'VERIFIED', 'blockers': []},
     })
-    monkeypatch.setattr(v5, 'sync_telemetry', lambda: {'status': 'HEALTHY', 'real_trading': False})
+    monkeypatch.setattr(v5, 'sync_telemetry', lambda: {'status': 'HEALTHY', 'configured': True, 'real_trading': False})
+    monkeypatch.setattr(v5, 'learning_sync_telemetry', _healthy_learning)
     assert v5.readiness_board()['task_150']['state'] == 'PASS'

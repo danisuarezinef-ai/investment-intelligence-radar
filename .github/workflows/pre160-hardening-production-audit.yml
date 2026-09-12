@@ -60,7 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           healthy=0
-          for attempt in $(seq 1 12); do
+          for attempt in $(seq 1 18); do
             code=$(curl -sS -o /tmp/supabase-health.json -w '%{http_code}' --max-time 30 "$BASE_URL/supabase-health-v1" || true)
             if [ "$code" = "200" ]; then
               if python - <<'PY'
@@ -72,10 +72,16 @@ jobs:
           assert d.get('empty_response_means_zero_evidence') is False,d
           assert d.get('cursors_advance_only_after_remote_success') is True,d
           assert d.get('status')=='HEALTHY',d
-          print('supabase-health-v1 HTTP 200 HEALTHY retries=',d.get('retry_attempts'),'recoveries=',d.get('recoveries'),'latency_ms=',d.get('last_latency_ms'))
+          learning=d.get('learning_sync') or {}
+          assert learning.get('configured') is True,learning
+          assert learning.get('timeout_means_missing_data') is False,learning
+          assert learning.get('cursors_advance_only_after_remote_success') is True,learning
+          assert learning.get('status')=='HEALTHY',learning
+          assert d.get('all_configured_syncs_healthy') is True,d
+          print('supabase-health-v1 both HEALTHY generic_ms=',d.get('last_latency_ms'),'learning_ms=',learning.get('last_latency_ms'))
           PY
               then healthy=1; break; fi
             fi
             sleep 10
           done
-          test "$healthy" = "1" || { echo 'Supabase health did not become HEALTHY'; cat /tmp/supabase-health.json 2>/dev/null || true; exit 1; }
+          test "$healthy" = "1" || { echo 'Supabase syncs did not both become HEALTHY'; cat /tmp/supabase-health.json 2>/dev/null || true; exit 1; }

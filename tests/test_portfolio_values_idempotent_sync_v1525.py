@@ -12,28 +12,30 @@ def test_release_identity_is_at_least_v1526_and_installer_matches():
     assert f'#define MyAppVersion "{version}"' in installer
 
 
-def _mark_block():
-    source = Path('supabase/functions/radar-sync/index.ts').read_text(encoding='utf-8')
-    start = 'const rawMarks=Array.isArray(b.portfolio_values)'
-    return source, source.split(start, 1)[1].split('const nodes=', 1)[0]
+def _source():
+    return Path('supabase/functions/radar-sync/index.ts').read_text(encoding='utf-8')
 
 
-def test_radar_sync_replays_restored_portfolio_marks_by_natural_identity():
-    source, mark_block = _mark_block()
-    assert 'eq("agent_id",row.agent_id).eq("ts",row.ts).maybeSingle()' in mark_block
-    assert 'portfolio_values immutable mismatch' in mark_block
-    assert 'portfolio_values duplicate batch mismatch' in mark_block
-    assert 'sameNumeric(existing.equity,row.equity)' in mark_block
-    assert 'sameNumeric(existing.drawdown,row.drawdown,1e-9)' in mark_block
+def test_radar_sync_replays_restored_portfolio_marks_by_bulk_natural_identity():
+    source = _source()
+    assert 'async function reconcilePortfolioMarks' in source
+    assert '.eq("agent_id",job.agent).in("ts",job.times)' in source
+    assert 'portfolio_values immutable mismatch' in source
+    assert 'portfolio_values duplicate batch mismatch' in source
+    assert 'sameNumeric(existing.equity,row.equity)' in source
+    assert 'sameNumeric(existing.drawdown,row.drawdown,1e-9)' in source
     assert 'tolerance=1e-6' in source
+    assert 'natural_query_batches' in source
 
 
-def test_radar_sync_checks_provenance_identity_without_weakening_unique_indexes():
-    _, mark_block = _mark_block()
-    assert 'eq("origin_node",row.origin_node).eq("origin_id",String(row.origin_id)).maybeSingle()' in mark_block
-    assert 'portfolio_values origin collision' in mark_block
-    assert 'from("portfolio_values").insert(row)' in mark_block
-    assert 'WRITE_CONCURRENCY=20' in Path('supabase/functions/radar-sync/index.ts').read_text(encoding='utf-8')
+def test_radar_sync_checks_bulk_provenance_identity_without_weakening_unique_indexes():
+    source = _source()
+    assert '.eq("origin_node",job.node).in("origin_id",job.ids)' in source
+    assert 'portfolio_values origin collision' in source
+    assert 'bulkInsert("portfolio_values",fresh)' in source
+    assert 'const WRITE_CONCURRENCY=20;' in source
+    assert 'const READ_CHUNK=100;' in source
+    assert 'const WRITE_CHUNK=100;' in source
 
 
 def test_origin_ids_cross_json_as_exact_decimal_strings(monkeypatch):
@@ -48,7 +50,7 @@ def test_origin_ids_cross_json_as_exact_decimal_strings(monkeypatch):
 
 
 def test_radar_sync_remains_private_token_authenticated():
-    source = Path('supabase/functions/radar-sync/index.ts').read_text(encoding='utf-8')
+    source = _source()
     assert 'x-radar-token' in source.lower()
     assert 'EXPECTED_HASH' in source
     assert 'unauthorized' in source
