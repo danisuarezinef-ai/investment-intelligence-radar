@@ -1,4 +1,4 @@
-import hashlib, json, os, secrets, time, urllib.request, urllib.error
+import hashlib, json, os, random, secrets, threading, time, urllib.request, urllib.error
 
 from radar_core import con, init_db, now
 
@@ -7,6 +7,10 @@ SYNC_TOKEN = os.environ.get('RADAR_SYNC_TOKEN', '').strip()
 NODE_ID = os.environ.get('RADAR_NODE_ID', 'cloud-primary').strip() or 'cloud-primary'
 MAX_SYNC_BATCH = 250
 RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
+SYNC_HTTP_TIMEOUT_SECONDS = max(5.0, float(os.environ.get('RADAR_SUPABASE_SYNC_TIMEOUT_SECONDS', '12') or 12))
+SYNC_HTTP_ATTEMPTS = max(1, min(5, int(os.environ.get('RADAR_SUPABASE_SYNC_ATTEMPTS', '3') or 3)))
+CIRCUIT_FAILURE_THRESHOLD = max(2, int(os.environ.get('RADAR_SUPABASE_CIRCUIT_FAILURES', '3') or 3))
+CIRCUIT_COOLDOWN_SECONDS = max(15.0, float(os.environ.get('RADAR_SUPABASE_CIRCUIT_COOLDOWN_SECONDS', '90') or 90))
 
 # SQLite ids are local to one ephemeral runtime. Railway redeploys may recreate the
 # database and restart ids from 1, so sending the raw local id with a stable NODE_ID
@@ -26,6 +30,30 @@ _SYNC_SESSION = (
 _SYNC_PREFIX = int.from_bytes(hashlib.sha256(_SYNC_SESSION.encode('utf-8')).digest()[:4], 'big') & 0x7FFFFFFF
 
 
+class SupabaseCircuitOpen(RuntimeError):
+    """Transient fail-fast signal while the Supabase sync circuit is cooling down."""
+
+
+_RESILIENCE_LOCK = threading.RLock()
+_RESILIENCE = {
+    'requests': 0,
+    'successes': 0,
+    'terminal_failures': 0,
+    'retry_attempts': 0,
+    'consecutive_failures': 0,
+    'recoveries': 0,
+    'circuit_open_count': 0,
+    'circuit_open_until_monotonic': 0.0,
+    'last_success_epoch': None,
+    'last_error_epoch': None,
+    'last_error_type': None,
+    'last_error': None,
+    'last_latency_ms': None,
+    'last_attempts_used': 0,
+    'last_batch_counts': {},
+}
+
+
 def _origin_id(local_id):
     """Return an exact bigint-safe decimal string for JSON/Deno/PostgREST transport.
 
@@ -41,6 +69,122 @@ def _origin_id(local_id):
 
 def enabled():
     return bool(SYNC_URL and SYNC_TOKEN)
+
+
+def _reset_resilience_state_for_tests():
+    with _RESILIENCE_LOCK:
+        _RESILIENCE.update({
+            'requests': 0,
+            'successes': 0,
+            'terminal_failures': 0,
+            'retry_attempts': 0,
+            'consecutive_failures': 0,
+            'recoveries': 0,
+            'circuit_open_count': 0,
+            'circuit_open_until_monotonic': 0.0,
+            'last_success_epoch': None,
+            'last_error_epoch': None,
+            'last_error_type': None,
+            'last_error': None,
+            'last_latency_ms': None,
+            'last_attempts_used': 0,
+            'last_batch_counts': {},
+        })
+
+
+def _circuit_remaining_seconds():
+    with _RESILIENCE_LOCK:
+        return max(0.0, float(_RESILIENCE['circuit_open_until_monotonic']) - time.monotonic())
+
+
+def sync_telemetry():
+    """Return secret-free operational telemetry; missing transport is never data=0."""
+    with _RESILIENCE_LOCK:
+        state = dict(_RESILIENCE)
+        state['last_batch_counts'] = dict(_RESILIENCE.get('last_batch_counts') or {})
+    remaining = max(0.0, float(state.pop('circuit_open_until_monotonic', 0.0)) - time.monotonic())
+    if not enabled():
+        status = 'NOT_CONFIGURED'
+    elif remaining > 0:
+        status = 'CIRCUIT_OPEN'
+    elif int(state.get('consecutive_failures') or 0) > 0:
+        status = 'DEGRADED'
+    elif state.get('last_success_epoch') is None:
+        status = 'STARTING'
+    else:
+        status = 'HEALTHY'
+    state.update({
+        'status': status,
+        'configured': enabled(),
+        'node_id': NODE_ID,
+        'circuit_open': remaining > 0,
+        'circuit_remaining_seconds': round(remaining, 3),
+        'failure_threshold': CIRCUIT_FAILURE_THRESHOLD,
+        'cooldown_seconds': CIRCUIT_COOLDOWN_SECONDS,
+        'default_timeout_seconds': SYNC_HTTP_TIMEOUT_SECONDS,
+        'default_attempts': SYNC_HTTP_ATTEMPTS,
+        'timeout_means_missing_data': False,
+        'empty_response_means_zero_evidence': False,
+        'cursors_advance_only_after_remote_success': True,
+        'real_trading': False,
+    })
+    return state
+
+
+def _before_post():
+    remaining = _circuit_remaining_seconds()
+    if remaining > 0:
+        raise SupabaseCircuitOpen(f'Supabase sync circuit open; retry after {remaining:.1f}s')
+    with _RESILIENCE_LOCK:
+        _RESILIENCE['requests'] += 1
+
+
+def _record_success(started, attempts_used):
+    latency_ms = round((time.monotonic() - started) * 1000.0, 2)
+    with _RESILIENCE_LOCK:
+        if int(_RESILIENCE.get('consecutive_failures') or 0) > 0:
+            _RESILIENCE['recoveries'] += 1
+        _RESILIENCE['successes'] += 1
+        _RESILIENCE['consecutive_failures'] = 0
+        _RESILIENCE['circuit_open_until_monotonic'] = 0.0
+        _RESILIENCE['last_success_epoch'] = time.time()
+        _RESILIENCE['last_latency_ms'] = latency_ms
+        _RESILIENCE['last_attempts_used'] = int(attempts_used)
+        _RESILIENCE['last_error_type'] = None
+        _RESILIENCE['last_error'] = None
+
+
+def _record_failure(exc, started, attempts_used):
+    latency_ms = round((time.monotonic() - started) * 1000.0, 2)
+    with _RESILIENCE_LOCK:
+        _RESILIENCE['terminal_failures'] += 1
+        _RESILIENCE['consecutive_failures'] += 1
+        _RESILIENCE['last_error_epoch'] = time.time()
+        _RESILIENCE['last_error_type'] = type(exc).__name__
+        _RESILIENCE['last_error'] = str(exc)[:500]
+        _RESILIENCE['last_latency_ms'] = latency_ms
+        _RESILIENCE['last_attempts_used'] = int(attempts_used)
+        if int(_RESILIENCE['consecutive_failures']) >= CIRCUIT_FAILURE_THRESHOLD:
+            was_open = float(_RESILIENCE.get('circuit_open_until_monotonic') or 0.0) > time.monotonic()
+            _RESILIENCE['circuit_open_until_monotonic'] = time.monotonic() + CIRCUIT_COOLDOWN_SECONDS
+            if not was_open:
+                _RESILIENCE['circuit_open_count'] += 1
+
+
+def _record_retry():
+    with _RESILIENCE_LOCK:
+        _RESILIENCE['retry_attempts'] += 1
+
+
+def _set_batch_counts(payload):
+    names = (
+        'market_snapshots', 'information_events', 'system_runs', 'source_reputation',
+        'silence_alerts', 'notifications', 'nodes', 'paper_agents', 'paper_positions',
+        'paper_trades', 'portfolio_values',
+    )
+    counts = {name: len(payload.get(name) or []) for name in names}
+    with _RESILIENCE_LOCK:
+        _RESILIENCE['last_batch_counts'] = counts
 
 
 def _control_get(key, default='0'):
@@ -73,7 +217,17 @@ def _table_exists(c, name):
         return False
 
 
-def _post(payload, timeout=30, attempts=3, base_delay=0.75):
+def _post(payload, timeout=None, attempts=None, base_delay=0.75):
+    """Post one idempotent sync payload with bounded retry, jitter and circuit breaking.
+
+    A failed/timeout request raises. Callers must not translate it into an empty or zero
+    dataset. `sync_once` advances SQLite cursors only after this function succeeds.
+    """
+    timeout = SYNC_HTTP_TIMEOUT_SECONDS if timeout is None else max(1.0, float(timeout))
+    attempts = SYNC_HTTP_ATTEMPTS if attempts is None else max(1, min(5, int(attempts)))
+    _before_post()
+    _set_batch_counts(payload)
+    started = time.monotonic()
     data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
     req = urllib.request.Request(
         SYNC_URL,
@@ -82,37 +236,48 @@ def _post(payload, timeout=30, attempts=3, base_delay=0.75):
         headers={
             'Content-Type': 'application/json',
             'X-Radar-Token': SYNC_TOKEN,
-            'User-Agent': 'InvestmentIntelligenceRadarCloud/1.4',
+            'User-Agent': 'InvestmentIntelligenceRadarCloud/1.5.28',
         },
     )
     last_exc = None
-    attempts = max(1, int(attempts))
-    for attempt in range(attempts):
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
-                return json.loads(r.read().decode('utf-8'))
-        except urllib.error.HTTPError as e:
+    attempts_used = 0
+    try:
+        for attempt in range(attempts):
+            attempts_used = attempt + 1
             try:
-                body = e.read().decode('utf-8', 'replace')
-            except Exception:
-                body = ''
-            err = RuntimeError(f'Supabase sync HTTP {e.code}: {body[:1200]}')
-            if e.code not in RETRYABLE_HTTP or attempt >= attempts - 1:
-                raise err from e
-            last_exc = err
-        except (urllib.error.URLError, TimeoutError, OSError) as e:
-            last_exc = e
-            if attempt >= attempts - 1:
-                raise
-        time.sleep(base_delay * (2 ** attempt))
-    if last_exc is not None:
-        raise last_exc
-    raise RuntimeError('Supabase sync failed without an explicit error')
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    result = json.loads(r.read().decode('utf-8'))
+                _record_success(started, attempts_used)
+                return result
+            except urllib.error.HTTPError as e:
+                try:
+                    body = e.read().decode('utf-8', 'replace')
+                except Exception:
+                    body = ''
+                err = RuntimeError(f'Supabase sync HTTP {e.code}: {body[:1200]}')
+                if e.code not in RETRYABLE_HTTP or attempt >= attempts - 1:
+                    raise err from e
+                last_exc = err
+            except (urllib.error.URLError, TimeoutError, OSError) as e:
+                last_exc = e
+                if attempt >= attempts - 1:
+                    raise
+            _record_retry()
+            jitter = random.uniform(0.80, 1.20)
+            time.sleep(max(0.0, float(base_delay)) * (2 ** attempt) * jitter)
+        if last_exc is not None:
+            raise last_exc
+        raise RuntimeError('Supabase sync failed without an explicit error')
+    except SupabaseCircuitOpen:
+        raise
+    except Exception as exc:
+        _record_failure(exc, started, attempts_used)
+        raise
 
 
 def sync_once(batch=500):
     if not enabled():
-        return {'enabled': False}
+        return {'enabled': False, 'telemetry': sync_telemetry()}
 
     init_db()
     batch = max(1, min(int(batch), MAX_SYNC_BATCH))
@@ -242,13 +407,16 @@ def sync_once(batch=500):
             'node_type': 'cloud',
             'name': 'Railway Cloud',
             'enabled': True,
-            'app_version': '1.4',
+            'app_version': '1.5.28',
             'last_seen': now(),
             'capabilities': {'collector': True, 'paper': True, 'api': True, 'supabase_sync': True},
         },
     }
 
     result = _post(payload)
+    # Cursor advancement is deliberately after remote success. A timeout, HTTP error or
+    # open circuit preserves the exact local retry window and cannot turn missing
+    # transport into apparent zero evidence.
     if market_rows:
         _control_set('supabase_market_id', market_rows[-1][0])
     if event_rows:
@@ -279,4 +447,5 @@ def sync_once(batch=500):
         'marks': len(mark_rows),
         'origin_session_prefix': _SYNC_PREFIX,
         'remote': result,
+        'telemetry': sync_telemetry(),
     }
