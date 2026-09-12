@@ -3,7 +3,7 @@
 Read-only audit/governance orchestration. Windows remains 1.5.28 and REAL_TRADING=false.
 """
 from __future__ import annotations
-import json,threading,time
+import os,threading,time
 from collections import defaultdict,deque
 
 import cloud_service_v6 as base6
@@ -22,6 +22,14 @@ def _p95(values):
     if not xs:return None
     return xs[min(len(xs)-1,max(0,int(round(.95*(len(xs)-1)))))]
 
+def deployment_identity():
+    sha=(os.getenv('RAILWAY_GIT_COMMIT_SHA') or os.getenv('RADAR_DEPLOY_REV') or '').strip()
+    return {'status':'OBSERVED' if sha else 'NOT_VERIFIED','deployed_sha':sha or None,
+            'service_id':(os.getenv('RAILWAY_SERVICE_ID') or '').strip() or None,
+            'environment':(os.getenv('RAILWAY_ENVIRONMENT_NAME') or '').strip() or None,
+            'source':'RAILWAY_GIT_COMMIT_SHA' if os.getenv('RAILWAY_GIT_COMMIT_SHA') else ('RADAR_DEPLOY_REV' if os.getenv('RADAR_DEPLOY_REV') else None),
+            'setup_allowed':False,'can_trade':False,'real_trading':False}
+
 def latency_metrics():
     all_values=[]
     for vals in _LATENCY.values():all_values.extend(vals)
@@ -37,13 +45,15 @@ def _source_inputs():
     prior=base6.tasks_151_200_cached()
     token=content_hash({'evidence':evidence.get('snapshot_hash'),'hardening':hardening.get('snapshot_hash'),
                         'health':health.get('last_success_epoch'),'learning':(health.get('learning_sync') or {}).get('last_success_epoch'),
-                        'proof':proof.get('protected_digest'),'proof_status':proof.get('status')})
+                        'proof':proof.get('protected_digest'),'proof_status':proof.get('status'),'deploy':deployment_identity().get('deployed_sha')})
     return evidence,hardening,runtime,health,proof,prior,token
 
 def _compute_matrix():
     evidence,hardening,runtime,health,proof,prior,_=_source_inputs()
+    identity=deployment_identity();expected=proof.get('audited_commit_sha') if proof.get('verified') is True else None
+    deployment={'deployed_sha':identity.get('deployed_sha'),'expected_sha':expected}
     return build_matrix_201_270(evidence=evidence,hardening=hardening,runtime=runtime,supabase_health=health,proof=proof,
-                                cache_telemetry=_CACHE.telemetry(),prior_task_groups=[prior],endpoint_metrics=latency_metrics())
+                                cache_telemetry=_CACHE.telemetry(),prior_task_groups=[prior],endpoint_metrics=latency_metrics(),deployment=deployment)
 
 def tasks_201_270_cached(force=False):
     *_,token=_source_inputs()
@@ -83,6 +93,7 @@ class ValidationV7Handler(base6.ValidationV6Handler):
             if path=='/pre160-master-gate-v3':
                 x=tasks_201_270_cached().get('master_gate') or {};x=dict(x);x['real_trading']=False;self._send(200,x);return
             if path=='/pre160-cache-v7':self._send(200,_CACHE.telemetry());return
+            if path=='/pre160-deployment-v7':self._send(200,deployment_identity());return
         except Exception as exc:
             self._send(500,{'status':'FAILED','error':str(exc)[:800],'setup_allowed':False,'automatic_release':False,
                             'automatic_promotion':False,'automatic_demotion':False,'can_trade':False,'real_trading':False});return
