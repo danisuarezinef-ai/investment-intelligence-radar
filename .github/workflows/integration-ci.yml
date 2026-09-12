@@ -26,3 +26,5 @@ jobs:
         run: python tools/pre160_integrity_ci.py
       - name: Pre-1.6 tasks 201-270 integrity audit
         run: python tools/pre160_201_270_integrity_ci.py
+      - name: Pre-1.6 tasks 271-310 integrity audit
+        run: python tools/pre160_271_310_integrity_ci.py
