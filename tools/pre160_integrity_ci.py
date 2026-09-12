@@ -6,10 +6,14 @@ import json
 def audit(root='.'):
     root=Path(root);findings=[]
     start=(root/'start.sh').read_text(encoding='utf-8-sig')
+    v8=(root/'cloud_service_v8.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v8.py').exists() else ''
+    v7=(root/'cloud_service_v7.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v7.py').exists() else ''
     v6=(root/'cloud_service_v6.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v6.py').exists() else ''
     v5=(root/'cloud_service_v5.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v5.py').exists() else ''
     v4=(root/'cloud_service_v4.py').read_text(encoding='utf-8-sig');v3=(root/'cloud_service_v3.py').read_text(encoding='utf-8-sig')
-    if 'cloud_service_v6.py' not in start:findings.append('START_NOT_V6')
+    if 'cloud_service_v8.py' not in start:findings.append('START_NOT_V8')
+    if 'import cloud_service_v7 as base7' not in v8 or 'base7.start_runtime()' not in v8:findings.append('V8_NOT_COMPOSED_OVER_V7')
+    if 'import cloud_service_v6 as base6' not in v7 or 'base6.start_runtime()' not in v7:findings.append('V7_NOT_COMPOSED_OVER_V6')
     if 'import cloud_service_v5 as base5' not in v6 or 'base5.start_runtime()' not in v6:findings.append('V6_NOT_COMPOSED_OVER_V5')
     if 'import cloud_service_v4 as base4' not in v5 or 'base4.start_v3_runtime()' not in v5:findings.append('V5_NOT_COMPOSED_OVER_V4')
     if 'import cloud_service_v3 as base3' not in v4:findings.append('V4_NOT_COMPOSED_OVER_V3')
@@ -32,6 +36,8 @@ def audit(root='.'):
         if not (root/path).exists():findings.append('MISSING_POST150_RELIABILITY_COMPONENT:'+path)
     for path in ('PRE160_TASKS_151_200.md','radar_pre160_controls_v6.py','radar_pre160_recovery_v2.py','radar_pre160_release_authority_v2.py','cloud_service_v6.py','tests/test_pre160_tasks_151_200.py','tests/test_pre160_recovery_release_v2.py','tests/test_cloud_v6_tasks_151_200.py'):
         if not (root/path).exists():findings.append('MISSING_151_200_COMPONENT:'+path)
+    for path in ('cloud_service_v7.py','cloud_service_v8.py','radar_supabase_sync_partitioned_v2.py','tests/test_pre160_runtime_closure_v8.py'):
+        if not (root/path).exists():findings.append('MISSING_V8_RUNTIME_COMPONENT:'+path)
     edge=(root/'supabase/functions/radar-pre160-evidence/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-evidence/index.ts').exists() else ''
     if 'appendProspectiveChain' not in edge or 'PIT_REGIME_NOT_CAPTURED' not in edge:findings.append('EVIDENCE_AUTHORITY_INCOMPLETE')
     hard=(root/'supabase/functions/radar-pre160-hardening/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-hardening/index.ts').exists() else ''
@@ -49,6 +55,9 @@ def audit(root='.'):
     sync_py=(root/'radar_supabase_sync.py').read_text(encoding='utf-8-sig') if (root/'radar_supabase_sync.py').exists() else ''
     for token in ('SupabaseCircuitOpen','CIRCUIT_FAILURE_THRESHOLD','sync_telemetry','timeout_means_missing_data','MAX_SYNC_BATCH','random.uniform'):
         if token not in sync_py:findings.append('SUPABASE_CLIENT_RESILIENCE_INCOMPLETE:'+token)
+    partitioned=(root/'radar_supabase_sync_partitioned_v2.py').read_text(encoding='utf-8-sig') if (root/'radar_supabase_sync_partitioned_v2.py').exists() else ''
+    for token in ('PER_FAMILY_AFTER_ALL_CHUNKS_REMOTE_SUCCESS','_send_family','partitioned_transport','MARKET_CHUNK','MARK_CHUNK'):
+        if token not in partitioned:findings.append('PARTITIONED_SYNC_INCOMPLETE:'+token)
     learning_py=(root/'radar_learning_sync.py').read_text(encoding='utf-8-sig') if (root/'radar_learning_sync.py').exists() else ''
     for token in ('LearningSyncCircuitOpen','LEARNING_CIRCUIT_FAILURES','learning_sync_telemetry','timeout_means_missing_data','MAX_LEARNING_BATCH','random.uniform'):
         if token not in learning_py:findings.append('LEARNING_CLIENT_RESILIENCE_INCOMPLETE:'+token)
@@ -79,6 +88,8 @@ def audit(root='.'):
     if 'REAL_TRADING=False' not in v4.replace(' ',''):findings.append('V4_TRADING_BOUNDARY_MISSING')
     if 'REAL_TRADING = False' not in v5 and 'REAL_TRADING=False' not in v5.replace(' ',''):findings.append('V5_TRADING_BOUNDARY_MISSING')
     if 'REAL_TRADING = False' not in v6 and 'REAL_TRADING=False' not in v6.replace(' ',''):findings.append('V6_TRADING_BOUNDARY_MISSING')
+    if 'REAL_TRADING = False' not in v7 and 'REAL_TRADING=False' not in v7.replace(' ',''):findings.append('V7_TRADING_BOUNDARY_MISSING')
+    if 'REAL_TRADING = False' not in v8 and 'REAL_TRADING=False' not in v8.replace(' ',''):findings.append('V8_TRADING_BOUNDARY_MISSING')
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
     if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
     return {'status':'PASS' if not findings else 'FAIL','version':version,'findings':findings,'setup_built':False,'real_trading':False}
