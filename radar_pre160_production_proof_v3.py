@@ -1,7 +1,9 @@
 """External production-proof v3 verifier for tasks 301-310.
 
 The runtime can read and verify a proof but cannot create, approve, or persist one.
-Every PASS must be derived from concrete external observations recorded by CI.
+Every PASS is derived from concrete external observations recorded by CI. Prior task-group
+surfaces must be deep-ready; a light fail-closed HTTP response is useful operationally but
+is never sufficient for production certification.
 """
 from __future__ import annotations
 
@@ -17,6 +19,14 @@ DEFAULT_PATH = 'PRE160_PRODUCTION_PROOF_V3.json'
 def _pass(checks, key):
     row = checks.get(key) if isinstance(checks, dict) else None
     return isinstance(row, dict) and row.get('status') == 'PASS' and bool(row.get('evidence'))
+
+
+def _deep_group_pass(checks, key):
+    row = checks.get(key) if isinstance(checks, dict) else None
+    evidence = row.get('evidence') if isinstance(row,dict) and isinstance(row.get('evidence'),dict) else {}
+    return bool(row and row.get('status')=='PASS' and evidence.get('http_200') is True and
+                evidence.get('source_ready') is True and evidence.get('deep_ready') is True and
+                evidence.get('real_trading') is False)
 
 
 def verify_proof_v3(root='.', path=DEFAULT_PATH):
@@ -45,8 +55,8 @@ def verify_proof_v3(root='.', path=DEFAULT_PATH):
         'audit_success': proof.get('audit_conclusion') == 'success',
         'digest_match': proof.get('protected_digest') == digest.get('digest'),
         'exact_sha': bool(proof.get('audited_commit_sha')) and proof.get('audited_commit_sha') == proof.get('railway_deployed_sha'),
-        'tasks_151_200': _pass(checks, 'tasks_151_200'),
-        'tasks_201_270': _pass(checks, 'tasks_201_270'),
+        'tasks_151_200': _deep_group_pass(checks, 'tasks_151_200'),
+        'tasks_201_270': _deep_group_pass(checks, 'tasks_201_270'),
         'dual_sync': _pass(checks, 'dual_sync'),
         'queue_remote': _pass(checks, 'queue_remote'),
         'tamper_test': _pass(checks, 'tamper_test'),
@@ -79,6 +89,8 @@ def proof_v3_contract():
         'requires_protected_digest': True,
         'requires_dual_sync_evidence': True,
         'requires_prior_task_groups': ['151-200', '201-270'],
+        'requires_prior_groups_deep_ready': True,
+        'light_surface_cannot_certify': True,
         'requires_tamper_test': True,
         'requires_stale_deployment_test': True,
         'requires_failed_audit_propagation': True,
