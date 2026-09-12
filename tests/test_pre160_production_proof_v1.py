@@ -16,7 +16,7 @@ def test_repository_protected_surface_is_complete_and_self_protecting():
     result = protected_digest('.')
     assert result['missing'] == []
     assert result['digest'] and len(result['digest']) == 64
-    assert result['files'] >= 45
+    assert result['files'] >= 46
     assert result['algorithm'] == 'SHA-256'
     assert result['proof_json_excluded'] is True
     assert DEFAULT_PROOF_PATH not in PROTECTED_PATHS
@@ -25,6 +25,7 @@ def test_repository_protected_surface_is_complete_and_self_protecting():
     assert 'cloud_service_v6.py' in PROTECTED_PATHS
     assert 'cloud_service_v7.py' in PROTECTED_PATHS
     assert 'radar_pre160_controls_v7.py' in PROTECTED_PATHS
+    assert 'radar_provider_resilience_v1.py' in PROTECTED_PATHS
     assert 'radar_sync_queue_v2.py' in PROTECTED_PATHS
     assert 'supabase/functions/radar-pre160-hardening/index.ts' in PROTECTED_PATHS
 
