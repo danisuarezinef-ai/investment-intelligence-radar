@@ -64,7 +64,8 @@ class AdaptiveRateGovernor:
 class ProviderCircuit:
     def __init__(self, failure_threshold=3, cooldown_seconds=90.0):
         self.threshold = max(2, int(failure_threshold))
-        self.cooldown = max(1.0, float(cooldown_seconds))
+        # Production passes 90s. Allow sub-second values for deterministic simulation/tests.
+        self.cooldown = max(0.001, float(cooldown_seconds))
         self._lock = threading.RLock()
         self._states = defaultdict(lambda: {'failures': 0, 'opened_at': None, 'half_open_probe': False, 'recoveries': 0})
 
