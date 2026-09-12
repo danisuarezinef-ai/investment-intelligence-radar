@@ -24,7 +24,7 @@ jobs:
           print('PROTECTED_DIGEST='+d['digest'])
           print('PROTECTED_FILES='+str(d['files']))
           PY
-      - name: Verify Cloud v7 task surfaces
+      - name: Verify Cloud v7/v8 task surfaces
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
@@ -64,13 +64,13 @@ jobs:
           print(name,'PASS HTTP boundary',d.get('status'))
           PY
           done
-      - name: Verify exact Railway deployed source SHA and v7 start command
+      - name: Verify exact Railway deployed source SHA and v8 start command
         env:
           EXPECTED_SHA: ${{ github.sha }}
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
           set -euo pipefail
-          grep -q 'exec python cloud_service_v7.py' start.sh
+          grep -q 'exec python cloud_service_v8.py' start.sh
           test "$(python -c "import json;print(json.load(open('version.json'))['version'])")" = "1.5.28"
           matched=0
           for attempt in $(seq 1 24); do
