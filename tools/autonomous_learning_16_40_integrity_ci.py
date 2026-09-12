@@ -9,7 +9,7 @@ learning=(root/'radar_autonomous_learning_16_40_v1.py').read_text(encoding='utf-
 simulator=(root/'radar_autonomous_simulator_v1.py').read_text(encoding='utf-8')
 assert 'import radar_autonomous_learning_16_40_v1 as learning1640' in cloud
 assert "/autonomous-simulator/learning-v2" in cloud
-assert "out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V3'" in cloud
+assert "out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V4'" in cloud
 assert "out['learning_16_40']=learn" in cloud
 assert 'REAL_TRADING=False' in learning
 assert "'automatic_promotion':False" in learning

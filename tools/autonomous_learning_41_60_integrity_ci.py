@@ -51,7 +51,7 @@ assert "'setup_1_6_allowed':False" in module
 assert 'import radar_autonomous_learning_41_60_v1 as learning4160' in cloud
 assert "'/autonomous-simulator/learning-41-60-v1'" in cloud
 assert "'/autonomous-simulator/learning-v3'" in cloud
-assert "out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V3'" in cloud
+assert "out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V4'" in cloud
 assert "out['automatic_promotion']=False" in cloud
 assert "out['automatic_release']=False" in cloud
 assert "out['live_execution_allowed']=False" in cloud
