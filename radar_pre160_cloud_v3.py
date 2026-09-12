@@ -37,8 +37,8 @@ def evidence_authority_report(days=90):
             'chain_integrity':authority.get('chain_integrity'),'setup_allowed':False,'automatic_release':False,'can_trade':False,'real_trading':False}
 
 
-def tasks_91_110_audit():
-    try:snapshot=evidence_snapshot_v3()
+def tasks_91_110_audit(snapshot=None):
+    try:snapshot=snapshot if isinstance(snapshot,dict) else evidence_snapshot_v3()
     except Exception as exc:return {'status':'DEGRADED','error':str(exc)[:700],'tasks':{},'setup_allowed':False,'can_trade':False,'real_trading':False}
     authority=snapshot.get('authority_before_persist') or {};ready=snapshot.get('readiness_1_6') or {};contexts=snapshot.get('contexts_to_freeze') or []
     tasks={

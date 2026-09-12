@@ -15,10 +15,16 @@ REAL_TRADING=False
 _V4_RUNTIME_STARTED=False
 _PRE160_V2_CACHE={'at':0.0,'runtime':None,'readiness':None,'mobile':None}
 _PRE160_V2_CACHE_SECONDS=60.0
-_PRE160_V3_CACHE={'at':0.0,'evidence':None,'authority':None,'audit':None}
+_PRE160_V3_CACHE={'at':0.0,'evidence':None,'audit':None}
 _PRE160_V3_CACHE_SECONDS=60.0
-_PRE160_V4_CACHE={'at':0.0,'hardening':None,'authority':None,'audit':None,'audit_131_150':None}
+_PRE160_V3_AUTHORITY_CACHE={'at':0.0,'authority':None}
+_PRE160_V3_LOCK=threading.Lock()
+_PRE160_V3_AUTHORITY_LOCK=threading.Lock()
+_PRE160_V4_CACHE={'at':0.0,'hardening':None,'audit':None,'audit_131_150':None}
 _PRE160_V4_CACHE_SECONDS=60.0
+_PRE160_V4_AUTHORITY_CACHE={'at':0.0,'authority':None}
+_PRE160_V4_LOCK=threading.Lock()
+_PRE160_V4_AUTHORITY_LOCK=threading.Lock()
 
 
 def pre160_runtime_cached(force=False):
@@ -45,23 +51,44 @@ def mobile_summary_cached():
     return dict(payload) if payload is not None else {'status':'DEGRADED','display_mode':'PAPER','setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
+def _v3_fresh(current):
+    return _PRE160_V3_CACHE.get('evidence') is not None and current-float(_PRE160_V3_CACHE.get('at') or 0)<_PRE160_V3_CACHE_SECONDS
+
+
 def pre160_evidence_cached(force=False):
     current=time.monotonic();cached=_PRE160_V3_CACHE.get('evidence')
-    if not force and cached is not None and current-float(_PRE160_V3_CACHE.get('at') or 0)<_PRE160_V3_CACHE_SECONDS:return dict(cached)
-    try:
-        evidence=evidence_snapshot_v3();authority=evidence_authority_report(90);audit=tasks_91_110_audit()
-        for payload in (evidence,authority,audit):payload['cache_seconds']=int(_PRE160_V3_CACHE_SECONDS);payload['real_trading']=False
-        _PRE160_V3_CACHE.update({'at':current,'evidence':dict(evidence),'authority':dict(authority),'audit':dict(audit)})
-        return evidence
-    except Exception as exc:
-        if cached is not None:
-            payload=dict(cached);payload['status']='STALE_CACHE';payload['error']=str(exc)[:700];payload['real_trading']=False;return payload
-        return {'status':'DEGRADED','error':str(exc)[:700],'setup_allowed':False,'can_trade':False,'real_trading':False}
+    if not force and _v3_fresh(current):return dict(cached)
+    with _PRE160_V3_LOCK:
+        current=time.monotonic();cached=_PRE160_V3_CACHE.get('evidence')
+        if not force and _v3_fresh(current):return dict(cached)
+        started=time.monotonic()
+        try:
+            evidence=evidence_snapshot_v3();audit=tasks_91_110_audit(evidence)
+            evidence['cache_compute_ms']=round((time.monotonic()-started)*1000.0,2)
+            for payload in (evidence,audit):payload['cache_seconds']=int(_PRE160_V3_CACHE_SECONDS);payload['real_trading']=False
+            _PRE160_V3_CACHE.update({'at':current,'evidence':dict(evidence),'audit':dict(audit)})
+            return evidence
+        except Exception as exc:
+            if cached is not None:
+                payload=dict(cached);payload['status']='STALE_CACHE';payload['error']=str(exc)[:700];payload['real_trading']=False;return payload
+            return {'status':'DEGRADED','error':str(exc)[:700],'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
-def pre160_authority_cached():
-    pre160_evidence_cached();payload=_PRE160_V3_CACHE.get('authority')
-    return dict(payload) if payload is not None else {'status':'DEGRADED','setup_allowed':False,'can_trade':False,'real_trading':False}
+def pre160_authority_cached(force=False):
+    current=time.monotonic();cached=_PRE160_V3_AUTHORITY_CACHE.get('authority')
+    if not force and cached is not None and current-float(_PRE160_V3_AUTHORITY_CACHE.get('at') or 0)<_PRE160_V3_CACHE_SECONDS:return dict(cached)
+    with _PRE160_V3_AUTHORITY_LOCK:
+        current=time.monotonic();cached=_PRE160_V3_AUTHORITY_CACHE.get('authority')
+        if not force and cached is not None and current-float(_PRE160_V3_AUTHORITY_CACHE.get('at') or 0)<_PRE160_V3_CACHE_SECONDS:return dict(cached)
+        started=time.monotonic()
+        try:
+            authority=evidence_authority_report(90);authority['cache_seconds']=int(_PRE160_V3_CACHE_SECONDS);authority['cache_compute_ms']=round((time.monotonic()-started)*1000.0,2);authority['real_trading']=False
+            _PRE160_V3_AUTHORITY_CACHE.update({'at':current,'authority':dict(authority)})
+            return authority
+        except Exception as exc:
+            if cached is not None:
+                payload=dict(cached);payload['status']='STALE_CACHE';payload['error']=str(exc)[:700];payload['real_trading']=False;return payload
+            return {'status':'DEGRADED','error':str(exc)[:700],'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
 def tasks_91_110_cached():
@@ -69,23 +96,47 @@ def tasks_91_110_cached():
     return dict(payload) if payload is not None else {'status':'DEGRADED','tasks':{},'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
+def _v4_fresh(current):
+    return _PRE160_V4_CACHE.get('hardening') is not None and current-float(_PRE160_V4_CACHE.get('at') or 0)<_PRE160_V4_CACHE_SECONDS
+
+
 def pre160_hardening_cached(force=False):
     current=time.monotonic();cached=_PRE160_V4_CACHE.get('hardening')
-    if not force and cached is not None and current-float(_PRE160_V4_CACHE.get('at') or 0)<_PRE160_V4_CACHE_SECONDS:return dict(cached)
-    try:
-        hardening=hardening_snapshot_v4();authority=hardening_authority_report(500);audit=tasks_111_130_audit();audit_131_150=tasks_131_150_audit()
-        for payload in (hardening,authority,audit,audit_131_150):payload['cache_seconds']=int(_PRE160_V4_CACHE_SECONDS);payload['real_trading']=False
-        _PRE160_V4_CACHE.update({'at':current,'hardening':dict(hardening),'authority':dict(authority),'audit':dict(audit),'audit_131_150':dict(audit_131_150)})
-        return hardening
-    except Exception as exc:
-        if cached is not None:
-            payload=dict(cached);payload['status']='STALE_CACHE';payload['error']=str(exc)[:700];payload['real_trading']=False;return payload
-        return {'status':'DEGRADED','error':str(exc)[:700],'setup_allowed':False,'can_trade':False,'real_trading':False}
+    if not force and _v4_fresh(current):return dict(cached)
+    with _PRE160_V4_LOCK:
+        current=time.monotonic();cached=_PRE160_V4_CACHE.get('hardening')
+        if not force and _v4_fresh(current):return dict(cached)
+        started=time.monotonic()
+        try:
+            hardening=hardening_snapshot_v4()
+            audit=tasks_111_130_audit(hardening)
+            audit_131_150=tasks_131_150_audit(hardening)
+            compute_ms=round((time.monotonic()-started)*1000.0,2)
+            hardening['cache_compute_ms']=compute_ms
+            for payload in (hardening,audit,audit_131_150):payload['cache_seconds']=int(_PRE160_V4_CACHE_SECONDS);payload['real_trading']=False
+            _PRE160_V4_CACHE.update({'at':current,'hardening':dict(hardening),'audit':dict(audit),'audit_131_150':dict(audit_131_150)})
+            return hardening
+        except Exception as exc:
+            if cached is not None:
+                payload=dict(cached);payload['status']='STALE_CACHE';payload['error']=str(exc)[:700];payload['real_trading']=False;return payload
+            return {'status':'DEGRADED','error':str(exc)[:700],'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
-def pre160_hardening_authority_cached():
-    pre160_hardening_cached();payload=_PRE160_V4_CACHE.get('authority')
-    return dict(payload) if payload is not None else {'status':'DEGRADED','setup_allowed':False,'can_trade':False,'real_trading':False}
+def pre160_hardening_authority_cached(force=False):
+    current=time.monotonic();cached=_PRE160_V4_AUTHORITY_CACHE.get('authority')
+    if not force and cached is not None and current-float(_PRE160_V4_AUTHORITY_CACHE.get('at') or 0)<_PRE160_V4_CACHE_SECONDS:return dict(cached)
+    with _PRE160_V4_AUTHORITY_LOCK:
+        current=time.monotonic();cached=_PRE160_V4_AUTHORITY_CACHE.get('authority')
+        if not force and cached is not None and current-float(_PRE160_V4_AUTHORITY_CACHE.get('at') or 0)<_PRE160_V4_CACHE_SECONDS:return dict(cached)
+        started=time.monotonic()
+        try:
+            authority=hardening_authority_report(500);authority['cache_seconds']=int(_PRE160_V4_CACHE_SECONDS);authority['cache_compute_ms']=round((time.monotonic()-started)*1000.0,2);authority['real_trading']=False
+            _PRE160_V4_AUTHORITY_CACHE.update({'at':current,'authority':dict(authority)})
+            return authority
+        except Exception as exc:
+            if cached is not None:
+                payload=dict(cached);payload['status']='STALE_CACHE';payload['error']=str(exc)[:700];payload['real_trading']=False;return payload
+            return {'status':'DEGRADED','error':str(exc)[:700],'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
 def tasks_111_130_cached():
