@@ -1,0 +1,115 @@
+name: Pre-1.6 Tasks 311-370 Production Audit
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  production-audit-311-370:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frozen boundary and protected brain surface
+        run: |
+          python - <<'PY'
+          import json
+          from radar_pre160_production_proof_v1 import protected_digest
+          assert json.load(open('version.json',encoding='utf-8-sig'))['version']=='1.5.28'
+          d=protected_digest('.');assert not d['missing'],d
+          assert d['files']>=75,d
+          print('PROTECTED_BRAIN_DIGEST='+d['digest'])
+          print('PROTECTED_FILES='+str(d['files']))
+          PY
+      - name: Wait for exact Railway deployment
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          matched=0
+          for attempt in $(seq 1 72); do
+            code=$(curl -sS -o /tmp/deployment.json -w '%{http_code}' --max-time 10 "$BASE_URL/pre160-deployment-v7" || true)
+            if [ "$code" = "200" ] && EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/deployment.json'));assert d.get('deployed_sha')==os.environ['EXPECTED_SHA'],d;assert d.get('real_trading') is False
+          PY
+            then matched=1;break;fi
+            sleep 5
+          done
+          test "$matched" = "1" || { echo 'exact Railway SHA never became active'; cat /tmp/deployment.json 2>/dev/null || true; exit 1; }
+          echo "EXACT_SHA=PASS $EXPECTED_SHA"
+      - name: Wait for deep brain evidence snapshot and durable persistence
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          set -euo pipefail
+          ready=0
+          for attempt in $(seq 1 72); do
+            for ep in pre160-brain-status-v1 pre160-forward-evidence-v2 pre160-calibration-v2 pre160-brain-competition-v3 pre160-brain-persistence-v1 pre160-audit-311-370-v1; do
+              curl -sS --max-time 15 "$BASE_URL/$ep" -o "/tmp/$ep.json" || true
+            done
+            if python - <<'PY'
+          import json
+          s=json.load(open('/tmp/pre160-brain-status-v1.json'));r=json.load(open('/tmp/pre160-audit-311-370-v1.json'));p=json.load(open('/tmp/pre160-brain-persistence-v1.json'))
+          assert s.get('ready') is True and s.get('real_trading') is False,s
+          assert r.get('source_ready') is True and r.get('deep_ready') is True and r.get('real_trading') is False,r
+          assert p.get('configured') is True and p.get('durable_backend')=='SUPABASE' and int(p.get('successes') or 0)>=3,p
+          PY
+            then ready=1;break;fi
+            sleep 5
+          done
+          test "$ready" = "1" || { echo 'brain evidence never became deep-ready'; cat /tmp/pre160-brain-status-v1.json 2>/dev/null || true; exit 1; }
+      - name: Verify brain evidence contracts without forcing empirical maturity
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          python - <<'PY'
+          import json
+          evidence=json.load(open('/tmp/pre160-forward-evidence-v2.json'))
+          analytics=json.load(open('/tmp/pre160-calibration-v2.json'))
+          comp=json.load(open('/tmp/pre160-brain-competition-v3.json'))
+          audit=json.load(open('/tmp/pre160-audit-311-370-v1.json'))
+          allowed={'PASS','PENDING_SAMPLE','PENDING_TIME','NOT_VERIFIED','FAILED'}
+          tasks=audit.get('tasks') or {}
+          assert set(tasks)=={str(i) for i in range(311,371)},len(tasks)
+          assert all((x or {}).get('state') in allowed for x in tasks.values())
+          assert audit.get('stable_windows_version')=='1.5.28'
+          assert audit.get('setup_allowed') is False and audit.get('setup_built') is False
+          assert audit.get('automatic_release') is False and audit.get('automatic_promotion') is False and audit.get('automatic_demotion') is False
+          assert audit.get('real_trading') is False
+          assert (audit.get('brain_readiness_gate') or {}).get('status') in ('READY','NOT_READY')
+          assert evidence.get('canonical_key')=='prediction_hash' and evidence.get('backfill_allowed') is False and evidence.get('synthetic_evidence_can_mature') is False
+          assert not (evidence.get('deduplication') or {}).get('collisions'),evidence.get('deduplication')
+          assert set((evidence.get('horizons') or {}))=={'1d','1w','1m','3m'}
+          assert analytics.get('real_trading') is False
+          assert comp.get('automatic_promotion') is False and comp.get('automatic_demotion') is False and comp.get('automatic_replacement') is False
+          env=evidence.get('decision_envelope') or {}
+          if tasks['330']['state']=='PASS':
+              assert env.get('task_150_eligible') is True and env.get('natural_envelope') is True and env.get('prospective_close') is True,env
+          else:
+              assert tasks['330']['state'] in ('PENDING_SAMPLE','PENDING_TIME','NOT_VERIFIED')
+          # Multihorizon gates may remain pending. Never treat an unobserved horizon as mature.
+          for h,x in (evidence.get('horizons') or {}).items():
+              if int(x.get('n') or 0)==0:assert x.get('status')=='PENDING_SAMPLE',(h,x)
+          print('BRAIN_GATE='+str((audit.get('brain_readiness_gate') or {}).get('status')))
+          print('TASK_150='+tasks['330']['state'])
+          print('HORIZONS='+json.dumps({h:x.get('status') for h,x in evidence['horizons'].items()},sort_keys=True))
+          print('CALIBRATION_N='+str((analytics.get('calibration') or {}).get('n')))
+          PY
+      - name: Confirm external technical facts remain external
+        run: |
+          python - <<'PY'
+          import json
+          audit=json.load(open('/tmp/pre160-audit-311-370-v1.json'))
+          # Runtime is not allowed to self-certify external SHA/tamper/stale tests.
+          for task in ('311','323','324'):
+              assert audit['tasks'][task]['state'] in ('NOT_VERIFIED','PASS')
+          assert audit['tasks']['325']['state']=='PASS'
+          assert audit['tasks']['370']['state']=='PASS'
+          assert audit['real_trading'] is False
+          print('EXTERNAL_SELF_CERTIFICATION_GUARD=PASS')
+          PY
