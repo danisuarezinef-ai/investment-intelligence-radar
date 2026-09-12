@@ -2,19 +2,29 @@ from pathlib import Path
 import cloud_service_v4 as v4
 import cloud_service_v5 as v5
 import cloud_service_v6 as v6
+import cloud_service_v7 as v7
+import cloud_service_v8 as v8
 
 
-def test_production_start_targets_v6_over_v5_over_v4():
+def test_production_start_targets_v8_over_v7_over_v6_over_v5_over_v4():
     start=Path('start.sh').read_text(encoding='utf-8')
     text5=Path('cloud_service_v5.py').read_text(encoding='utf-8')
     text6=Path('cloud_service_v6.py').read_text(encoding='utf-8')
-    assert 'cloud_service_v6.py' in start
+    text7=Path('cloud_service_v7.py').read_text(encoding='utf-8')
+    text8=Path('cloud_service_v8.py').read_text(encoding='utf-8')
+    assert 'cloud_service_v8.py' in start
+    assert 'import cloud_service_v7 as base7' in text8
+    assert 'base7.start_runtime()' in text8
+    assert 'import cloud_service_v6 as base6' in text7
+    assert 'base6.start_runtime()' in text7
     assert 'import cloud_service_v5 as base5' in text6
     assert 'base5.start_runtime()' in text6
     assert 'import cloud_service_v4 as base4' in text5
     assert 'base4.start_v3_runtime()' in text5
     assert v5.REAL_TRADING is False
     assert v6.REAL_TRADING is False
+    assert v7.REAL_TRADING is False
+    assert v8.REAL_TRADING is False
 
 
 def test_v4_composes_over_v3_not_legacy_cloud_service():
