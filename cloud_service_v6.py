@@ -14,10 +14,11 @@ from radar_supabase_sync import MAX_SYNC_BATCH
 from radar_pre160_controls_v6 import build_task_matrix
 from radar_pre160_recovery_v2 import build_recovery_manifest, digest
 from radar_pre160_release_authority_v2 import build_release_authority
+from radar_pre160_production_proof_v1 import production_proof_status
 
 REAL_TRADING = False
 _CACHE_SECONDS = 60.0
-_CACHE = {'at': 0.0, 'matrix': None, 'manifest': None, 'release': None}
+_CACHE = {'at': 0.0, 'matrix': None, 'manifest': None, 'release': None, 'production_proof': None}
 
 
 def _version():
@@ -34,7 +35,6 @@ def _inputs():
     for key in ('decision_trace', 'transactional_exact', 'ledger_fallback', 'strategy_versions_missing', 'envelope_source', 'decision_envelope_provenance', 'blockers'):
         if key in provenance:
             hardening[key] = provenance[key]
-    # Content-address the observed snapshots here rather than relying on a mutable DB id.
     evidence['snapshot_hash'] = digest(evidence)
     hardening['snapshot_hash'] = digest(hardening)
     runtime = base5.base4.pre160_runtime_cached()
@@ -51,13 +51,14 @@ def tasks_151_200_cached(force=False):
     if not force and _CACHE.get('matrix') is not None and current - float(_CACHE.get('at') or 0) < _CACHE_SECONDS:
         return dict(_CACHE['matrix'])
     evidence, hardening, runtime, health = _inputs()
+    proof = production_proof_status()
     matrix = build_task_matrix(
         evidence=evidence,
         hardening=hardening,
         runtime=runtime,
         supabase_health=health,
         version=_version(),
-        production_proof=False,
+        production_proof=proof.get('verified') is True,
     )
     manifest = build_recovery_manifest(
         evidence=evidence,
@@ -67,10 +68,12 @@ def tasks_151_200_cached(force=False):
         version=_version(),
     )
     release = build_release_authority(matrix, manifest, stable_version=_version(), candidate_version='1.6.0')
-    for payload in (matrix, manifest, release):
+    matrix['external_production_proof'] = proof
+    release['external_production_proof'] = proof
+    for payload in (matrix, manifest, release, proof):
         payload['cache_seconds'] = int(_CACHE_SECONDS)
         payload['real_trading'] = False
-    _CACHE.update({'at': current, 'matrix': dict(matrix), 'manifest': dict(manifest), 'release': dict(release)})
+    _CACHE.update({'at': current, 'matrix': dict(matrix), 'manifest': dict(manifest), 'release': dict(release), 'production_proof': dict(proof)})
     return matrix
 
 
@@ -82,6 +85,11 @@ def recovery_manifest_cached():
 def release_authority_cached():
     tasks_151_200_cached()
     return dict(_CACHE.get('release') or {'status': 'BLOCKED_PRE160', 'setup_allowed': False, 'real_trading': False})
+
+
+def production_proof_cached():
+    tasks_151_200_cached()
+    return dict(_CACHE.get('production_proof') or {'status': 'NOT_VERIFIED', 'verified': False, 'real_trading': False})
 
 
 def task_block(start, end):
@@ -124,6 +132,9 @@ class ValidationV6Handler(base5.ValidationV5Handler):
                 return
             if path == '/pre160-release-authority-v2':
                 self._send(200, release_authority_cached())
+                return
+            if path == '/pre160-production-proof-v1':
+                self._send(200, production_proof_cached())
                 return
         except Exception as exc:
             self._send(500, {
