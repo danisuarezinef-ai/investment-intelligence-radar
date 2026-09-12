@@ -1,8 +1,9 @@
-"""Partitioned generic Supabase sync transport.
+"""Partitioned generic Supabase sync transport with durable backpressure.
 
-The legacy payload bundled unrelated families into one large Edge request. This module
-preserves the same idempotent schemas/cursors while sending bounded families. Cursors
-advance independently only after every chunk in that family is remotely confirmed.
+Unrelated families are sent in bounded idempotent chunks. Each source cursor advances
+only after every chunk in that family is remotely confirmed. Failed chunks are also
+written to the Supabase-backed retry queue before the error is re-raised, so transport
+pressure is bounded without converting missing transport into zero evidence.
 No transport outcome can authorize trading.
 """
 from __future__ import annotations
@@ -11,6 +12,7 @@ import threading
 import time
 
 import radar_supabase_sync as base
+import radar_sync_queue_v3 as remote_queue
 from radar_core import con, init_db, now
 
 REAL_TRADING = False
@@ -18,6 +20,8 @@ MAX_SYNC_BATCH = base.MAX_SYNC_BATCH
 DEFAULT_CHUNK = 75
 MARK_CHUNK = 60
 MARKET_CHUNK = 100
+BACKPRESSURE_DRAIN_LIMIT = 100
+BACKPRESSURE_PREFIX = 'generic_sync:'
 
 _LOCK = threading.RLock()
 _PARTITION = {
@@ -32,6 +36,10 @@ _PARTITION = {
     'last_part_rows': {},
     'last_error': None,
     'cursor_policy': 'PER_FAMILY_AFTER_ALL_CHUNKS_REMOTE_SUCCESS',
+    'backpressure_enqueued': 0,
+    'backpressure_drained': 0,
+    'backpressure_failures': 0,
+    'backlog_last': 0,
 }
 
 
@@ -60,7 +68,20 @@ def _node_payload():
     }
 
 
-def _send(part, payload, *, rows=0, timeout=None):
+def _enqueue_backpressure(part, payload):
+    try:
+        remote_queue.enqueue(BACKPRESSURE_PREFIX+str(part), payload)
+        with _LOCK:
+            _PARTITION['backpressure_enqueued'] += 1
+    except Exception as exc:
+        # Queue failure is material: preserve the original transport error but expose that
+        # the durable fallback also failed. Never treat it as successful delivery.
+        with _LOCK:
+            _PARTITION['backpressure_failures'] += 1
+            _PARTITION['last_error'] = f'BACKPRESSURE_ENQUEUE_FAILED {type(exc).__name__}: {str(exc)[:400]}'
+
+
+def _send(part, payload, *, rows=0, timeout=None, queue_on_failure=True):
     started=time.monotonic()
     try:
         out=base._post(payload, timeout=timeout)
@@ -70,6 +91,8 @@ def _send(part, payload, *, rows=0, timeout=None):
             _PARTITION['last_part_ms'][part]=round((time.monotonic()-started)*1000.0,2)
         return out
     except Exception as exc:
+        if queue_on_failure:
+            _enqueue_backpressure(part,payload)
         with _LOCK:
             _PARTITION['last_failed_part']=str(part)
             _PARTITION['last_error']=f'{type(exc).__name__}: {str(exc)[:500]}'
@@ -93,10 +116,44 @@ def _send_family(part, key, rows, *, cursor_key=None, cursor_value=None, chunk_s
     return results
 
 
+def drain_backpressure(limit=BACKPRESSURE_DRAIN_LIMIT):
+    """Replay only generic-sync retry items; ACK strictly after remote success.
+
+    Other queue channels (durability/DLQ probes or future transports) are never consumed
+    by this worker. Replays are safe because radar-sync writes are idempotent.
+    """
+    if not remote_queue.enabled():
+        return {'configured':False,'eligible':0,'drained':0,'failed':0,'real_trading':False}
+    due=remote_queue.due(max(1,min(200,int(limit))))
+    eligible=[x for x in due if str(x.get('channel') or '').startswith(BACKPRESSURE_PREFIX)]
+    drained=0;failed=0
+    with _LOCK:_PARTITION['backlog_last']=len(eligible)
+    for item in eligible:
+        qid=str(item.get('id') or '')
+        payload=item.get('payload') if isinstance(item.get('payload'),dict) else None
+        if not qid or not payload:
+            continue
+        try:
+            base._post(payload)
+            remote_queue.acknowledge([qid])
+            drained+=1
+            with _LOCK:_PARTITION['backpressure_drained']+=1
+        except Exception as exc:
+            failed+=1
+            try:
+                remote_queue.fail([{'id':qid,'error':f'{type(exc).__name__}: {str(exc)[:400]}','retry_after_seconds':5}])
+            except Exception:
+                pass
+            with _LOCK:_PARTITION['backpressure_failures']+=1
+    return {'configured':True,'eligible':len(eligible),'drained':drained,'failed':failed,'real_trading':False}
+
+
 def partition_telemetry():
     with _LOCK:
         p=dict(_PARTITION);p['last_part_ms']=dict(_PARTITION['last_part_ms']);p['last_part_rows']=dict(_PARTITION['last_part_rows'])
-    p.update({'partitioned':True,'max_source_batch':MAX_SYNC_BATCH,'default_chunk':DEFAULT_CHUNK,'mark_chunk':MARK_CHUNK,'market_chunk':MARKET_CHUNK,'real_trading':False})
+    p.update({'partitioned':True,'max_source_batch':MAX_SYNC_BATCH,'default_chunk':DEFAULT_CHUNK,
+              'mark_chunk':MARK_CHUNK,'market_chunk':MARKET_CHUNK,'backpressure_backend':'SUPABASE_RETRY_QUEUE',
+              'backpressure_prefix':BACKPRESSURE_PREFIX,'ack_after_remote_success':True,'real_trading':False})
     return p
 
 
@@ -108,6 +165,11 @@ def sync_once(batch=500):
     if not enabled():return {'enabled':False,'telemetry':sync_telemetry()}
     started=time.monotonic()
     with _LOCK:_PARTITION['cycles']+=1;_PARTITION['last_failed_part']=None;_PARTITION['last_error']=None
+    # Bounded drain prevents an outage backlog from monopolizing the current cycle.
+    try:backpressure=drain_backpressure()
+    except Exception as exc:
+        backpressure={'configured':remote_queue.enabled(),'eligible':None,'drained':0,'failed':1,'error':str(exc)[:400],'real_trading':False}
+        with _LOCK:_PARTITION['backpressure_failures']+=1
     init_db();batch=max(1,min(int(batch),MAX_SYNC_BATCH))
     market_after=int(base._control_get('supabase_market_id','0') or 0);events_after=int(base._control_get('supabase_event_id','0') or 0)
     runs_after=int(base._control_get('supabase_run_id','0') or 0);trades_after=int(base._control_get('supabase_agent_trade_id','0') or 0)
@@ -139,7 +201,6 @@ def sync_once(batch=500):
     trades=[{'id':r[0],'origin_id':base._origin_id(r[0]),'ts':r[1],'agent_id':r[2],'symbol':r[3],'side':r[4],'qty':r[5],'price':r[6],'gross_value':r[7],'fees':r[8],'spread_cost':r[9],'fx_cost':r[10],'reason':r[11]} for r in trade_rows]
     marks=[{'id':r[0],'origin_id':base._origin_id(r[0]),'ts':r[1],'agent_id':r[2],'total':r[3],'cash':r[4],'invested':r[5],'drawdown_pct':r[6]} for r in mark_rows]
     try:
-        # Current-state authority first so paper ids exist before dependent families.
         state=_node_payload();state.update({'source_reputation':reps,'nodes':nodes,'paper_agents':agents,'paper_positions':positions})
         _send('state',state,rows=len(reps)+len(nodes)+len(agents)+len(positions))
         _send_family('market','market_snapshots',market,cursor_key='supabase_market_id',cursor_value=market_rows[-1][0] if market_rows else None,chunk_size=MARKET_CHUNK)
@@ -153,4 +214,4 @@ def sync_once(batch=500):
     except Exception:
         with _LOCK:_PARTITION['failed_cycles']+=1;_PARTITION['last_cycle_ms']=round((time.monotonic()-started)*1000.0,2)
         raise
-    return {'enabled':True,'market':len(market_rows),'events':len(event_rows),'runs':len(run_rows),'reputation':len(reputation_rows),'alerts':len(alert_rows),'notifications':len(notification_rows),'nodes':len(node_rows),'agents':len(agent_rows),'positions':len(position_rows),'trades':len(trade_rows),'marks':len(mark_rows),'origin_session_prefix':base._SYNC_PREFIX,'partitioned':True,'partition_telemetry':partition_telemetry(),'telemetry':sync_telemetry(),'real_trading':False}
+    return {'enabled':True,'market':len(market_rows),'events':len(event_rows),'runs':len(run_rows),'reputation':len(reputation_rows),'alerts':len(alert_rows),'notifications':len(notification_rows),'nodes':len(node_rows),'agents':len(agent_rows),'positions':len(position_rows),'trades':len(trade_rows),'marks':len(mark_rows),'origin_session_prefix':base._SYNC_PREFIX,'partitioned':True,'backpressure':backpressure,'partition_telemetry':partition_telemetry(),'telemetry':sync_telemetry(),'real_trading':False}
