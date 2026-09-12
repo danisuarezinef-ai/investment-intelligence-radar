@@ -7,7 +7,7 @@ def audit(root='.'):
     required=(
         'PRE160_TASKS_201_270.md','radar_pre160_resilience_v7.py','radar_pre160_data_authority_v7.py',
         'radar_pre160_statistics_v7.py','radar_pre160_autonomy_v7.py','radar_pre160_controls_v7.py',
-        'radar_market_data_authority_v1.py','radar_raw_vault_v1.py','radar_sync_queue_v2.py',
+        'radar_market_data_authority_v1.py','radar_provider_resilience_v1.py','radar_raw_vault_v1.py','radar_sync_queue_v2.py',
         'radar_pre160_cache_v7.py','cloud_service_v7.py','tests/test_pre160_tasks_201_270.py','tests/test_pre160_cache_v7.py')
     for p in required:
         if not (root/p).exists():findings.append('MISSING_201_270_COMPONENT:'+p)
@@ -25,14 +25,16 @@ def audit(root='.'):
         'radar_sync_queue_v2.py':('dead_letter','ack_after_remote_success','MAX_ATTEMPTS'),
         'radar_pre160_cache_v7.py':('stale_while_revalidate','dependency_keys','prewarm_enabled'),
         'radar_market_data_authority_v1.py':('survivorship_guard','corporate_actions','PRICE_FIELD_POLICY','MISSING_DATA_KINDS'),
+        'radar_provider_resilience_v1.py':('ProviderBulkheads','reconciliation_contract','bulkhead_isolation','reconcile_after_recovery'),
         'radar_raw_vault_v1.py':('append_only','SHA-256','overwrite_allowed'),
     }.items():
         text=(root/p).read_text(encoding='utf-8-sig') if (root/p).exists() else ''
         for token in tokens:
             if token not in text:findings.append('INCOMPLETE_'+p+':'+token)
     controls=(root/'radar_pre160_controls_v7.py').read_text(encoding='utf-8-sig') if (root/'radar_pre160_controls_v7.py').exists() else ''
-    for token in ('range(201,271)','stable_windows_version','automatic_release','live_execution_allowed','REAL_TRADING=False'):
-        if token not in controls.replace(' ',''):findings.append('V7_MATRIX_INCOMPLETE:'+token)
+    compact=controls.replace(' ','')
+    for token in ('range(201,271)','stable_windows_version','automatic_release','live_execution_allowed','REAL_TRADING=False','reconciliation_contract'):
+        if token not in compact:findings.append('V7_MATRIX_INCOMPLETE:'+token)
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
     if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
     if 'REAL_TRADING=False' not in v7.replace(' ',''):findings.append('V7_TRADING_BOUNDARY_MISSING')
