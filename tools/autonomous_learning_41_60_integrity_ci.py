@@ -34,8 +34,10 @@ functions={n.name for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncF
 missing=required_functions-functions
 assert not missing, f'missing functions: {sorted(missing)}'
 
-for task in range(41,61):
+for task in range(41,59):
     assert f"'{task}':" in module or f'"{task}":' in module, f'missing task {task}'
+assert "tasks['59']=" in module, 'missing task 59'
+assert "tasks['60']=" in module, 'missing task 60'
 assert "'automatic_promotion':False" in module or '"automatic_promotion":False' in module
 assert "'automatic_release':False" in module or '"automatic_release":False' in module
 assert "'live_execution_allowed':False" in module or '"live_execution_allowed":False' in module
