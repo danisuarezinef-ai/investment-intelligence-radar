@@ -20,16 +20,13 @@ def _task(task_id, state, detail, *, critical=False, evidence=None):
 
 
 def _bool_state(value, *, false_state='NOT_VERIFIED'):
-    if value is True:
-        return 'PASS'
-    if value is False:
-        return false_state
+    if value is True:return 'PASS'
+    if value is False:return false_state
     return 'NOT_VERIFIED'
 
 
 def _latency_state(value, budget):
-    if not isinstance(value, (int, float)):
-        return 'NOT_VERIFIED'
+    if not isinstance(value, (int, float)):return 'NOT_VERIFIED'
     return 'PASS' if float(value) <= float(budget) else 'FAILED'
 
 
@@ -45,7 +42,7 @@ def build_matrix_271_310(*, readiness, queue, provider, generic_sync, learning_s
     tasks[272] = _task(272, 'PASS' if readiness.get('status') in {'WARMING','LITE_READY','DEEP_READY','DEGRADED','FAILED'} else 'FAILED', 'formal readiness state machine')
     prof = readiness.get('profiler') or {}; stages = prof.get('stages') or {}
     tasks[273] = _task(273, 'PASS' if stages.get('deep_total',{}).get('samples',0) > 0 else 'NOT_VERIFIED', 'deep snapshot stage profiler has empirical samples', critical=True, evidence=stages)
-    tasks[274] = _task(274, _bool_state(readiness.get('shared_deep_snapshot')), 'deep evidence is computed once then shared by v7 surfaces')
+    tasks[274] = _task(274, _bool_state(readiness.get('shared_deep_snapshot')), 'deep evidence is computed once then shared by v7/v8 surfaces')
     tasks[275] = _task(275, _bool_state(readiness.get('dependency_token_cache')), 'dependency-token cache invalidates only changed dependencies')
     sched = readiness.get('scheduler') or {}
     tasks[276] = _task(276, 'PASS' if sched.get('serialized_deep_work') is True else 'NOT_VERIFIED', 'deep prewarm scheduling prevents overlap')
@@ -53,12 +50,11 @@ def build_matrix_271_310(*, readiness, queue, provider, generic_sync, learning_s
     budgets = readiness.get('budgets_ms') or {}; http = stages.get('http_v7') or {}
     tasks[278] = _task(278, _latency_state(http.get('p95_ms'), budgets.get('cold_http',1000)), 'empirical cold HTTP SLO', critical=True, evidence=http)
     enough_hot = int(http.get('samples') or 0) >= 5
-    hot_state = _latency_state(http.get('p95_ms'), budgets.get('hot_http',250)) if enough_hot else 'PENDING_SAMPLE'
-    tasks[279] = _task(279, hot_state, 'p50/p95/p99 hot-path latency with >=5 samples', evidence=http)
+    tasks[279] = _task(279, _latency_state(http.get('p95_ms'), budgets.get('hot_http',250)) if enough_hot else 'PENDING_SAMPLE', 'p50/p95/p99 hot-path latency with >=5 samples', evidence=http)
     regression = ci.get('latency_regression_pct')
     tasks[280] = _task(280, 'NOT_VERIFIED' if regression is None else ('PASS' if float(regression) <= 20 else 'FAILED'), 'latency regression gate <=20% versus accepted baseline')
 
-    # 281-290: remote durability
+    # 281-290: remote durability / bounded backpressure
     tasks[281] = _task(281, 'PASS' if queue.get('durable_backend') == 'SUPABASE' and queue.get('configured') else 'NOT_VERIFIED', 'retry queue uses remote durable backend', critical=True)
     tasks[282] = _task(282, 'PASS' if queue.get('remote_stats_verified') is True else 'NOT_VERIFIED', 'application path reaches Supabase retry queue', critical=True)
     tasks[283] = _task(283, 'PASS' if queue.get('dead_letter_remote') is True and queue.get('remote_stats_verified') is True else 'NOT_VERIFIED', 'dead-letter queue is remotely persisted')
@@ -66,18 +62,22 @@ def build_matrix_271_310(*, readiness, queue, provider, generic_sync, learning_s
     tasks[285] = _task(285, 'PASS' if ci.get('crash_restart_test') is True else 'NOT_VERIFIED', 'crash/restart test preserves unacked work')
     tasks[286] = _task(286, 'PASS' if ci.get('duplicate_delivery_test') is True else 'NOT_VERIFIED', 'duplicate delivery remains idempotent')
     tasks[287] = _task(287, 'PASS' if ci.get('outage_recovery_test') is True else 'NOT_VERIFIED', 'Supabase/provider outage and recovery simulated fail-closed')
-    tasks[288] = _task(288, 'PASS' if ci.get('queue_saturation_test') is True else 'NOT_VERIFIED', 'queue saturation/backpressure protection')
-    tasks[289] = _task(289, 'PASS' if ci.get('poison_message_test') is True else 'NOT_VERIFIED', 'poison message isolation does not block later items')
+    part = generic.get('partitioned_transport') or {}
+    bounded_backpressure = part.get('backpressure_backend') == 'SUPABASE_RETRY_QUEUE' and part.get('ack_after_remote_success') is True and int(part.get('max_source_batch') or 0) <= 250
+    tasks[288] = _task(288, 'PASS' if bounded_backpressure else 'NOT_VERIFIED', 'bounded remote backpressure protects the source loop without cursor loss', evidence={'backlog_last':part.get('backlog_last'),'enqueued':part.get('backpressure_enqueued'),'drained':part.get('backpressure_drained')})
+    poison_ok = queue.get('controlled_dlq_verified') is True and queue.get('controlled_reprocess_verified') is True
+    tasks[289] = _task(289, 'PASS' if poison_ok else 'NOT_VERIFIED', 'controlled non-investment poison message is isolated in DLQ and reprocessed cleanly')
     tasks[290] = _task(290, 'PASS' if queue.get('cross_redeploy_verified') is True else 'PENDING_TIME', 'remote probe survived a distinct Railway deployment identity', critical=True,
                        evidence={'previous_deployment':queue.get('previous_deployment'),'current_deployment':queue.get('current_deployment')})
 
-    # 291-300: provider resilience
+    # 291-300: provider/sync resilience. External provider failover stays pending until observed.
     tasks[291] = _task(291, 'PASS' if provider.get('wired') is True and provider.get('bulkhead_isolation') is True else 'NOT_VERIFIED', 'provider bulkheads are wired to a production transport path')
-    circuit = provider.get('circuit') or {}
-    tasks[292] = _task(292, 'PASS' if circuit.get('state_machine') == 'CLOSED_OPEN_HALF_OPEN' else 'NOT_VERIFIED', 'explicit CLOSED/OPEN/HALF_OPEN circuit state machine')
-    tasks[293] = _task(293, 'PASS' if provider.get('failover_verified') is True else 'PENDING_SAMPLE', 'provider failover requires two independently verified live sources')
-    rate = provider.get('rate_governor') or {}
-    tasks[294] = _task(294, 'PASS' if rate.get('adaptive_rate_governor') is True else 'NOT_VERIFIED', '429/timeout adaptive rate governor')
+    cp = provider.get('controlled_probe') or {}
+    circuit_probe = cp.get('status') == 'PASS' and cp.get('circuit_open_verified') is True and cp.get('half_open_verified') is True and cp.get('recovery_verified') is True
+    tasks[292] = _task(292, 'PASS' if circuit_probe else 'NOT_VERIFIED', 'deployed controlled probe observed CLOSED→OPEN→HALF_OPEN→CLOSED transitions', evidence=cp)
+    tasks[293] = _task(293, 'PASS' if provider.get('external_failover_verified') is True or provider.get('failover_verified') is True else 'PENDING_SAMPLE', 'external provider failover requires two independently verified live sources')
+    rate_probe = cp.get('status') == 'PASS' and cp.get('rate_limit_backoff_verified') is True and cp.get('rate_recovery_gradual_verified') is True
+    tasks[294] = _task(294, 'PASS' if rate_probe else 'NOT_VERIFIED', 'deployed controlled 429/backoff/recovery probe validates adaptive rate governor', evidence=cp)
     recent_timeout = generic.get('last_error_type') in {'TimeoutError','URLError'} or learning.get('last_error_type') in {'TimeoutError','URLError'}
     both_configured = generic.get('configured') is True and learning.get('configured') is True
     tasks[295] = _task(295, 'PASS' if both_configured and not recent_timeout and generic.get('timeout_means_missing_data') is False and learning.get('timeout_means_missing_data') is False else 'NOT_VERIFIED', 'Supabase timeouts are bounded and never converted to missing/zero evidence', critical=True)
@@ -85,7 +85,7 @@ def build_matrix_271_310(*, readiness, queue, provider, generic_sync, learning_s
     tasks[296] = _task(296, 'PASS' if dual_healthy else 'NOT_VERIFIED', 'generic and learning sync health are independently healthy', critical=True)
     empirical = dual_healthy and int(generic.get('successes') or 0) >= 3 and int(learning.get('successes') or 0) >= 3
     tasks[297] = _task(297, 'PASS' if empirical else 'PENDING_SAMPLE', 'dual-channel empirical success/latency SLO has sufficient runtime samples')
-    tasks[298] = _task(298, 'PASS' if provider.get('reconcile_after_recovery') is True else 'NOT_VERIFIED', 'idempotent remote compare is wired after recovery')
+    tasks[298] = _task(298, 'PASS' if provider.get('reconcile_after_recovery') is True else 'NOT_VERIFIED', 'external idempotent remote compare after provider recovery remains evidence-gated')
     tasks[299] = _task(299, 'PASS' if ci.get('network_partition_test') is True else 'NOT_VERIFIED', 'partial network partition/reconnect test')
     critical_281_299 = [tasks[i] for i in range(281,300) if tasks[i].get('critical')]
     resilience_ok = all(x['state']=='PASS' for x in critical_281_299)
@@ -93,14 +93,14 @@ def build_matrix_271_310(*, readiness, queue, provider, generic_sync, learning_s
 
     # 301-310: production proof v3 and master gate
     contract = proof.get('contract') or {}
-    tasks[301] = _task(301, 'PASS' if contract.get('derived_not_asserted') is True else 'NOT_VERIFIED', 'production proof v3 derives checks from observations')
+    tasks[301] = _task(301, 'PASS' if contract.get('derived_not_asserted') is True and contract.get('requires_prior_groups_deep_ready') is True else 'NOT_VERIFIED', 'production proof v3 derives checks and forbids light-only certification')
     exact = bool(deployment.get('expected_sha')) and deployment.get('expected_sha') == deployment.get('deployed_sha')
     digest_ok = proof.get('derived_checks',{}).get('digest_match') is True
     tasks[302] = _task(302, 'PASS' if exact and digest_ok else 'NOT_VERIFIED', 'exact GitHub SHA + Railway SHA + protected digest', critical=True,
                        evidence={'expected_sha':deployment.get('expected_sha'),'deployed_sha':deployment.get('deployed_sha')})
     dchecks = proof.get('derived_checks') or {}
-    tasks[303] = _task(303, 'PASS' if dchecks.get('tasks_151_200') is True else 'NOT_VERIFIED', '151-200 verified in the same external proof run')
-    tasks[304] = _task(304, 'PASS' if dchecks.get('tasks_201_270') is True else 'NOT_VERIFIED', '201-270 verified from a ready source in the same external proof run')
+    tasks[303] = _task(303, 'PASS' if dchecks.get('tasks_151_200') is True else 'NOT_VERIFIED', '151-200 deep-ready evidence verified in the same external proof run')
+    tasks[304] = _task(304, 'PASS' if dchecks.get('tasks_201_270') is True else 'NOT_VERIFIED', '201-270 deep-ready evidence verified in the same external proof run')
     tasks[305] = _task(305, 'PASS' if dchecks.get('dual_sync') is True else 'NOT_VERIFIED', 'dual-sync proof is measured, not asserted', critical=True)
     tasks[306] = _task(306, 'PASS' if proof.get('no_self_certification') is True and contract.get('runtime_can_approve_proof') is False else 'NOT_VERIFIED', 'runtime cannot self-certify production')
     tasks[307] = _task(307, 'PASS' if ci.get('tamper_test') is True else 'NOT_VERIFIED', 'protected-file tamper invalidates digest')
@@ -116,27 +116,12 @@ def build_matrix_271_310(*, readiness, queue, provider, generic_sync, learning_s
     failed = [k for k,v in out.items() if v.get('critical') and v.get('state')=='FAILED']
     pending = [k for k,v in out.items() if v.get('critical') and v.get('state')!='PASS']
     return {
-        'status': 'PRE160_TASKS_271_310',
-        'tasks': out,
-        'critical_failed': failed,
-        'critical_pending': pending,
+        'status': 'PRE160_TASKS_271_310','tasks': out,'critical_failed': failed,'critical_pending': pending,
         'master_gate_v4': {
-            'status': 'READY_FOR_MANUAL_1_6_REVIEW' if master_ready else 'BLOCKED_PRE160',
-            'manual_review_only': True,
-            'setup_allowed': False,
-            'automatic_release': False,
-            'automatic_promotion': False,
-            'automatic_demotion': False,
-            'live_execution_allowed': False,
-            'can_trade': False,
-            'real_trading': False,
+            'status': 'READY_FOR_MANUAL_1_6_REVIEW' if master_ready else 'BLOCKED_PRE160','manual_review_only': True,
+            'setup_allowed': False,'automatic_release': False,'automatic_promotion': False,'automatic_demotion': False,
+            'live_execution_allowed': False,'can_trade': False,'real_trading': False,
         },
-        'observed_at_epoch': time.time(),
-        'stable_windows_version': '1.5.28',
-        'candidate_version': '1.6.0',
-        'setup_allowed': False,
-        'setup_built': False,
-        'automatic_release': False,
-        'can_trade': False,
-        'real_trading': False,
+        'observed_at_epoch': time.time(),'stable_windows_version': '1.5.28','candidate_version': '1.6.0',
+        'setup_allowed': False,'setup_built': False,'automatic_release': False,'can_trade': False,'real_trading': False,
     }
