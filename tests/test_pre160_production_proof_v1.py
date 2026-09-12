@@ -16,15 +16,17 @@ def test_repository_protected_surface_is_complete_and_self_protecting():
     result = protected_digest('.')
     assert result['missing'] == []
     assert result['digest'] and len(result['digest']) == 64
-    assert result['files'] >= 35
+    assert result['files'] >= 46
     assert result['algorithm'] == 'SHA-256'
     assert result['proof_json_excluded'] is True
     assert DEFAULT_PROOF_PATH not in PROTECTED_PATHS
     assert 'radar_pre160_production_proof_v1.py' in PROTECTED_PATHS
     assert 'version.json' in PROTECTED_PATHS
     assert 'cloud_service_v6.py' in PROTECTED_PATHS
-    assert 'radar_pre160_cloud_v3.py' in PROTECTED_PATHS
-    assert 'radar_pre160_cloud_v4.py' in PROTECTED_PATHS
+    assert 'cloud_service_v7.py' in PROTECTED_PATHS
+    assert 'radar_pre160_controls_v7.py' in PROTECTED_PATHS
+    assert 'radar_provider_resilience_v1.py' in PROTECTED_PATHS
+    assert 'radar_sync_queue_v2.py' in PROTECTED_PATHS
     assert 'supabase/functions/radar-pre160-hardening/index.ts' in PROTECTED_PATHS
 
 
@@ -44,6 +46,7 @@ def test_valid_content_addressed_external_proof_passes(tmp_path):
         'protected_digest': d,
         'audit_conclusion': 'success',
         'tasks_151_200_verified': True,
+        'tasks_201_270_verified': True,
         'dual_sync_slo_verified': True,
         'stable_windows_version': '1.5.28',
         'real_trading': False,
@@ -65,7 +68,7 @@ def test_runtime_change_invalidates_previous_external_proof(tmp_path):
     d = protected_digest(tmp_path, paths=paths)['digest']
     proof = {
         'protected_digest': d, 'audit_conclusion': 'success',
-        'tasks_151_200_verified': True, 'dual_sync_slo_verified': True,
+        'tasks_151_200_verified': True, 'tasks_201_270_verified': True, 'dual_sync_slo_verified': True,
         'stable_windows_version': '1.5.28', 'real_trading': False,
         'audit_run_id': 123, 'audited_commit_sha': 'abc',
     }
