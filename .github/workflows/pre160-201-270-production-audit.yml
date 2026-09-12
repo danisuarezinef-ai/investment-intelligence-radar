@@ -29,7 +29,7 @@ jobs:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
           set -euo pipefail
-          endpoints=(pre160-audit-201-270-v1 pre160-resilience-v7 pre160-data-authority-v7 pre160-statistical-validity-v7 pre160-autonomy-v7 pre160-master-gate-v3 pre160-cache-v7)
+          endpoints=(pre160-audit-201-270-v1 pre160-resilience-v7 pre160-data-authority-v7 pre160-statistical-validity-v7 pre160-autonomy-v7 pre160-master-gate-v3 pre160-cache-v7 pre160-deployment-v7)
           for endpoint in "${endpoints[@]}"; do
             ok=0
             for attempt in $(seq 1 18); do
@@ -59,16 +59,37 @@ jobs:
               assert d.get('manual_review_only') is True
           if name=='pre160-cache-v7':
               assert d.get('prewarm_enabled') is True and d.get('async_refresh') is True and d.get('stale_while_revalidate') is True and d.get('dependency_keys') is True
+          if name=='pre160-deployment-v7':
+              assert d.get('status')=='OBSERVED',d
+              assert d.get('deployed_sha'),d
           print(name,'PASS HTTP boundary',d.get('status'))
           PY
           done
-      - name: Verify exact deployed source SHA and v7 start command
+      - name: Verify exact Railway deployed source SHA and v7 start command
         env:
           EXPECTED_SHA: ${{ github.sha }}
+          BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
+          set -euo pipefail
           echo "Expected main SHA: $EXPECTED_SHA"
-          grep -q 'cloud_service_v7.py' start.sh
+          grep -q 'exec python cloud_service_v7.py' start.sh
           test "$(python -c "import json;print(json.load(open('version.json'))['version'])")" = "1.5.28"
+          matched=0
+          for attempt in $(seq 1 18); do
+            code=$(curl -sS -o /tmp/deployment.json -w '%{http_code}' --max-time 20 "$BASE_URL/pre160-deployment-v7" || true)
+            if [ "$code" = "200" ]; then
+              if EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/deployment.json',encoding='utf-8'))
+          assert d.get('real_trading') is False,d
+          assert d.get('deployed_sha')==os.environ['EXPECTED_SHA'],(d.get('deployed_sha'),os.environ['EXPECTED_SHA'])
+          print('RAILWAY_EXACT_SHA_VERIFIED='+d['deployed_sha'])
+          PY
+              then matched=1; break; fi
+            fi
+            sleep 10
+          done
+          test "$matched" = "1" || { echo 'Railway never matched audited GitHub SHA'; cat /tmp/deployment.json 2>/dev/null || true; exit 1; }
       - name: Emit proof candidate only after all external checks succeed
         run: |
           python - <<'PY'
