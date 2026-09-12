@@ -3,7 +3,8 @@
 V9 does not alter investment execution. It reads the immutable forward ledger,
 computes tasks 311-370, persists content-addressed evidence snapshots, serves
 read-only readiness endpoints, supervises the existing autonomous PAPER daemon,
-and exposes priorities 16-60 without starting a duplicate simulator loop.
+exposes priorities 16-60, and keeps Radar in low-maintenance autonomous mode while
+human development focus moves to CEO de IAs.
 """
 from __future__ import annotations
 
@@ -19,12 +20,13 @@ import radar_brain_persistence_v1 as brain_persistence
 import radar_autonomous_paper_control_v1 as autonomous_paper
 import radar_autonomous_learning_16_40_v1 as learning1640
 import radar_autonomous_learning_41_60_v1 as learning4160
+import radar_ceo_handoff_v1 as ceo_handoff
 from radar_pre160_production_proof_v1 import protected_digest
 
 REAL_TRADING=False
 _LOCK=threading.RLock()
 _STATE={'ready':False,'building':False,'rows':[],'evidence':None,'analytics':None,'competition':None,
-       'readiness':None,'autonomous_learning':None,'autonomous_learning_41_60':None,
+       'readiness':None,'autonomous_learning':None,'autonomous_learning_41_60':None,'ceo_handoff':None,
        'last_epoch':None,'last_error':None,'source_max_evaluated_at':None,
        'persistence':brain_persistence.telemetry()}
 _STARTED=False
@@ -75,6 +77,9 @@ def _build_once(persist=True):
         autonomous_learning=learning1640.build_priorities_16_40(rows,analytics,competition,persist=persist)
         autonomous_learning_41_60=learning4160.build_priorities_41_60(
             rows,analytics,competition,autonomous_learning,persist=persist)
+        handoff=ceo_handoff.build_handoff(rows=rows,sim_state=ceo_handoff.simulator.simulator_status(),
+            control_state=autonomous_paper.control_status(),learning_16_40=autonomous_learning,
+            learning_41_60=autonomous_learning_41_60,persist=persist)
         if persist and brain_persistence.enabled():
             try:
                 brain_persistence.put_snapshot('reliability_v2',analytics.get('calibration') or {},source_max_evaluated_at=source)
@@ -89,7 +94,7 @@ def _build_once(persist=True):
         with _LOCK:
             _STATE.update({'ready':True,'rows':rows,'evidence':evidence,'analytics':analytics,'competition':competition,
                            'readiness':readiness,'autonomous_learning':autonomous_learning,
-                           'autonomous_learning_41_60':autonomous_learning_41_60,
+                           'autonomous_learning_41_60':autonomous_learning_41_60,'ceo_handoff':handoff,
                            'last_epoch':time.time(),'last_error':None,'source_max_evaluated_at':source,'persistence':ptele})
         return True
     except Exception as exc:
@@ -122,6 +127,8 @@ def brain_status():
                 'rows':len(_STATE['rows']),'persistence':dict(_STATE['persistence']),
                 'autonomous_learning_ready':isinstance(_STATE.get('autonomous_learning'),dict),
                 'autonomous_learning_41_60_ready':isinstance(_STATE.get('autonomous_learning_41_60'),dict),
+                'ceo_handoff_ready':isinstance(_STATE.get('ceo_handoff'),dict),
+                'development_mode':'MAINTENANCE_ONLY','primary_human_project':'CEO_DE_IAS',
                 'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
@@ -160,18 +167,30 @@ def autonomous_learning_16_60():
             'setup_allowed':False,'can_trade':False,'real_trading':False}
 
 
+def handoff_status():
+    return _get('ceo_handoff')
+
+
+def executive_status():
+    h=handoff_status()
+    if h.get('source_ready') is not True:return h
+    out=dict(h.get('executive') or {});out.update({'source_ready':True,'deep_ready':True,'real_trading':False})
+    return out
+
+
 def simulator_gate():
     return autonomous_paper.simulator_gate(technical=base8.operational_health_v8(),brain=brain_readiness())
 
 
 def simulator_dashboard():
     out=autonomous_paper.dashboard(technical=base8.operational_health_v8(),brain=brain_readiness())
-    learn=autonomous_learning();advanced=autonomous_learning_41_60()
-    out['learning_16_40']=learn;out['learning_41_60']=advanced
+    learn=autonomous_learning();advanced=autonomous_learning_41_60();handoff=handoff_status()
+    out['learning_16_40']=learn;out['learning_41_60']=advanced;out['ceo_handoff']=handoff
     if isinstance(learn,dict) and isinstance(learn.get('balance_indicator'),dict):out['balance_indicator']=learn['balance_indicator']
     out['advanced_learning_summary']=advanced.get('dashboard_v3') if isinstance(advanced,dict) else None
-    out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V3';out['real_trading']=False
-    out['automatic_promotion']=False;out['automatic_release']=False;out['live_execution_allowed']=False
+    out['executive_summary']=handoff.get('executive') if isinstance(handoff,dict) else None
+    out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V4';out['development_mode']='MAINTENANCE_ONLY';out['primary_human_project']='CEO_DE_IAS'
+    out['real_trading']=False;out['automatic_promotion']=False;out['automatic_release']=False;out['live_execution_allowed']=False
     return out
 
 
@@ -197,6 +216,8 @@ class ValidationV9Handler(base8.ValidationV8Handler):
             if path=='/autonomous-simulator/milestones-v1':self._send(200,autonomous_paper.milestones());return
             if path=='/autonomous-simulator/control-v1':self._send(200,autonomous_paper.control_status());return
             if path=='/autonomous-simulator/learning-agenda-v1':self._send(200,autonomous_paper.learning_agenda(brain_readiness()));return
+            if path=='/autonomous-simulator/ceo-handoff-v1':self._send(200,handoff_status());return
+            if path=='/autonomous-simulator/executive-v1':self._send(200,executive_status());return
         except Exception as exc:
             self._send(500,{'status':'FAILED','error':str(exc)[:800],'setup_allowed':False,'automatic_release':False,
                             'automatic_promotion':False,'automatic_demotion':False,'can_trade':False,'real_trading':False});return
