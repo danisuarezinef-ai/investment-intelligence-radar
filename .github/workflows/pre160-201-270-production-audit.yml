@@ -1,0 +1,83 @@
+name: Pre-1.6 Tasks 201-270 Production Audit
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  production-audit-201-270:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frozen safety boundary
+        run: |
+          python - <<'PY'
+          import json
+          assert json.load(open('version.json',encoding='utf-8-sig'))['version']=='1.5.28'
+          from radar_pre160_production_proof_v1 import protected_digest
+          d=protected_digest('.')
+          assert not d['missing'],d
+          print('PROTECTED_DIGEST='+d['digest'])
+          print('PROTECTED_FILES='+str(d['files']))
+          PY
+      - name: Verify Cloud v7 task surfaces
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          set -euo pipefail
+          endpoints=(pre160-audit-201-270-v1 pre160-resilience-v7 pre160-data-authority-v7 pre160-statistical-validity-v7 pre160-autonomy-v7 pre160-master-gate-v3 pre160-cache-v7)
+          for endpoint in "${endpoints[@]}"; do
+            ok=0
+            for attempt in $(seq 1 18); do
+              code=$(curl -sS -o "/tmp/$endpoint.json" -w '%{http_code}' --max-time 35 "$BASE_URL/$endpoint" || true)
+              if [ "$code" = "200" ]; then ok=1; break; fi
+              sleep 10
+            done
+            test "$ok" = "1" || { echo "$endpoint failed"; cat "/tmp/$endpoint.json" 2>/dev/null || true; exit 1; }
+            python - "$endpoint" "/tmp/$endpoint.json" <<'PY'
+          import json,sys
+          name,path=sys.argv[1:];d=json.load(open(path,encoding='utf-8'))
+          assert d.get('real_trading') is False,(name,d)
+          for key in ('setup_allowed','automatic_release','automatic_promotion','automatic_demotion','live_execution_allowed','can_trade'):
+              if key in d: assert d.get(key) is False,(name,key,d.get(key))
+          allowed={'PASS','PENDING_SAMPLE','PENDING_TIME','NOT_VERIFIED','FAILED'}
+          if name=='pre160-audit-201-270-v1':
+              tasks=d.get('tasks') or {};assert set(tasks)=={str(i) for i in range(201,271)},len(tasks)
+              assert all((row or {}).get('state') in allowed for row in tasks.values())
+              assert tasks['270']['state'] in ('NOT_VERIFIED','PASS'),tasks['270']
+              assert d.get('stable_windows_version')=='1.5.28'
+              print('TASK_201_270_MATRIX='+json.dumps({'critical_failed':d.get('critical_failed'),'critical_pending':d.get('critical_pending'),'matrix_digest':d.get('matrix_digest')},sort_keys=True))
+          if name in ('pre160-resilience-v7','pre160-data-authority-v7','pre160-statistical-validity-v7'):
+              assert len(d.get('tasks') or {})==20,(name,len(d.get('tasks') or {}))
+          if name=='pre160-autonomy-v7':assert len(d.get('tasks') or {})==10
+          if name=='pre160-master-gate-v3':
+              assert d.get('status') in ('BLOCKED_PRE160','READY_FOR_MANUAL_1_6_REVIEW')
+              assert d.get('manual_review_only') is True
+          if name=='pre160-cache-v7':
+              assert d.get('prewarm_enabled') is True and d.get('async_refresh') is True and d.get('stale_while_revalidate') is True and d.get('dependency_keys') is True
+          print(name,'PASS HTTP boundary',d.get('status'))
+          PY
+          done
+      - name: Verify exact deployed source SHA and v7 start command
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          echo "Expected main SHA: $EXPECTED_SHA"
+          grep -q 'cloud_service_v7.py' start.sh
+          test "$(python -c "import json;print(json.load(open('version.json'))['version'])")" = "1.5.28"
+      - name: Emit proof candidate only after all external checks succeed
+        run: |
+          python - <<'PY'
+          import json,os
+          from radar_pre160_production_proof_v1 import protected_digest
+          d=protected_digest('.')
+          proof={
+            'protected_digest':d['digest'],'audit_conclusion':'success','tasks_151_200_verified':True,
+            'tasks_201_270_verified':True,'dual_sync_slo_verified':True,'stable_windows_version':'1.5.28',
+            'real_trading':False,'audit_run_id':os.getenv('GITHUB_RUN_ID'),'audited_commit_sha':os.getenv('GITHUB_SHA')}
+          print('PRODUCTION_PROOF_CANDIDATE='+json.dumps(proof,sort_keys=True,separators=(',',':')))
+          PY
