@@ -38,6 +38,7 @@ def test_production_entrypoint_runs_delegated_sync_and_closed_loop():
     v6=Path('cloud_service_v6.py').read_text(encoding='utf-8')
     v7=Path('cloud_service_v7.py').read_text(encoding='utf-8')
     v8=Path('cloud_service_v8.py').read_text(encoding='utf-8')
+    v9=Path('cloud_service_v9.py').read_text(encoding='utf-8')
     assert 'import cloud_service_v3 as base3' in src
     assert 'base3._forward_outcome_sync_loop' in src
     assert 'sync_forward_outcomes_once(750)' in v3
@@ -53,7 +54,10 @@ def test_production_entrypoint_runs_delegated_sync_and_closed_loop():
     assert 'base6.start_runtime()' in v7
     assert 'import cloud_service_v7 as base7' in v8
     assert 'base7.start_runtime()' in v8
-    assert 'exec python cloud_service_v8.py' in Path('start.sh').read_text(encoding='utf-8')
+    assert 'import cloud_service_v8 as base8' in v9
+    assert 'base8.start_runtime()' in v9
+    assert 'REAL_TRADING=False' in v9.replace(' ','')
+    assert 'exec python cloud_service_v9.py' in Path('start.sh').read_text(encoding='utf-8')
 
 
 def test_forward_outcome_sync_resends_updated_existing_rows_idempotently():

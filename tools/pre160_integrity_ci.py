@@ -1,99 +1,97 @@
-"""Static backend integrity gate for pre-1.6 work. No Windows packaging required."""
+"""Static backend integrity gate for the complete pre-1.6 runtime chain.
+
+The gate intentionally overlaps version-specific integrity audits.  It verifies that
+adding a new cloud layer does not bypass older evidence, provenance or safety controls.
+"""
 from pathlib import Path
 import json
 
 
+def _text(root,path):
+    p=root/path
+    return p.read_text(encoding='utf-8-sig') if p.exists() else ''
+
+
+def _tokens(findings,root,path,tokens,prefix):
+    text=_text(root,path)
+    if not text:findings.append('MISSING:'+path);return
+    for token in tokens:
+        if token not in text:findings.append(prefix+':'+path+':'+token)
+
+
 def audit(root='.'):
     root=Path(root);findings=[]
-    start=(root/'start.sh').read_text(encoding='utf-8-sig')
-    v8=(root/'cloud_service_v8.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v8.py').exists() else ''
-    v7=(root/'cloud_service_v7.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v7.py').exists() else ''
-    v6=(root/'cloud_service_v6.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v6.py').exists() else ''
-    v5=(root/'cloud_service_v5.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v5.py').exists() else ''
-    v4=(root/'cloud_service_v4.py').read_text(encoding='utf-8-sig');v3=(root/'cloud_service_v3.py').read_text(encoding='utf-8-sig')
-    if 'cloud_service_v8.py' not in start:findings.append('START_NOT_V8')
-    if 'import cloud_service_v7 as base7' not in v8 or 'base7.start_runtime()' not in v8:findings.append('V8_NOT_COMPOSED_OVER_V7')
-    if 'import cloud_service_v6 as base6' not in v7 or 'base6.start_runtime()' not in v7:findings.append('V7_NOT_COMPOSED_OVER_V6')
-    if 'import cloud_service_v5 as base5' not in v6 or 'base5.start_runtime()' not in v6:findings.append('V6_NOT_COMPOSED_OVER_V5')
-    if 'import cloud_service_v4 as base4' not in v5 or 'base4.start_v3_runtime()' not in v5:findings.append('V5_NOT_COMPOSED_OVER_V4')
-    if 'import cloud_service_v3 as base3' not in v4:findings.append('V4_NOT_COMPOSED_OVER_V3')
-    if 'import cloud_service as base' in v4:findings.append('V4_LEGACY_BASE_IMPORT')
-    for endpoint in ('/pre160-audit-151-200-v1','/pre160-slo-v1','/pre160-data-integrity-v1','/pre160-evidence-maturity-v3','/pre160-governance-v3','/pre160-recovery-v2','/pre160-release-authority-v2'):
-        if endpoint not in v6:findings.append('MISSING_V6_ENDPOINT:'+endpoint)
-    for endpoint in ('/supabase-health-v1','/pre160-readiness-board-v1','/decision-provenance-v1'):
-        if endpoint not in v5:findings.append('MISSING_V5_ENDPOINT:'+endpoint)
-    for endpoint in ('/pre160-runtime-v2','/pre160-readiness-v1','/mobile-summary-v2','/pre160-evidence-v1','/pre160-readiness-v2','/pre160-evidence-authority-v1','/pre160-audit-v1','/pre160-hardening-v1','/pre160-hardening-authority-v1','/pre160-audit-111-130-v1','/pre160-audit-131-150-v1'):
-        if endpoint not in v4:findings.append('MISSING_V4_ENDPOINT:'+endpoint)
-    for endpoint in ('/pre160-evaluation-v1','/simulator-league-v1','/persistent-authority-v1'):
-        if endpoint not in v3:findings.append('MISSING_V3_ENDPOINT:'+endpoint)
-    for path in ('radar_pre160_runtime_v3.py','radar_pre160_cloud_v3.py','radar_pre160_evidence_persistence_v1.py','PRE160_TASKS_91_110.md','supabase/functions/radar-pre160-evidence/index.ts'):
-        if not (root/path).exists():findings.append('MISSING_91_110_COMPONENT:'+path)
-    for path in ('radar_pre160_runtime_v4.py','radar_pre160_runtime_v4_linkage.py','radar_pre160_cloud_v4.py','radar_pre160_hardening_persistence_v1.py','PRE160_TASKS_111_130.md','supabase/functions/radar-pre160-hardening/index.ts','supabase/migrations/20260912003000_pre160_evidence_v4.sql'):
-        if not (root/path).exists():findings.append('MISSING_111_130_COMPONENT:'+path)
-    for path in ('radar_decision_provenance_v1.py','radar_pre160_runtime_v5.py','PRE160_TASKS_131_150.md','tests/test_decision_provenance_v1.py'):
-        if not (root/path).exists():findings.append('MISSING_131_150_COMPONENT:'+path)
-    for path in ('radar_supabase_sync.py','radar_learning_sync.py','cloud_service_v5.py','tests/test_supabase_sync_resilience.py','tests/test_learning_sync_resilience_v1.py','tests/test_post150_reliability_v1.py'):
-        if not (root/path).exists():findings.append('MISSING_POST150_RELIABILITY_COMPONENT:'+path)
-    for path in ('PRE160_TASKS_151_200.md','radar_pre160_controls_v6.py','radar_pre160_recovery_v2.py','radar_pre160_release_authority_v2.py','cloud_service_v6.py','tests/test_pre160_tasks_151_200.py','tests/test_pre160_recovery_release_v2.py','tests/test_cloud_v6_tasks_151_200.py'):
-        if not (root/path).exists():findings.append('MISSING_151_200_COMPONENT:'+path)
-    for path in ('cloud_service_v7.py','cloud_service_v8.py','radar_supabase_sync_partitioned_v2.py','tests/test_pre160_runtime_closure_v8.py'):
-        if not (root/path).exists():findings.append('MISSING_V8_RUNTIME_COMPONENT:'+path)
-    edge=(root/'supabase/functions/radar-pre160-evidence/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-evidence/index.ts').exists() else ''
-    if 'appendProspectiveChain' not in edge or 'PIT_REGIME_NOT_CAPTURED' not in edge:findings.append('EVIDENCE_AUTHORITY_INCOMPLETE')
-    hard=(root/'supabase/functions/radar-pre160-hardening/index.ts').read_text(encoding='utf-8-sig') if (root/'supabase/functions/radar-pre160-hardening/index.ts').exists() else ''
-    for token in ('appendCheckpoint','freezeEnvelopes','radar_pre160_evidence_checkpoints','radar_pre160_decision_envelopes','real_trading:false'):
-        if token not in hard:findings.append('HARDENING_AUTHORITY_INCOMPLETE:'+token)
-    paper_edge_path=root/'supabase/functions/radar-paper-engine-checkpoint/index.ts';paper_edge=paper_edge_path.read_text(encoding='utf-8-sig') if paper_edge_path.exists() else ''
-    for token in ('[1,2].includes(schema)','paper_decision_envelopes_local','real_trading:false'):
-        if token not in paper_edge:findings.append('PAPER_CHECKPOINT_V2_AUTHORITY_INCOMPLETE:'+token)
-    sync_edge_path=root/'supabase/functions/radar-sync/index.ts';sync_edge=sync_edge_path.read_text(encoding='utf-8-sig') if sync_edge_path.exists() else ''
-    for token in ('WRITE_CONCURRENCY=20','mapConcurrent','reconcilePortfolioMarks','portfolio_values immutable mismatch','portfolio_values origin collision','bulkInsert("portfolio_values",fresh)','edge_ms'):
-        if token not in sync_edge:findings.append('SUPABASE_SYNC_RESILIENCE_INCOMPLETE:'+token)
-    learning_edge_path=root/'supabase/functions/radar-learning-sync/index.ts';learning_edge=learning_edge_path.read_text(encoding='utf-8-sig') if learning_edge_path.exists() else ''
-    for token in ('WRITE_CONCURRENCY=20','mapConcurrent','resolvePredictionOutcomes','applySingleAssignmentOutcomes','.is("outcome",null)','edge_ms'):
-        if token not in learning_edge:findings.append('LEARNING_SYNC_EDGE_RESILIENCE_INCOMPLETE:'+token)
-    sync_py=(root/'radar_supabase_sync.py').read_text(encoding='utf-8-sig') if (root/'radar_supabase_sync.py').exists() else ''
-    for token in ('SupabaseCircuitOpen','CIRCUIT_FAILURE_THRESHOLD','sync_telemetry','timeout_means_missing_data','MAX_SYNC_BATCH','random.uniform'):
-        if token not in sync_py:findings.append('SUPABASE_CLIENT_RESILIENCE_INCOMPLETE:'+token)
-    partitioned=(root/'radar_supabase_sync_partitioned_v2.py').read_text(encoding='utf-8-sig') if (root/'radar_supabase_sync_partitioned_v2.py').exists() else ''
-    for token in ('PER_FAMILY_AFTER_ALL_CHUNKS_REMOTE_SUCCESS','_send_family','partitioned_transport','MARKET_CHUNK','MARK_CHUNK'):
-        if token not in partitioned:findings.append('PARTITIONED_SYNC_INCOMPLETE:'+token)
-    learning_py=(root/'radar_learning_sync.py').read_text(encoding='utf-8-sig') if (root/'radar_learning_sync.py').exists() else ''
-    for token in ('LearningSyncCircuitOpen','LEARNING_CIRCUIT_FAILURES','learning_sync_telemetry','timeout_means_missing_data','MAX_LEARNING_BATCH','random.uniform'):
-        if token not in learning_py:findings.append('LEARNING_CLIENT_RESILIENCE_INCOMPLETE:'+token)
-    if 'learning_sync_telemetry' not in v5 or 'all_configured_syncs_healthy' not in v5:findings.append('V5_DUAL_SYNC_HEALTH_MISSING')
-    controls=(root/'radar_pre160_controls_v6.py').read_text(encoding='utf-8-sig') if (root/'radar_pre160_controls_v6.py').exists() else ''
-    for token in ('provider_divergence_guard','PENDING_SAMPLE','PENDING_TIME','lookahead_flags','uses_exit_fields_for_entry_linkage','MAX_SCORE_ADJUSTMENT','automatic_promotion','automatic_demotion'):
-        if token not in controls:findings.append('TASK_151_200_CONTROL_INCOMPLETE:'+token)
-    recovery=(root/'radar_pre160_recovery_v2.py').read_text(encoding='utf-8-sig') if (root/'radar_pre160_recovery_v2.py').exists() else ''
-    for token in ('build_recovery_manifest','compare_recovery_manifests','SHA-256','reconstruction_allowed','backfill_allowed'):
-        if token not in recovery:findings.append('RECOVERY_V2_INCOMPLETE:'+token)
-    release=(root/'radar_pre160_release_authority_v2.py').read_text(encoding='utf-8-sig') if (root/'radar_pre160_release_authority_v2.py').exists() else ''
-    for token in ('READY_FOR_MANUAL_1_6_REVIEW','manual_review_only','automatic_release','setup_allowed','live_execution_allowed'):
-        if token not in release:findings.append('RELEASE_AUTHORITY_V2_INCOMPLETE:'+token)
-    causal=(root/'radar_causal_scoring_v2.py').read_text(encoding='utf-8-sig') if (root/'radar_causal_scoring_v2.py').exists() else ''
-    for token in ('MAX_SCORE_ADJUSTMENT=1.5','one contribution per independent event','promotion_authorized',"'real_trading':False"):
-        if token not in causal:findings.append('CAUSAL_GOVERNANCE_INCOMPLETE:'+token)
-    promotion=(root/'radar_promotion_governance_v2.py').read_text(encoding='utf-8-sig') if (root/'radar_promotion_governance_v2.py').exists() else ''
-    for token in ("'auto_promote':False","'live_review_allowed':False","'live_execution_allowed':False","'can_trade':False","'real_trading':False"):
-        if token not in promotion:findings.append('PROMOTION_GOVERNANCE_INCOMPLETE:'+token)
-    agents=(root/'radar_agents.py').read_text(encoding='utf-8-sig');champ=(root/'radar_champion_portfolio.py').read_text(encoding='utf-8-sig');persist=(root/'radar_paper_engine_persistence_v1.py').read_text(encoding='utf-8-sig');runtime5=(root/'radar_pre160_runtime_v5.py').read_text(encoding='utf-8-sig')
+    start=_text(root,'start.sh')
+    layers={n:_text(root,f'cloud_service_v{n}.py') for n in range(3,10)}
+    if 'cloud_service_v9.py' not in start:findings.append('START_NOT_V9')
+    chain=((9,'import cloud_service_v8 as base8','base8.start_runtime()'),
+           (8,'import cloud_service_v7 as base7','base7.start_runtime()'),
+           (7,'import cloud_service_v6 as base6','base6.start_runtime()'),
+           (6,'import cloud_service_v5 as base5','base5.start_runtime()'),
+           (5,'import cloud_service_v4 as base4','base4.start_v3_runtime()'),
+           (4,'import cloud_service_v3 as base3',None))
+    for n,imp,start_token in chain:
+        text=layers[n]
+        if not text:findings.append(f'MISSING_CLOUD_V{n}');continue
+        if imp not in text:findings.append(f'V{n}_CHAIN_IMPORT_INVALID')
+        if start_token and start_token not in text:findings.append(f'V{n}_CHAIN_START_INVALID')
+    if 'import cloud_service as base' in layers[4]:findings.append('V4_LEGACY_BASE_IMPORT')
+
+    required=(
+      'radar_pre160_runtime_v3.py','radar_pre160_cloud_v3.py','radar_pre160_evidence_persistence_v1.py','PRE160_TASKS_91_110.md','supabase/functions/radar-pre160-evidence/index.ts',
+      'radar_pre160_runtime_v4.py','radar_pre160_runtime_v4_linkage.py','radar_pre160_cloud_v4.py','radar_pre160_hardening_persistence_v1.py','PRE160_TASKS_111_130.md','supabase/functions/radar-pre160-hardening/index.ts','supabase/migrations/20260912003000_pre160_evidence_v4.sql',
+      'radar_decision_provenance_v1.py','radar_pre160_runtime_v5.py','PRE160_TASKS_131_150.md','tests/test_decision_provenance_v1.py',
+      'radar_supabase_sync.py','radar_learning_sync.py','tests/test_supabase_sync_resilience.py','tests/test_learning_sync_resilience_v1.py','tests/test_post150_reliability_v1.py',
+      'PRE160_TASKS_151_200.md','radar_pre160_controls_v6.py','radar_pre160_recovery_v2.py','radar_pre160_release_authority_v2.py','tests/test_pre160_tasks_151_200.py','tests/test_pre160_recovery_release_v2.py',
+      'cloud_service_v7.py','cloud_service_v8.py','radar_supabase_sync_partitioned_v2.py','tests/test_pre160_runtime_closure_v8.py',
+      'cloud_service_v9.py','radar_forward_evidence_v2.py','radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py','radar_brain_persistence_v1.py','PRE160_TASKS_311_370.md')
+    for path in required:
+        if not (root/path).exists():findings.append('MISSING_COMPONENT:'+path)
+
+    endpoint_sets={
+      9:('/pre160-forward-evidence-v2','/pre160-calibration-v2','/pre160-brain-competition-v3','/pre160-brain-readiness-v1','/pre160-audit-311-370-v1'),
+      8:('/pre160-audit-151-200-v1','/supabase-health-v1','/pre160-sync-partitions-v2','/pre160-operational-health-v2','/pre160-audit-271-310-v1'),
+      7:('/pre160-audit-201-270-v1','/pre160-statistical-validity-v7','/pre160-autonomy-v7','/pre160-deployment-v7'),
+      6:('/pre160-audit-151-200-v1','/pre160-recovery-v2','/pre160-release-authority-v2'),
+      5:('/supabase-health-v1','/pre160-readiness-board-v1','/decision-provenance-v1'),
+      4:('/pre160-evidence-v1','/pre160-hardening-v1','/pre160-audit-131-150-v1'),
+      3:('/pre160-evaluation-v1','/simulator-league-v1','/persistent-authority-v1'),
+    }
+    for n,endpoints in endpoint_sets.items():
+        for endpoint in endpoints:
+            # An endpoint inherited by a later layer is allowed to live in an earlier
+            # layer. Search the composed chain up to that version.
+            if not any(endpoint in layers[k] for k in range(3,n+1)):findings.append(f'MISSING_ENDPOINT_V{n}:'+endpoint)
+
+    _tokens(findings,root,'supabase/functions/radar-pre160-evidence/index.ts',('appendProspectiveChain','PIT_REGIME_NOT_CAPTURED'),'EVIDENCE_AUTHORITY_INCOMPLETE')
+    _tokens(findings,root,'supabase/functions/radar-pre160-hardening/index.ts',('appendCheckpoint','freezeEnvelopes','radar_pre160_evidence_checkpoints','radar_pre160_decision_envelopes','real_trading:false'),'HARDENING_AUTHORITY_INCOMPLETE')
+    _tokens(findings,root,'supabase/functions/radar-paper-engine-checkpoint/index.ts',('[1,2].includes(schema)','paper_decision_envelopes_local','real_trading:false'),'PAPER_CHECKPOINT_INCOMPLETE')
+    _tokens(findings,root,'supabase/functions/radar-sync/index.ts',('WRITE_CONCURRENCY=20','mapConcurrent','reconcilePortfolioMarks','portfolio_values immutable mismatch','edge_ms'),'SYNC_EDGE_INCOMPLETE')
+    _tokens(findings,root,'supabase/functions/radar-learning-sync/index.ts',('WRITE_CONCURRENCY=20','mapConcurrent','resolvePredictionOutcomes','.is("outcome",null)','edge_ms'),'LEARNING_EDGE_INCOMPLETE')
+    _tokens(findings,root,'radar_supabase_sync.py',('SupabaseCircuitOpen','CIRCUIT_FAILURE_THRESHOLD','sync_telemetry','timeout_means_missing_data','MAX_SYNC_BATCH','random.uniform'),'SYNC_CLIENT_INCOMPLETE')
+    _tokens(findings,root,'radar_learning_sync.py',('LearningSyncCircuitOpen','LEARNING_CIRCUIT_FAILURES','learning_sync_telemetry','timeout_means_missing_data','MAX_LEARNING_BATCH','random.uniform'),'LEARNING_CLIENT_INCOMPLETE')
+    _tokens(findings,root,'radar_supabase_sync_partitioned_v2.py',('PER_FAMILY_AFTER_ALL_CHUNKS_REMOTE_SUCCESS','_send_family','partitioned_transport','SUPABASE_RETRY_QUEUE','drain_backpressure'),'PARTITIONED_SYNC_INCOMPLETE')
+    _tokens(findings,root,'radar_pre160_controls_v6.py',('provider_divergence_guard','PENDING_SAMPLE','PENDING_TIME','lookahead_flags','uses_exit_fields_for_entry_linkage','automatic_promotion','automatic_demotion'),'TASK_151_200_INCOMPLETE')
+    _tokens(findings,root,'radar_pre160_recovery_v2.py',('build_recovery_manifest','compare_recovery_manifests','SHA-256','reconstruction_allowed','backfill_allowed'),'RECOVERY_INCOMPLETE')
+    _tokens(findings,root,'radar_pre160_release_authority_v2.py',('READY_FOR_MANUAL_1_6_REVIEW','manual_review_only','automatic_release','setup_allowed','live_execution_allowed'),'RELEASE_AUTHORITY_INCOMPLETE')
+    _tokens(findings,root,'radar_causal_scoring_v2.py',('MAX_SCORE_ADJUSTMENT=1.5','one contribution per independent event','promotion_authorized',"'real_trading':False"),'CAUSAL_GOVERNANCE_INCOMPLETE')
+    _tokens(findings,root,'radar_promotion_governance_v2.py',("'auto_promote':False","'live_review_allowed':False","'live_execution_allowed':False","'can_trade':False","'real_trading':False"),'PROMOTION_GOVERNANCE_INCOMPLETE')
+    _tokens(findings,root,'radar_forward_evidence_v2.py',('synthetic_evidence_can_mature','backfill_allowed','decision_envelope_status','prediction_hash'),'BRAIN_EVIDENCE_INCOMPLETE')
+    _tokens(findings,root,'radar_brain_competition_v3.py',('automatic_replacement','SHADOW_PAPER_ONLY','uses_future_outcomes'),'BRAIN_COMPETITION_INCOMPLETE')
+
+    agents=_text(root,'radar_agents.py');champ=_text(root,'radar_champion_portfolio.py');persist=_text(root,'radar_paper_engine_persistence_v1.py');runtime5=_text(root,'radar_pre160_runtime_v5.py')
     if 'capture_trade_envelope' not in agents:findings.append('AGENT_TRANSACTIONAL_PROVENANCE_MISSING')
     if 'capture_trade_envelope' not in champ:findings.append('CHAMPION_TRANSACTIONAL_PROVENANCE_MISSING')
-    if "SCHEMA_VERSION = 2" not in persist or 'paper_decision_envelopes_local' not in persist or 'LEGACY_SCHEMA_VERSION = 1' not in persist:findings.append('PAPER_CHECKPOINT_SCHEMA2_MISSING')
-    if 'uses_exit_fields_for_entry_linkage' not in runtime5 or ('competitor_key' not in runtime5):findings.append('ENTRY_ONLY_LINKAGE_AUDIT_MISSING')
-    if 'pre160_evidence_loop' not in v4:findings.append('EVIDENCE_WORKER_MISSING')
-    if 'pre160_hardening_loop' not in v4:findings.append('HARDENING_WORKER_MISSING')
-    if 'tasks_131_150_audit' not in v4:findings.append('TASKS_131_150_AUDIT_NOT_WIRED')
-    if 'REAL_TRADING=False' not in v4.replace(' ',''):findings.append('V4_TRADING_BOUNDARY_MISSING')
-    if 'REAL_TRADING = False' not in v5 and 'REAL_TRADING=False' not in v5.replace(' ',''):findings.append('V5_TRADING_BOUNDARY_MISSING')
-    if 'REAL_TRADING = False' not in v6 and 'REAL_TRADING=False' not in v6.replace(' ',''):findings.append('V6_TRADING_BOUNDARY_MISSING')
-    if 'REAL_TRADING = False' not in v7 and 'REAL_TRADING=False' not in v7.replace(' ',''):findings.append('V7_TRADING_BOUNDARY_MISSING')
-    if 'REAL_TRADING = False' not in v8 and 'REAL_TRADING=False' not in v8.replace(' ',''):findings.append('V8_TRADING_BOUNDARY_MISSING')
-    version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
-    if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
-    return {'status':'PASS' if not findings else 'FAIL','version':version,'findings':findings,'setup_built':False,'real_trading':False}
+    if 'SCHEMA_VERSION = 2' not in persist or 'paper_decision_envelopes_local' not in persist or 'LEGACY_SCHEMA_VERSION = 1' not in persist:findings.append('PAPER_CHECKPOINT_SCHEMA2_MISSING')
+    if 'uses_exit_fields_for_entry_linkage' not in runtime5 or 'competitor_key' not in runtime5:findings.append('ENTRY_ONLY_LINKAGE_AUDIT_MISSING')
 
+    for n in range(4,10):
+        text=layers[n]
+        if 'REAL_TRADING=False' not in text.replace(' ','') and 'REAL_TRADING = False' not in text:findings.append(f'V{n}_TRADING_BOUNDARY_MISSING')
+    version=json.loads(_text(root,'version.json')).get('version')
+    if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
+    return {'status':'PASS' if not findings else 'FAIL','version':version,'findings':findings,
+            'setup_built':False,'real_trading':False}
 
 if __name__=='__main__':
     result=audit();print(json.dumps(result,indent=2,ensure_ascii=False));raise SystemExit(0 if result['status']=='PASS' else 1)

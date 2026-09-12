@@ -11,15 +11,17 @@ def audit(root='.'):
         'radar_operational_health_v2.py','tools/pre160_repo_audit_v2.py','PRE160_LEGACY_PR_RECONCILIATION.md',
         'tests/test_pre160_tasks_271_310.py','tests/test_pre160_runtime_closure_v8.py',
         'supabase/functions/radar-retry-queue/index.ts','supabase/migrations/20260912093000_pre160_remote_retry_queue_v3.sql',
-        'cloud_service_v7.py','cloud_service_v8.py')
+        'cloud_service_v7.py','cloud_service_v8.py','cloud_service_v9.py')
     for p in required:
         if not (root/p).exists():findings.append('MISSING_271_310_COMPONENT:'+p)
     start=(root/'start.sh').read_text(encoding='utf-8-sig') if (root/'start.sh').exists() else ''
     v7=(root/'cloud_service_v7.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v7.py').exists() else ''
     v8=(root/'cloud_service_v8.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v8.py').exists() else ''
-    if 'cloud_service_v8.py' not in start:findings.append('START_NOT_V8')
+    v9=(root/'cloud_service_v9.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v9.py').exists() else ''
+    if 'cloud_service_v9.py' not in start:findings.append('START_NOT_V9')
+    if 'import cloud_service_v8 as base8' not in v9 or 'base8.start_runtime()' not in v9:findings.append('V9_CHAIN_INVALID')
     if 'import cloud_service_v7 as base7' not in v8 or 'base7.start_runtime()' not in v8:findings.append('V8_CHAIN_INVALID')
-    combined=v7+'\n'+v8
+    combined=v7+'\n'+v8+'\n'+v9
     for endpoint in ('/pre160-readiness-v4','/pre160-queue-v3','/pre160-provider-resilience-v2','/pre160-proof-v3','/pre160-audit-271-310-v1','/pre160-master-gate-v4'):
         if endpoint not in combined:findings.append('MISSING_271_310_ENDPOINT:'+endpoint)
     for endpoint in ('/pre160-audit-151-200-v1','/supabase-health-v1','/pre160-sync-partitions-v2','/pre160-operational-health-v2','/pre160-worker-utilization-v1'):
@@ -42,7 +44,7 @@ def audit(root='.'):
             if token.replace(' ','') not in compact:findings.append('INCOMPLETE_'+p+':'+token)
     if 'base_cloud.sync_once=partitioned_sync.sync_once' not in v8.replace(' ',''):findings.append('PARTITIONED_SYNC_NOT_WIRED')
     if '_ensure_controlled_probes()' not in v8:findings.append('CONTROLLED_PROBES_NOT_WIRED')
-    if 'REAL_TRADING=False' not in v8.replace(' ',''):findings.append('V8_REAL_TRADING_BOUNDARY_MISSING')
+    if any('REAL_TRADING=False' not in x.replace(' ','') for x in (v8,v9)):findings.append('TRADING_BOUNDARY_MISSING')
     if '1.5.28' not in v8:findings.append('V8_WINDOWS_FREEZE_MISSING')
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
     if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
