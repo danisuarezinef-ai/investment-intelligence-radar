@@ -1,9 +1,9 @@
 """Persistent autonomous simulator runtime.
 
 Runs PAPER cycles plus periodic historical research batches without requiring a UI
-window. State survives app restarts. Every autonomous run and every experiment
-result is auditable. Historical/simulated evidence never becomes forward evidence
-or real execution authority.
+window. State survives app restarts through the existing persistent authority. Every
+autonomous run and every experiment result is auditable. Historical/simulated
+evidence never becomes forward evidence or real execution authority.
 """
 from __future__ import annotations
 
@@ -52,7 +52,6 @@ def init_autonomous_simulator():
     c.execute('''insert or ignore into autonomous_simulator_state(
         id,enabled,status,generation,completed_cycles,completed_experiments,
         queued_experiments,updated_at) values(1,1,'STARTING',1,0,0,0,?)''',(now(),))
-    # A process disappearing mid-run must not leave a permanently RUNNING audit row.
     c.execute("update autonomous_simulator_runs set status='INTERRUPTED_RESTART',completed_at=? where status='RUNNING'",(now(),))
     c.commit();c.close()
 
@@ -122,20 +121,11 @@ def _recent_experiments(limit=20):
 
 
 def _competitor_details_fail_soft():
-    try:
-        return competitor_live_details()
+    try:return competitor_live_details()
     except Exception as exc:
-        return {
-            'status':'DEGRADED',
-            'error':str(exc)[:500],
-            'source':'LIVE_LOCAL_PAPER_ENGINE_READ_ONLY',
-            'competitors':{},
-            'durable_authority':False,
-            'automatic_model_promotion':False,
-            'live_execution_allowed':False,
-            'can_trade':False,
-            'real_trading':False,
-        }
+        return {'status':'DEGRADED','error':str(exc)[:500],'source':'LIVE_LOCAL_PAPER_ENGINE_READ_ONLY','competitors':{},
+                'durable_authority':False,'automatic_model_promotion':False,'live_execution_allowed':False,
+                'can_trade':False,'real_trading':False}
 
 
 def simulator_status():
@@ -146,15 +136,21 @@ def simulator_status():
     except Exception:last_result=None
     paper=paper_status();runs=_recent_runs(10);experiments=_recent_experiments(20);competitors=_competitor_details_fail_soft()
     return {'active':bool(r[0]) if r else False,'status':r[1] if r else 'NOT_CONFIGURED','generation':int(r[2] or 1) if r else 1,
-        'completed_cycles':int(r[3] or 0) if r else 0,'completed_experiments':int(r[4] or 0) if r else 0,
-        'queued_experiments':int(r[5] or 0) if r else 0,'last_cycle_at':r[6] if r else None,'last_research_at':r[7] if r else None,
+        'completed_cycles':int(r[3] or 0) if r else 0,'completed_experiments':int(r[4] or 0) if r else 0,'queued_experiments':int(r[5] or 0) if r else 0,'last_cycle_at':r[6] if r else None,'last_research_at':r[7] if r else None,
         'next_cycle_at':r[8] if r else None,'next_research_at':r[9] if r else None,'last_result':last_result,
         'last_error':r[11] if r else None,'updated_at':r[12] if r else None,
         'paper':{'configured':paper.get('configured',False),'enabled':paper.get('enabled',False),'total':paper.get('total'),'cash':paper.get('cash'),'invested':paper.get('invested'),'pnl_pct':paper.get('pnl_pct')},
-        'competitor_details':competitors,
-        'recent_runs':runs,'recent_experiments':experiments,'experiment_memory':memory_snapshot(10),
+        'competitor_details':competitors,'recent_runs':runs,'recent_experiments':experiments,'experiment_memory':memory_snapshot(10),
         'evidence_class':'SIMULATED_HISTORICAL_AND_PAPER_ONLY','forward_evidence_mutated':False,
         'automatic_live_promotion':False,'real_trading':False}
+
+
+def _decision_class(cycle):
+    status=str((cycle or {}).get('status') or '')
+    context=(cycle or {}).get('context') or {};candidates=list(context.get('buy_candidates') or [])
+    if status in ('PAUSED','NOT_CONFIGURED'):return 'HOLD'
+    if not candidates:return 'ABSTAIN_NO_CANDIDATE'
+    return 'PAPER_CYCLE_WITH_CANDIDATES'
 
 
 def run_autonomous_cycle(*,force_research=False,cycle_interval_seconds=900,research_interval_seconds=21600,initial_cash=1000.0):
@@ -165,7 +161,7 @@ def run_autonomous_cycle(*,force_research=False,cycle_interval_seconds=900,resea
         current=simulator_status()
         if not current['active']:return {'status':'PAUSED','real_trading':False}
         run_id,_=_open_run(current['generation']);_set(status='RUNNING',last_error=None)
-        paper=_ensure_paper_active(initial_cash);cycle=run_simulator_cycle(force=True);t=datetime.now(timezone.utc)
+        paper=_ensure_paper_active(initial_cash);cycle=run_simulator_cycle(force=True);context=dict(cycle.get('context') or {});t=datetime.now(timezone.utc)
         next_cycle=(t+timedelta(seconds=max(60,int(cycle_interval_seconds)))).isoformat();generation=current['generation']
         research_due=force_research or not current.get('last_research_at')
         if not research_due:
@@ -177,9 +173,11 @@ def run_autonomous_cycle(*,force_research=False,cycle_interval_seconds=900,resea
             if research.get('status')=='COMPLETED':generation+=1
             next_research=(t+timedelta(seconds=max(1800,int(research_interval_seconds)))).isoformat()
         else:next_research=current.get('next_research_at')
-        result={'run_id':run_id,'paper_cycle_status':cycle.get('status'),'paper_total':(cycle.get('after') or paper).get('total'),
-            'research_status':research.get('status') if research else 'NOT_DUE','experiments_tested':tested,'experiment_results_persisted':saved,
-            'generation_completed':generation-1 if tested else None,'real_trading':False}
+        result={'run_id':run_id,'paper_cycle_status':cycle.get('status'),'decision_class':_decision_class(cycle),
+            'decision_context':context,'paper_total':(cycle.get('after') or paper).get('total'),
+            'research_status':research.get('status') if research else 'NOT_DUE','experiments_tested':tested,
+            'experiment_results_persisted':saved,'generation_completed':generation-1 if tested else None,
+            'journal_includes_hold_abstain_and_candidate_cycles':True,'real_trading':False}
         _finish_run(run_id,status='COMPLETED',paper_status=cycle.get('status'),research_status=result['research_status'],result=result)
         _set(status='ACTIVE',generation=generation,completed_cycles=current['completed_cycles']+1,
             completed_experiments=current['completed_experiments']+tested,queued_experiments=0,last_cycle_at=t.isoformat(),

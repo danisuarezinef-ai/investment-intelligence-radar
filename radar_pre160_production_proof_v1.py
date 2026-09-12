@@ -13,7 +13,7 @@ DEFAULT_PROOF_PATH='PRE160_PRODUCTION_PROOF.json'
 PROTECTED_PATHS=(
  'version.json','start.sh','cloud_service_v3.py','cloud_service_v4.py','cloud_service_v5.py','cloud_service_v6.py','cloud_service_v7.py','cloud_service_v8.py','cloud_service_v9.py',
  'radar_supabase_sync.py','radar_supabase_sync_partitioned_v2.py','radar_learning_sync.py','radar_forward_outcome_sync_v1.py','radar_closed_loop_runtime_v1.py','radar_champion_challenger_v1.py','radar_learning_engine_v3.py','radar_validation_runtime_v3.py','radar_operational_health_v2.py',
- 'radar_forward_evidence_v2.py','radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py','radar_brain_persistence_v1.py',
+ 'radar_forward_evidence_v2.py','radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py','radar_brain_persistence_v1.py','radar_autonomous_simulator_v1.py','radar_autonomy_e2e_v1.py','radar_autonomous_paper_control_v1.py',
  'radar_pre160_cloud_v3.py','radar_pre160_cloud_v4.py','radar_pre160_runtime_v3.py','radar_pre160_runtime_v4.py','radar_pre160_runtime_v4_linkage.py','radar_pre160_runtime_v5.py',
  'radar_pre160_controls_v6.py','radar_pre160_controls_v7.py','radar_pre160_controls_v8.py','radar_pre160_resilience_v7.py','radar_pre160_data_authority_v7.py','radar_pre160_statistics_v7.py','radar_pre160_autonomy_v7.py','radar_pre160_cache_v7.py','radar_pre160_readiness_v4.py',
  'radar_market_data_authority_v1.py','radar_provider_resilience_v1.py','radar_provider_resilience_v2.py','radar_raw_vault_v1.py','radar_sync_queue_v2.py','radar_sync_queue_v3.py',
@@ -21,7 +21,7 @@ PROTECTED_PATHS=(
  'radar_paper_engine_persistence_v1.py','radar_agents.py','radar_champion_portfolio.py','radar_causal_scoring_v2.py','radar_promotion_governance_v2.py',
  'supabase/functions/radar-sync/index.ts','supabase/functions/radar-learning-sync/index.ts','supabase/functions/radar-retry-queue/index.ts','supabase/functions/radar-brain-evidence/index.ts','supabase/functions/radar-paper-engine-checkpoint/index.ts','supabase/functions/radar-pre160-evidence/index.ts','supabase/functions/radar-pre160-hardening/index.ts',
  'supabase/migrations/20260912093000_pre160_remote_retry_queue_v3.sql','supabase/migrations/20260912110000_pre160_brain_evidence_snapshots_v1.sql',
- '.github/workflows/pre160-hardening-production-audit.yml','.github/workflows/pre160-201-270-production-audit.yml','.github/workflows/pre160-271-310-production-audit.yml','.github/workflows/pre160-311-370-production-audit.yml','.github/workflows/integration-ci.yml',
+ '.github/workflows/pre160-hardening-production-audit.yml','.github/workflows/pre160-201-270-production-audit.yml','.github/workflows/pre160-271-310-production-audit.yml','.github/workflows/pre160-311-370-production-audit.yml','.github/workflows/autonomous-paper-production-audit.yml','.github/workflows/integration-ci.yml',
  'tools/pre160_integrity_ci.py','tools/pre160_201_270_integrity_ci.py','tools/pre160_271_310_integrity_ci.py','tools/pre160_311_370_integrity_ci.py','tools/pre160_repo_audit_v2.py','PRE160_LEGACY_PR_RECONCILIATION.md','PRE160_TASKS_311_370.md',
 )
 

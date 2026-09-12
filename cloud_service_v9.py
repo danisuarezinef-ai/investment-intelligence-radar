@@ -1,9 +1,9 @@
 """Production entrypoint v9: Cloud v8 plus forward brain-evidence observability.
 
-V9 does not alter investment execution.  It reads the immutable forward ledger,
-computes tasks 311-370, persists content-addressed evidence snapshots, and serves
-read-only readiness endpoints.  The first snapshot is built in background so startup
-remains non-blocking and fail-closed.
+V9 does not alter investment execution. It reads the immutable forward ledger,
+computes tasks 311-370, persists content-addressed evidence snapshots, serves
+read-only readiness endpoints, and supervises the already-existing autonomous
+PAPER simulator daemon without starting a duplicate simulator loop.
 """
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from radar_brain_calibration_v2 import brain_analytics_snapshot
 from radar_brain_competition_v3 import competition_snapshot
 from radar_brain_readiness_v1 import build_tasks_311_370
 import radar_brain_persistence_v1 as brain_persistence
+import radar_autonomous_paper_control_v1 as autonomous_paper
 from radar_pre160_production_proof_v1 import protected_digest
 
 REAL_TRADING=False
@@ -38,9 +39,6 @@ def _warming_tasks():
 
 
 def _historical_metrics():
-    # Historical results are deliberately not coerced onto forward model-version names.
-    # A future explicit lineage map may provide comparable keys; absent that, transfer
-    # stays PENDING_SAMPLE rather than matching by guess.
     return {}
 
 
@@ -72,7 +70,6 @@ def _build_once(persist=True):
         readiness=build_tasks_311_370(technical=_technical_snapshot(),evidence=evidence,analytics=analytics,
                                       competition=competition,rows=rows,persistence=ptele,external={})
         if persist and brain_persistence.enabled():
-            # Persistence failure must never make the analytical snapshot disappear.
             try:
                 brain_persistence.put_snapshot('reliability_v2',analytics.get('calibration') or {},source_max_evaluated_at=source)
                 brain_persistence.put_snapshot('brain_analytics_v2',analytics,source_max_evaluated_at=source)
@@ -134,6 +131,14 @@ def brain_readiness():
     return _warming_tasks()
 
 
+def simulator_gate():
+    return autonomous_paper.simulator_gate(technical=base8.operational_health_v8(),brain=brain_readiness())
+
+
+def simulator_dashboard():
+    return autonomous_paper.dashboard(technical=base8.operational_health_v8(),brain=brain_readiness())
+
+
 class ValidationV9Handler(base8.ValidationV8Handler):
     def do_GET(self):
         path=self.path.split('?',1)[0]
@@ -147,6 +152,12 @@ class ValidationV9Handler(base8.ValidationV8Handler):
             if path in ('/pre160-brain-readiness-v1','/pre160-audit-311-370-v1'):
                 self._send(200,brain_readiness());return
             if path=='/pre160-brain-gate-v1':self._send(200,brain_readiness().get('brain_readiness_gate') or {'status':'NOT_READY','real_trading':False});return
+            if path=='/autonomous-simulator/gate-v1':self._send(200,simulator_gate());return
+            if path=='/autonomous-simulator/dashboard-v1':self._send(200,simulator_dashboard());return
+            if path=='/autonomous-simulator/watchdog-v1':self._send(200,autonomous_paper.watchdog_status());return
+            if path=='/autonomous-simulator/milestones-v1':self._send(200,autonomous_paper.milestones());return
+            if path=='/autonomous-simulator/control-v1':self._send(200,autonomous_paper.control_status());return
+            if path=='/autonomous-simulator/learning-agenda-v1':self._send(200,autonomous_paper.learning_agenda(brain_readiness()));return
         except Exception as exc:
             self._send(500,{'status':'FAILED','error':str(exc)[:800],'setup_allowed':False,'automatic_release':False,
                             'automatic_promotion':False,'automatic_demotion':False,'can_trade':False,'real_trading':False});return
@@ -155,7 +166,7 @@ class ValidationV9Handler(base8.ValidationV8Handler):
 
 def start_runtime():
     runtime=base8.start_runtime();runtime.run_worker._Handler=ValidationV9Handler
-    _ensure_worker()
+    _ensure_worker();autonomous_paper.ensure_started()
     return runtime
 
 

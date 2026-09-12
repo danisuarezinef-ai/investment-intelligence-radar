@@ -24,7 +24,7 @@ jobs:
           print('PROTECTED_DIGEST='+d['digest'])
           print('PROTECTED_FILES='+str(d['files']))
           PY
-      - name: Verify Cloud v7/v8 task surfaces
+      - name: Verify Cloud v7-v9 task surfaces
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
@@ -32,7 +32,7 @@ jobs:
           endpoints=(pre160-audit-201-270-v1 pre160-resilience-v7 pre160-data-authority-v7 pre160-statistical-validity-v7 pre160-autonomy-v7 pre160-master-gate-v3 pre160-cache-v7 pre160-deployment-v7)
           for endpoint in "${endpoints[@]}"; do
             ok=0
-            for attempt in $(seq 1 24); do
+            for attempt in $(seq 1 48); do
               code=$(curl -sS -o "/tmp/$endpoint.json" -w '%{http_code}' --max-time 10 "$BASE_URL/$endpoint" || true)
               if [ "$code" = "200" ]; then ok=1; break; fi
               sleep 5
@@ -64,16 +64,23 @@ jobs:
           print(name,'PASS HTTP boundary',d.get('status'))
           PY
           done
-      - name: Verify exact Railway deployed source SHA and v8 start command
+      - name: Verify exact Railway deployed source SHA and current v9 start command
         env:
           EXPECTED_SHA: ${{ github.sha }}
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
           set -euo pipefail
-          grep -q 'exec python cloud_service_v8.py' start.sh
+          grep -q 'exec python cloud_service_v9.py' start.sh
+          python - <<'PY'
+          from pathlib import Path
+          v9=Path('cloud_service_v9.py').read_text(encoding='utf-8')
+          v8=Path('cloud_service_v8.py').read_text(encoding='utf-8')
+          assert 'import cloud_service_v8 as base8' in v9
+          assert 'import cloud_service_v7 as base7' in v8
+          PY
           test "$(python -c "import json;print(json.load(open('version.json'))['version'])")" = "1.5.28"
           matched=0
-          for attempt in $(seq 1 24); do
+          for attempt in $(seq 1 48); do
             code=$(curl -sS -o /tmp/deployment.json -w '%{http_code}' --max-time 10 "$BASE_URL/pre160-deployment-v7" || true)
             if [ "$code" = "200" ]; then
               if EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'

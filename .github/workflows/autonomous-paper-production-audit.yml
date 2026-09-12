@@ -1,0 +1,91 @@
+name: Autonomous PAPER Production Audit
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  autonomous-paper-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frozen safety boundary
+        run: |
+          python - <<'PY'
+          import json
+          assert json.load(open('version.json',encoding='utf-8-sig'))['version']=='1.5.28'
+          assert 'exec python cloud_service_v9.py' in open('start.sh',encoding='utf-8').read()
+          import radar_autonomous_paper_control_v1 as c
+          assert c.REAL_TRADING is False
+          PY
+      - name: Wait for exact Railway SHA
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          matched=0
+          for attempt in $(seq 1 72); do
+            code=$(curl -sS -o /tmp/deploy.json -w '%{http_code}' --max-time 10 "$BASE_URL/pre160-deployment-v7" || true)
+            if [ "$code" = "200" ] && EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/deploy.json'));assert d.get('deployed_sha')==os.environ['EXPECTED_SHA'];assert d.get('real_trading') is False
+          PY
+            then matched=1;break;fi
+            sleep 5
+          done
+          test "$matched" = "1" || { echo exact Railway SHA not active; exit 1; }
+      - name: Verify autonomous simulator gate and durable checkpoint
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          set -euo pipefail
+          ready=0
+          for attempt in $(seq 1 72); do
+            for endpoint in autonomous-simulator/gate-v1 autonomous-simulator/dashboard-v1 autonomous-simulator/control-v1 autonomous-simulator/watchdog-v1 autonomous-simulator/milestones-v1 simulator-status-v1 autonomy-soak-v1 persistent-authority-v1; do
+              curl -sS --max-time 10 "$BASE_URL/$endpoint" -o "/tmp/${endpoint//\//_}.json" || true
+            done
+            if python - <<'PY'
+          import json
+          gate=json.load(open('/tmp/autonomous-simulator_gate-v1.json'))
+          dash=json.load(open('/tmp/autonomous-simulator_dashboard-v1.json'))
+          ctl=json.load(open('/tmp/autonomous-simulator_control-v1.json'))
+          sim=json.load(open('/tmp/simulator-status-v1.json'))
+          authority=json.load(open('/tmp/persistent-authority-v1.json'))
+          assert gate.get('status')=='SIMULATOR_READY',gate
+          assert gate.get('real_trading') is False and gate.get('live_execution_allowed') is False
+          assert gate.get('automatic_promotion') is False and gate.get('brain_readiness_required') is False
+          assert dash.get('banner')=='SIMULATION ONLY — NO REAL MONEY'
+          assert ctl.get('started') is True and ctl.get('duplicate_simulator_started') is False
+          assert ctl.get('last_checkpoint_id'),ctl
+          assert sim.get('active') is True and sim.get('real_trading') is False
+          assert (sim.get('paper') or {}).get('enabled') is True
+          assert authority.get('status') not in ('RESTORE_FAILED_FAIL_CLOSED','FAILED'),authority
+          PY
+            then ready=1;break;fi
+            sleep 5
+          done
+          test "$ready" = "1" || { echo autonomous PAPER gate never became ready; cat /tmp/autonomous-simulator_gate-v1.json; cat /tmp/autonomous-simulator_control-v1.json; exit 1; }
+      - name: Verify milestones are real-time only and learning remains PAPER-only
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          curl -sS --max-time 10 "$BASE_URL/autonomous-simulator/milestones-v1" -o /tmp/milestones.json
+          curl -sS --max-time 10 "$BASE_URL/autonomous-simulator/learning-agenda-v1" -o /tmp/agenda.json
+          python - <<'PY'
+          import json
+          m=json.load(open('/tmp/milestones.json'));a=json.load(open('/tmp/agenda.json'))
+          assert m.get('session_id') and m.get('started_at')
+          for row in (m.get('milestones') or {}).values():
+              assert row.get('status') in ('PASS','PENDING_TIME')
+              assert row.get('backfill_allowed') is False
+          assert a.get('backtests_role')=='HYPOTHESIS_GENERATION_ONLY'
+          assert a.get('historical_can_promote') is False
+          assert a.get('automatic_champion_replacement') is False
+          assert a.get('real_trading') is False
+          print('AUTONOMOUS_PAPER_START_OBSERVATION='+json.dumps({'session_id':m.get('session_id'),'started_at':m.get('started_at'),'elapsed_hours':m.get('elapsed_hours'),'milestones':m.get('milestones'),'real_trading':False},sort_keys=True))
+          PY
