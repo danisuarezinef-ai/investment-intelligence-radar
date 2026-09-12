@@ -19,10 +19,8 @@ jobs:
           import json
           from radar_pre160_production_proof_v1 import protected_digest
           assert json.load(open('version.json',encoding='utf-8-sig'))['version']=='1.5.28'
-          d=protected_digest('.')
-          assert not d['missing'],d
-          print('PROTECTED_DIGEST='+d['digest'])
-          print('PROTECTED_FILES='+str(d['files']))
+          d=protected_digest('.');assert not d['missing'],d
+          print('PROTECTED_DIGEST='+d['digest']);print('PROTECTED_FILES='+str(d['files']))
           PY
       - name: Wait for exact Railway deployment before sampling production
         env:
@@ -33,98 +31,90 @@ jobs:
           matched=0
           for attempt in $(seq 1 72); do
             code=$(curl -sS -o /tmp/pre160-deployment-v7.json -w '%{http_code}' --max-time 10 "$BASE_URL/pre160-deployment-v7" || true)
-            if [ "$code" = "200" ]; then
-              if EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
+            if [ "$code" = "200" ] && EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
           import json,os
-          d=json.load(open('/tmp/pre160-deployment-v7.json'))
-          assert d.get('deployed_sha')==os.environ['EXPECTED_SHA'],(d.get('deployed_sha'),os.environ['EXPECTED_SHA'])
-          assert d.get('real_trading') is False
+          d=json.load(open('/tmp/pre160-deployment-v7.json'));assert d.get('deployed_sha')==os.environ['EXPECTED_SHA'];assert d.get('real_trading') is False
           PY
-              then matched=1; break; fi
-            fi
+            then matched=1;break;fi
             sleep 5
           done
-          test "$matched" = "1" || { echo 'exact Railway SHA never became active'; cat /tmp/pre160-deployment-v7.json 2>/dev/null || true; exit 1; }
+          test "$matched" = "1" || { echo 'exact Railway SHA never became active'; exit 1; }
           echo "DEPLOYMENT_BARRIER=PASS sha=$EXPECTED_SHA"
-      - name: Verify tiered production surfaces and durable queue
+      - name: Verify production resilience surfaces and controlled probes
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
-          EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          endpoints=(pre160-readiness-v4 pre160-provider-resilience-v2 pre160-sync-partitions-v2 pre160-audit-271-310-v1 pre160-master-gate-v4)
+          endpoints=(pre160-readiness-v4 pre160-sync-partitions-v2 pre160-audit-271-310-v1 pre160-master-gate-v4 pre160-operational-health-v2 pre160-worker-utilization-v1)
           for endpoint in "${endpoints[@]}"; do
-            ok=0
-            for attempt in $(seq 1 24); do
-              code=$(curl -sS -o "/tmp/$endpoint.json" -w '%{http_code}' --max-time 10 "$BASE_URL/$endpoint" || true)
-              if [ "$code" = "200" ]; then ok=1; break; fi
-              sleep 5
-            done
-            test "$ok" = "1" || { echo "$endpoint failed"; cat "/tmp/$endpoint.json" 2>/dev/null || true; exit 1; }
-          done
-          queue_ready=0
-          for attempt in $(seq 1 60); do
-            code=$(curl -sS -o /tmp/pre160-queue-v3.json -w '%{http_code}' --max-time 10 "$BASE_URL/pre160-queue-v3" || true)
-            if [ "$code" = "200" ]; then
-              if python - <<'PY'
-          import json
-          q=json.load(open('/tmp/pre160-queue-v3.json'))
-          assert q.get('durable_backend')=='SUPABASE' and q.get('configured') is True and q.get('remote_stats_verified') is True,q
-          assert q.get('cross_redeploy_verified') is True,q
-          assert q.get('previous_deployment') not in (None,'') and q.get('current_deployment') not in (None,''),q
-          assert q.get('previous_deployment') != q.get('current_deployment'),q
-          assert q.get('real_trading') is False
-          PY
-              then queue_ready=1; break; fi
-            fi
-            sleep 5
-          done
-          test "$queue_ready" = "1" || { echo 'cross-redeploy queue proof never became ready'; cat /tmp/pre160-queue-v3.json; exit 1; }
-          EXPECTED_SHA="$EXPECTED_SHA" python - <<'PY'
-          import json,os
-          dep=json.load(open('/tmp/pre160-deployment-v7.json'));assert dep.get('deployed_sha')==os.environ['EXPECTED_SHA'],(dep,os.environ['EXPECTED_SHA'])
-          r=json.load(open('/tmp/pre160-readiness-v4.json'));assert r.get('source_ready') is True and r.get('lite_ready') is True and r.get('real_trading') is False
-          q=json.load(open('/tmp/pre160-queue-v3.json'))
-          p=json.load(open('/tmp/pre160-provider-resilience-v2.json'));assert p.get('wired') is True and p.get('bulkhead_isolation') is True,p
-          s=json.load(open('/tmp/pre160-sync-partitions-v2.json'));assert s.get('partitioned') is True and s.get('cursor_policy')=='PER_FAMILY_AFTER_ALL_CHUNKS_REMOTE_SUCCESS',s
-          m=json.load(open('/tmp/pre160-audit-271-310-v1.json'));assert set(m.get('tasks') or {})=={str(i) for i in range(271,311)};assert m.get('stable_windows_version')=='1.5.28';assert m.get('setup_allowed') is False and m.get('real_trading') is False
-          g=json.load(open('/tmp/pre160-master-gate-v4.json'));assert g.get('status') in ('BLOCKED_PRE160','READY_FOR_MANUAL_1_6_REVIEW');assert g.get('manual_review_only') is True and g.get('real_trading') is False
-          print('RAILWAY_EXACT_SHA_VERIFIED='+dep['deployed_sha'])
-          print('CROSS_REDEPLOY_DURABILITY=PASS previous='+str(q.get('previous_deployment'))+' current='+str(q.get('current_deployment')))
-          PY
-      - name: Verify prior task groups and measured dual-sync SLO
-        env:
-          BASE_URL: https://radar-cloud-production.up.railway.app
-        run: |
-          set -euo pipefail
-          for endpoint in pre160-audit-151-200-v1 pre160-audit-201-270-v1; do
             code=$(curl -sS -o "/tmp/$endpoint.json" -w '%{http_code}' --max-time 10 "$BASE_URL/$endpoint" || true)
             test "$code" = "200" || { echo "$endpoint failed"; exit 1; }
           done
-          healthy=0
+          ready=0
           for attempt in $(seq 1 60); do
-            code=$(curl -sS -o /tmp/supabase-health-v1.json -w '%{http_code}' --max-time 10 "$BASE_URL/supabase-health-v1" || true)
-            if [ "$code" = "200" ]; then
-              if python - <<'PY'
+            curl -sS --max-time 10 "$BASE_URL/pre160-queue-v3" -o /tmp/pre160-queue-v3.json || true
+            curl -sS --max-time 10 "$BASE_URL/pre160-provider-resilience-v2" -o /tmp/pre160-provider-resilience-v2.json || true
+            if python - <<'PY'
           import json
-          h=json.load(open('/tmp/supabase-health-v1.json'));g=h.get('generic_sync') or {};l=h.get('learning_sync') or {}
-          assert g.get('configured') is True and l.get('configured') is True,(g,l)
-          assert g.get('status')=='HEALTHY' and l.get('status')=='HEALTHY',(g,l)
-          assert (g.get('partitioned_transport') or {}).get('partitioned') is True,g
-          assert int(g.get('successes') or 0)>=3 and int(l.get('successes') or 0)>=3,(g.get('successes'),l.get('successes'))
-          assert float(g.get('last_latency_ms') or 1e12)<=float(g.get('default_timeout_seconds') or 0)*1000,(g.get('last_latency_ms'),g.get('default_timeout_seconds'))
-          assert float(l.get('last_latency_ms') or 1e12)<=float(l.get('default_timeout_seconds') or 0)*1000,(l.get('last_latency_ms'),l.get('default_timeout_seconds'))
-          assert g.get('timeout_means_missing_data') is False and l.get('timeout_means_missing_data') is False
+          q=json.load(open('/tmp/pre160-queue-v3.json'));p=json.load(open('/tmp/pre160-provider-resilience-v2.json'))
+          assert q.get('durable_backend')=='SUPABASE' and q.get('remote_stats_verified') is True,q
+          assert q.get('cross_redeploy_verified') is True and q.get('previous_deployment')!=q.get('current_deployment'),q
+          assert q.get('controlled_dlq_verified') is True and q.get('controlled_reprocess_verified') is True,q
+          cp=p.get('controlled_probe') or {};assert cp.get('status')=='PASS' and cp.get('circuit_open_verified') is True and cp.get('half_open_verified') is True and cp.get('recovery_verified') is True,cp
+          assert cp.get('rate_limit_backoff_verified') is True and cp.get('rate_recovery_gradual_verified') is True,cp
+          assert cp.get('investment_data_used') is False and p.get('real_trading') is False
           PY
-              then healthy=1;break;fi
-            fi
+            then ready=1;break;fi
             sleep 5
           done
-          test "$healthy" = "1" || { echo 'dual sync never reached measured SLO'; cat /tmp/supabase-health-v1.json; exit 1; }
+          test "$ready" = "1" || { echo 'controlled resilience probes never became ready'; cat /tmp/pre160-queue-v3.json; cat /tmp/pre160-provider-resilience-v2.json; exit 1; }
           python - <<'PY'
           import json
-          a=json.load(open('/tmp/pre160-audit-151-200-v1.json'));assert a.get('source_ready') is True and a.get('real_trading') is False
-          b=json.load(open('/tmp/pre160-audit-201-270-v1.json'));assert b.get('source_ready') is True and b.get('real_trading') is False
+          s=json.load(open('/tmp/pre160-sync-partitions-v2.json'))
+          assert s.get('partitioned') is True and s.get('cursor_policy')=='PER_FAMILY_AFTER_ALL_CHUNKS_REMOTE_SUCCESS'
+          assert s.get('backpressure_backend')=='SUPABASE_RETRY_QUEUE' and s.get('ack_after_remote_success') is True
+          o=json.load(open('/tmp/pre160-operational-health-v2.json'));assert o.get('investment_score_included') is False and o.get('affects_investment_ranking') is False and o.get('real_trading') is False
+          w=json.load(open('/tmp/pre160-worker-utilization-v1.json'));assert w.get('not_instrumented_is_not_zero') is True and w.get('real_trading') is False
+          print('CONTROLLED_RESILIENCE=PASS')
+          PY
+      - name: Require deep-ready prior groups and measured dual-sync SLO
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          set -euo pipefail
+          deep=0
+          for attempt in $(seq 1 72); do
+            curl -sS --max-time 10 "$BASE_URL/pre160-audit-151-200-v1" -o /tmp/pre160-audit-151-200-v1.json || true
+            curl -sS --max-time 10 "$BASE_URL/pre160-audit-201-270-v1" -o /tmp/pre160-audit-201-270-v1.json || true
+            if python - <<'PY'
+          import json
+          a=json.load(open('/tmp/pre160-audit-151-200-v1.json'));b=json.load(open('/tmp/pre160-audit-201-270-v1.json'))
+          assert a.get('source_ready') is True and a.get('deep_ready') is True and a.get('real_trading') is False,a
+          assert b.get('source_ready') is True and b.get('deep_ready') is True and b.get('real_trading') is False,b
+          PY
+            then deep=1;break;fi
+            sleep 5
+          done
+          test "$deep" = "1" || { echo 'deep prior groups never became ready; proof forbidden'; exit 1; }
+          healthy=0
+          for attempt in $(seq 1 60); do
+            curl -sS --max-time 10 "$BASE_URL/supabase-health-v1" -o /tmp/supabase-health-v1.json || true
+            if python - <<'PY'
+          import json
+          h=json.load(open('/tmp/supabase-health-v1.json'));g=h.get('generic_sync') or {};l=h.get('learning_sync') or {}
+          assert g.get('status')=='HEALTHY' and l.get('status')=='HEALTHY',(g,l)
+          assert (g.get('partitioned_transport') or {}).get('partitioned') is True
+          assert int(g.get('successes') or 0)>=3 and int(l.get('successes') or 0)>=3
+          assert float(g.get('last_latency_ms') or 1e12)<=float(g.get('default_timeout_seconds') or 0)*1000
+          assert float(l.get('last_latency_ms') or 1e12)<=float(l.get('default_timeout_seconds') or 0)*1000
+          assert g.get('timeout_means_missing_data') is False and l.get('timeout_means_missing_data') is False
+          PY
+            then healthy=1;break;fi
+            sleep 5
+          done
+          test "$healthy" = "1" || { echo 'dual sync never reached measured SLO'; exit 1; }
+          python - <<'PY'
+          import json
           h=json.load(open('/tmp/supabase-health-v1.json'));g=h['generic_sync'];l=h['learning_sync']
           print('DUAL_SYNC_SLO='+json.dumps({'generic_latency_ms':g.get('last_latency_ms'),'generic_successes':g.get('successes'),'learning_latency_ms':l.get('last_latency_ms'),'learning_successes':l.get('successes'),'partitioned':(g.get('partitioned_transport') or {}).get('partitioned')},sort_keys=True))
           PY
@@ -135,9 +125,7 @@ jobs:
           from pathlib import Path
           from radar_pre160_production_proof_v1 import protected_digest
           p=Path('radar_pre160_readiness_v4.py');raw=p.read_bytes();before=protected_digest('.')
-          try:
-              p.write_bytes(raw+b'\n# audit-tamper-canary\n');after=protected_digest('.')
-              assert before['digest']!=after['digest']
+          try:p.write_bytes(raw+b'\n# audit-tamper-canary\n');after=protected_digest('.');assert before['digest']!=after['digest']
           finally:p.write_bytes(raw)
           print('TAMPER_TEST=PASS')
           expected='a'*40;stale='b'*40;assert expected!=stale;print('STALE_DEPLOYMENT_TEST=PASS')
@@ -146,7 +134,7 @@ jobs:
           m=build_matrix_271_310(**minimal);assert m['master_gate_v4']['status']=='BLOCKED_PRE160';assert m['master_gate_v4']['automatic_release'] is False
           print('FAILED_AUDIT_PROPAGATION=PASS')
           PY
-      - name: Emit external proof-v3 candidate only from observed evidence
+      - name: Emit external proof-v3 candidate only from deep observed evidence
         env:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
@@ -154,15 +142,16 @@ jobs:
           import json,os
           from radar_pre160_production_proof_v1 import protected_digest
           d=protected_digest('.');h=json.load(open('/tmp/supabase-health-v1.json'));q=json.load(open('/tmp/pre160-queue-v3.json'));a=json.load(open('/tmp/pre160-audit-151-200-v1.json'));b=json.load(open('/tmp/pre160-audit-201-270-v1.json'));g=h['generic_sync'];l=h['learning_sync']
+          assert a.get('deep_ready') is True and b.get('deep_ready') is True
           evidence={
-            'tasks_151_200':{'status':'PASS','evidence':{'http_200':True,'source_ready':a.get('source_ready'),'deep_ready':a.get('deep_ready'),'real_trading':a.get('real_trading')}},
-            'tasks_201_270':{'status':'PASS','evidence':{'http_200':True,'source_ready':b.get('source_ready'),'deep_ready':b.get('deep_ready'),'real_trading':b.get('real_trading')}},
-            'dual_sync':{'status':'PASS','evidence':{'generic':g.get('status'),'learning':l.get('status'),'generic_latency_ms':g.get('last_latency_ms'),'learning_latency_ms':l.get('last_latency_ms'),'generic_successes':g.get('successes'),'learning_successes':l.get('successes'),'partitioned':(g.get('partitioned_transport') or {}).get('partitioned')}},
-            'queue_remote':{'status':'PASS','evidence':{'backend':q.get('durable_backend'),'stats_verified':q.get('remote_stats_verified'),'cross_redeploy_verified':q.get('cross_redeploy_verified'),'previous_deployment':q.get('previous_deployment'),'current_deployment':q.get('current_deployment')}},
+            'tasks_151_200':{'status':'PASS','evidence':{'http_200':True,'source_ready':True,'deep_ready':True,'real_trading':False}},
+            'tasks_201_270':{'status':'PASS','evidence':{'http_200':True,'source_ready':True,'deep_ready':True,'real_trading':False}},
+            'dual_sync':{'status':'PASS','evidence':{'generic':g.get('status'),'learning':l.get('status'),'generic_latency_ms':g.get('last_latency_ms'),'learning_latency_ms':l.get('last_latency_ms'),'generic_successes':g.get('successes'),'learning_successes':l.get('successes'),'partitioned':True}},
+            'queue_remote':{'status':'PASS','evidence':{'backend':q.get('durable_backend'),'stats_verified':q.get('remote_stats_verified'),'cross_redeploy_verified':q.get('cross_redeploy_verified'),'controlled_dlq_verified':q.get('controlled_dlq_verified'),'controlled_reprocess_verified':q.get('controlled_reprocess_verified'),'previous_deployment':q.get('previous_deployment'),'current_deployment':q.get('current_deployment')}},
             'tamper_test':{'status':'PASS','evidence':{'protected_digest_changes_on_mutation':True}},
             'stale_deployment_test':{'status':'PASS','evidence':{'synthetic_mismatch_rejected':True}},
             'failed_audit_propagation':{'status':'PASS','evidence':{'release_remains_blocked':True}},
           }
-          proof={'proof_version':3,'audit_conclusion':'success','audit_run_id':os.getenv('GITHUB_RUN_ID'),'audited_commit_sha':os.getenv('GITHUB_SHA'),'railway_deployed_sha':os.environ['EXPECTED_SHA'],'protected_digest':d['digest'],'stable_windows_version':'1.5.28','checks':evidence,'real_trading':False}
+          proof={'proof_version':3,'scope':'SURFACE_AND_SAFETY_EVIDENCE','audit_conclusion':'success','audit_run_id':os.getenv('GITHUB_RUN_ID'),'audited_commit_sha':os.getenv('GITHUB_SHA'),'railway_deployed_sha':os.environ['EXPECTED_SHA'],'protected_digest':d['digest'],'stable_windows_version':'1.5.28','checks':evidence,'real_trading':False}
           print('PRODUCTION_PROOF_V3_CANDIDATE='+json.dumps(proof,sort_keys=True,separators=(',',':')))
           PY

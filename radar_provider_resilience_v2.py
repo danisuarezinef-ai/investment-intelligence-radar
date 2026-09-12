@@ -1,7 +1,8 @@
 """Runtime provider resilience primitives for tasks 291-300.
 
 These controls regulate transport only. They cannot authorize releases, promotions,
-or real trading.
+or real trading. `controlled_resilience_probe` exercises the deployed state machine with
+synthetic transport failures only; it never calls a market provider or carries investment data.
 """
 from __future__ import annotations
 
@@ -64,7 +65,6 @@ class AdaptiveRateGovernor:
 class ProviderCircuit:
     def __init__(self, failure_threshold=3, cooldown_seconds=90.0):
         self.threshold = max(2, int(failure_threshold))
-        # Production passes 90s. Allow sub-second values for deterministic simulation/tests.
         self.cooldown = max(0.001, float(cooldown_seconds))
         self._lock = threading.RLock()
         self._states = defaultdict(lambda: {'failures': 0, 'opened_at': None, 'half_open_probe': False, 'recoveries': 0})
@@ -173,6 +173,50 @@ class ProviderTransportGuard:
         }
 
 
+def controlled_resilience_probe():
+    """Run a safe in-process production self-test of circuit and rate-governor transitions."""
+    name = 'pre160-controlled-transport-probe'
+    guard = ProviderTransportGuard(max_concurrency=1, failure_threshold=2, cooldown_seconds=0.01)
+
+    def fail_timeout():
+        raise TimeoutError('controlled transport timeout')
+
+    for _ in range(2):
+        try:
+            guard.call(name, fail_timeout, timeout=0.5)
+        except Exception:
+            pass
+    opened = guard.circuits.state(name) == 'OPEN'
+    time.sleep(0.015)
+    half_open = guard.circuits.state(name) == 'HALF_OPEN'
+    recovered = False
+    if guard.circuits.allow(name):
+        guard.circuits.success(name)
+        recovered = guard.circuits.state(name) == 'CLOSED'
+
+    rate = AdaptiveRateGovernor(min_interval_seconds=0.0, max_interval_seconds=2.0)
+    rate.failure(name, '429')
+    after_429 = float((rate.telemetry().get('interval_seconds') or {}).get(name) or 0.0)
+    rate.success(name)
+    after_success = float((rate.telemetry().get('interval_seconds') or {}).get(name) or 0.0)
+    rate_ok = after_429 > 0 and after_success < after_429
+
+    status = 'PASS' if opened and half_open and recovered and rate_ok else 'FAILED'
+    return {
+        'status': status,
+        'scope': 'CONTROLLED_RUNTIME_TRANSPORT_SELF_TEST',
+        'circuit_open_verified': opened,
+        'half_open_verified': half_open,
+        'recovery_verified': recovered,
+        'rate_limit_backoff_verified': after_429 > 0,
+        'rate_recovery_gradual_verified': rate_ok,
+        'external_provider_failover_verified': False,
+        'investment_data_used': False,
+        'can_trade': False,
+        'real_trading': False,
+    }
+
+
 def resilience_contract():
     return {
         'bulkhead_isolation': True,
@@ -181,5 +225,6 @@ def resilience_contract():
         'provider_failover_requires_two_verified_sources': True,
         'reconciliation_requires_remote_compare': True,
         'network_partition_testable': True,
+        'controlled_runtime_probe_available': True,
         'real_trading': False,
     }
