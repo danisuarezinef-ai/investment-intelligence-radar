@@ -15,7 +15,7 @@ PROTECTED_PATHS=(
  'radar_supabase_sync.py','radar_learning_sync.py','radar_forward_outcome_sync_v1.py','radar_closed_loop_runtime_v1.py','radar_champion_challenger_v1.py','radar_learning_engine_v3.py','radar_validation_runtime_v3.py',
  'radar_pre160_cloud_v3.py','radar_pre160_cloud_v4.py','radar_pre160_runtime_v3.py','radar_pre160_runtime_v4.py','radar_pre160_runtime_v4_linkage.py','radar_pre160_runtime_v5.py',
  'radar_pre160_controls_v6.py','radar_pre160_controls_v7.py','radar_pre160_resilience_v7.py','radar_pre160_data_authority_v7.py','radar_pre160_statistics_v7.py','radar_pre160_autonomy_v7.py','radar_pre160_cache_v7.py',
- 'radar_market_data_authority_v1.py','radar_raw_vault_v1.py','radar_sync_queue_v2.py',
+ 'radar_market_data_authority_v1.py','radar_provider_resilience_v1.py','radar_raw_vault_v1.py','radar_sync_queue_v2.py',
  'radar_pre160_recovery_v2.py','radar_pre160_release_authority_v2.py','radar_pre160_production_proof_v1.py','radar_pre160_persistence_v1.py','radar_pre160_evidence_persistence_v1.py','radar_pre160_hardening_persistence_v1.py',
  'radar_paper_engine_persistence_v1.py','radar_agents.py','radar_champion_portfolio.py','radar_causal_scoring_v2.py','radar_promotion_governance_v2.py',
  'supabase/functions/radar-sync/index.ts','supabase/functions/radar-learning-sync/index.ts','supabase/functions/radar-paper-engine-checkpoint/index.ts','supabase/functions/radar-pre160-evidence/index.ts','supabase/functions/radar-pre160-hardening/index.ts',
