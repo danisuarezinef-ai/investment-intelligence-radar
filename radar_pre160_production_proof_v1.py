@@ -11,8 +11,8 @@ from pathlib import Path
 REAL_TRADING=False
 DEFAULT_PROOF_PATH='PRE160_PRODUCTION_PROOF.json'
 PROTECTED_PATHS=(
- 'version.json','start.sh','cloud_service_v3.py','cloud_service_v4.py','cloud_service_v5.py','cloud_service_v6.py','cloud_service_v7.py',
- 'radar_supabase_sync.py','radar_learning_sync.py','radar_forward_outcome_sync_v1.py','radar_closed_loop_runtime_v1.py','radar_champion_challenger_v1.py','radar_learning_engine_v3.py','radar_validation_runtime_v3.py',
+ 'version.json','start.sh','cloud_service_v3.py','cloud_service_v4.py','cloud_service_v5.py','cloud_service_v6.py','cloud_service_v7.py','cloud_service_v8.py',
+ 'radar_supabase_sync.py','radar_supabase_sync_partitioned_v2.py','radar_learning_sync.py','radar_forward_outcome_sync_v1.py','radar_closed_loop_runtime_v1.py','radar_champion_challenger_v1.py','radar_learning_engine_v3.py','radar_validation_runtime_v3.py',
  'radar_pre160_cloud_v3.py','radar_pre160_cloud_v4.py','radar_pre160_runtime_v3.py','radar_pre160_runtime_v4.py','radar_pre160_runtime_v4_linkage.py','radar_pre160_runtime_v5.py',
  'radar_pre160_controls_v6.py','radar_pre160_controls_v7.py','radar_pre160_controls_v8.py','radar_pre160_resilience_v7.py','radar_pre160_data_authority_v7.py','radar_pre160_statistics_v7.py','radar_pre160_autonomy_v7.py','radar_pre160_cache_v7.py','radar_pre160_readiness_v4.py',
  'radar_market_data_authority_v1.py','radar_provider_resilience_v1.py','radar_provider_resilience_v2.py','radar_raw_vault_v1.py','radar_sync_queue_v2.py','radar_sync_queue_v3.py',
