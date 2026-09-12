@@ -32,3 +32,5 @@ jobs:
         run: python tools/pre160_311_370_integrity_ci.py
       - name: Autonomous PAPER priorities 16-40 integrity audit
         run: python tools/autonomous_learning_16_40_integrity_ci.py
+      - name: Autonomous PAPER priorities 41-60 integrity audit
+        run: python tools/autonomous_learning_41_60_integrity_ci.py
