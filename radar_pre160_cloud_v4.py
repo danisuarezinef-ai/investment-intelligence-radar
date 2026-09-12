@@ -40,8 +40,8 @@ def hardening_authority_report(limit=500):
             'setup_allowed':False,'automatic_release':False,'automatic_promotion':False,'automatic_demotion':False,'can_trade':False,'real_trading':False}
 
 
-def tasks_111_130_audit():
-    try:s=hardening_snapshot_v4()
+def tasks_111_130_audit(snapshot=None):
+    try:s=snapshot if isinstance(snapshot,dict) else hardening_snapshot_v4()
     except Exception as exc:return {'status':'DEGRADED','error':str(exc)[:700],'tasks':{},'setup_allowed':False,'can_trade':False,'real_trading':False}
     c=s.get('checkpoint_continuity') or {};p=s.get('decision_envelope_provenance') or {};m=s.get('horizon_maturity') or {};cal=s.get('calibration_uncertainty') or {};bm=s.get('multi_benchmark_robustness') or {}
     t=s.get('turnover_cost_budget') or {};x=s.get('concentration_exposure') or {};r=s.get('regime_coverage') or {};pair=s.get('paired_champion_challenger') or {};sup=s.get('sequential_superiority') or {};deg=s.get('persistent_degradation') or {};count=s.get('readiness_countdown') or {}
@@ -61,8 +61,8 @@ def tasks_111_130_audit():
             'setup_allowed':False,'automatic_release':False,'automatic_promotion':False,'automatic_demotion':False,'can_trade':False,'real_trading':False}
 
 
-def tasks_131_150_audit():
-    try:s=hardening_snapshot_v4()
+def tasks_131_150_audit(snapshot=None):
+    try:s=snapshot if isinstance(snapshot,dict) else hardening_snapshot_v4()
     except Exception as exc:return {'status':'DEGRADED','error':str(exc)[:700],'tasks':{},'setup_allowed':False,'can_trade':False,'real_trading':False}
     p=s.get('decision_envelope_provenance') or {};trace=s.get('decision_trace') or {};source=s.get('envelope_source') or {};regime=s.get('regime_coverage') or {}
     exact=int(p.get('transactional_exact') or 0);fallback=int(p.get('ledger_fallback') or 0);versions=int(p.get('strategy_versions_missing') or 0)
