@@ -2,7 +2,8 @@
 
 This transport layer has no trading or release authority. Queue ids are content-addressed,
 ACKs are issued only after the caller confirms remote success, and durability is verified
-across Railway deployment identities via a harmless probe row.
+across Railway deployment identities via harmless probe rows. Controlled DLQ probes contain
+no market, portfolio, order or investment data.
 """
 from __future__ import annotations
 
@@ -32,6 +33,10 @@ _STATE = {
     'previous_deployment': None,
     'current_deployment': None,
     'probe_epoch': None,
+    'controlled_dlq_verified': False,
+    'controlled_reprocess_verified': False,
+    'controlled_probe_error': None,
+    'controlled_probe_epoch': None,
 }
 
 
@@ -140,6 +145,20 @@ def fail(items, *, max_attempts=MAX_ATTEMPTS):
     return out
 
 
+def dead_letters(channel=None, limit=100):
+    out = _post('dead', channel=str(channel or ''), limit=max(1, min(200, int(limit))))
+    return list(out.get('items') or [])
+
+
+def requeue_dead_letter(ids):
+    ids = [str(x) for x in ids if x]
+    if not ids:
+        return {'ok': True, 'requeued': 0, 'real_trading': False}
+    out = _post('requeue', ids=ids[:100])
+    out['real_trading'] = False
+    return out
+
+
 def remote_stats():
     out = _post('stats')
     with _LOCK:
@@ -148,11 +167,7 @@ def remote_stats():
 
 
 def durability_probe():
-    """Verify that a probe written by a prior Railway deployment is still present.
-
-    The probe never carries market/trade data. A new deployment removes prior probe rows
-    only after observing them, then writes its own marker for the next deployment.
-    """
+    """Verify that a probe written by a prior Railway deployment is still present."""
     current = _deployment_id()
     channel = 'pre160_durability_probe'
     probe = _post('probe', channel=channel)
@@ -170,6 +185,64 @@ def durability_probe():
     return probe_telemetry()
 
 
+def controlled_dlq_probe():
+    """Exercise remote retry→DLQ→requeue→ACK with a harmless non-investment payload.
+
+    This probe is intentionally isolated on its own channel. It never contains symbols,
+    prices, allocations, orders or portfolio state and cannot authorize any action.
+    """
+    if not enabled():
+        return {'status': 'NOT_CONFIGURED', 'real_trading': False}
+    channel = 'pre160_controlled_dlq_probe'
+    current = _deployment_id()
+    payload = {
+        'kind': 'invalid_probe',
+        'deployment': current,
+        'nonce_epoch': round(time.time(), 6),
+        'investment_data': False,
+        'trading': False,
+    }
+    qid = None
+    try:
+        qid = enqueue(channel, payload, origin_deployment=current)['id']
+        final = None
+        for _ in range(MAX_ATTEMPTS):
+            final = fail([{'id': qid, 'error': 'controlled_invalid_probe', 'retry_after_seconds': 1}], max_attempts=MAX_ATTEMPTS)
+        dead = dead_letters(channel, 20)
+        in_dead = any(str(x.get('id')) == qid for x in dead)
+        if not in_dead or int((final or {}).get('dead') or 0) < 1:
+            raise RuntimeError('controlled probe did not reach remote dead letter')
+        requeued = requeue_dead_letter([qid])
+        if int(requeued.get('requeued') or 0) != 1:
+            raise RuntimeError('controlled dead-letter probe was not requeued')
+        remaining_dead = dead_letters(channel, 20)
+        if any(str(x.get('id')) == qid for x in remaining_dead):
+            raise RuntimeError('controlled probe remained in dead letter after requeue')
+        acknowledge([qid])
+        with _LOCK:
+            _STATE['controlled_dlq_verified'] = True
+            _STATE['controlled_reprocess_verified'] = True
+            _STATE['controlled_probe_error'] = None
+            _STATE['controlled_probe_epoch'] = time.time()
+        return {'status': 'PASS', 'id': qid, 'dead_letter_verified': True,
+                'reprocess_verified': True, 'cleaned_up': True, 'real_trading': False}
+    except Exception as exc:
+        # Best-effort cleanup must never hide the failure.
+        if qid:
+            try:
+                requeue_dead_letter([qid])
+            except Exception:
+                pass
+            try:
+                acknowledge([qid])
+            except Exception:
+                pass
+        with _LOCK:
+            _STATE['controlled_probe_error'] = f'{type(exc).__name__}: {str(exc)[:500]}'
+            _STATE['controlled_probe_epoch'] = time.time()
+        raise
+
+
 def probe_telemetry():
     with _LOCK:
         s = dict(_STATE)
@@ -182,6 +255,7 @@ def probe_telemetry():
         'ack_after_remote_success': True,
         'content_addressed_ids': True,
         'max_attempts': MAX_ATTEMPTS,
+        'controlled_probe_is_non_investment': True,
         'real_trading': False,
     })
     return s
@@ -195,6 +269,8 @@ def queue_contract():
         'remote_stats_verified': isinstance(t.get('last_stats'), dict) and t['last_stats'].get('ok') is True,
         'cross_redeploy_verified': t.get('cross_redeploy_verified') is True,
         'dead_letter': t.get('dead_letter_remote') is True,
+        'controlled_dlq_verified': t.get('controlled_dlq_verified') is True,
+        'controlled_reprocess_verified': t.get('controlled_reprocess_verified') is True,
         'max_attempts': MAX_ATTEMPTS,
         'ack_after_remote_success': True,
         'idempotency_key': 'sha256(channel+canonical_payload)',
