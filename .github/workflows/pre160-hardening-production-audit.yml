@@ -7,7 +7,7 @@ permissions:
 jobs:
   production-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Verify no Windows release bump
@@ -18,12 +18,12 @@ jobs:
           assert v=='1.5.28', v
           print('Windows stable remains',v)
           PY
-      - name: Verify 91-130 production endpoints and trading boundary
+      - name: Verify 91-150 production endpoints and trading boundary
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
           set -euo pipefail
-          endpoints=(pre160-evidence-v1 pre160-readiness-v2 pre160-evidence-authority-v1 pre160-audit-v1 pre160-hardening-v1 pre160-hardening-authority-v1 pre160-audit-111-130-v1)
+          endpoints=(pre160-evidence-v1 pre160-readiness-v2 pre160-evidence-authority-v1 pre160-audit-v1 pre160-hardening-v1 pre160-hardening-authority-v1 pre160-audit-111-130-v1 pre160-audit-131-150-v1 pre160-readiness-board-v1 decision-provenance-v1)
           for endpoint in "${endpoints[@]}"; do
             ok=0
             for attempt in $(seq 1 12); do
@@ -37,8 +37,45 @@ jobs:
           name,path=sys.argv[1:]
           data=json.load(open(path,encoding='utf-8'))
           assert data.get('real_trading') is False,(name,'real_trading boundary')
-          for field in ('setup_allowed','automatic_release','automatic_promotion','automatic_demotion'):
+          for field in ('setup_allowed','automatic_release','automatic_promotion','automatic_demotion','can_trade'):
               if field in data: assert data.get(field) is False,(name,field)
+          if name=='decision-provenance-v1':
+              assert data.get('natural_evidence_only') is True,data
+              assert data.get('backfill_allowed') is False,data
+              trace=data.get('decision_trace') or {}
+              assert data.get('entry_linkage') in (None,'competitor+symbol+entry_ts'),data
+              assert data.get('uses_exit_fields_for_entry_linkage') is False,data
+              assert trace.get('uses_exit_fields_for_entry_linkage',False) is False,data
+          if name=='pre160-readiness-board-v1':
+              task150=data.get('task_150') or {}
+              assert task150.get('state') in ('PENDING_SAMPLE','PASS'),task150
+              allowed={'PASS','PENDING_TIME','PENDING_SAMPLE','NOT_VERIFIED','FAILED'}
+              for row in data.get('checks') or []: assert row.get('state') in allowed,row
           print(name,'HTTP 200',data.get('status'),'REAL_TRADING=false')
           PY
           done
+      - name: Verify Supabase resilience endpoint recovers healthy
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          set -euo pipefail
+          healthy=0
+          for attempt in $(seq 1 12); do
+            code=$(curl -sS -o /tmp/supabase-health.json -w '%{http_code}' --max-time 30 "$BASE_URL/supabase-health-v1" || true)
+            if [ "$code" = "200" ]; then
+              if python - <<'PY'
+          import json
+          d=json.load(open('/tmp/supabase-health.json',encoding='utf-8'))
+          assert d.get('real_trading') is False,d
+          assert d.get('configured') is True,d
+          assert d.get('timeout_means_missing_data') is False,d
+          assert d.get('empty_response_means_zero_evidence') is False,d
+          assert d.get('cursors_advance_only_after_remote_success') is True,d
+          assert d.get('status')=='HEALTHY',d
+          print('supabase-health-v1 HTTP 200 HEALTHY retries=',d.get('retry_attempts'),'recoveries=',d.get('recoveries'),'latency_ms=',d.get('last_latency_ms'))
+          PY
+              then healthy=1; break; fi
+            fi
+            sleep 10
+          done
+          test "$healthy" = "1" || { echo 'Supabase health did not become HEALTHY'; cat /tmp/supabase-health.json 2>/dev/null || true; exit 1; }
