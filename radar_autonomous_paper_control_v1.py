@@ -1,9 +1,11 @@
 """Autonomous PAPER learning control plane.
 
-This module starts and supervises the existing autonomous PAPER simulator, records
-content-addressed remote checkpoints, exposes an independent Simulator Autonomous
-Gate, and measures real-time 72h/7d/30d milestones. It never grants live-trading,
-release, champion-promotion, or forward-evidence authority.
+The simulator daemon and autonomy-soak daemon already belong to the production
+Cloud v3->v9 runtime. This layer never starts a second investment loop. It observes
+and supervises that existing runtime, records content-addressed remote checkpoints,
+exposes an independent Simulator Autonomous Gate, and measures real 72h/7d/30d
+milestones. It has no live-trading, release, champion-promotion, or forward-evidence
+authority.
 """
 from __future__ import annotations
 
@@ -59,24 +61,18 @@ def _remote_latest(kind:str):
         return None
 
 
-def restore_remote_state():
-    """Restore only simulator control metadata; PAPER money/state has its own authority."""
+def observe_remote_checkpoint():
+    """Observe extra control metadata only; the existing persistent authority owns restore."""
     item=_remote_latest(CHECKPOINT_KIND)
     if not item:
         with _LOCK:_STATE['remote_restore']='NO_REMOTE_CHECKPOINT'
-        return {'status':'NO_REMOTE_CHECKPOINT','real_trading':False}
+        return {'status':'NO_REMOTE_CHECKPOINT','restore_authority':'EXISTING_PERSISTENT_AUTHORITY_ONLY','real_trading':False}
     p=dict(item.get('payload') or {})
-    safe={k:p.get(k) for k in ('generation','completed_cycles','completed_experiments','last_cycle_at','last_research_at') if p.get(k) is not None}
-    # Never restore account balances, positions, orders, forward evidence, or promotion state here.
-    try:
-        if safe:
-            simulator._set(**safe)
-        with _LOCK:_STATE['remote_restore']='RESTORED_CONTROL_METADATA'
-        return {'status':'RESTORED_CONTROL_METADATA','fields':sorted(safe),'source_snapshot_id':item.get('id'),'real_trading':False}
-    except Exception as exc:
-        with _LOCK:
-            _STATE['remote_restore']='RESTORE_FAILED';_STATE['last_error']=f'{type(exc).__name__}: {str(exc)[:500]}'
-        return {'status':'RESTORE_FAILED','error':str(exc)[:500],'real_trading':False}
+    with _LOCK:_STATE['remote_restore']='REMOTE_CHECKPOINT_OBSERVED'
+    return {'status':'REMOTE_CHECKPOINT_OBSERVED','snapshot_id':item.get('id'),
+            'origin_deployment':item.get('origin_deployment'),'completed_cycles':p.get('completed_cycles'),
+            'completed_experiments':p.get('completed_experiments'),'last_cycle_at':p.get('last_cycle_at'),
+            'restore_authority':'EXISTING_PERSISTENT_AUTHORITY_ONLY','real_trading':False}
 
 
 def _load_or_create_session():
@@ -118,8 +114,7 @@ def simulator_gate(*,technical:dict[str,Any]|None=None,brain:dict[str,Any]|None=
       'automatic_live_promotion_blocked': sim.get('automatic_live_promotion') is False,
       'simulation_evidence_separated': sim.get('forward_evidence_mutated') is False,
     }
-    if technical:
-        checks['operational_health_not_failed']=technical.get('status') not in ('FAILED','CRITICAL')
+    if technical:checks['operational_health_not_failed']=technical.get('status') not in ('FAILED','CRITICAL')
     blockers=[k for k,v in checks.items() if not v]
     return {'status':'SIMULATOR_READY' if not blockers else 'NOT_READY','checks':checks,'blockers':blockers,
             'brain_readiness_required':False,'positive_alpha_required_to_simulate':False,
@@ -131,13 +126,11 @@ def simulator_gate(*,technical:dict[str,Any]|None=None,brain:dict[str,Any]|None=
 
 
 def watchdog_status(cycle_interval_seconds=900):
-    sim=simulator.simulator_status();last=sim.get('last_cycle_at');age=_age_seconds(last)
-    alerts=[]
+    sim=simulator.simulator_status();last=sim.get('last_cycle_at');age=_age_seconds(last);alerts=[]
     if sim.get('active') is not True:alerts.append('SIMULATOR_PAUSED')
     if sim.get('last_error'):alerts.append('SIMULATOR_ERROR')
     if age is not None and age>max(1800,int(cycle_interval_seconds)*3):alerts.append('SIMULATOR_CYCLE_STALE')
     if last is None:alerts.append('NO_AUTONOMOUS_CYCLE_OBSERVED_YET')
-    # Deliberately no per-trade alerts: only operational conditions belong here.
     severity='OK' if not alerts else ('WARMING' if alerts==['NO_AUTONOMOUS_CYCLE_OBSERVED_YET'] else 'ATTENTION')
     with _LOCK:_STATE['alerts']=list(alerts)
     return {'status':severity,'alerts':alerts,'last_cycle_at':last,'last_cycle_age_seconds':age,
@@ -184,8 +177,7 @@ def persist_latest_cycle_journal():
 
 def milestones():
     session=_load_or_create_session();start=_parse(session.get('started_at'));elapsed=max(0.0,(_utcnow()-start).total_seconds()/3600) if start else 0.0
-    targets={'72h':72.0,'7d':168.0,'30d':720.0};out={}
-    sim=simulator.simulator_status()
+    targets={'72h':72.0,'7d':168.0,'30d':720.0};out={};sim=simulator.simulator_status()
     for name,hours in targets.items():
         reached=elapsed>=hours
         out[name]={'status':'PASS' if reached else 'PENDING_TIME','required_hours':hours,'elapsed_hours':round(elapsed,3),
@@ -196,10 +188,9 @@ def milestones():
 
 
 def learning_agenda(brain:dict[str,Any]|None=None):
-    """Research agenda for tasks 20-38; proposals only, never automatic promotion."""
+    """Research agenda for priorities 20-38; proposals only, never automatic promotion."""
     brain=brain or {};tasks=brain.get('tasks') or {}
-    net=((tasks.get('355') or {}).get('evidence') or {}).get('mean_net_return')
-    abst=((tasks.get('350') or {}).get('state'))
+    net=((tasks.get('355') or {}).get('evidence') or {}).get('mean_net_return');abst=(tasks.get('350') or {}).get('state')
     horizons=((tasks.get('336') or {}).get('evidence') or {})
     return {'priority':'IMPROVE_FORWARD_NET_ALPHA','observed_mean_net_return':net,
       'experiments':[
@@ -219,8 +210,9 @@ def learning_agenda(brain:dict[str,Any]|None=None):
 
 def dashboard(*,technical=None,brain=None):
     sim=simulator.simulator_status();paper=sim.get('paper') or {};gate=simulator_gate(technical=technical,brain=brain)
-    return {'title':'Autonomous Simulator','banner':'SIMULATION ONLY — NO REAL MONEY',
-            'gate':gate,'watchdog':watchdog_status(),'session':_load_or_create_session(),'milestones':milestones(),
+    return {'title':'Autonomous Simulator','banner':'SIMULATION ONLY — NO REAL MONEY','gate':gate,
+            'watchdog':watchdog_status(),'session':_load_or_create_session(),'milestones':milestones(),
+            'autonomy_e2e':e2e.e2e_cycle_status(),'autonomy_soak':e2e.soak_status(),
             'balance':{'total':paper.get('total'),'cash':paper.get('cash'),'invested':paper.get('invested'),'pnl_pct':paper.get('pnl_pct')},
             'simulator':{'status':sim.get('status'),'generation':sim.get('generation'),'completed_cycles':sim.get('completed_cycles'),
                          'completed_experiments':sim.get('completed_experiments'),'last_cycle_at':sim.get('last_cycle_at'),
@@ -230,8 +222,7 @@ def dashboard(*,technical=None,brain=None):
 
 def _report_payload(period='daily',brain=None):
     d=dashboard(brain=brain);return {'period':period,'generated_at':_iso(),'dashboard':d,
-      'claim':'PAPER_ONLY_OBSERVATIONAL','alerts':d['watchdog']['alerts'],
-      'no_trade_notifications':True,'real_trading':False}
+      'claim':'PAPER_ONLY_OBSERVATIONAL','alerts':d['watchdog']['alerts'],'no_trade_notifications':True,'real_trading':False}
 
 
 def persist_report(period='daily',brain=None):
@@ -241,20 +232,12 @@ def persist_report(period='daily',brain=None):
     return {'status':'LOCAL_ONLY','report':p,'real_trading':False}
 
 
-def _sim_loop():
-    simulator.autonomous_simulator_loop(cycle_interval_seconds=900,research_interval_seconds=21600)
-
-
-def _soak_loop():e2e.soak_loop(interval_seconds=300)
-
-
 def _control_loop():
-    restore_remote_state();_load_or_create_session();last_daily=last_weekly=0.0
+    observe_remote_checkpoint();_load_or_create_session();last_daily=last_weekly=0.0
     while True:
         try:
             with _LOCK:_STATE['last_supervisor_epoch']=time.time()
-            persist_latest_cycle_journal();persist_checkpoint()
-            now=time.time()
+            persist_latest_cycle_journal();persist_checkpoint();now=time.time()
             if now-last_daily>=86400:persist_report('daily');last_daily=now
             if now-last_weekly>=604800:persist_report('weekly');last_weekly=now
             with _LOCK:_STATE['last_error']=None
@@ -265,13 +248,13 @@ def _control_loop():
 
 
 def _supervisor_loop():
+    """Supervises only this control thread; Cloud v3 already owns simulator/soak daemons."""
     while True:
         try:
-            for name,target in (('simulator',_sim_loop),('soak',_soak_loop),('control',_control_loop)):
-                t=_THREADS.get(name)
-                if t is None or not t.is_alive():
-                    t=threading.Thread(target=target,name='autonomous-paper-'+name,daemon=True);_THREADS[name]=t;t.start()
-                    print('[autonomous-paper-supervisor] started '+name,flush=True)
+            t=_THREADS.get('control')
+            if t is None or not t.is_alive():
+                t=threading.Thread(target=_control_loop,name='autonomous-paper-control',daemon=True);_THREADS['control']=t;t.start()
+                print('[autonomous-paper-supervisor] control thread started',flush=True)
             watchdog_status()
         except Exception as exc:
             with _LOCK:_STATE['last_error']=f'{type(exc).__name__}: {str(exc)[:500]}'
@@ -283,6 +266,7 @@ def ensure_started():
     with _LOCK:
         if _STARTED:return control_status()
         _STARTED=True;_STATE['started_epoch']=time.time()
+        # Existing production simulator is already a daemon. This only ensures its persisted enable switch is ON.
         simulator.set_enabled(True)
         t=threading.Thread(target=_supervisor_loop,name='autonomous-paper-supervisor',daemon=True);_THREADS['supervisor']=t;t.start()
     return control_status()
@@ -291,6 +275,7 @@ def ensure_started():
 def control_status():
     with _LOCK:s=dict(_STATE);threads={k:v.is_alive() for k,v in _THREADS.items()}
     s.update({'started':_STARTED,'threads':threads,'persistence':persistence.telemetry(),
-              'simulation_only':True,'automatic_promotion':False,'live_execution_allowed':False,
-              'windows_version':'1.5.28','setup_1_6_allowed':False,'real_trading':False})
+              'existing_simulator_daemon_owned_by':'cloud_service_v3_runtime',
+              'duplicate_simulator_started':False,'simulation_only':True,'automatic_promotion':False,
+              'live_execution_allowed':False,'windows_version':'1.5.28','setup_1_6_allowed':False,'real_trading':False})
     return s
