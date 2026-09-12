@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# compatibility chain includes cloud_service_v6.py beneath v7
-exec python cloud_service_v7.py
+# v8 composes v7 and preserves the full v7 -> v6 -> v5 -> v4 -> v3 chain
+exec python cloud_service_v8.py

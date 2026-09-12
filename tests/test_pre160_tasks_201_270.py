@@ -79,13 +79,16 @@ def test_individual_groups_have_exact_task_ranges():
     a=build_autonomy_tasks(runtime={},evidence={},task_groups=[])
     _assert_group(a,261,270)
 
-def test_cloud_v7_is_composed_over_v6_and_windows_stays_frozen():
-    cloud=Path('cloud_service_v7.py').read_text(encoding='utf-8')
+def test_cloud_v8_is_composed_over_v7_over_v6_and_windows_stays_frozen():
+    cloud7=Path('cloud_service_v7.py').read_text(encoding='utf-8')
+    cloud8=Path('cloud_service_v8.py').read_text(encoding='utf-8')
     start=Path('start.sh').read_text(encoding='utf-8')
     version=__import__('json').loads(Path('version.json').read_text(encoding='utf-8-sig'))['version']
-    assert 'import cloud_service_v6 as base6' in cloud
-    assert 'base6.start_runtime()' in cloud
-    assert '/pre160-audit-201-270-v1' in cloud and '/pre160-master-gate-v3' in cloud
-    assert 'cloud_service_v7.py' in start
+    assert 'import cloud_service_v6 as base6' in cloud7
+    assert 'base6.start_runtime()' in cloud7
+    assert '/pre160-audit-201-270-v1' in cloud7 and '/pre160-master-gate-v3' in cloud7
+    assert 'import cloud_service_v7 as base7' in cloud8
+    assert 'base7.start_runtime()' in cloud8
+    assert 'cloud_service_v8.py' in start
     assert version=='1.5.28'
-    assert 'REAL_TRADING=False' in cloud.replace(' ','')
+    assert 'REAL_TRADING=False' in cloud8.replace(' ','')
