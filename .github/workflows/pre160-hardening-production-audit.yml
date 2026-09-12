@@ -23,7 +23,7 @@ jobs:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
           set -euo pipefail
-          endpoints=(pre160-evidence-v1 pre160-readiness-v2 pre160-evidence-authority-v1 pre160-audit-v1 pre160-hardening-v1 pre160-hardening-authority-v1 pre160-audit-111-130-v1 pre160-audit-131-150-v1 pre160-readiness-board-v1 decision-provenance-v1 pre160-audit-151-200-v1 pre160-slo-v1 pre160-data-integrity-v1 pre160-evidence-maturity-v3 pre160-governance-v3 pre160-recovery-v2 pre160-release-authority-v2)
+          endpoints=(pre160-evidence-v1 pre160-readiness-v2 pre160-evidence-authority-v1 pre160-audit-v1 pre160-hardening-v1 pre160-hardening-authority-v1 pre160-audit-111-130-v1 pre160-audit-131-150-v1 pre160-readiness-board-v1 decision-provenance-v1 pre160-audit-151-200-v1 pre160-slo-v1 pre160-data-integrity-v1 pre160-evidence-maturity-v3 pre160-governance-v3 pre160-recovery-v2 pre160-release-authority-v2 pre160-production-proof-v1)
           for endpoint in "${endpoints[@]}"; do
             ok=0
             for attempt in $(seq 1 18); do
@@ -79,6 +79,11 @@ jobs:
               assert data.get('automatic_release') is False,data
               assert data.get('live_execution_allowed') is False,data
               assert len(str(data.get('evidence_bundle_digest') or ''))==64,data
+          if name=='pre160-production-proof-v1':
+              assert data.get('status') in ('NOT_VERIFIED','PASS'),data
+              assert data.get('verified') in (False,True),data
+              assert len(str(data.get('protected_digest') or ''))==64,data
+              if data.get('status')=='PASS': assert data.get('verified') is True and all((data.get('checks') or {}).values()),data
           print(name,'HTTP 200',data.get('status'),'REAL_TRADING=false')
           PY
           done
