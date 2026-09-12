@@ -34,3 +34,5 @@ jobs:
         run: python tools/autonomous_learning_16_40_integrity_ci.py
       - name: Autonomous PAPER priorities 41-60 integrity audit
         run: python tools/autonomous_learning_41_60_integrity_ci.py
+      - name: Radar CEO handoff integrity audit
+        run: python tools/radar_ceo_handoff_integrity_ci.py
