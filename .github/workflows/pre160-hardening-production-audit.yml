@@ -37,6 +37,25 @@ jobs:
             sleep 5
           done
           test "$matched" = "1" || { echo 'exact Railway SHA never became active'; cat /tmp/deployment.json 2>/dev/null || true; exit 1; }
+      - name: Wait for deep 151-200 evidence before strict hardening assertions
+        env:
+          BASE_URL: https://radar-cloud-production.up.railway.app
+        run: |
+          set -euo pipefail
+          deep=0
+          for attempt in $(seq 1 72); do
+            code=$(curl -sS -o /tmp/pre160-audit-151-200-v1.json -w '%{http_code}' --max-time 15 "$BASE_URL/pre160-audit-151-200-v1" || true)
+            if [ "$code" = "200" ] && python - <<'PY'
+          import json
+          d=json.load(open('/tmp/pre160-audit-151-200-v1.json'))
+          assert d.get('source_ready') is True,d
+          assert d.get('deep_ready') is True,d
+          assert d.get('real_trading') is False,d
+          PY
+            then deep=1;break;fi
+            sleep 5
+          done
+          test "$deep" = "1" || { echo '151-200 never became deep-ready'; cat /tmp/pre160-audit-151-200-v1.json 2>/dev/null || true; exit 1; }
       - name: Verify 91-200 production endpoints and trading boundary
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
@@ -75,25 +94,30 @@ jobs:
               assert set(tasks)=={str(i) for i in range(151,201)},len(tasks)
               allowed={'PASS','PENDING_TIME','PENDING_SAMPLE','NOT_VERIFIED','FAILED'}
               assert all((row or {}).get('state') in allowed for row in tasks.values()),tasks
+              assert data.get('deep_ready') is True,data
               assert data.get('automatic_release') is False,data
               assert data.get('automatic_promotion') is False,data
               assert data.get('automatic_demotion') is False,data
           if name in ('pre160-slo-v1','pre160-data-integrity-v1','pre160-evidence-maturity-v3','pre160-governance-v3'):
               assert len(data.get('tasks') or {})==10,(name,len(data.get('tasks') or {}))
+              assert data.get('deep_ready') is True,data
           if name=='pre160-recovery-v2':
               assert data.get('status')=='RECOVERY_MANIFEST_V2',data
+              assert data.get('deep_ready') is True,data
               assert len(str(data.get('root_digest') or ''))==64,data
               assert data.get('checkpoint_schema_support')==[1,2],data
               assert data.get('reconstruction_allowed') is False,data
               assert data.get('backfill_allowed') is False,data
           if name=='pre160-release-authority-v2':
               assert data.get('status') in ('BLOCKED_PRE160','READY_FOR_MANUAL_1_6_REVIEW'),data
+              assert data.get('deep_ready') is True,data
               assert data.get('stable_windows_version')=='1.5.28',data
               assert data.get('manual_review_only') is True,data
               assert data.get('setup_allowed') is False and data.get('setup_built') is False,data
               assert data.get('automatic_release') is False and data.get('live_execution_allowed') is False,data
           if name=='pre160-production-proof-v1':
               assert data.get('status') in ('NOT_VERIFIED','PASS','FAILED'),data
+              assert data.get('deep_ready') is True,data
               assert data.get('verified') in (False,True),data
               assert len(str(data.get('protected_digest') or ''))==64,data
               assert int(data.get('protected_files') or 0)>=35,data
