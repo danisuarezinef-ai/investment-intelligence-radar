@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 
 import radar_ceo_handoff_v1 as h
+import radar_forward_engine as forward
+import radar_asset_taxonomy_v1 as taxonomy
 
 
 def _rows(n=25):
@@ -10,7 +12,8 @@ def _rows(n=25):
             'prediction_id':f'p{i}','symbol':'MSFT' if i%2 else 'NVDA','model_version':'m1' if i%2 else 'm2',
             'family':'trend' if i%2 else 'causal','regime':'risk_on','confidence':0.56,
             'sector':'technology','industry':'software','uncertainty':{'score':0.2},'intended_horizon':'1d',
-            'matured':True,'natural':True,'decision_state':'BUY','net_return':0.002,'evaluated_at':'2026-09-12T12:00:00+00:00'
+            'matured':True,'natural':True,'decision_state':'BUY','net_return':0.002,
+            'outcome':{'observation_holding_seconds':86400.0},'evaluated_at':'2026-09-12T12:00:00+00:00'
         })
     return out
 
@@ -32,6 +35,38 @@ def test_data_contract_and_memory_health():
     assert m['status']=='PASS' and m['memory_is_continuous'] is True
     assert d['status']=='PASS' and d['retroactive_fill_forbidden'] is True
     assert d['contract']=='DECISION_MEMORY_V1'
+    assert d['prospective_observation_duration_ratio']==1.0
+    assert d['observation_duration_is_not_execution_duration'] is True
+
+
+def test_payload_contract_fields_count_without_rewriting_canonical_schema():
+    rows=[]
+    for i in range(25):
+        rows.append({'symbol':'MSFT','model_version':'2.0.0','regime':'mixed','confidence':.6,
+                     'uncertainty':{'regime':'mixed'},'family':'CORE_COMPOSITE_V1',
+                     'payload':{'decision_memory_contract':'DECISION_MEMORY_V1','sector':'TECHNOLOGY',
+                                'industry':'SOFTWARE','intended_horizon':'1w','family':'CORE_COMPOSITE_V1'},
+                     'matured':False})
+    d=h.data_completeness(rows)
+    assert d['status']=='PASS'
+    assert d['current_contract_n']==25
+    assert not d['holes']
+
+
+def test_prospective_context_uses_versioned_internal_taxonomy_and_no_retrofill():
+    ctx=forward._prospective_context('NVDA','1w','2.0.0',{'volatility':.4,'source_quality':.8},{},'mixed',.61)
+    assert ctx['decision_memory_contract']=='DECISION_MEMORY_V1'
+    assert ctx['sector']=='TECHNOLOGY' and ctx['industry']=='SEMICONDUCTORS'
+    assert ctx['taxonomy_version']==taxonomy.TAXONOMY_VERSION
+    assert ctx['intended_horizon']=='1w'
+    assert ctx['retroactive_fill'] is False
+    assert ctx['family']=='CORE_COMPOSITE_V1'
+    assert taxonomy.classify('UNKNOWN')['known'] is False
+
+
+def test_observation_duration_is_actual_timestamp_interval_not_execution_claim():
+    assert forward._elapsed_seconds('2026-09-01T12:00:00+00:00','2026-09-02T12:00:00+00:00')==86400.0
+    assert forward._elapsed_seconds('2026-09-02T12:00:00+00:00','2026-09-01T12:00:00+00:00') is None
 
 
 def test_shadow_brains_and_threshold_experiment_are_paper_only():
