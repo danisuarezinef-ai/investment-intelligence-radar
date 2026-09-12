@@ -9,8 +9,10 @@ import time
 from pathlib import Path
 
 import cloud_service_v5 as base5
+from radar_learning_sync import MAX_LEARNING_BATCH
+from radar_supabase_sync import MAX_SYNC_BATCH
 from radar_pre160_controls_v6 import build_task_matrix
-from radar_pre160_recovery_v2 import build_recovery_manifest
+from radar_pre160_recovery_v2 import build_recovery_manifest, digest
 from radar_pre160_release_authority_v2 import build_release_authority
 
 REAL_TRADING = False
@@ -26,14 +28,21 @@ def _version():
 
 
 def _inputs():
-    evidence = base5.base4.pre160_evidence_cached()
+    evidence = dict(base5.base4.pre160_evidence_cached())
     hardening = dict(base5.base4.pre160_hardening_cached())
     provenance = base5.base4.tasks_131_150_cached()
     for key in ('decision_trace', 'transactional_exact', 'ledger_fallback', 'strategy_versions_missing', 'envelope_source', 'decision_envelope_provenance', 'blockers'):
         if key in provenance:
             hardening[key] = provenance[key]
+    # Content-address the observed snapshots here rather than relying on a mutable DB id.
+    evidence['snapshot_hash'] = digest(evidence)
+    hardening['snapshot_hash'] = digest(hardening)
     runtime = base5.base4.pre160_runtime_cached()
-    health = base5.supabase_health()
+    health = dict(base5.supabase_health())
+    health['max_batch'] = int(MAX_SYNC_BATCH)
+    learning = dict(health.get('learning_sync') or {})
+    learning.setdefault('max_batch', int(MAX_LEARNING_BATCH))
+    health['learning_sync'] = learning
     return evidence, hardening, runtime, health
 
 
