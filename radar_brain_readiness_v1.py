@@ -22,6 +22,13 @@ def _state(value,false='NOT_VERIFIED'):
     return 'PASS' if value is True else false
 
 
+def _economic_edge_state(complete,value):
+    """PASS requires an observed positive economic edge, not merely metric availability."""
+    if not complete:return 'PENDING_SAMPLE'
+    if not isinstance(value,(int,float)):return 'PENDING_SAMPLE'
+    return 'PASS' if float(value)>0 else 'FAILED'
+
+
 def build_tasks_311_370(*,technical,evidence,analytics,competition,rows=None,persistence=None,external=None):
     technical=technical or {};evidence=evidence or {};analytics=analytics or {};competition=competition or {}
     rows=list(rows or []);persistence=persistence or {};external=external or {}
@@ -103,8 +110,10 @@ def build_tasks_311_370(*,technical,evidence,analytics,competition,rows=None,per
     tasks[352]=_task(352,'PASS' if interval.get('low') is not None and interval.get('high') is not None else 'PENDING_SAMPLE','expected-return interval',evidence=interval)
     tasks[353]=_task(353,'PASS' if int(down.get('n') or 0)>0 and down.get('loss_probability') is not None else 'PENDING_SAMPLE','downside distribution',evidence=down)
     tasks[354]=_task(354,'PASS' if int(down.get('n') or 0)>=20 and down.get('expected_shortfall_05') is not None else 'PENDING_SAMPLE','tail-risk / expected-shortfall v2',evidence=down)
-    tasks[355]=_task(355,'PASS' if alpha.get('status')=='PASS' and alpha.get('cost_complete') is True else 'PENDING_SAMPLE','cost-adjusted forward alpha',critical=True,evidence={'n':alpha.get('n'),'mean_net_return':alpha.get('mean_net_return'),'mean_cost':alpha.get('mean_cost')})
-    tasks[356]=_task(356,'PASS' if alpha.get('status')=='PASS' and alpha.get('benchmark_complete') is True else 'PENDING_SAMPLE','benchmark-relative forward alpha',critical=True,evidence={'n':alpha.get('n'),'mean_excess_return':alpha.get('mean_excess_return')})
+    cost_complete=alpha.get('status')=='PASS' and alpha.get('cost_complete') is True
+    benchmark_complete=alpha.get('status')=='PASS' and alpha.get('benchmark_complete') is True
+    tasks[355]=_task(355,_economic_edge_state(cost_complete,alpha.get('mean_net_return')),'cost-adjusted forward alpha must remain positive after PAPER costs',critical=True,evidence={'n':alpha.get('n'),'mean_net_return':alpha.get('mean_net_return'),'mean_cost':alpha.get('mean_cost'),'cost_complete':alpha.get('cost_complete')})
+    tasks[356]=_task(356,_economic_edge_state(benchmark_complete,alpha.get('mean_excess_return')),'benchmark-relative forward alpha must be positive',critical=True,evidence={'n':alpha.get('n'),'mean_excess_return':alpha.get('mean_excess_return'),'benchmark_complete':alpha.get('benchmark_complete')})
     decay=analytics.get('decay') or {};tasks[357]=_task(357,decay.get('status','PENDING_SAMPLE'),'empirical signal half-life requires >=2 mature horizons per family',evidence=decay)
     tasks[358]=_task(358,decay.get('status','PENDING_SAMPLE'),'prediction decay by model/signal family',evidence=decay)
     attrib=analytics.get('alpha_attribution') or {}
