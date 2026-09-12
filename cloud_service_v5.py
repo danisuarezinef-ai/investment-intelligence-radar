@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import cloud_service_v4 as base4
 from radar_supabase_sync import sync_telemetry
+from radar_learning_sync import learning_sync_telemetry
 
 REAL_TRADING = False
 
@@ -30,6 +31,21 @@ def _check_state(name, value, degraded=False):
     if value is False:
         return 'PENDING_SAMPLE'
     return 'NOT_VERIFIED'
+
+
+def supabase_health():
+    generic = sync_telemetry()
+    learning = learning_sync_telemetry()
+    out = dict(generic)
+    out['generic_sync'] = generic
+    out['learning_sync'] = learning
+    out['learning_status'] = learning.get('status')
+    out['all_configured_syncs_healthy'] = (
+        generic.get('status') == 'HEALTHY'
+        and (not learning.get('configured') or learning.get('status') == 'HEALTHY')
+    )
+    out['real_trading'] = False
+    return out
 
 
 def readiness_board():
@@ -59,7 +75,7 @@ def readiness_board():
             'rule': 'Natural PAPER evidence only; no force, reconstruction or backfill.',
         },
         'readiness_countdown': hardening.get('readiness_countdown'),
-        'supabase': sync_telemetry(),
+        'supabase': supabase_health(),
         'setup_allowed': False,
         'automatic_release': False,
         'automatic_promotion': False,
@@ -95,7 +111,7 @@ class ValidationV5Handler(base4.ValidationV4Handler):
         path = self.path.split('?', 1)[0]
         try:
             if path == '/supabase-health-v1':
-                self._send(200, sync_telemetry())
+                self._send(200, supabase_health())
                 return
             if path == '/pre160-readiness-board-v1':
                 self._send(200, readiness_board())
