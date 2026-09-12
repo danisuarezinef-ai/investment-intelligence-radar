@@ -7,7 +7,7 @@ permissions:
 jobs:
   production-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Verify no Windows release bump
@@ -18,16 +18,16 @@ jobs:
           assert v=='1.5.28', v
           print('Windows stable remains',v)
           PY
-      - name: Verify 91-150 production endpoints and trading boundary
+      - name: Verify 91-200 production endpoints and trading boundary
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
           set -euo pipefail
-          endpoints=(pre160-evidence-v1 pre160-readiness-v2 pre160-evidence-authority-v1 pre160-audit-v1 pre160-hardening-v1 pre160-hardening-authority-v1 pre160-audit-111-130-v1 pre160-audit-131-150-v1 pre160-readiness-board-v1 decision-provenance-v1)
+          endpoints=(pre160-evidence-v1 pre160-readiness-v2 pre160-evidence-authority-v1 pre160-audit-v1 pre160-hardening-v1 pre160-hardening-authority-v1 pre160-audit-111-130-v1 pre160-audit-131-150-v1 pre160-readiness-board-v1 decision-provenance-v1 pre160-audit-151-200-v1 pre160-slo-v1 pre160-data-integrity-v1 pre160-evidence-maturity-v3 pre160-governance-v3 pre160-recovery-v2 pre160-release-authority-v2)
           for endpoint in "${endpoints[@]}"; do
             ok=0
-            for attempt in $(seq 1 12); do
-              code=$(curl -sS -o "/tmp/$endpoint.json" -w '%{http_code}' --max-time 30 "$BASE_URL/$endpoint" || true)
+            for attempt in $(seq 1 18); do
+              code=$(curl -sS -o "/tmp/$endpoint.json" -w '%{http_code}' --max-time 35 "$BASE_URL/$endpoint" || true)
               if [ "$code" = "200" ]; then ok=1; break; fi
               sleep 10
             done
@@ -51,10 +51,38 @@ jobs:
               assert task150.get('state') in ('PENDING_SAMPLE','PASS'),task150
               allowed={'PASS','PENDING_TIME','PENDING_SAMPLE','NOT_VERIFIED','FAILED'}
               for row in data.get('checks') or []: assert row.get('state') in allowed,row
+          if name=='pre160-audit-151-200-v1':
+              tasks=data.get('tasks') or {}
+              assert set(tasks)=={str(i) for i in range(151,201)},len(tasks)
+              allowed={'PASS','PENDING_TIME','PENDING_SAMPLE','NOT_VERIFIED','FAILED'}
+              assert all((row or {}).get('state') in allowed for row in tasks.values()),tasks
+              assert tasks['160']['state'] in ('NOT_VERIFIED','PASS'),tasks['160']
+              assert tasks['200']['state'] in ('NOT_VERIFIED','PASS'),tasks['200']
+              assert data.get('automatic_release') is False,data
+              assert data.get('automatic_promotion') is False,data
+              assert data.get('automatic_demotion') is False,data
+          if name in ('pre160-slo-v1','pre160-data-integrity-v1','pre160-evidence-maturity-v3','pre160-governance-v3'):
+              tasks=data.get('tasks') or {}
+              assert len(tasks)==10,(name,len(tasks))
+          if name=='pre160-recovery-v2':
+              assert data.get('status')=='RECOVERY_MANIFEST_V2',data
+              assert len(str(data.get('root_digest') or ''))==64,data
+              assert data.get('checkpoint_schema_support')==[1,2],data
+              assert data.get('reconstruction_allowed') is False,data
+              assert data.get('backfill_allowed') is False,data
+          if name=='pre160-release-authority-v2':
+              assert data.get('status') in ('BLOCKED_PRE160','READY_FOR_MANUAL_1_6_REVIEW'),data
+              assert data.get('stable_windows_version')=='1.5.28',data
+              assert data.get('manual_review_only') is True,data
+              assert data.get('setup_allowed') is False,data
+              assert data.get('setup_built') is False,data
+              assert data.get('automatic_release') is False,data
+              assert data.get('live_execution_allowed') is False,data
+              assert len(str(data.get('evidence_bundle_digest') or ''))==64,data
           print(name,'HTTP 200',data.get('status'),'REAL_TRADING=false')
           PY
           done
-      - name: Verify Supabase resilience endpoint recovers healthy
+      - name: Verify both Supabase sync channels recover healthy within SLO
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
@@ -78,10 +106,14 @@ jobs:
           assert learning.get('cursors_advance_only_after_remote_success') is True,learning
           assert learning.get('status')=='HEALTHY',learning
           assert d.get('all_configured_syncs_healthy') is True,d
-          print('supabase-health-v1 both HEALTHY generic_ms=',d.get('last_latency_ms'),'learning_ms=',learning.get('last_latency_ms'))
+          g=float(d.get('last_latency_ms') or 1e12)
+          l=float(learning.get('last_latency_ms') or 1e12)
+          assert g<=15000,(g,d)
+          assert l<=25000,(l,learning)
+          print('both Supabase syncs HEALTHY and within SLO generic_ms=',g,'learning_ms=',l)
           PY
               then healthy=1; break; fi
             fi
             sleep 10
           done
-          test "$healthy" = "1" || { echo 'Supabase syncs did not both become HEALTHY'; cat /tmp/supabase-health.json 2>/dev/null || true; exit 1; }
+          test "$healthy" = "1" || { echo 'Supabase syncs did not both become HEALTHY within SLO'; cat /tmp/supabase-health.json 2>/dev/null || true; exit 1; }
