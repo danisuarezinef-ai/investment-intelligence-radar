@@ -20,10 +20,14 @@ def test_cloud_v6_composes_v5_and_preserves_safety_boundary():
     assert "'real_trading': False" in src
 
 
-def test_start_script_points_to_v6_without_windows_release_change():
+def test_start_script_points_to_v8_without_windows_release_change():
     start = Path('start.sh').read_text(encoding='utf-8')
-    assert 'cloud_service_v6.py' in start
-    assert 'cloud_service_v5.py' not in start
+    v8 = Path('cloud_service_v8.py').read_text(encoding='utf-8')
+    v7 = Path('cloud_service_v7.py').read_text(encoding='utf-8')
+    assert 'cloud_service_v8.py' in start
+    assert 'import cloud_service_v7 as base7' in v8
+    assert 'base7.start_runtime()' in v8
+    assert 'import cloud_service_v6 as base6' in v7
     version = __import__('json').loads(Path('version.json').read_text(encoding='utf-8-sig'))['version']
     assert version == '1.5.28'
 
