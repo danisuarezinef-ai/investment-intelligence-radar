@@ -1,6 +1,8 @@
 """Production entrypoint v7: v6 plus tasks 201-270.
 
 Read-only audit/governance orchestration. Windows remains 1.5.28 and REAL_TRADING=false.
+Heavy v6 evidence collection is background-only: HTTP handlers never synchronously
+trigger a cold evidence rebuild.
 """
 from __future__ import annotations
 import os,threading,time
@@ -34,46 +36,61 @@ def latency_metrics():
     all_values=[]
     for vals in _LATENCY.values():all_values.extend(vals)
     hot=[v for vals in _LATENCY.values() for v in vals if v<=5000]
-    cold=[v for vals in _LATENCY.values() for v in vals]
+    cold=list(all_values)
     return {'hot_p95_ms':_p95(hot),'cold_p95_ms':_p95(cold),'profiled_stages':['http_v7','matrix_v7'],
             'stage_budgets_ms':{'http_v7':1000,'matrix_v7':25000},'regression_pct':None,
             'samples':len(all_values),'real_trading':False}
 
 def _source_inputs():
+    """Expensive: call only from the background prewarmer."""
     evidence,hardening,runtime,health=base6._inputs()
-    proof=base6.production_proof_cached()
-    prior=base6.tasks_151_200_cached()
+    proof=base6.production_proof_cached();prior=base6.tasks_151_200_cached()
     token=content_hash({'evidence':evidence.get('snapshot_hash'),'hardening':hardening.get('snapshot_hash'),
                         'health':health.get('last_success_epoch'),'learning':(health.get('learning_sync') or {}).get('last_success_epoch'),
                         'proof':proof.get('protected_digest'),'proof_status':proof.get('status'),'deploy':deployment_identity().get('deployed_sha')})
     return evidence,hardening,runtime,health,proof,prior,token
 
-def _compute_matrix():
-    evidence,hardening,runtime,health,proof,prior,_=_source_inputs()
+def _matrix_from_inputs(evidence,hardening,runtime,health,proof,prior):
     identity=deployment_identity();expected=proof.get('audited_commit_sha') if proof.get('verified') is True else None
     deployment={'deployed_sha':identity.get('deployed_sha'),'expected_sha':expected}
-    return build_matrix_201_270(evidence=evidence,hardening=hardening,runtime=runtime,supabase_health=health,proof=proof,
-                                cache_telemetry=_CACHE.telemetry(),prior_task_groups=[prior],endpoint_metrics=latency_metrics(),deployment=deployment)
+    out=build_matrix_201_270(evidence=evidence,hardening=hardening,runtime=runtime,supabase_health=health,proof=proof,
+                             cache_telemetry=_CACHE.telemetry(),prior_task_groups=[prior],endpoint_metrics=latency_metrics(),deployment=deployment)
+    out['source_ready']=True;out['source_mode']='BACKGROUND_PREWARMED';out['real_trading']=False
+    return out
+
+def _warming_matrix():
+    tasks={str(i):{'task':i,'state':'NOT_VERIFIED','detail':'background evidence snapshot is warming','critical':i in {201,202,205,216,220,221,223,230,235,237,238,239,240,249,258,259,260,261,262,269,270}} for i in range(201,271)}
+    return {'status':'WARMING_FAIL_CLOSED','tasks':tasks,'groups':{},'critical_failed':[],
+            'critical_pending':[k for k,v in tasks.items() if v.get('critical')],
+            'master_gate':{'status':'BLOCKED_PRE160','manual_review_only':True,'setup_allowed':False,'automatic_release':False,
+                           'live_execution_allowed':False,'can_trade':False,'real_trading':False},
+            'source_ready':False,'source_mode':'BACKGROUND_WARMING','stable_windows_version':'1.5.28','candidate_version':'1.6.0',
+            'setup_allowed':False,'setup_built':False,'automatic_release':False,'automatic_promotion':False,
+            'automatic_demotion':False,'live_execution_allowed':False,'can_trade':False,'real_trading':False}
 
 def tasks_201_270_cached(force=False):
-    *_,token=_source_inputs()
     if force:_CACHE.invalidate('201-270')
-    return dict(_CACHE.get('201-270',token,_compute_matrix,allow_stale=True,refresh_async=True))
+    value=_CACHE.peek('201-270')
+    return dict(value) if isinstance(value,dict) else _warming_matrix()
 
 def block(start,end):
     matrix=tasks_201_270_cached();tasks=matrix.get('tasks') or {}
-    return {'status':f'PRE160_TASKS_{start}_{end}','tasks':{str(i):tasks.get(str(i)) for i in range(start,end+1)},
+    return {'status':f'PRE160_TASKS_{start}_{end}' if matrix.get('source_ready') else 'WARMING_FAIL_CLOSED',
+            'source_ready':matrix.get('source_ready') is True,'source_mode':matrix.get('source_mode'),
+            'tasks':{str(i):tasks.get(str(i)) for i in range(start,end+1)},
             'setup_allowed':False,'automatic_release':False,'automatic_promotion':False,'automatic_demotion':False,
             'can_trade':False,'real_trading':False}
 
 def _prewarm_loop():
-    time.sleep(5)
+    """All expensive dependency reads occur here, never on an HTTP request thread."""
     while True:
         try:
-            *_,token=_source_inputs();_CACHE.prewarm('201-270',token,_compute_matrix)
+            evidence,hardening,runtime,health,proof,prior,token=_source_inputs()
+            captured=(evidence,hardening,runtime,health,proof,prior)
+            _CACHE.prewarm('201-270',token,lambda c=captured:_matrix_from_inputs(*c))
         except Exception as exc:
             print('[pre160-v7-cache] prewarm error '+repr(exc),flush=True)
-        time.sleep(45)
+        time.sleep(30)
 
 def _ensure_prewarm():
     global _PREWARM_STARTED
@@ -91,15 +108,14 @@ class ValidationV7Handler(base6.ValidationV6Handler):
             if path=='/pre160-statistical-validity-v7':self._send(200,block(241,260));return
             if path=='/pre160-autonomy-v7':self._send(200,block(261,270));return
             if path=='/pre160-master-gate-v3':
-                x=tasks_201_270_cached().get('master_gate') or {};x=dict(x);x['real_trading']=False;self._send(200,x);return
+                x=tasks_201_270_cached().get('master_gate') or {};x=dict(x);x['source_ready']=tasks_201_270_cached().get('source_ready') is True;x['real_trading']=False;self._send(200,x);return
             if path=='/pre160-cache-v7':self._send(200,_CACHE.telemetry());return
             if path=='/pre160-deployment-v7':self._send(200,deployment_identity());return
         except Exception as exc:
-            self._send(500,{'status':'FAILED','error':str(exc)[:800],'setup_allowed':False,'automatic_release':False,
+            self._send(500,{'status':'FAILED','error':str(exc)[:800],'source_ready':False,'setup_allowed':False,'automatic_release':False,
                             'automatic_promotion':False,'automatic_demotion':False,'can_trade':False,'real_trading':False});return
         finally:
-            if path.startswith('/pre160-'):
-                _LATENCY[path].append(round((time.monotonic()-started)*1000,2))
+            if path.startswith('/pre160-'):_LATENCY[path].append(round((time.monotonic()-started)*1000,2))
         super().do_GET()
 
 def start_runtime():
