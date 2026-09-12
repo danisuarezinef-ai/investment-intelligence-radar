@@ -65,20 +65,42 @@ def memory_health(sim_state:dict[str,Any],control_state:dict[str,Any],rows:list[
             'memory_is_continuous':not blockers,'real_trading':False}
 
 
+def _field_value(row,key):
+    payload=row.get('payload') or {}
+    if key=='symbol':return row.get('symbol') or payload.get('asset') or payload.get('symbol')
+    if key=='model_version':return row.get('model_version') or payload.get('model_version')
+    if key=='family':return payload.get('family') or payload.get('strategy_family') or row.get('family')
+    if key=='regime':return row.get('regime') or payload.get('regime') or (payload.get('uncertainty') or {}).get('regime')
+    if key=='confidence':return row.get('confidence') if row.get('confidence') is not None else payload.get('confidence')
+    if key=='sector':return row.get('sector') or payload.get('sector') or (payload.get('metadata') or {}).get('sector')
+    if key=='industry':return row.get('industry') or payload.get('industry') or (payload.get('metadata') or {}).get('industry')
+    if key=='uncertainty':return row.get('uncertainty') or payload.get('uncertainty')
+    if key=='intended_horizon':return row.get('intended_horizon') or payload.get('intended_horizon')
+    return row.get(key)
+
+
 def data_completeness(rows:list[dict[str,Any]]):
     recent=list(rows[-200:])
     def present(r,key):
-        if key=='uncertainty':
-            return r.get('uncertainty') not in (None,'',{}) or (r.get('payload') or {}).get('uncertainty_score') is not None
-        return r.get(key) not in (None,'','UNKNOWN')
+        value=_field_value(r,key)
+        if key=='uncertainty':return value not in (None,'',{})
+        return value not in (None,'','UNKNOWN')
     counts={k:sum(1 for r in recent if present(r,k)) for k in REQUIRED_PROSPECTIVE_FIELDS}
     ratios={k:(v/len(recent) if recent else 0.0) for k,v in counts.items()}
     holes=[k for k,v in ratios.items() if v<0.95]
+    matured=[r for r in recent if r.get('matured') is True]
+    duration_n=sum(1 for r in matured if isinstance(r.get('outcome'),dict) and r['outcome'].get('observation_holding_seconds') is not None)
+    duration_ratio=duration_n/len(matured) if matured else None
+    current_contract_n=sum(1 for r in recent if (r.get('payload') or {}).get('decision_memory_contract')==DATA_CONTRACT)
     return {'status':'PASS' if recent and not holes else 'ATTENTION','contract':DATA_CONTRACT,
-            'sample_n':len(recent),'coverage':ratios,'holes':holes,
+            'sample_n':len(recent),'current_contract_n':current_contract_n,'coverage':ratios,'holes':holes,
+            'matured_recent_n':len(matured),'prospective_observation_duration_n':duration_n,
+            'prospective_observation_duration_ratio':duration_ratio,
             'prospective_capture_required':list(REQUIRED_PROSPECTIVE_FIELDS),
             'retroactive_fill_forbidden':True,'missing_data_must_remain_explicit':True,
-            'holding_duration_requires_execution_outcome_not_prediction_age':True,'real_trading':False}
+            'legacy_rows_do_not_block_new_contract_capture':True,
+            'holding_duration_requires_execution_outcome_not_prediction_age':True,
+            'observation_duration_is_not_execution_duration':True,'real_trading':False}
 
 
 def shadow_brain_registry(sim_state:dict[str,Any],rows:list[dict[str,Any]]):
