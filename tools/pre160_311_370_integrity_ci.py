@@ -6,7 +6,7 @@ import json
 def audit(root='.'):
     root=Path(root);findings=[]
     required=(
-      'PRE160_TASKS_311_370.md','cloud_service_v9.py','radar_forward_evidence_v2.py',
+      'PRE160_TASKS_311_370.md','cloud_service_v9.py','cloud_service_v10.py','radar_forward_evidence_v2.py',
       'radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py',
       'radar_brain_persistence_v1.py','tests/test_pre160_tasks_311_370.py',
       'supabase/functions/radar-brain-evidence/index.ts',
@@ -16,7 +16,9 @@ def audit(root='.'):
         if not (root/p).exists():findings.append('MISSING_311_370_COMPONENT:'+p)
     start=(root/'start.sh').read_text(encoding='utf-8-sig') if (root/'start.sh').exists() else ''
     v9=(root/'cloud_service_v9.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v9.py').exists() else ''
-    if 'cloud_service_v9.py' not in start:findings.append('START_NOT_V9')
+    v10=(root/'cloud_service_v10.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v10.py').exists() else ''
+    if 'cloud_service_v10.py' not in start:findings.append('START_NOT_V10')
+    if 'import cloud_service_v9 as base9' not in v10 or 'base9.start_runtime()' not in v10:findings.append('V10_CHAIN_INVALID')
     if 'import cloud_service_v8 as base8' not in v9 or 'base8.start_runtime()' not in v9:findings.append('V9_CHAIN_INVALID')
     for endpoint in ('/pre160-brain-status-v1','/pre160-forward-evidence-v2','/pre160-calibration-v2',
                      '/pre160-brain-competition-v3','/pre160-brain-persistence-v1',
@@ -35,7 +37,7 @@ def audit(root='.'):
         compact=text.replace(' ','')
         for token in tokens:
             if token.replace(' ','') not in compact:findings.append('INCOMPLETE_'+p+':'+token)
-    for p in ('cloud_service_v9.py','radar_forward_evidence_v2.py','radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py'):
+    for p in ('cloud_service_v9.py','cloud_service_v10.py','radar_forward_evidence_v2.py','radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py'):
         text=(root/p).read_text(encoding='utf-8-sig') if (root/p).exists() else ''
         if 'REAL_TRADING=False' not in text.replace(' ',''):findings.append('REAL_TRADING_BOUNDARY_MISSING:'+p)
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
