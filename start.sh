@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v19 composes v18 policy intelligence with validation/readiness tasks 91-100
-exec python cloud_service_v19.py
+# v22 composes the verified PAPER chain with certification tasks 131-160
+exec python cloud_service_v22.py
