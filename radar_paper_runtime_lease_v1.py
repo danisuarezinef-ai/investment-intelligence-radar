@@ -15,6 +15,7 @@ from typing import Any
 from radar_supabase_sync import SYNC_TOKEN, SYNC_URL
 
 REAL_TRADING = False
+HTTP_TIMEOUT_SECONDS = 35
 
 
 def _url() -> str:
@@ -43,7 +44,7 @@ def _post(action: str, *, owner_id: str = "", session_id: str = "", ttl_seconds:
                  "User-Agent": "InvestmentIntelligenceRadarPaperLease/1"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as response:
             out = json.loads(response.read().decode("utf-8"))
         out["real_trading"] = False
         print('[paper-runtime-lease] '+json.dumps({"action":action,"ok":out.get("ok"),"has_lease":bool(out.get("lease")),"real_trading":False},sort_keys=True),flush=True)
