@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v13 composes v12 exact recovery with fail-closed autonomous PAPER tasks 31-40
-exec python cloud_service_v13.py
+# v14 composes v13 operational evidence with forward-only autonomous PAPER tasks 41-50
+exec python cloud_service_v14.py
