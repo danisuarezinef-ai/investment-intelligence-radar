@@ -5,11 +5,14 @@ automatic model promotion, automatic release, or Setup 1.6.
 """
 from __future__ import annotations
 
+import json
 import os
+import threading
 import time
 from http.server import ThreadingHTTPServer
 
 import cloud_service_v13 as base13
+import cloud_service_v7 as deployment_v7
 import radar_learning_evidence_41_50_v1 as evidence4150
 import radar_autonomous_learning_41_60_v1 as learning4160
 
@@ -49,9 +52,27 @@ def runtime_board_41_50():
             'setup_1_6_allowed':False,'live_execution_allowed':False,'simulation_only':True,'real_trading':False}
 
 
+def _log_41_50_once():
+    time.sleep(20)
+    try:
+        out=runtime_board_41_50()
+        compact={
+            'status':out.get('status'),'forward_rows':out.get('forward_rows'),
+            'natural_matured_rows':out.get('natural_matured_rows'),'natural_matured_actions':out.get('natural_matured_actions'),
+            'states':{k:(v or {}).get('state') for k,v in (out.get('tasks') or {}).items()},
+            'automatic_promotion':False,'live_execution_allowed':False,'real_trading':False,
+        }
+    except Exception as exc:
+        compact={'status':'FAIL_CLOSED','error':f'{type(exc).__name__}: {str(exc)[:500]}',
+                 'automatic_promotion':False,'live_execution_allowed':False,'real_trading':False}
+    print('[paper-learning-41-50] '+json.dumps(compact,sort_keys=True,default=str),flush=True)
+
+
 class ValidationV14Handler(base13.ValidationV13Handler):
     def do_GET(self):
         path=self.path.split('?',1)[0]
+        if path=='/pre160-deployment-v7':
+            self._send(200,deployment_v7.deployment_identity());return
         if path=='/autonomous-simulator/tasks-41-50-v1':self._send(200,runtime_board_41_50());return
         if path=='/autonomous-simulator/tasks-21-50-v1':
             self._send(200,{'tasks_21_30':base13.runtime_board_21_30(),
@@ -64,9 +85,9 @@ class ValidationV14Handler(base13.ValidationV13Handler):
 
 def main():
     base13.base12._install_runtime_guards()
-    import threading
     threading.Thread(target=base13.base12._supervision_loop,name='paper-v12-supervision',daemon=True).start()
     threading.Thread(target=base13._run_runtime_probes_once,name='paper-disaster-probes',daemon=True).start()
+    threading.Thread(target=_log_41_50_once,name='paper-learning-41-50',daemon=True).start()
     port=int(os.environ.get('PORT') or 0)
     if port<=0:
         while True:time.sleep(60)
