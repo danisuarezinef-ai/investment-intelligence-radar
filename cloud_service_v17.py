@@ -18,12 +18,13 @@ def _price_series(days=180):
     return out
 
 def _liquidity_snapshot():
+    """Return only observed liquidity fields. Never invent spread/slippage."""
     out={}
     try:
         c=radar_core.con()
         rows=c.execute("select symbol,volume from market_snapshots where id in (select max(id) from market_snapshots group by symbol)").fetchall();c.close()
         for sym,vol in rows:
-            if vol is not None:out[str(sym)]={'volume':float(vol),'spread_pct':0.001}
+            if vol is not None:out[str(sym)]={'volume':float(vol)}
     except Exception:return {}
     return out
 
