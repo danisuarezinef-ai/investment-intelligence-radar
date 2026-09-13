@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import time
 import urllib.error
 import urllib.request
 
@@ -88,14 +89,23 @@ def engine_checkpoint():
     return {'schema_version':SCHEMA_VERSION,'observed_at':now(),'tables':tables,'state_hash':state_hash(tables),'real_trading':False}
 
 
-def _post(payload,timeout=40):
+def _post(payload,timeout=40,max_attempts=4):
     if not (CHECKPOINT_URL and SYNC_TOKEN):return {'ok':False,'status':'AUTHORITY_DISABLED','real_trading':False}
     data=json.dumps(payload,ensure_ascii=False,default=str).encode('utf-8')
-    req=urllib.request.Request(CHECKPOINT_URL,data=data,method='POST',headers={'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'RadarPaperEngineCheckpoint/2.0'})
-    try:
-        with urllib.request.urlopen(req,timeout=timeout) as response:return json.loads(response.read().decode('utf-8'))
-    except urllib.error.HTTPError as exc:
-        body=exc.read().decode('utf-8','replace');raise RuntimeError(f'paper checkpoint HTTP {exc.code}: {body[:1000]}') from exc
+    transient={429,500,502,503,504}
+    last_error=None
+    for attempt in range(1,max(1,int(max_attempts))+1):
+        req=urllib.request.Request(CHECKPOINT_URL,data=data,method='POST',headers={'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'RadarPaperEngineCheckpoint/2.1'})
+        try:
+            with urllib.request.urlopen(req,timeout=timeout) as response:return json.loads(response.read().decode('utf-8'))
+        except urllib.error.HTTPError as exc:
+            body=exc.read().decode('utf-8','replace');last_error=RuntimeError(f'paper checkpoint HTTP {exc.code}: {body[:1000]}')
+            if exc.code not in transient or attempt>=max_attempts:raise last_error from exc
+        except (urllib.error.URLError,TimeoutError,OSError) as exc:
+            last_error=RuntimeError(f'paper checkpoint transport error: {type(exc).__name__}: {str(exc)[:700]}')
+            if attempt>=max_attempts:raise last_error from exc
+        time.sleep(min(8.0,2.0**(attempt-1)))
+    raise last_error or RuntimeError('paper checkpoint transport failed')
 
 
 def push_engine_checkpoint():
