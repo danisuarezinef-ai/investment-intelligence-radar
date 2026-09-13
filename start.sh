@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v10 composes v9 and adds fail-closed distributed PAPER lease/runtime closure wiring
-exec python cloud_service_v10.py
+# v12 composes v11/v10/v9 and adds fail-closed lease continuity plus tasks 21-30 evidence board
+exec python cloud_service_v12.py
