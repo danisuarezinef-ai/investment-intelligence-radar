@@ -38,17 +38,22 @@ def runtime_board_21_30():
     pre30=[x for x in tasks if x.get('task')!=30]
     t30=base12.tasks2130.task30_composite(pre30)
     tasks=[t30 if x.get('task')==30 else x for x in tasks]
-    out={**b,'tasks':tasks,'durable_disaster_rows':len(disasters),'runtime':'v13-overlay',
-         'live_execution_allowed':False,'automatic_promotion':False,'automatic_release':False,
-         'setup_1_6_allowed':False,'real_trading':False}
-    return out
+    return {**b,'tasks':tasks,'durable_disaster_rows':len(disasters),'runtime':'v13-overlay',
+            'live_execution_allowed':False,'automatic_promotion':False,'automatic_release':False,
+            'setup_1_6_allowed':False,'real_trading':False}
+
+
+def _horizon_rows(evidence):
+    raw=(evidence or {}).get('horizons') or []
+    if isinstance(raw,dict):return [v for v in raw.values() if isinstance(v,dict)]
+    return [v for v in raw if isinstance(v,dict)]
 
 
 def _forward_snapshot(evidence):
-    horizons=(evidence or {}).get('horizons') or {}
-    return {'records':sum(int((v or {}).get('n',0) or 0) for v in horizons.values()),
-            'matured':sum(int((v or {}).get('matured',0) or 0) for v in horizons.values()),
-            'capture_started_at':(evidence or {}).get('capture_started_at'),
+    rows=_horizon_rows(evidence)
+    return {'records':sum(int((v or {}).get('n',0) or 0) for v in rows),
+            'matured':sum(int((v or {}).get('matured',0) or 0) for v in rows),
+            'capture_started_at':min((v.get('first_created') for v in rows if v.get('first_created')),default=None),
             'backfill_used':False,'reconstructed':False,'real_trading':False}
 
 
@@ -62,7 +67,7 @@ def runtime_board_31_40():
     with _FORWARD_LOCK:
         previous=dict(_FORWARD_PREVIOUS or current);_FORWARD_PREVIOUS=dict(current)
     journal=(e.get('journal') or {}) if e.get('ok') else {}
-    horizons={str(x.get('horizon')):x for x in (e.get('horizons') or []) if isinstance(x,dict)} if e.get('ok') else {}
+    horizons={str(x.get('horizon')):x for x in _horizon_rows(e)} if e.get('ok') else {}
     deps=[
         {'name':'distributed_lease','critical':True,'status':'OK' if lease.get('held') is True else 'ERROR'},
         {'name':'durable_sync','critical':True,'status':'RECONCILED' if (base12._DURABLE_SYNC or {}).get('status')=='RECONCILED' else 'ERROR'},
