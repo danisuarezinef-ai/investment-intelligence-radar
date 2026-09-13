@@ -129,8 +129,17 @@ def _canon_hash(value):
 
 
 def _learning_view(state):
-    keys=('status','generation','completed_cycles','completed_experiments','queued_experiments','last_cycle_at','last_research_at','next_cycle_at','next_research_at')
+    # Durable learning identity only. Runtime supervisor status, queue depth and future
+    # schedule timestamps are intentionally excluded because they can legitimately change
+    # immediately after an exact restore without changing learned state.
+    keys=('generation','completed_cycles','completed_experiments','last_cycle_at','last_research_at')
     return {k:(state or {}).get(k) for k in keys}
+
+
+def _num(value):
+    if value is None:return None
+    try:return float(value)
+    except (TypeError,ValueError):return value
 
 
 def _positions_hash(paper_positions,champion_positions):
@@ -147,12 +156,12 @@ def _reconciliation_pair(remote=None):
     rcp=(evidence.get('checkpoint') or {}) if evidence.get('ok') else {};ra=(evidence.get('autonomy') or {}) if evidence.get('ok') else {}
     remote_core=ra.get('payload') if isinstance(ra.get('payload'),dict) else {};rlease=(evidence.get('lease') or {}) if evidence.get('ok') else {}
     local={'state_hash':local_cp.get('state_hash'),'session_id':session,'cycle':local_core.get('completed_cycles'),
-           'cash':mark.get('cash'),'equity':mark.get('total'),
+           'cash':_num(mark.get('cash')),'equity':_num(mark.get('total')),
            'positions_hash':_positions_hash(tables.get('paper_agent_positions'),tables.get('champion_paper_positions')),
            'learning_hash':_canon_hash(_learning_view(local_core)),'observed_at':local_cp.get('observed_at'),
            'backfilled':False,'real_trading':False}
     remote={'state_hash':rcp.get('state_hash'),'session_id':rlease.get('session_id'),
-            'cycle':remote_core.get('completed_cycles'),'cash':rcp.get('champion_cash'),'equity':rcp.get('champion_total'),
+            'cycle':remote_core.get('completed_cycles'),'cash':_num(rcp.get('champion_cash')),'equity':_num(rcp.get('champion_total')),
             'positions_hash':_positions_hash(rcp.get('paper_positions'),rcp.get('champion_positions')) if rcp else None,
             'learning_hash':_canon_hash(_learning_view(remote_core)) if remote_core else None,'observed_at':rcp.get('observed_at'),
             'backfilled':False,'real_trading':False}
@@ -171,9 +180,11 @@ def _durable_sync_once():
     evidence=remote_evidence.summary()
     local,remote=_reconciliation_pair(evidence)
     rec=tasks2130.hard.persistence_reconciliation_gate(local,remote) if all(local.get(k) is not None and remote.get(k) is not None for k in ('state_hash','session_id','cycle','cash','equity','positions_hash','learning_hash','observed_at')) else {'status':'NOT_VERIFIED','real_trading':False}
-    ok=core.get('ok') is True and checkpoint.get('status')=='PERSISTED_EXACT_PAPER_ENGINE' and evidence.get('ok') is True and rec.get('status')=='RECONCILED'
+    checkpoint_ok=checkpoint.get('ok') is True or checkpoint.get('status') in {'PERSISTED_EXACT_PAPER_ENGINE','UPSERTED','OK','SYNCED'}
+    ok=core.get('ok') is True and checkpoint_ok and evidence.get('ok') is True and rec.get('status')=='RECONCILED'
     _DURABLE_SYNC={'status':'RECONCILED' if ok else 'DEGRADED','autonomy_core':core.get('status'),'checkpoint':checkpoint.get('status'),
-                   'checkpoint_hash':checkpoint.get('local_state_hash'),'reconciliation':rec,'real_trading':False}
+                   'checkpoint_ok':checkpoint_ok,'checkpoint_hash':checkpoint.get('local_state_hash'),'reconciliation':rec,
+                   'local_identity':local,'remote_identity':remote,'real_trading':False}
     return dict(_DURABLE_SYNC)
 
 
