@@ -8,13 +8,15 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 module_path=ROOT/'radar_ceo_handoff_v1.py'
 cloud_path=ROOT/'cloud_service_v9.py'
+cloud10_path=ROOT/'cloud_service_v10.py'
 workflow_path=ROOT/'.github/workflows/autonomous-paper-production-audit.yml'
 forward_path=ROOT/'radar_forward_engine.py'
 taxonomy_path=ROOT/'radar_asset_taxonomy_v1.py'
 proof_path=ROOT/'radar_pre160_production_proof_v1.py'
-assert all(p.exists() for p in (module_path,cloud_path,workflow_path,forward_path,taxonomy_path,proof_path))
+assert all(p.exists() for p in (module_path,cloud_path,cloud10_path,workflow_path,forward_path,taxonomy_path,proof_path))
 module=module_path.read_text(encoding='utf-8')
 cloud=cloud_path.read_text(encoding='utf-8')
+cloud10=cloud10_path.read_text(encoding='utf-8')
 workflow=workflow_path.read_text(encoding='utf-8')
 forward=forward_path.read_text(encoding='utf-8')
 taxonomy=taxonomy_path.read_text(encoding='utf-8')
@@ -48,9 +50,12 @@ assert "'/autonomous-simulator/ceo-handoff-v1'" in cloud
 assert "'/autonomous-simulator/executive-v1'" in cloud
 assert "out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V4'" in cloud
 assert "out['development_mode']='MAINTENANCE_ONLY'" in cloud
+assert 'import cloud_service_v9 as base9' in cloud10
+assert 'base9.start_runtime()' in cloud10
+assert 'REAL_TRADING = False' in cloud10
 assert 'autonomous-simulator/ceo-handoff-v1' in workflow
 assert 'MAINTENANCE_ONLY' in workflow
 version=json.loads((ROOT/'version.json').read_text(encoding='utf-8-sig'))
 assert version.get('version')=='1.5.28'
-assert 'exec python cloud_service_v9.py' in (ROOT/'start.sh').read_text(encoding='utf-8')
+assert 'exec python cloud_service_v10.py' in (ROOT/'start.sh').read_text(encoding='utf-8')
 print(json.dumps({'status':'PASS','scope':'RADAR_CEO_HANDOFF','development_mode':'MAINTENANCE_ONLY','primary_human_project':'CEO_DE_IAS','prospective_memory_contract':'DECISION_MEMORY_V1','setup_built':False,'real_trading':False},sort_keys=True))

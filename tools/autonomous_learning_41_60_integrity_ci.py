@@ -8,11 +8,14 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 module_path=ROOT/'radar_autonomous_learning_41_60_v1.py'
 cloud_path=ROOT/'cloud_service_v9.py'
+cloud10_path=ROOT/'cloud_service_v10.py'
 assert module_path.exists(), 'missing radar_autonomous_learning_41_60_v1.py'
 assert cloud_path.exists(), 'missing cloud_service_v9.py'
+assert cloud10_path.exists(), 'missing cloud_service_v10.py'
 
 module=module_path.read_text(encoding='utf-8')
 cloud=cloud_path.read_text(encoding='utf-8')
+cloud10=cloud10_path.read_text(encoding='utf-8')
 tree=ast.parse(module)
 
 assignments={}
@@ -55,10 +58,13 @@ assert "out['dashboard_contract']='AUTONOMOUS_SIMULATOR_V4'" in cloud
 assert "out['automatic_promotion']=False" in cloud
 assert "out['automatic_release']=False" in cloud
 assert "out['live_execution_allowed']=False" in cloud
+assert 'import cloud_service_v9 as base9' in cloud10
+assert 'base9.start_runtime()' in cloud10
+assert 'REAL_TRADING = False' in cloud10
 
 version=json.loads((ROOT/'version.json').read_text(encoding='utf-8-sig'))
 assert version.get('version')=='1.5.28', version
-assert 'exec python cloud_service_v9.py' in (ROOT/'start.sh').read_text(encoding='utf-8')
+assert 'exec python cloud_service_v10.py' in (ROOT/'start.sh').read_text(encoding='utf-8')
 
 print(json.dumps({
     'status':'PASS','scope':'AUTONOMOUS_PAPER_PRIORITIES_41_60',

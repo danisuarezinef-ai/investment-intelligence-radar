@@ -8,14 +8,17 @@ def audit(root='.'):
         'PRE160_TASKS_201_270.md','radar_pre160_resilience_v7.py','radar_pre160_data_authority_v7.py',
         'radar_pre160_statistics_v7.py','radar_pre160_autonomy_v7.py','radar_pre160_controls_v7.py',
         'radar_market_data_authority_v1.py','radar_provider_resilience_v1.py','radar_raw_vault_v1.py','radar_sync_queue_v2.py',
-        'radar_pre160_cache_v7.py','cloud_service_v7.py','cloud_service_v8.py','cloud_service_v9.py','tests/test_pre160_tasks_201_270.py','tests/test_pre160_cache_v7.py')
+        'radar_pre160_cache_v7.py','cloud_service_v7.py','cloud_service_v8.py','cloud_service_v9.py','cloud_service_v10.py',
+        'tests/test_pre160_tasks_201_270.py','tests/test_pre160_cache_v7.py')
     for p in required:
         if not (root/p).exists():findings.append('MISSING_201_270_COMPONENT:'+p)
     start=(root/'start.sh').read_text(encoding='utf-8-sig')
     v7=(root/'cloud_service_v7.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v7.py').exists() else ''
     v8=(root/'cloud_service_v8.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v8.py').exists() else ''
     v9=(root/'cloud_service_v9.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v9.py').exists() else ''
-    if 'cloud_service_v9.py' not in start:findings.append('START_NOT_V9')
+    v10=(root/'cloud_service_v10.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v10.py').exists() else ''
+    if 'cloud_service_v10.py' not in start:findings.append('START_NOT_V10')
+    if 'import cloud_service_v9 as base9' not in v10 or 'base9.start_runtime()' not in v10:findings.append('V10_NOT_COMPOSED_OVER_V9')
     if 'import cloud_service_v8 as base8' not in v9 or 'base8.start_runtime()' not in v9:findings.append('V9_NOT_COMPOSED_OVER_V8')
     if 'import cloud_service_v7 as base7' not in v8 or 'base7.start_runtime()' not in v8:findings.append('V8_NOT_COMPOSED_OVER_V7')
     if 'import cloud_service_v6 as base6' not in v7 or 'base6.start_runtime()' not in v7:findings.append('V7_NOT_COMPOSED_OVER_V6')
@@ -42,7 +45,7 @@ def audit(root='.'):
     if 'RAILWAY_GIT_COMMIT_SHA' not in v7 or 'deployed_sha' not in v7:findings.append('V7_DEPLOYMENT_IDENTITY_MISSING')
     version=json.loads((root/'version.json').read_text(encoding='utf-8-sig')).get('version')
     if version!='1.5.28':findings.append('UNEXPECTED_WINDOWS_VERSION_BUMP')
-    if any('REAL_TRADING=False' not in x.replace(' ','') for x in (v7,v8,v9)):findings.append('TRADING_BOUNDARY_MISSING')
+    if any('REAL_TRADING=False' not in x.replace(' ','') for x in (v7,v8,v9,v10)):findings.append('TRADING_BOUNDARY_MISSING')
     return {'status':'PASS' if not findings else 'FAIL','findings':findings,'version':version,'setup_built':False,'real_trading':False}
 
 if __name__=='__main__':

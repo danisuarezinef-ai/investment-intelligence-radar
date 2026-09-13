@@ -1,6 +1,6 @@
 """Static backend integrity gate for the complete pre-1.6 runtime chain.
 
-The gate intentionally overlaps version-specific integrity audits.  It verifies that
+The gate intentionally overlaps version-specific integrity audits. It verifies that
 adding a new cloud layer does not bypass older evidence, provenance or safety controls.
 """
 from pathlib import Path
@@ -22,9 +22,10 @@ def _tokens(findings,root,path,tokens,prefix):
 def audit(root='.'):
     root=Path(root);findings=[]
     start=_text(root,'start.sh')
-    layers={n:_text(root,f'cloud_service_v{n}.py') for n in range(3,10)}
-    if 'cloud_service_v9.py' not in start:findings.append('START_NOT_V9')
-    chain=((9,'import cloud_service_v8 as base8','base8.start_runtime()'),
+    layers={n:_text(root,f'cloud_service_v{n}.py') for n in range(3,11)}
+    if 'cloud_service_v10.py' not in start:findings.append('START_NOT_V10')
+    chain=((10,'import cloud_service_v9 as base9','base9.start_runtime()'),
+           (9,'import cloud_service_v8 as base8','base8.start_runtime()'),
            (8,'import cloud_service_v7 as base7','base7.start_runtime()'),
            (7,'import cloud_service_v6 as base6','base6.start_runtime()'),
            (6,'import cloud_service_v5 as base5','base5.start_runtime()'),
@@ -44,11 +45,13 @@ def audit(root='.'):
       'radar_supabase_sync.py','radar_learning_sync.py','tests/test_supabase_sync_resilience.py','tests/test_learning_sync_resilience_v1.py','tests/test_post150_reliability_v1.py',
       'PRE160_TASKS_151_200.md','radar_pre160_controls_v6.py','radar_pre160_recovery_v2.py','radar_pre160_release_authority_v2.py','tests/test_pre160_tasks_151_200.py','tests/test_pre160_recovery_release_v2.py',
       'cloud_service_v7.py','cloud_service_v8.py','radar_supabase_sync_partitioned_v2.py','tests/test_pre160_runtime_closure_v8.py',
-      'cloud_service_v9.py','radar_forward_evidence_v2.py','radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py','radar_brain_persistence_v1.py','PRE160_TASKS_311_370.md')
+      'cloud_service_v9.py','radar_forward_evidence_v2.py','radar_brain_calibration_v2.py','radar_brain_competition_v3.py','radar_brain_readiness_v1.py','radar_brain_persistence_v1.py','PRE160_TASKS_311_370.md',
+      'cloud_service_v10.py','radar_paper_runtime_lease_v1.py','radar_simulator_closure_26_35_v1.py','tests/test_paper_runtime_lease_v1.py','tests/test_simulator_closure_26_35_v1.py')
     for path in required:
         if not (root/path).exists():findings.append('MISSING_COMPONENT:'+path)
 
     endpoint_sets={
+      10:('/autonomous-simulator/lease-v1','/autonomous-simulator/closure-v1','/autonomous-simulator/downstream-lock-v1'),
       9:('/pre160-forward-evidence-v2','/pre160-calibration-v2','/pre160-brain-competition-v3','/pre160-brain-readiness-v1','/pre160-audit-311-370-v1'),
       8:('/pre160-audit-151-200-v1','/supabase-health-v1','/pre160-sync-partitions-v2','/pre160-operational-health-v2','/pre160-audit-271-310-v1'),
       7:('/pre160-audit-201-270-v1','/pre160-statistical-validity-v7','/pre160-autonomy-v7','/pre160-deployment-v7'),
@@ -59,8 +62,6 @@ def audit(root='.'):
     }
     for n,endpoints in endpoint_sets.items():
         for endpoint in endpoints:
-            # An endpoint inherited by a later layer is allowed to live in an earlier
-            # layer. Search the composed chain up to that version.
             if not any(endpoint in layers[k] for k in range(3,n+1)):findings.append(f'MISSING_ENDPOINT_V{n}:'+endpoint)
 
     _tokens(findings,root,'supabase/functions/radar-pre160-evidence/index.ts',('appendProspectiveChain','PIT_REGIME_NOT_CAPTURED'),'EVIDENCE_AUTHORITY_INCOMPLETE')
@@ -78,6 +79,9 @@ def audit(root='.'):
     _tokens(findings,root,'radar_promotion_governance_v2.py',("'auto_promote':False","'live_review_allowed':False","'live_execution_allowed':False","'can_trade':False","'real_trading':False"),'PROMOTION_GOVERNANCE_INCOMPLETE')
     _tokens(findings,root,'radar_forward_evidence_v2.py',('synthetic_evidence_can_mature','backfill_allowed','decision_envelope_status','prediction_hash'),'BRAIN_EVIDENCE_INCOMPLETE')
     _tokens(findings,root,'radar_brain_competition_v3.py',('automatic_replacement','SHADOW_PAPER_ONLY','uses_future_outcomes'),'BRAIN_COMPETITION_INCOMPLETE')
+    _tokens(findings,root,'cloud_service_v10.py',('acquire_runtime_lease','heartbeat_runtime_lease','simulator.set_enabled(False)','/autonomous-simulator/downstream-lock-v1','REAL_TRADING = False'),'V10_CLOSURE_INCOMPLETE')
+    _tokens(findings,root,'radar_paper_runtime_lease_v1.py',('def acquire(','def heartbeat(','def release(','FAIL_CLOSED','REAL_TRADING = False'),'PAPER_LEASE_CLIENT_INCOMPLETE')
+    _tokens(findings,root,'radar_simulator_closure_26_35_v1.py',('learning_scorecard','disaster_recovery_matrix','market_pipeline_gate','execution_realism_gate','accounting_source_of_truth','restart_reconciliation_gate','downstream_hard_lock','REAL_TRADING = False'),'SIMULATOR_CLOSURE_INCOMPLETE')
 
     agents=_text(root,'radar_agents.py');champ=_text(root,'radar_champion_portfolio.py');persist=_text(root,'radar_paper_engine_persistence_v1.py');runtime5=_text(root,'radar_pre160_runtime_v5.py')
     if 'capture_trade_envelope' not in agents:findings.append('AGENT_TRANSACTIONAL_PROVENANCE_MISSING')
@@ -85,7 +89,7 @@ def audit(root='.'):
     if 'SCHEMA_VERSION = 2' not in persist or 'paper_decision_envelopes_local' not in persist or 'LEGACY_SCHEMA_VERSION = 1' not in persist:findings.append('PAPER_CHECKPOINT_SCHEMA2_MISSING')
     if 'uses_exit_fields_for_entry_linkage' not in runtime5 or 'competitor_key' not in runtime5:findings.append('ENTRY_ONLY_LINKAGE_AUDIT_MISSING')
 
-    for n in range(4,10):
+    for n in range(4,11):
         text=layers[n]
         if 'REAL_TRADING=False' not in text.replace(' ','') and 'REAL_TRADING = False' not in text:findings.append(f'V{n}_TRADING_BOUNDARY_MISSING')
     version=json.loads(_text(root,'version.json')).get('version')
