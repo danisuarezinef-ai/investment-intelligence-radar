@@ -28,6 +28,7 @@ _STATE = {
     "runtime_started": False,
     "worker_started": False,
     "session_id": None,
+    "session_source": None,
     "lease": None,
     "paper_restore": None,
     "backfill_used": False,
@@ -38,14 +39,26 @@ _WORKER_THREAD = None
 
 
 def _strict_persisted_session_id() -> str:
-    """Require the previously persisted PAPER session; never mint one during recovery."""
+    """Use only a persisted session. A pinned ID is an exact recovery fallback, never a minted session."""
+    pinned = os.environ.get("RADAR_EXPECTED_PAPER_SESSION_ID", "").strip()
+    remote = ""
     try:
         item = base9.autonomous_paper._remote_latest(base9.autonomous_paper.SESSION_KIND)
         payload = (item or {}).get("payload") if isinstance(item, dict) else None
-        session_id = str((payload or {}).get("session_id") or "").strip() if isinstance(payload, dict) else ""
-        return session_id
+        remote = str((payload or {}).get("session_id") or "").strip() if isinstance(payload, dict) else ""
     except Exception:
+        remote = ""
+    if remote and pinned and remote != pinned:
+        with _LOCK: _STATE["session_source"] = "MISMATCH_BLOCKED"
         return ""
+    if remote:
+        with _LOCK: _STATE["session_source"] = "REMOTE_PERSISTED"
+        return remote
+    if pinned:
+        with _LOCK: _STATE["session_source"] = "PINNED_PERSISTED_EXACT"
+        return pinned
+    with _LOCK: _STATE["session_source"] = "UNAVAILABLE"
+    return ""
 
 
 def admission_status():
@@ -114,10 +127,9 @@ def attempt_exact_admission():
     with _LOCK:
         _STATE["session_id"] = session_id or None
     if not session_id:
-        _block("persisted PAPER session unavailable; refusing to mint replacement session")
+        _block("persisted PAPER session unavailable or mismatched; refusing to mint replacement session")
         return admission_status()
 
-    # Force v10 to use only the verified persisted session during this admission.
     base10._session_id = lambda: session_id
     lease = base10.acquire_runtime_lease()
     if lease.get("held") is not True:
@@ -153,8 +165,6 @@ def attempt_exact_admission():
             })
         return admission_status()
     except Exception as exc:
-        # cloud_service_v4 marks itself started before the exact restore. Reset only that
-        # guard so a later recovery attempt can genuinely repeat the exact restore path.
         try:
             base4._V4_RUNTIME_STARTED = False
         except Exception:
