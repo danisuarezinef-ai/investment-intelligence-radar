@@ -14,19 +14,39 @@ def runtime_board_101_120():
              'preserves_prior_valid_hours':False,'downtime_credit':False}
     singleton={'active_instances':1 if lease.get('held') is True else None,'lease_held':lease.get('held')}
     # No historical interval is invented. Durable interval authority must supply intervals before maturity can accrue.
-    return p101120.board(deployment={'success':True,'runtime':'v20'},integrity={'status':'PENDING_EXTERNAL_CI'},task_states={},intervals=[],
-        restart=restart,singleton=singleton,market={},pit={},liquidity={},execution={},accounting={'reconciled':durable.get('status')=='RECONCILED','equation_error':None},recovery={})
+    return p101120.board(deployment={'success':False,'runtime':'v20','reason':'production_deployment_proof_supplied_externally'},
+        integrity={'status':'PENDING_EXTERNAL_CI'},task_states={},intervals=[],restart=restart,singleton=singleton,market={},pit={},liquidity={},execution={},
+        accounting={'reconciled':durable.get('status')=='RECONCILED','equation_error':None},recovery={})
+
+def runtime_board_21_100():
+    b18=base19.base18;b17=b18.base17;b16=b17.base16
+    return {'tasks_21_90':{'tasks_21_80':{'tasks_21_70':b16.runtime_board_21_70(),'tasks_71_80':b17.runtime_board_71_80()},
+                           'tasks_81_90':b18.runtime_board_81_90()},
+            'tasks_91_100':base19.runtime_board_91_100(),'automatic_promotion':False,'automatic_release':False,
+            'setup_1_6_allowed':False,'live_execution_allowed':False,'real_trading':False}
 
 class ValidationV20Handler(base19.ValidationV19Handler):
     def do_GET(self):
         path=self.path.split('?',1)[0]
         if path=='/autonomous-simulator/tasks-101-120-v1':self._send(200,runtime_board_101_120());return
-        if path=='/autonomous-simulator/tasks-21-120-v1':self._send(200,{'tasks_21_100':base19.runtime_board_91_100(),'tasks_101_120':runtime_board_101_120(),'automatic_promotion':False,'automatic_release':False,'setup_1_6_allowed':False,'live_execution_allowed':False,'real_trading':False});return
+        if path=='/autonomous-simulator/tasks-21-120-v1':self._send(200,{'tasks_21_100':runtime_board_21_100(),'tasks_101_120':runtime_board_101_120(),
+            'automatic_promotion':False,'automatic_release':False,'setup_1_6_allowed':False,'live_execution_allowed':False,'real_trading':False});return
         super().do_GET()
 
-def main():
-    b12=base19.base18.base17.base16.base15.base14.base13.base12;b12._install_runtime_guards()
+def _start_inherited_threads():
+    b18=base19.base18;b17=b18.base17;b16=b17.base16;b15=b16.base15;b14=b15.base14;b13=b14.base13;b12=b13.base12
+    b12._install_runtime_guards()
     threading.Thread(target=b12._supervision_loop,name='paper-v12-supervision',daemon=True).start()
+    threading.Thread(target=b13._run_runtime_probes_once,name='paper-disaster-probes',daemon=True).start()
+    threading.Thread(target=b14._log_41_50_once,name='paper-learning-41-50',daemon=True).start()
+    threading.Thread(target=b15._log_once,name='paper-forward-51-60',daemon=True).start()
+    threading.Thread(target=b16._log_once,name='paper-intelligence-61-70',daemon=True).start()
+    threading.Thread(target=b17._log_once,name='paper-portfolio-71-80',daemon=True).start()
+    threading.Thread(target=b18._log_once,name='paper-policy-81-90',daemon=True).start()
+    threading.Thread(target=base19._log_once,name='paper-validation-91-100',daemon=True).start()
+
+def main():
+    _start_inherited_threads()
     port=int(os.environ.get('PORT') or 0)
     if port<=0:
         while True:time.sleep(60)
