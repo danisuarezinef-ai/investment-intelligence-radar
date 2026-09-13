@@ -36,11 +36,15 @@ jobs:
           python -m pytest -q \
             tests/test_learning_governance_121_130_v1.py \
             tests/test_paper_certification_131_160_v1.py
-      - name: Verify runtime chain files exist
+      - name: Verify runtime chain and entrypoint
         run: |
           python - <<'PY'
           from pathlib import Path
           for n in range(10,23):
               assert Path(f'cloud_service_v{n}.py').exists(), n
-          assert 'cloud_service_v22.py' in Path('start.sh').read_text() or True
+          start=Path('start.sh').read_text(encoding='utf-8')
+          assert 'exec python cloud_service_v22.py' in start
+          for n in range(10,23):
+              text=Path(f'cloud_service_v{n}.py').read_text(encoding='utf-8')
+              assert 'REAL_TRADING=False' in text.replace(' ','')
           PY
