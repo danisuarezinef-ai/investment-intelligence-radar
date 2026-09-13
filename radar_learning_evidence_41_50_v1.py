@@ -56,7 +56,7 @@ def normalized_rows(limit=400):
         outcome=r.get('outcome') if isinstance(r.get('outcome'),dict) else {}
         provenance=r.get('provenance_snapshot') if isinstance(r.get('provenance_snapshot'),dict) else {}
         payload=r.get('payload') if isinstance(r.get('payload'),dict) else {}
-        backfilled=bool(outcome.get('backfilled',False))
+        outcome_backfilled=bool(outcome.get('backfilled',False))
         matured=bool(r.get('evaluated_at')) and bool(outcome)
         pit_valid=bool(r.get('data_cutoff')) and bool(r.get('known_at_boundary')) and bool(r.get('prediction_hash')) and bool(r.get('feature_fingerprint')) and bool(r.get('thesis_fingerprint'))
         prediction_id=r.get('local_prediction_id') or r.get('id')
@@ -68,7 +68,7 @@ def normalized_rows(limit=400):
             'prediction_id':prediction_id,'captured_at':r.get('known_at_boundary') or r.get('created_at'),
             'data_cutoff':r.get('data_cutoff'),'feature_fingerprint':r.get('feature_fingerprint'),
             'features':features,'immutable':immutable,'prospective_capture':prospective,
-            'lookahead':False,'backfilled':retroactive or backfilled,'retroactive_fill':retroactive,
+            'lookahead':False,'backfilled':retroactive,'retroactive_fill':retroactive,
             'source':'decision_forward_ledger.payload.features','real_trading':False,
         }
         if features or r.get('feature_fingerprint'):feature_snapshots.append(snapshot)
@@ -78,11 +78,11 @@ def normalized_rows(limit=400):
             'symbol':r.get('symbol'),'horizon':r.get('horizon'),'model_version':r.get('model_version'),
             'confidence':_f(r.get('confidence')),'uncertainty':r.get('uncertainty') or {},
             'decision_state':str(r.get('decision_state') or '').upper(),
-            'matured':matured,'natural':matured and not backfilled,
+            'matured':matured,'natural':matured and not outcome_backfilled,
             'net_return':_f(outcome.get('net_return')),'gross_return':_f(outcome.get('gross_return')),
             'cost':_f(outcome.get('cost')),'benchmark_return':_f(outcome.get('benchmark_return')),
             'excess_return':_f(outcome.get('excess_return')),'outcome':outcome,
-            'quality_checks':{'pit_valid':pit_valid,'lookahead':False,'backfilled':backfilled},
+            'quality_checks':{'pit_valid':pit_valid,'lookahead':False,'backfilled':outcome_backfilled},
             'provenance':provenance,'payload':payload,'feature_snapshot':snapshot,
             'real_trading':False,
         }
