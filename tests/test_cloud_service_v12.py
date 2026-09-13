@@ -76,3 +76,17 @@ def test_runtime_board_never_authorizes_live(monkeypatch):
     assert out['automatic_promotion'] is False
     assert out['automatic_release'] is False
     assert out['setup_1_6_allowed'] is False
+
+
+def test_paper_calls_require_ready_and_reconciled(monkeypatch):
+    calls=[]
+    wrapped=v12._gate_paper_call('probe',lambda: calls.append('executed') or {'status':'OK'}, {'paper_execution_allowed':False})
+    monkeypatch.setattr(v12,'_ready',lambda:True)
+    v12._DURABLE_SYNC={'status':'DEGRADED','real_trading':False}
+    out=wrapped()
+    assert out['status']=='BLOCKED_EXACT_RECOVERY'
+    assert calls==[]
+    v12._DURABLE_SYNC={'status':'RECONCILED','real_trading':False}
+    out=wrapped()
+    assert out['status']=='OK'
+    assert calls==['executed']
