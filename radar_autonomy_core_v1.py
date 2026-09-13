@@ -17,6 +17,7 @@ from radar_supabase_sync import SYNC_TOKEN, SYNC_URL
 REAL_TRADING=False
 DEFAULT_URL='https://wvmiludqzdepqmjhfwos.supabase.co/functions/v1/radar-autonomy-core'
 NODE_ID=os.environ.get('RADAR_NODE_ID','cloud-primary').strip() or 'cloud-primary'
+HTTP_TIMEOUT_SECONDS=35
 _FIELDS=('status','enabled','generation','last_error','updated_at','last_result','last_cycle_at','next_cycle_at',
         'completed_cycles','last_research_at','next_research_at','queued_experiments','completed_experiments')
 
@@ -32,7 +33,7 @@ def _url():
 def configured():return bool(_url() and SYNC_TOKEN)
 
 
-def _post(payload,timeout=12):
+def _post(payload,timeout=HTTP_TIMEOUT_SECONDS):
     if not configured():return {'ok':False,'status':'NOT_CONFIGURED','real_trading':False}
     req=urllib.request.Request(_url(),data=json.dumps(payload,ensure_ascii=False,default=str).encode('utf-8'),method='POST',headers={
         'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'InvestmentIntelligenceRadarAutonomyCore/1'})
