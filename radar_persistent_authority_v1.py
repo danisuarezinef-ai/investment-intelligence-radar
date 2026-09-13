@@ -6,7 +6,7 @@ idempotently to/from the persistent authority so deploys do not erase observed t
 """
 from __future__ import annotations
 
-import json, os, urllib.request, urllib.error
+import json, os, time, urllib.request, urllib.error
 from radar_core import con, init_db
 from radar_investment_memory import init_memory
 
@@ -19,13 +19,21 @@ NODE_ID=os.environ.get('RADAR_NODE_ID','cloud-primary').strip() or 'cloud-primar
 def enabled():return bool(SYNC_URL and SYNC_TOKEN)
 
 
-def _post(payload):
+def _post(payload,timeout=30,max_attempts=4):
     data=json.dumps(payload,ensure_ascii=False,default=str).encode('utf-8')
-    req=urllib.request.Request(SYNC_URL,data=data,method='POST',headers={'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'InvestmentIntelligenceRadarAuthority/1.0'})
-    try:
-        with urllib.request.urlopen(req,timeout=40) as r:return json.loads(r.read().decode('utf-8'))
-    except urllib.error.HTTPError as exc:
-        body=exc.read().decode('utf-8','replace');raise RuntimeError(f'authority HTTP {exc.code}: {body[:1000]}')
+    transient={429,500,502,503,504};last_error=None
+    for attempt in range(1,max(1,int(max_attempts))+1):
+        req=urllib.request.Request(SYNC_URL,data=data,method='POST',headers={'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,'User-Agent':'InvestmentIntelligenceRadarAuthority/1.1'})
+        try:
+            with urllib.request.urlopen(req,timeout=timeout) as r:return json.loads(r.read().decode('utf-8'))
+        except urllib.error.HTTPError as exc:
+            body=exc.read().decode('utf-8','replace');last_error=RuntimeError(f'authority HTTP {exc.code}: {body[:1000]}')
+            if exc.code not in transient or attempt>=max_attempts:raise last_error from exc
+        except (urllib.error.URLError,TimeoutError,OSError) as exc:
+            last_error=RuntimeError(f'authority transport error: {type(exc).__name__}: {str(exc)[:700]}')
+            if attempt>=max_attempts:raise last_error from exc
+        time.sleep(min(8.0,2.0**(attempt-1)))
+    raise last_error or RuntimeError('authority transport failed')
 
 
 def summarize_paper_equity_daily(rows,days=30):
