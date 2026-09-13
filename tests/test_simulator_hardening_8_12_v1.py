@@ -6,9 +6,9 @@ import radar_simulator_hardening_8_12_v1 as h
 def test_priority8_risk_blocks_sector_cluster_drawdown_and_circuit_breaker():
     positions=[
         {'symbol':'A','sector':'TECH','market_value':180.0},
-        {'symbol':'B','sector':'TECH','market_value':170.0},
+        {'symbol':'B','sector':'TECH','market_value':180.0},
     ]
-    out=h.paper_risk_gate(equity=1000,cash=650,positions=positions,drawdown_pct=0.12,
+    out=h.paper_risk_gate(equity=1000,cash=640,positions=positions,drawdown_pct=0.12,
         portfolio_volatility=0.20,uncertainty=0.30,
         correlated_clusters={'mega-tech':['A','B']},circuit_breaker={'triggered':True})
     assert out['status']=='BLOCKED_PAPER_RISK'
