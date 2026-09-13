@@ -33,7 +33,9 @@ def enabled() -> bool:
 
 def _post(action: str, *, owner_id: str = "", session_id: str = "", ttl_seconds: int = 180) -> dict[str, Any]:
     if not enabled():
-        return {"ok": False, "status": "NOT_CONFIGURED", "action": action, "lease": None, "real_trading": False}
+        out={"ok": False, "status": "NOT_CONFIGURED", "action": action, "lease": None, "real_trading": False}
+        print('[paper-runtime-lease] '+json.dumps(out,sort_keys=True),flush=True)
+        return out
     body = {"action": action, "owner_id": owner_id, "session_id": session_id, "ttl_seconds": int(ttl_seconds)}
     req = urllib.request.Request(
         _url(), data=json.dumps(body).encode("utf-8"), method="POST",
@@ -44,11 +46,14 @@ def _post(action: str, *, owner_id: str = "", session_id: str = "", ttl_seconds:
         with urllib.request.urlopen(req, timeout=10) as response:
             out = json.loads(response.read().decode("utf-8"))
         out["real_trading"] = False
+        print('[paper-runtime-lease] '+json.dumps({"action":action,"ok":out.get("ok"),"has_lease":bool(out.get("lease")),"real_trading":False},sort_keys=True),flush=True)
         return out
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, ValueError) as exc:
-        return {"ok": False, "status": "FAIL_CLOSED", "action": action,
-                "error": f"{type(exc).__name__}: {str(exc)[:400]}", "lease": None,
-                "real_trading": False}
+        out={"ok": False, "status": "FAIL_CLOSED", "action": action,
+             "error": f"{type(exc).__name__}: {str(exc)[:400]}", "lease": None,
+             "real_trading": False}
+        print('[paper-runtime-lease] '+json.dumps(out,sort_keys=True),flush=True)
+        return out
 
 
 def acquire(owner_id: str, session_id: str, ttl_seconds: int = 180) -> dict[str, Any]:
