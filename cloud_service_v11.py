@@ -8,6 +8,7 @@ live trading, broker submission, automatic promotion/release, or Setup 1.6.
 """
 from __future__ import annotations
 
+import json
 import os
 import threading
 import time
@@ -38,6 +39,13 @@ _STATE = {
 _WORKER_THREAD = None
 
 
+def _trace(stage: str, **extra):
+    payload={"stage":stage,"status":_STATE.get("status"),"attempts":_STATE.get("attempts"),
+             "session_source":_STATE.get("session_source"),"runtime_started":_STATE.get("runtime_started"),
+             "worker_started":_STATE.get("worker_started"),"real_trading":False,**extra}
+    print('[paper-v11-admission] '+json.dumps(payload,sort_keys=True,default=str),flush=True)
+
+
 def _strict_persisted_session_id() -> str:
     """Use only a persisted session. A pinned ID is an exact recovery fallback, never a minted session."""
     pinned = os.environ.get("RADAR_EXPECTED_PAPER_SESSION_ID", "").strip()
@@ -50,14 +58,18 @@ def _strict_persisted_session_id() -> str:
         remote = ""
     if remote and pinned and remote != pinned:
         with _LOCK: _STATE["session_source"] = "MISMATCH_BLOCKED"
+        _trace('session_mismatch',remote_present=True,pinned_present=True)
         return ""
     if remote:
         with _LOCK: _STATE["session_source"] = "REMOTE_PERSISTED"
+        _trace('session_resolved',source='REMOTE_PERSISTED')
         return remote
     if pinned:
         with _LOCK: _STATE["session_source"] = "PINNED_PERSISTED_EXACT"
+        _trace('session_resolved',source='PINNED_PERSISTED_EXACT')
         return pinned
     with _LOCK: _STATE["session_source"] = "UNAVAILABLE"
+    _trace('session_unavailable',remote_present=False,pinned_present=False)
     return ""
 
 
@@ -92,6 +104,7 @@ def _block(reason: str, *, lease=None, paper_restore=None):
             "runtime_started": False,
             "real_trading": False,
         })
+    _trace('blocked',reason=str(reason)[:500],lease_held=bool((lease or {}).get('held')))
 
 
 def _release_current_lease():
@@ -122,6 +135,7 @@ def attempt_exact_admission():
         _STATE["attempts"] = int(_STATE.get("attempts") or 0) + 1
         _STATE["last_attempt_at"] = time.time()
         _STATE["last_error"] = None
+    _trace('attempt_start')
 
     session_id = _strict_persisted_session_id()
     with _LOCK:
@@ -131,12 +145,15 @@ def attempt_exact_admission():
         return admission_status()
 
     base10._session_id = lambda: session_id
+    _trace('lease_acquire_start',session_present=True)
     lease = base10.acquire_runtime_lease()
+    _trace('lease_acquire_result',lease_held=lease.get('held') is True,lease_status=lease.get('status'),lease_error=lease.get('error'))
     if lease.get("held") is not True:
         _block("distributed PAPER lease not held", lease=lease)
         return admission_status()
 
     try:
+        _trace('runtime_exact_restore_start')
         runtime = base10.start_runtime()
         paper_restore = dict(base9.base8.base7.base6.base5.base4.base3._PAPER_ENGINE_STATUS)
         exact = (
@@ -148,6 +165,7 @@ def attempt_exact_admission():
             and paper_restore.get("reconstructed") is False
             and paper_restore.get("real_trading") is False
         )
+        _trace('runtime_exact_restore_result',restore_status=paper_restore.get('status'),verified=paper_restore.get('verified'),hash_equal=paper_restore.get('remote_state_hash')==paper_restore.get('local_state_hash') if paper_restore.get('remote_state_hash') else False)
         if not exact:
             raise RuntimeError(f"exact PAPER restore not proven: {paper_restore.get('status')}")
         runtime.run_worker._Handler = ValidationV11Handler
@@ -163,6 +181,7 @@ def attempt_exact_admission():
                 "reconstructed": False,
                 "real_trading": False,
             })
+        _trace('ready_exact_paper')
         return admission_status()
     except Exception as exc:
         try:
