@@ -14,6 +14,7 @@ from radar_supabase_sync import SYNC_TOKEN, SYNC_URL
 
 REAL_TRADING=False
 DEFAULT_URL='https://wvmiludqzdepqmjhfwos.supabase.co/functions/v1/radar-paper-evidence-21-30'
+HTTP_TIMEOUT_SECONDS=35
 
 
 def _url():
@@ -27,7 +28,7 @@ def _url():
 def configured():return bool(_url() and SYNC_TOKEN)
 
 
-def summary(timeout=12):
+def summary(timeout=HTTP_TIMEOUT_SECONDS):
     if not configured():return {'ok':False,'status':'NOT_CONFIGURED','real_trading':False}
     req=urllib.request.Request(_url(),data=b'{"action":"summary"}',method='POST',headers={
         'Content-Type':'application/json','X-Radar-Token':SYNC_TOKEN,
