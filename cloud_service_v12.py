@@ -36,6 +36,10 @@ def _ready():
     with base11._LOCK:return base11._STATE.get('status')=='READY_EXACT_PAPER'
 
 
+def _paper_ready():
+    return _ready() and (_DURABLE_SYNC or {}).get('status')=='RECONCILED'
+
+
 def _mark_blocked(reason, *, lease=None):
     with base11._LOCK:
         base11._STATE.update({'status':'BLOCKED_EXACT_RECOVERY','last_error':str(reason)[:900],
@@ -95,8 +99,9 @@ def _restore_autonomy_core_once():
 
 def _gate_paper_call(name, original, blocked_result):
     def wrapped(*args,**kwargs):
-        if not _ready():
-            return {**blocked_result,'status':'BLOCKED_EXACT_RECOVERY','component':name,'real_trading':False}
+        if not _paper_ready():
+            return {**blocked_result,'status':'BLOCKED_EXACT_RECOVERY','component':name,
+                    'durable_sync':(_DURABLE_SYNC or {}).get('status'),'real_trading':False}
         return original(*args,**kwargs)
     return wrapped
 
@@ -116,7 +121,7 @@ def _install_runtime_guards():
     if callable(getattr(base4,'closed_loop_cycle',None)):
         fn=base4.closed_loop_cycle;_ORIGINALS['closed_loop_cycle']=fn
         def closed_guard(*args,**kwargs):
-            if not _ready():
+            if not _paper_ready():
                 return {'status':'HOLD_EXACT_RECOVERY','forward_records':0,'optimizer':{'status':'HOLD_CASH'},
                         'champion_challenger':{'status':'BLOCKED'},'execution':{'status':'BLOCKED_EXACT_RECOVERY'},'real_trading':False}
             return fn(*args,**kwargs)
@@ -129,9 +134,6 @@ def _canon_hash(value):
 
 
 def _learning_view(state):
-    # Durable learning identity only. Runtime supervisor status, queue depth and future
-    # schedule timestamps are intentionally excluded because they can legitimately change
-    # immediately after an exact restore without changing learned state.
     keys=('generation','completed_cycles','completed_experiments','last_cycle_at','last_research_at')
     return {k:(state or {}).get(k) for k in keys}
 
@@ -168,7 +170,7 @@ def _reconciliation_pair(remote=None):
     return local,remote
 
 
-def _durable_sync_once():
+def _durable_sync_once(max_verify_attempts=4):
     global _DURABLE_SYNC,_TARGET_ENABLED
     lease=_lease_local()
     if lease.get('held') is not True:
@@ -177,14 +179,20 @@ def _durable_sync_once():
     if _ready():_TARGET_ENABLED=bool(local_core.get('enabled'))
     core=autonomy_core.persist_local_state(base9.autonomous_paper.simulator)
     checkpoint=paper_persistence.push_engine_checkpoint()
-    evidence=remote_evidence.summary()
-    local,remote=_reconciliation_pair(evidence)
-    rec=tasks2130.hard.persistence_reconciliation_gate(local,remote) if all(local.get(k) is not None and remote.get(k) is not None for k in ('state_hash','session_id','cycle','cash','equity','positions_hash','learning_hash','observed_at')) else {'status':'NOT_VERIFIED','real_trading':False}
     checkpoint_ok=checkpoint.get('ok') is True or checkpoint.get('status') in {'PERSISTED_EXACT_PAPER_ENGINE','UPSERTED','OK','SYNCED'}
+    rec={'status':'NOT_VERIFIED','real_trading':False};local={};remote={};evidence={}
+    for attempt in range(1,max(1,int(max_verify_attempts))+1):
+        evidence=remote_evidence.summary();local,remote=_reconciliation_pair(evidence)
+        complete=all(local.get(k) is not None and remote.get(k) is not None for k in ('state_hash','session_id','cycle','cash','equity','positions_hash','learning_hash','observed_at'))
+        rec=tasks2130.hard.persistence_reconciliation_gate(local,remote) if complete else {'status':'NOT_VERIFIED','real_trading':False}
+        if evidence.get('ok') is True and rec.get('status')=='RECONCILED':break
+        if attempt<max_verify_attempts:time.sleep(min(3.0,float(attempt)))
     ok=core.get('ok') is True and checkpoint_ok and evidence.get('ok') is True and rec.get('status')=='RECONCILED'
     _DURABLE_SYNC={'status':'RECONCILED' if ok else 'DEGRADED','autonomy_core':core.get('status'),'checkpoint':checkpoint.get('status'),
                    'checkpoint_ok':checkpoint_ok,'checkpoint_hash':checkpoint.get('local_state_hash'),'reconciliation':rec,
-                   'local_identity':local,'remote_identity':remote,'real_trading':False}
+                   'local_identity':local,'remote_identity':remote,'verify_attempts':attempt,'real_trading':False}
+    if ok:print('[paper-v12] durable reconciliation RECONCILED cycle={} hash={}'.format(local.get('cycle'),str(local.get('state_hash') or '')[:12]),flush=True)
+    else:print('[paper-v12] durable reconciliation DEGRADED blockers={} mismatches={}'.format(rec.get('blockers'),rec.get('mismatched_fields')),flush=True)
     return dict(_DURABLE_SYNC)
 
 
@@ -225,6 +233,9 @@ def _supervision_loop():
                 lease=resilient_heartbeat_runtime_lease()
                 if lease.get('held') is not True:
                     _mark_blocked('distributed PAPER lease liveness lost; durable reconciliation required',lease=lease)
+                elif (_DURABLE_SYNC or {}).get('status')!='RECONCILED':
+                    sync=_durable_sync_once()
+                    if sync.get('status')!='RECONCILED':_mark_blocked('critical PAPER persistence divergence; durable reconciliation required',lease=lease)
                 else:
                     sync=_durable_sync_once()
                     if sync.get('status')!='RECONCILED':_mark_blocked('critical PAPER persistence divergence; durable reconciliation required',lease=lease)
@@ -235,11 +246,12 @@ def _supervision_loop():
                 else:
                     result=base11.attempt_exact_admission()
                     if result.get('status')=='READY_EXACT_PAPER':
-                        if _TARGET_ENABLED:
-                            try:base9.autonomous_paper.simulator.set_enabled(True)
-                            except Exception:pass
                         sync=_durable_sync_once()
-                        if sync.get('status')!='RECONCILED':_mark_blocked('post-restore durable reconciliation failed')
+                        if sync.get('status')=='RECONCILED':
+                            if _TARGET_ENABLED:
+                                try:base9.autonomous_paper.simulator.set_enabled(True)
+                                except Exception:pass
+                        else:_mark_blocked('post-restore durable reconciliation failed')
         except Exception as exc:_mark_blocked(f'v12 supervision: {type(exc).__name__}: {str(exc)[:700]}')
         time.sleep(30)
 
