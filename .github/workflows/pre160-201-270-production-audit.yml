@@ -24,7 +24,7 @@ jobs:
           print('PROTECTED_DIGEST='+d['digest'])
           print('PROTECTED_FILES='+str(d['files']))
           PY
-      - name: Verify Cloud v7-v12 task surfaces
+      - name: Verify Cloud v7-v13 task surfaces
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
@@ -64,28 +64,31 @@ jobs:
           print(name,'PASS HTTP boundary',d.get('status'))
           PY
           done
-      - name: Verify approved v12 runtime lineage and exact Railway deployed source SHA
+      - name: Verify approved v13 runtime lineage and exact Railway deployed source SHA
         env:
           EXPECTED_SHA: ${{ github.sha }}
           BASE_URL: https://radar-cloud-production.up.railway.app
         run: |
           set -euo pipefail
-          grep -q 'exec python cloud_service_v12.py' start.sh
+          grep -q 'exec python cloud_service_v13.py' start.sh
           python - <<'PY'
           from pathlib import Path
+          v13=Path('cloud_service_v13.py').read_text(encoding='utf-8')
           v12=Path('cloud_service_v12.py').read_text(encoding='utf-8')
           v11=Path('cloud_service_v11.py').read_text(encoding='utf-8')
           v10=Path('cloud_service_v10.py').read_text(encoding='utf-8')
           v9=Path('cloud_service_v9.py').read_text(encoding='utf-8')
           v8=Path('cloud_service_v8.py').read_text(encoding='utf-8')
+          assert 'import cloud_service_v12 as base12' in v13
           assert 'import cloud_service_v11 as base11' in v12
           assert 'import cloud_service_v10 as base10' in v12
           assert 'import cloud_service_v10 as base10' in v11
           assert 'import cloud_service_v9 as base9' in v10
           assert 'import cloud_service_v8 as base8' in v9
           assert 'import cloud_service_v7 as base7' in v8
-          for path,text in [('v12',v12),('v11',v11),('v10',v10),('v9',v9)]:
+          for path,text in [('v13',v13),('v12',v12),('v11',v11),('v10',v10),('v9',v9)]:
               assert 'REAL_TRADING' in text,(path,'missing safety invariant')
+          assert 'tasks-31-40-v1' in v13
           PY
           test "$(python -c "import json;print(json.load(open('version.json'))['version'])")" = "1.5.28"
           matched=0
