@@ -64,7 +64,6 @@ def task23_forward_attribution():
 
 
 def task24_meta_learning():
-    # Governance is verifiable now; candidate quality still requires forward evidence.
     return {'task':24,'name':'bounded_meta_learning','status':'GOVERNED_PENDING_SAMPLE',
             'challenger_only':True,'bounded_mutation_required':True,'historical_can_promote':False,
             'automatic_promotion':False,'automatic_champion_replacement':False,'real_trading':False}
@@ -102,6 +101,14 @@ def task27_exact_restore(restore):
 
 
 def task28_reconciliation(local, remote):
+    required=('state_hash','session_id','cycle','cash','equity','positions_hash','learning_hash','observed_at')
+    missing_local=[k for k in required if (local or {}).get(k) is None]
+    missing_remote=[k for k in required if (remote or {}).get(k) is None]
+    if missing_local or missing_remote:
+        return {'task':28,'name':'persistence_reconciliation','status':'NOT_VERIFIED',
+                'missing_local':missing_local,'missing_remote':missing_remote,
+                'silent_overwrite_allowed':False,'new_paper_risk_allowed':False,
+                'live_execution_allowed':False,'real_trading':False}
     try:return {'task':28,'name':'persistence_reconciliation',**hard.persistence_reconciliation_gate(local,remote)}
     except Exception as exc:return {'task':28,'name':'persistence_reconciliation','status':'NOT_VERIFIED','error':f'{type(exc).__name__}: {str(exc)[:500]}','real_trading':False}
 
