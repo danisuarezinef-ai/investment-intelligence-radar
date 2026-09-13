@@ -138,10 +138,10 @@ def _learning_view(state):
     return {k:(state or {}).get(k) for k in keys}
 
 
-def _num(value):
+def _money_identity(value):
     if value is None:return None
-    try:return float(value)
-    except (TypeError,ValueError):return value
+    try:return format(float(value),'.10f')
+    except (TypeError,ValueError):return str(value)
 
 
 def _positions_hash(paper_positions,champion_positions):
@@ -158,12 +158,12 @@ def _reconciliation_pair(remote=None):
     rcp=(evidence.get('checkpoint') or {}) if evidence.get('ok') else {};ra=(evidence.get('autonomy') or {}) if evidence.get('ok') else {}
     remote_core=ra.get('payload') if isinstance(ra.get('payload'),dict) else {};rlease=(evidence.get('lease') or {}) if evidence.get('ok') else {}
     local={'state_hash':local_cp.get('state_hash'),'session_id':session,'cycle':local_core.get('completed_cycles'),
-           'cash':_num(mark.get('cash')),'equity':_num(mark.get('total')),
+           'cash':_money_identity(mark.get('cash')),'equity':_money_identity(mark.get('total')),
            'positions_hash':_positions_hash(tables.get('paper_agent_positions'),tables.get('champion_paper_positions')),
            'learning_hash':_canon_hash(_learning_view(local_core)),'observed_at':local_cp.get('observed_at'),
            'backfilled':False,'real_trading':False}
     remote={'state_hash':rcp.get('state_hash'),'session_id':rlease.get('session_id'),
-            'cycle':remote_core.get('completed_cycles'),'cash':_num(rcp.get('champion_cash')),'equity':_num(rcp.get('champion_total')),
+            'cycle':remote_core.get('completed_cycles'),'cash':_money_identity(rcp.get('champion_cash')),'equity':_money_identity(rcp.get('champion_total')),
             'positions_hash':_positions_hash(rcp.get('paper_positions'),rcp.get('champion_positions')) if rcp else None,
             'learning_hash':_canon_hash(_learning_view(remote_core)) if remote_core else None,'observed_at':rcp.get('observed_at'),
             'backfilled':False,'real_trading':False}
@@ -180,7 +180,7 @@ def _durable_sync_once(max_verify_attempts=4):
     core=autonomy_core.persist_local_state(base9.autonomous_paper.simulator)
     checkpoint=paper_persistence.push_engine_checkpoint()
     checkpoint_ok=checkpoint.get('ok') is True or checkpoint.get('status') in {'PERSISTED_EXACT_PAPER_ENGINE','UPSERTED','OK','SYNCED'}
-    rec={'status':'NOT_VERIFIED','real_trading':False};local={};remote={};evidence={}
+    rec={'status':'NOT_VERIFIED','real_trading':False};local={};remote={};evidence={};attempt=0
     for attempt in range(1,max(1,int(max_verify_attempts))+1):
         evidence=remote_evidence.summary();local,remote=_reconciliation_pair(evidence)
         complete=all(local.get(k) is not None and remote.get(k) is not None for k in ('state_hash','session_id','cycle','cash','equity','positions_hash','learning_hash','observed_at'))
@@ -233,9 +233,6 @@ def _supervision_loop():
                 lease=resilient_heartbeat_runtime_lease()
                 if lease.get('held') is not True:
                     _mark_blocked('distributed PAPER lease liveness lost; durable reconciliation required',lease=lease)
-                elif (_DURABLE_SYNC or {}).get('status')!='RECONCILED':
-                    sync=_durable_sync_once()
-                    if sync.get('status')!='RECONCILED':_mark_blocked('critical PAPER persistence divergence; durable reconciliation required',lease=lease)
                 else:
                     sync=_durable_sync_once()
                     if sync.get('status')!='RECONCILED':_mark_blocked('critical PAPER persistence divergence; durable reconciliation required',lease=lease)
