@@ -1,7 +1,7 @@
 name: Brain Decision Integration CI
 on:
   push:
-    branches: [integration-brain-decision-v4, integration-v4-clean, integration-decision-lab-v5, next-pre160-integration, pre160-91-110, pre160-111-130, pre160-131-150]
+    branches: [integration-brain-decision-v4, integration-v4-clean, integration-decision-lab-v5, next-pre160-integration, pre160-91-110, pre160-111-130, pre160-131-150, main]
   pull_request:
     branches: [main]
 permissions:
@@ -22,8 +22,8 @@ jobs:
         run: python -m pytest -q
       - name: Pre-1.6 debt audit
         run: python tools/pre160_debt_audit.py
-      - name: Pre-1.6 backend integrity audit
-        run: python tools/pre160_integrity_ci.py
+      - name: Pre-1.6 backend integrity audit v22
+        run: python tools/pre160_integrity_ci_v22.py
       - name: Pre-1.6 tasks 201-270 integrity audit
         run: python tools/pre160_201_270_integrity_ci.py
       - name: Pre-1.6 tasks 271-310 integrity audit
