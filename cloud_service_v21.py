@@ -4,7 +4,7 @@ import os,threading,time
 from http.server import ThreadingHTTPServer
 import cloud_service_v20 as base20
 import radar_learning_evidence_41_50_v1 as evidence
-import radar_learning_governance_121_130_v1 as p121130
+import radar_learning_governance_121_130_v2 as p121130
 REAL_TRADING=False
 
 def _state_map(board):
