@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v15 composes v14 forward diagnostics with tasks 51-60
-exec python cloud_service_v15.py
+# v16 composes v15 forward intelligence with tasks 61-70
+exec python cloud_service_v16.py
