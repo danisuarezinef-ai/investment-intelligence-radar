@@ -1,4 +1,4 @@
-import radar_learning_governance_121_130_v1 as m
+import radar_learning_governance_121_130_v2 as m
 
 def test_exact_tasks_and_hard_locks():
     b=m.board([])
@@ -6,15 +6,22 @@ def test_exact_tasks_and_hard_locks():
     assert b['real_trading'] is False and b['live_execution_allowed'] is False
     assert b['automatic_promotion'] is False and b['automatic_release'] is False and b['setup_1_6_allowed'] is False
 
-def test_feature_authority_fails_without_full_snapshot():
-    x=m.feature_snapshot_authority([{'prediction_id':'p1','captured_at':'2026-09-01T00:00:00Z','features':{}}])
+def test_feature_authority_legacy_rows_do_not_create_authority():
+    x=m.feature_snapshot_authority([{'prediction_id':'legacy','features':{'x':1},'prospective_capture':False}])
+    assert x['status']=='PENDING_DATA' and x['legacy_rows_do_not_create_authority'] is True
+
+def test_feature_authority_fails_on_invalid_prospective_claim():
+    x=m.feature_snapshot_authority([{'prediction_id':'p1','prospective_capture':True,'captured_at':'2026-09-01T00:00:00Z','features':{}}])
     assert x['status']=='FAIL_CLOSED' and x['backfill_allowed'] is False and x['reconstruction_allowed'] is False
 
-def test_feature_authority_accepts_prospective_immutable_vector():
-    x=m.feature_snapshot_authority([{'prediction_id':'p1','captured_at':'2026-09-01T00:00:01Z','data_cutoff':'2026-09-01T00:00:00Z',
-        'feature_fingerprint':'abc','features':{'momentum7':.1},'immutable':True,'prospective_capture':True,
-        'lookahead':False,'backfilled':False,'retroactive_fill':False,'source':'decision_forward_ledger.payload.features'}])
-    assert x['status']=='PASS' and x['valid_n']==1 and x['temporal_alignment_required'] is True
+def test_feature_authority_accepts_20_prospective_immutable_vectors():
+    xs=[]
+    for i in range(20):
+        xs.append({'prediction_id':f'p{i}','captured_at':'2026-09-01T00:00:01Z','data_cutoff':'2026-09-01T00:00:00Z',
+            'feature_fingerprint':f'abc{i}','features':{'momentum7':.1+i/1000},'immutable':True,'prospective_capture':True,
+            'lookahead':False,'backfilled':False,'retroactive_fill':False,'source':'decision_forward_ledger.payload.features'})
+    x=m.feature_snapshot_authority(xs)
+    assert x['status']=='PASS' and x['valid_n']==20 and x['temporal_alignment_required'] is True
 
 def test_horizon_borrowing_forbidden():
     rows=[]
