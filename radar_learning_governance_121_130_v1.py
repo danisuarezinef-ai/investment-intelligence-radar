@@ -37,8 +37,6 @@ def _edge(r):
     if x is None:x=_f(r.get('net_return'))
     return x
 
-def _task(n,x):return {'task':n,'status':x.get('status'),'evidence':x,'real_trading':False}
-
 
 def decision_journal_completeness(rows):
     required=('prediction_id','created_at','symbol','horizon','model_version','confidence','decision_state')
@@ -60,13 +58,18 @@ def decision_journal_completeness(rows):
 def feature_snapshot_authority(feature_snapshots):
     xs=[]
     for s in feature_snapshots or []:
-        ok=bool(s.get('prediction_id') and s.get('captured_at') and s.get('feature_fingerprint') and
-                isinstance(s.get('features'),dict) and s.get('immutable') is True and s.get('lookahead') is not True and
-                s.get('backfilled') is not True)
-        xs.append({'prediction_id':s.get('prediction_id'),'valid':ok,'feature_count':len(s.get('features') or {})})
+        features=s.get('features') if isinstance(s.get('features'),dict) else {}
+        captured=_dt(s.get('captured_at'));cutoff=_dt(s.get('data_cutoff'))
+        temporal_ok=bool(captured and cutoff and cutoff<=captured)
+        ok=bool(s.get('prediction_id') and captured and cutoff and s.get('feature_fingerprint') and features and
+                s.get('immutable') is True and s.get('prospective_capture') is True and temporal_ok and
+                s.get('lookahead') is not True and s.get('backfilled') is not True and s.get('retroactive_fill') is not True)
+        xs.append({'prediction_id':s.get('prediction_id'),'valid':ok,'feature_count':len(features),
+                   'temporal_ok':temporal_ok,'source':s.get('source')})
     valid=sum(x['valid'] for x in xs)
     return {'status':'PASS' if xs and valid==len(xs) else ('FAIL_CLOSED' if xs else 'PENDING_DATA'),
-            'n':len(xs),'valid_n':valid,'snapshots':xs[:30],'full_feature_vector_required':True,
+            'n':len(xs),'valid_n':valid,'coverage':valid/len(xs) if xs else 0.0,'snapshots':xs[:30],
+            'full_feature_vector_required':True,'prospective_capture_required':True,'temporal_alignment_required':True,
             'reconstruction_allowed':False,'backfill_allowed':False,'real_trading':False}
 
 
@@ -88,7 +91,9 @@ def causal_attribution_v2(rows,feature_snapshots):
         if len(pairs)<MIN_N:continue
         xs=[a for a,_ in pairs];ys=[b for _,b in pairs];mx=statistics.mean(xs);my=statistics.mean(ys)
         den=sum((x-mx)**2 for x in xs);slope=(sum((x-mx)*(y-my) for x,y in pairs)/den) if den>0 else None
-        out[k]={'n':len(pairs),'association_slope':slope}
+        cov=sum((x-mx)*(y-my) for x,y in pairs);vx=sum((x-mx)**2 for x in xs);vy=sum((y-my)**2 for y in ys)
+        corr=(cov/math.sqrt(vx*vy)) if vx>0 and vy>0 else None
+        out[k]={'n':len(pairs),'association_slope':slope,'pearson_association':corr}
     return {'status':'PARTIAL_ASSOCIATION' if out else 'PENDING_SAMPLE','matched_n':matched,'feature_associations':out,
             'causal_claim':False,'randomized_identification':False,'observational_attribution_only':True,
             'timing_cost_regime_noise_separation_required_for_causality':True,'real_trading':False}
@@ -155,7 +160,14 @@ def regime_specialist_evolution(rows):
 
 
 def portfolio_construction_v2(candidates,risk=None):
-    risk=risk or {};max_positions=min(5,int(risk.get('max_positions') or 5));max_pos=min(.20,_f(risk.get('max_position')) or .20)
+    risk=risk or {}
+    if risk.get('survival_gate_pass') is not True:
+        return {'status':'BLOCKED_EVIDENCE','reason':'UPSTREAM_PORTFOLIO_SURVIVAL_GATE_NOT_PASS',
+                'allocations':[],'orders_created':False,'live_execution_allowed':False,'real_trading':False}
+    if risk.get('liquidity_verified') is not True or risk.get('expected_shortfall_verified') is not True or risk.get('correlation_verified') is not True:
+        return {'status':'BLOCKED_EVIDENCE','reason':'CORRELATION_ES_OR_LIQUIDITY_NOT_VERIFIED',
+                'allocations':[],'orders_created':False,'live_execution_allowed':False,'real_trading':False}
+    max_positions=min(5,int(risk.get('max_positions') or 5));max_pos=min(.20,_f(risk.get('max_position')) or .20)
     total_budget=min(.70,_f(risk.get('risk_budget')) or .70);items=[]
     for c in candidates or []:
         if str(c.get('decision_state') or '').upper()!='BUY':continue
@@ -163,14 +175,13 @@ def portfolio_construction_v2(candidates,risk=None):
         score=conf*(.5 if reg=='UNKNOWN' else 1.0)
         if score>0:items.append((score,c))
     items=sorted(items,key=lambda x:x[0],reverse=True)[:max_positions];den=sum(x[0] for x in items)
-    alloc=[]
-    remaining=total_budget
+    alloc=[];remaining=total_budget
     for score,c in items:
         w=min(max_pos,total_budget*score/den) if den>0 else 0.0;w=min(w,remaining);remaining-=w
         alloc.append({'symbol':c.get('symbol'),'horizon':c.get('horizon'),'paper_weight':w,'confidence':c.get('confidence'),'regime':_regime(c)})
     return {'status':'PASS' if alloc else 'PENDING_SAMPLE','allocations':alloc,'sum_weights':sum(x['paper_weight'] for x in alloc),
             'max_positions':max_positions,'max_position':max_pos,'risk_budget':total_budget,'orders_created':False,
-            'correlation_liquidity_es_must_be_supplied_by_upstream_risk_gate':True,'live_execution_allowed':False,'real_trading':False}
+            'upstream_risk_verified':True,'live_execution_allowed':False,'real_trading':False}
 
 
 def autonomous_learning_governor(inputs):
@@ -188,7 +199,7 @@ def autonomous_learning_governor(inputs):
 
 def master_paper_control_gate(task_states,critical_runtime=None,valid_forward_hours=None):
     task_states=task_states or {};critical_runtime=critical_runtime or {}
-    critical_tasks=(28,29,80,99,113,119,121,122,124,129)
+    critical_tasks=(28,29,80,99,113,119,121,122,124,128,129)
     blockers=[]
     for n in critical_tasks:
         s=task_states.get(str(n),task_states.get(n))
