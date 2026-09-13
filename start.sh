@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v16 composes v15 forward intelligence with tasks 61-70
-exec python cloud_service_v16.py
+# v17 composes v16 intelligence with tasks 71-80
+exec python cloud_service_v17.py
