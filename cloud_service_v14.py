@@ -19,26 +19,17 @@ import radar_autonomous_learning_41_60_v1 as learning4160
 REAL_TRADING=False
 
 
-def _prior_31_40_for_learning(board):
-    tasks={}
-    for row in (board or {}).get('tasks') or []:
-        n=str(row.get('task') or '')
-        if n:
-            status=str(row.get('status') or 'PENDING')
-            tasks[n]={'state':'PASS' if status=='PASS' else status,'evidence':row}
-    return {'tasks':tasks,'diversity':{'model_count':0},'real_trading':False}
-
-
 def runtime_board_41_50():
     ev=evidence4150.normalized_rows(limit=400)
-    b31=base13.runtime_board_31_40()
     if ev.get('ok') is not True:
         tasks={str(n):{'state':'BLOCKED_EVIDENCE','evidence':{'status':'BLOCKED_EVIDENCE','reason':ev.get('error') or ev.get('status'),'real_trading':False}} for n in range(41,51)}
         return {'status':'BLOCKED_EVIDENCE','tasks':tasks,'evidence_status':ev.get('status'),
-                'tasks_31_40_status':b31.get('status'),'automatic_promotion':False,'automatic_release':False,
+                'operational_dependency':'INDEPENDENT_DIAGNOSTIC','automatic_promotion':False,'automatic_release':False,
                 'setup_1_6_allowed':False,'live_execution_allowed':False,'real_trading':False}
     rows=list(ev.get('normalized_rows') or [])
-    full=learning4160.build_priorities_41_60(rows=rows,prior_16_40=_prior_31_40_for_learning(b31),persist=False)
+    # Tasks 41-50 do not require the 31-40 operational board to compute their forward diagnostics.
+    # Later promotion/release gates still require prior operational evidence separately.
+    full=learning4160.build_priorities_41_60(rows=rows,prior_16_40={'tasks':{},'diversity':{},'real_trading':False},persist=False)
     tasks={str(n):dict((full.get('tasks') or {}).get(str(n)) or {'state':'PENDING_SAMPLE','evidence':{'real_trading':False}}) for n in range(41,51)}
     counts={}
     for item in tasks.values():counts[item.get('state')]=counts.get(item.get('state'),0)+1
@@ -47,7 +38,8 @@ def runtime_board_41_50():
     return {'status':'TASKS_41_50_EVALUATED','tasks':tasks,'state_counts':counts,
             'forward_rows':len(rows),'natural_matured_rows':matured,'natural_matured_actions':actions,
             'horizon_stats':ev.get('stats') or [],'evidence_edge_ms':ev.get('edge_ms'),
-            'tasks_31_40_status':b31.get('status'),'source_max_evaluated_at':full.get('source_max_evaluated_at'),
+            'operational_dependency':'INDEPENDENT_DIAGNOSTIC_PRIOR_GATES_REQUIRED_LATER',
+            'source_max_evaluated_at':full.get('source_max_evaluated_at'),
             'automatic_promotion':False,'automatic_demotion':False,'automatic_release':False,
             'setup_1_6_allowed':False,'live_execution_allowed':False,'simulation_only':True,'real_trading':False}
 
