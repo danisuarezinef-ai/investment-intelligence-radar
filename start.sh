@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v18 composes v17 portfolio intelligence with tasks 81-90
-exec python cloud_service_v18.py
+# v19 composes v18 policy intelligence with validation/readiness tasks 91-100
+exec python cloud_service_v19.py
