@@ -1,0 +1,33 @@
+name: Block E Market Data CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [block-e-market-data]
+permissions:
+  contents: read
+jobs:
+  block-e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile Block E runtime
+        run: |
+          python -m py_compile radar_block_e_market_data_v1.py cloud_service_v32.py
+      - name: Verify PAPER safety boundary
+        run: |
+          python - <<'PY'
+          import radar_block_e_market_data_v1 as e
+          import cloud_service_v32 as v32
+          assert e.REAL_TRADING is False
+          assert v32.REAL_TRADING is False
+          out=e.deterministic_block_e_validation()
+          assert out['status']=='PASS', out
+          assert out['real_trading'] is False
+          PY
+      - name: Run Block E tests
+        run: python -m pytest -q tests/test_block_e_market_data.py tests/test_market.py
