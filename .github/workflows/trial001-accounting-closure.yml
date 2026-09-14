@@ -1,0 +1,35 @@
+name: Trial001 PAPER Accounting Closure
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [trial001-accounting-closure]
+permissions:
+  contents: read
+jobs:
+  accounting-closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest
+      - name: Compile accounting modules
+        run: python -m py_compile radar_paper_accounting_v1.py radar_block_d_validation_v1.py
+      - name: Run Block D and Trial001 accounting tests
+        run: python -m pytest -q tests/test_paper_accounting_block_d.py tests/test_block_d_validation.py tests/test_trial001_accounting_closure.py
+      - name: Safety assertions
+        run: |
+          python - <<'PY'
+          from radar_block_d_validation_v1 import block_d_validation, trial001_accounting_validation
+          a=block_d_validation(); t=trial001_accounting_validation()
+          assert a['status']=='PASS'
+          assert t['status']=='PASS'
+          assert a['real_trading'] is False and t['real_trading'] is False
+          assert t['broker_connected'] is False and t['live_execution_allowed'] is False
+          assert t['accounting']['equation_error']==0.0
+          assert t['accounting']['unaccounted_fills']==0
+          print(t)
+          PY
