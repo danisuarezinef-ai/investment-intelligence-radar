@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v23 composes PAPER certification with operational proof tasks 161-170
-exec python cloud_service_v23.py
+# v24 composes PAPER certification with operational proof tasks 171-190
+exec python cloud_service_v24.py
