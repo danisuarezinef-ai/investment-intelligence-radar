@@ -4,18 +4,18 @@ import os,threading,time
 from http.server import ThreadingHTTPServer
 import cloud_service_v19 as base19
 import radar_operational_closure_101_120_v1 as p101120
+import radar_paper_forward_maturity_v1 as maturity
 REAL_TRADING=False
 
 def runtime_board_101_120():
     b12=base19.base18.base17.base16.base15.base14.base13.base12
-    checkpoint=b12._restore_state() or {};lease=b12._lease_local() or {};durable=b12._DURABLE_SYNC or {}
+    checkpoint=b12._restore_state() or {};lease=b12._lease_local() or {};durable=b12._DURABLE_SYNC or {};m=maturity.status()
     restart={'state_hash_equal':checkpoint.get('remote_state_hash')==checkpoint.get('local_state_hash') if checkpoint.get('remote_state_hash') else False,
              'session_equal':checkpoint.get('status')=='RESTORED_EXACT_PAPER_ENGINE','no_duplicate_orders':False,'backfill':checkpoint.get('backfill_used'),
-             'preserves_prior_valid_hours':False,'downtime_credit':False}
+             'preserves_prior_valid_hours':m.get('status')=='AUTHORITY_READY','downtime_credit':False}
     singleton={'active_instances':1 if lease.get('held') is True else None,'lease_held':lease.get('held')}
-    # No historical interval is invented. Durable interval authority must supply intervals before maturity can accrue.
     return p101120.board(deployment={'success':False,'runtime':'v20','reason':'production_deployment_proof_supplied_externally'},
-        integrity={'status':'PENDING_EXTERNAL_CI'},task_states={},intervals=[],restart=restart,singleton=singleton,market={},pit={},liquidity={},execution={},
+        integrity={'status':'PENDING_EXTERNAL_CI'},task_states={},intervals=[],maturity_authority=m,restart=restart,singleton=singleton,market={},pit={},liquidity={},execution={},
         accounting={'reconciled':durable.get('status')=='RECONCILED','equation_error':None},recovery={})
 
 def runtime_board_21_100():
