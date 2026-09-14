@@ -13,7 +13,7 @@ from http.server import ThreadingHTTPServer
 
 import cloud_service_v30 as base30
 import cloud_service_v29 as base29
-import radar_block_e_market_data_v1 as block_e
+import radar_block_e_market_data_v2 as block_e
 
 REAL_TRADING=False
 DEVELOPMENT_PAPER_MODE=True
