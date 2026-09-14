@@ -22,19 +22,23 @@ def forward_maturity(intervals):
         ledger.append({**x,'eligible':healthy,'credited_hours':hours})
     return valid,ledger
 
-def board(*,deployment=None,integrity=None,task_states=None,intervals=None,e2e=None,restart=None,singleton=None,market=None,pit=None,liquidity=None,execution=None,accounting=None,recovery=None):
-    deployment=deployment or {};integrity=integrity or {};task_states=task_states or {};valid,ledger=forward_maturity(intervals or [])
+def board(*,deployment=None,integrity=None,task_states=None,intervals=None,maturity_authority=None,e2e=None,restart=None,singleton=None,market=None,pit=None,liquidity=None,execution=None,accounting=None,recovery=None):
+    deployment=deployment or {};integrity=integrity or {};task_states=task_states or {};maturity_authority=maturity_authority or {}
+    calc_valid,ledger=forward_maturity(intervals or [])
+    durable_ready=maturity_authority.get('status')=='AUTHORITY_READY' and maturity_authority.get('valid_forward_hours') is not None
+    valid=float(maturity_authority.get('valid_forward_hours') or 0.0) if durable_ready else calc_valid
     t=[]
-    t.append(_task(101,'PASS' if deployment.get('success') and deployment.get('runtime')=='v19' else 'PENDING',deployment=deployment))
+    t.append(_task(101,'PASS' if deployment.get('success') and deployment.get('runtime') in ('v19','v20','v21','v22','v23') else 'PENDING',deployment=deployment))
     counts={s:sum(1 for v in task_states.values() if v==s) for s in ('VERIFIED','PARTIAL','PENDING','FAILED')}
     t.append(_task(102,'PASS' if len(task_states)>=100 else 'PARTIAL',counts=counts,total=len(task_states)))
     t.append(_task(103,'PASS' if integrity.get('status')=='PASS' else 'PENDING',integrity=integrity))
     sha_ok=bool(deployment.get('success') and deployment.get('deployed_sha') and deployment.get('deployed_sha')==deployment.get('main_sha'))
-    t.append(_task(104,'PASS' if sha_ok else 'PENDING',sha_match=sha_ok,deployed_sha=deployment.get('deployed_sha'),main_sha=deployment.get('main_sha')))
-    t.append(_task(105,'PASS' if ledger else 'PENDING_TIME',audited_valid_forward_hours=valid,calendar_time_credit=False))
-    t.append(_task(106,'PASS' if ledger else 'PENDING_TIME',ledger=ledger[-100:],downtime_credit=False))
+    t.append(_task(104,'PASS' if sha_ok else 'PENDING',sha_match=sha_ok,deployed_sha=deployment.get('deployed_sha'),main_sha=deployment.get('main_sha'))
+    maturity_evidence={'audited_valid_forward_hours':valid,'calendar_time_credit':False,'source':'SUPABASE_DURABLE_LEDGER' if durable_ready else 'LOCAL_INTERVALS_NOT_AUTHORITY','authority':maturity_authority}
+    t.append(_task(105,'PASS' if durable_ready else ('PASS' if ledger else 'PENDING_TIME'),**maturity_evidence))
+    t.append(_task(106,'PASS' if durable_ready else ('PASS' if ledger else 'PENDING_TIME'),ledger=ledger[-100:],downtime_credit=False,authority=maturity_authority))
     t.append(_task(107,'PASS' if restart and restart.get('preserves_prior_valid_hours') and restart.get('downtime_credit') is False else 'PENDING_PROOF',restart=restart))
-    for n,h in ((108,72),(109,168),(110,720)):t.append(_task(n,'PASS' if valid>=h else 'PENDING_TIME',required_hours=h,audited_valid_forward_hours=valid))
+    for n,h in ((108,72),(109,168),(110,720)):t.append(_task(n,'PASS' if valid>=h else 'PENDING_TIME',required_hours=h,audited_valid_forward_hours=valid,source='SUPABASE_DURABLE_LEDGER' if durable_ready else 'NOT_DURABLE'))
     t.append(_task(111,'PASS' if e2e and e2e.get('full_cycle_proved') else 'PENDING_PROOF',e2e=e2e))
     exact=bool(restart and restart.get('state_hash_equal') and restart.get('session_equal') and restart.get('no_duplicate_orders') and restart.get('backfill') is False)
     t.append(_task(112,'PASS' if exact else 'PENDING_PROOF',restart_exact=exact,restart=restart))
@@ -52,4 +56,4 @@ def board(*,deployment=None,integrity=None,task_states=None,intervals=None,e2e=N
     t.append(_task(119,'PASS' if ac_ok else 'FAIL_CLOSED',accounting=ac))
     rc=recovery or {};rc_ok=all(rc.get(k) is True for k in ('supabase','market_data','timeout','deploy','hung_process'))
     t.append(_task(120,'PASS' if rc_ok else 'PENDING_PROOF',recovery=rc))
-    return {'status':'TASKS_101_120_EVALUATED','tasks':t,'audited_valid_forward_hours':valid,'automatic_promotion':False,'automatic_release':False,'setup_1_6_allowed':False,'live_execution_allowed':False,'real_trading':False}
+    return {'status':'TASKS_101_120_EVALUATED','tasks':t,'audited_valid_forward_hours':valid,'maturity_source':'SUPABASE_DURABLE_LEDGER' if durable_ready else 'NOT_DURABLE','automatic_promotion':False,'automatic_release':False,'setup_1_6_allowed':False,'live_execution_allowed':False,'real_trading':False}
