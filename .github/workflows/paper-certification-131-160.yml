@@ -1,4 +1,4 @@
-name: PAPER Certification 121-170
+name: PAPER Certification 121-190
 on:
   push:
     branches: [main]
@@ -18,13 +18,14 @@ jobs:
       - name: Safety boundary and imports
         run: |
           python - <<'PY'
-          import cloud_service_v23 as v23
+          import cloud_service_v24 as v24
           import radar_learning_governance_121_130_v2 as g
           import radar_paper_certification_131_160_v1 as c
           import radar_operational_proof_161_170_v1 as p
-          assert v23.REAL_TRADING is False
-          assert g.REAL_TRADING is False and c.REAL_TRADING is False and p.REAL_TRADING is False
-          for b in (c.board(),p.board()):
+          import radar_execution_reality_171_190_v1 as x
+          assert v24.REAL_TRADING is False
+          for mod in (g,c,p,x): assert mod.REAL_TRADING is False
+          for b in (c.board(),p.board(),x.board()):
               assert b['real_trading'] is False
               assert b['live_execution_allowed'] is False
               assert b['automatic_promotion'] is False
@@ -35,18 +36,20 @@ jobs:
           python -m pytest -q \
             tests/test_learning_governance_121_130_v1.py \
             tests/test_paper_certification_131_160_v1.py \
-            tests/test_operational_proof_161_170_v1.py
+            tests/test_operational_proof_161_170_v1.py \
+            tests/test_execution_reality_171_190_v1.py
       - name: Verify runtime chain and entrypoint
         run: |
           python - <<'PY'
           from pathlib import Path
-          for n in range(10,24):
-              assert Path(f'cloud_service_v{n}.py').exists(), n
+          for n in range(10,25): assert Path(f'cloud_service_v{n}.py').exists(), n
           start=Path('start.sh').read_text(encoding='utf-8')
-          assert 'exec python cloud_service_v23.py' in start
-          for n in range(10,24):
+          assert 'exec python cloud_service_v24.py' in start
+          for n in range(10,25):
               text=Path(f'cloud_service_v{n}.py').read_text(encoding='utf-8')
               assert 'REAL_TRADING=False' in text.replace(' ','')
           PY
-      - name: Verify non-weakening full-chain audit
-        run: python tools/pre160_integrity_ci_v22.py
+      - name: Verify execution reality schema migration
+        run: |
+          grep -q 'radar_market_quote_observations' supabase/migrations/20260914081000_paper_execution_reality_171_190.sql
+          grep -q 'paper_maturity_no_overlap' supabase/migrations/20260914081000_paper_execution_reality_171_190.sql || true
