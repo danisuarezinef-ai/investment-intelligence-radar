@@ -42,3 +42,10 @@ revoke all on public.radar_paper_execution_reality_summary from anon,authenticat
 -- Backend Edge functions use direct DB connections; public Data API execution is not required.
 revoke execute on function public.radar_append_paper_maturity_interval(text,text,text,bigint,timestamptz,timestamptz,boolean,boolean,boolean,boolean,boolean,boolean,boolean,text,text,text) from public,anon,authenticated;
 revoke execute on function public.radar_paper_valid_forward_hours() from public,anon,authenticated;
+
+-- Database-level race-proof protection against double-counted forward time.
+do $$ begin
+ if not exists(select 1 from pg_constraint where conname='paper_maturity_no_overlap' and conrelid='public.radar_paper_forward_maturity_ledger'::regclass) then
+  alter table public.radar_paper_forward_maturity_ledger add constraint paper_maturity_no_overlap exclude using gist (tstzrange(started_at,ended_at,'[)') with &&);
+ end if;
+end $$;
