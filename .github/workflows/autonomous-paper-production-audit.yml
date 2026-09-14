@@ -18,7 +18,8 @@ jobs:
           python - <<'PY'
           import json
           assert json.load(open('version.json',encoding='utf-8-sig'))['version']=='1.5.28'
-          assert 'exec python cloud_service_v22.py' in open('start.sh',encoding='utf-8').read()
+          start=open('start.sh',encoding='utf-8').read()
+          assert 'exec python cloud_service_v24.py' in start
           import radar_autonomous_paper_control_v1 as c
           import radar_autonomous_learning_16_40_v1 as l
           import radar_autonomous_learning_41_60_v1 as a
@@ -71,7 +72,7 @@ jobs:
             then ready=1;break;fi
             sleep 5
           done
-          test "$ready" = "1" || { echo autonomous PAPER v22 never became ready; cat /tmp/autonomous-simulator_tasks-131-160-v1.json; exit 1; }
+          test "$ready" = "1" || { echo autonomous PAPER runtime never became ready; cat /tmp/autonomous-simulator_tasks-131-160-v1.json; exit 1; }
       - name: Verify milestones remain forward-only
         env:
           BASE_URL: https://radar-cloud-production.up.railway.app
