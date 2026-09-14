@@ -1,0 +1,38 @@
+name: Block F End-to-End PAPER CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [block-f-paper-pipeline]
+permissions:
+  contents: read
+jobs:
+  block-f:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependency
+        run: python -m pip install --disable-pip-version-check pytest
+      - name: Compile Block F
+        run: python -m py_compile radar_block_f_pipeline_v1.py cloud_service_v34.py
+      - name: Verify hard PAPER boundary
+        run: |
+          python - <<'PY'
+          import radar_block_f_pipeline_v1 as f
+          import cloud_service_v34 as v34
+          assert f.REAL_TRADING is False
+          assert v34.REAL_TRADING is False
+          out=f.block_f_validation()
+          assert out['status']=='PASS', out
+          assert out['end_to_end_paper_pipeline']=='VERIFIED', out
+          assert out['broker_connected'] is False
+          assert out['live_execution_allowed'] is False
+          assert out['real_money_orders_allowed'] is False
+          PY
+      - name: Run Block F and dependent core tests
+        run: |
+          python -m pytest -q tests/test_block_f_pipeline.py tests/test_block_e_market_data.py tests/test_block_d_validation.py tests/test_paper_accounting_v1.py
