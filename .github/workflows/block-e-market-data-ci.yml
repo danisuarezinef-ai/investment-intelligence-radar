@@ -15,19 +15,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install Block E test dependency
+        run: python -m pip install --disable-pip-version-check pytest
       - name: Compile Block E runtime
         run: |
-          python -m py_compile radar_block_e_market_data_v1.py radar_block_e_external_fallback_v1.py cloud_service_v32.py cloud_service_v33.py
+          python -m py_compile radar_block_e_market_data_v1.py radar_block_e_market_data_v2.py radar_block_e_external_fallback_v1.py cloud_service_v32.py cloud_service_v33.py
       - name: Verify PAPER safety boundary
         run: |
           python - <<'PY'
-          import radar_block_e_market_data_v1 as e
+          import radar_block_e_market_data_v1 as v1
+          import radar_block_e_market_data_v2 as e
           import radar_block_e_external_fallback_v1 as f
           import cloud_service_v32 as v32
           import cloud_service_v33 as v33
-          for mod in (e,f,v32,v33): assert mod.REAL_TRADING is False
+          for mod in (v1,e,f,v32,v33): assert mod.REAL_TRADING is False
           out=e.deterministic_block_e_validation()
           assert out['status']=='PASS', out
+          assert out['provider_chain_version']=='E_PROVIDER_CHAIN_V2', out
           assert out['real_trading'] is False
           PY
       - name: Run Block E tests
