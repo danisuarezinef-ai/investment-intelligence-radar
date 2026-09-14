@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-# v22 composes the verified PAPER chain with certification tasks 131-160
-exec python cloud_service_v22.py
+# v23 composes PAPER certification with operational proof tasks 161-170
+exec python cloud_service_v23.py
