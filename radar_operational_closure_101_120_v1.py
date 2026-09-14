@@ -33,7 +33,7 @@ def board(*,deployment=None,integrity=None,task_states=None,intervals=None,matur
     t.append(_task(102,'PASS' if len(task_states)>=100 else 'PARTIAL',counts=counts,total=len(task_states)))
     t.append(_task(103,'PASS' if integrity.get('status')=='PASS' else 'PENDING',integrity=integrity))
     sha_ok=bool(deployment.get('success') and deployment.get('deployed_sha') and deployment.get('deployed_sha')==deployment.get('main_sha'))
-    t.append(_task(104,'PASS' if sha_ok else 'PENDING',sha_match=sha_ok,deployed_sha=deployment.get('deployed_sha'),main_sha=deployment.get('main_sha'))
+    t.append(_task(104,'PASS' if sha_ok else 'PENDING',sha_match=sha_ok,deployed_sha=deployment.get('deployed_sha'),main_sha=deployment.get('main_sha')))
     maturity_evidence={'audited_valid_forward_hours':valid,'calendar_time_credit':False,'source':'SUPABASE_DURABLE_LEDGER' if durable_ready else 'LOCAL_INTERVALS_NOT_AUTHORITY','authority':maturity_authority}
     t.append(_task(105,'PASS' if durable_ready else ('PASS' if ledger else 'PENDING_TIME'),**maturity_evidence))
     t.append(_task(106,'PASS' if durable_ready else ('PASS' if ledger else 'PENDING_TIME'),ledger=ledger[-100:],downtime_credit=False,authority=maturity_authority))
