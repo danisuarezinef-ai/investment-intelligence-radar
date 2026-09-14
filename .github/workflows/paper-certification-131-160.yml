@@ -52,4 +52,4 @@ jobs:
       - name: Verify execution reality schema migration
         run: |
           grep -q 'radar_market_quote_observations' supabase/migrations/20260914081000_paper_execution_reality_171_190.sql
-          grep -q 'paper_maturity_no_overlap' supabase/migrations/20260914081000_paper_execution_reality_171_190.sql || true
+          grep -q 'paper_maturity_no_overlap' supabase/migrations/20260914081000_paper_execution_reality_171_190.sql
