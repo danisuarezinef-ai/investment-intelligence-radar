@@ -5,21 +5,22 @@ from http.server import ThreadingHTTPServer
 import cloud_service_v18 as base18
 import radar_learning_evidence_41_50_v1 as evidence
 import radar_validation_intelligence_91_100_v1 as p91100
+import radar_paper_forward_maturity_v1 as maturity
 REAL_TRADING=False
 
 def _runtime_authority():
-    """Read current critical runtime facts without inventing maturity."""
+    """Read current critical runtime facts plus the durable Supabase maturity counter."""
     try:
         base12=base18.base17.base16.base15.base14.base13.base12
-        lease=base12._lease_local() or {}
-        checkpoint=base12._restore_state() or {}
-        durable=base12._DURABLE_SYNC or {}
+        lease=base12._lease_local() or {};checkpoint=base12._restore_state() or {};durable=base12._DURABLE_SYNC or {}
         exact=(checkpoint.get('status')=='RESTORED_EXACT_PAPER_ENGINE' and checkpoint.get('backfill_used') is not True)
         critical=(lease.get('held') is True and durable.get('status')=='RECONCILED')
-        return {'critical_runtime_ok':critical,'exact_restore_ok':exact,'audited_valid_forward_hours':None,
+        m=maturity.status();mready=m.get('status')=='AUTHORITY_READY' and m.get('valid_forward_hours') is not None
+        return {'critical_runtime_ok':critical,'exact_restore_ok':exact,
+                'audited_valid_forward_hours':m.get('valid_forward_hours') if mready else None,
                 'lease_held':lease.get('held'),'durable_sync_status':durable.get('status'),
-                'restore_status':checkpoint.get('status'),'maturity_source':'NOT_AVAILABLE_AS_AUDITED_COUNTER',
-                'real_trading':False}
+                'restore_status':checkpoint.get('status'),'maturity_source':'SUPABASE_DURABLE_LEDGER' if mready else 'NOT_AVAILABLE_AS_AUDITED_COUNTER',
+                'maturity_authority_status':m.get('status'),'real_trading':False}
     except Exception as exc:
         return {'critical_runtime_ok':False,'exact_restore_ok':False,'audited_valid_forward_hours':None,
                 'error':f'{type(exc).__name__}: {str(exc)[:400]}','real_trading':False}
