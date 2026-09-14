@@ -19,25 +19,36 @@ def _market_gate():
     return False
 
 def _maturity_writer_loop():
-    last=datetime.now(timezone.utc)
+    # Forward-only: never infer credit for time before this writer has directly observed
+    # the complete healthy gate under the current singleton lease epoch.
+    last=None
+    armed_key=None
     while True:
         time.sleep(300)
         end=datetime.now(timezone.utc);b12=_b12();lease=b12._lease_local() or {}
         try: runtime=base22.base21.base20.base19._runtime_authority() or {}
         except Exception: runtime={}
         if lease.get('held') is not True:
-            last=end;continue
+            last=None;armed_key=None;continue
         state_hash=((b12._DURABLE_SYNC or {}).get('checkpoint_hash') or '')
         exact=runtime.get('exact_restore_ok') is True;single=lease.get('held') is True
         persist=runtime.get('durable_sync_status')=='RECONCILED';market=_market_gate()
         healthy=bool(exact and single and persist and market and len(str(state_hash))>=16)
-        reason='healthy' if healthy else 'credit_blocked:'+','.join(k for k,v in {'exact_restore':exact,'singleton':single,'persistence':persist,'market_data':market,'state_hash':len(str(state_hash))>=16}.items() if not v)
+        key=(str(lease.get('session_id') or ''),str(lease.get('owner_id') or ''),str(lease.get('epoch') or ''))
+        if (not healthy) or armed_key!=key or last is None:
+            # Arming is prospective only: this observation establishes t0 but receives no credit.
+            armed_key=key if healthy else None
+            last=end if healthy else None
+            reason='armed_forward_only' if healthy else 'credit_blocked:'+','.join(k for k,v in {'exact_restore':exact,'singleton':single,'persistence':persist,'market_data':market,'state_hash':len(str(state_hash))>=16}.items() if not v)
+            print('[paper-maturity] '+json.dumps({'ok':True,'status':'ARMED_NO_CREDIT' if healthy else 'BLOCKED_NO_CREDIT','healthy':healthy,'reason':reason,'real_trading':False},sort_keys=True),flush=True)
+            continue
+        reason='healthy'
         raw=f"{lease.get('session_id')}|{lease.get('epoch')}|{last.isoformat()}|{end.isoformat()}"
         interval_id=hashlib.sha256(raw.encode()).hexdigest()
         out=maturity.append_interval(interval_id=interval_id,session_id=lease.get('session_id'),lease_owner=lease.get('owner_id'),lease_epoch=lease.get('epoch'),
-            started_at=last.isoformat(),ended_at=end.isoformat(),healthy=healthy,exact_restore=exact,singleton=single,
+            started_at=last.isoformat(),ended_at=end.isoformat(),healthy=True,exact_restore=exact,singleton=single,
             persistence_reconciled=persist,market_data_ok=market,state_hash=state_hash,reason=reason)
-        print('[paper-maturity] '+json.dumps({'ok':out.get('ok'),'status':out.get('status'),'healthy':healthy,'reason':reason,'real_trading':False},sort_keys=True),flush=True)
+        print('[paper-maturity] '+json.dumps({'ok':out.get('ok'),'status':out.get('status'),'healthy':True,'reason':reason,'real_trading':False},sort_keys=True),flush=True)
         last=end
 
 def runtime_board_161_170():
