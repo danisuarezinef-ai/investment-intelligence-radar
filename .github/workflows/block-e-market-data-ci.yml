@@ -17,14 +17,15 @@ jobs:
           python-version: '3.12'
       - name: Compile Block E runtime
         run: |
-          python -m py_compile radar_block_e_market_data_v1.py cloud_service_v32.py
+          python -m py_compile radar_block_e_market_data_v1.py radar_block_e_external_fallback_v1.py cloud_service_v32.py cloud_service_v33.py
       - name: Verify PAPER safety boundary
         run: |
           python - <<'PY'
           import radar_block_e_market_data_v1 as e
+          import radar_block_e_external_fallback_v1 as f
           import cloud_service_v32 as v32
-          assert e.REAL_TRADING is False
-          assert v32.REAL_TRADING is False
+          import cloud_service_v33 as v33
+          for mod in (e,f,v32,v33): assert mod.REAL_TRADING is False
           out=e.deterministic_block_e_validation()
           assert out['status']=='PASS', out
           assert out['real_trading'] is False
