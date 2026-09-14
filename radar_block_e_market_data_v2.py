@@ -17,10 +17,12 @@ import radar_block_e_market_data_v1 as v1
 from radar_block_e_market_data_v1 import *  # noqa: F401,F403
 
 REAL_TRADING=False
+_utc=v1._utc
+_iso=v1._iso
 
 
 def stooq_daily_mark(symbol: str, host: str='stooq.com', *, now: datetime | None=None) -> MarketQuote:
-    now=v1._utc(now or datetime.now(timezone.utc))
+    now=_utc(now or datetime.now(timezone.utc))
     code=STOOQ_CODES.get(symbol.upper(), symbol.lower()+'.us')
     url=f'https://{host}/q/d/l/?s={urllib.parse.quote(code)}&i=d'
     text=core.fetch(url,20,{'User-Agent':core.BROWSER_UA,'Accept':'text/csv,text/plain,*/*'})
@@ -33,16 +35,16 @@ def stooq_daily_mark(symbol: str, host: str='stooq.com', *, now: datetime | None
     vol=row.get('Volume')
     market_ts=f"{row['Date']}T00:00:00+00:00"
     return MarketQuote(
-        symbol=symbol.upper(),price=close,market_timestamp=v1._iso(market_ts),
+        symbol=symbol.upper(),price=close,market_timestamp=_iso(market_ts),
         provider=f'StooqDaily:{host}',provider_status='OK',currency='USD',market_state='UNKNOWN',
         volume=float(vol) if vol not in (None,'','N/D','-') else None,
-        ingestion_timestamp=v1._iso(now),source_kind='FALLBACK_DAILY',
+        ingestion_timestamp=_iso(now),source_kind='FALLBACK_DAILY',
     )
 
 
 def fetch_best_quote(symbol: str, *, now: datetime | None=None,
                      providers: list[tuple[str,Callable[...,MarketQuote]]] | None=None) -> dict[str,Any]:
-    now=v1._utc(now or datetime.now(timezone.utc)); attempts=[]
+    now=_utc(now or datetime.now(timezone.utc)); attempts=[]
     chain=providers or [
         ('Yahoo query1',lambda s,now=None:yahoo_chart_quote(s,'query1.finance.yahoo.com',now=now)),
         ('Yahoo query2',lambda s,now=None:yahoo_chart_quote(s,'query2.finance.yahoo.com',now=now)),
