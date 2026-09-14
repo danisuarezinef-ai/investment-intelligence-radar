@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import urllib.error
 
-import radar_block_e_market_data_v1 as e
+import radar_block_e_market_data_v2 as e
 
 
 def test_universe_is_frozen_and_bounded():
@@ -59,6 +59,13 @@ def test_bad_bid_ask_rejected():
     assert g['paper_execution_eligible'] is False
 
 
+def test_stooq_daily_can_never_be_paper_execution_eligible():
+    now=datetime(2026,9,14,14,45,tzinfo=timezone.utc)
+    q=e.MarketQuote('MSFT',500,'2026-09-14T00:00:00Z','StooqDaily:fixture','OK','USD','UNKNOWN',source_kind='FALLBACK_DAILY')
+    g=e.market_data_gate(q,now=now)
+    assert g['paper_execution_eligible'] is False
+
+
 def test_corporate_action_normalization_preserves_raw():
     split=e.normalize_corporate_action(100,{'type':'SPLIT','symbol':'XYZ','ratio':2})
     assert split['raw_price']==100
@@ -73,4 +80,5 @@ def test_deterministic_block_e_validation_passes():
     out=e.deterministic_block_e_validation()
     assert out['status']=='PASS'
     assert out['market_data_test_set']=='DETERMINISTIC_READY'
+    assert out['provider_chain_version']=='E_PROVIDER_CHAIN_V2'
     assert out['real_trading'] is False
