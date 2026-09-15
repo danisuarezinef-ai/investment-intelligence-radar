@@ -1,0 +1,38 @@
+{
+  "trial_id": "RADAR_FIRST_PAPER_TRIAL_001",
+  "mode": "DEVELOPMENT_PAPER",
+  "real_trading": false,
+  "broker_submit_enabled": false,
+  "tasks": {
+    "1": "BLOCKED_DEPLOY_SOURCE_PIN",
+    "2": "IMPLEMENTED_PENDING_V27_RUNTIME_PROOF",
+    "3": "IMPLEMENTED_PROVIDER_FALLBACK_PENDING_OBSERVED_GATE",
+    "4": "IMPLEMENTED_FAIL_CLOSED_GATE",
+    "5": "IMPLEMENTED_FROZEN_24_ASSET_UNIVERSE",
+    "6": "PARTIAL_EXISTING_NORMALIZATION_PENDING_OBSERVED_VALIDATION",
+    "7": "IMPLEMENTED_FIVE_AGENT_CONTRACT",
+    "8": "IMPLEMENTED_3_6_9",
+    "9": "IMPLEMENTED_ENSEMBLE_DISAGREEMENT_ABSTAIN",
+    "10": "IMPLEMENTED_LINEAGE_CONTRACT_PENDING_OBSERVED_CHAIN",
+    "11": "EXISTING_CHAMPION_CHALLENGER_PLUS_CONTRACT",
+    "12": "IMPLEMENTED_ACCELERATED_PAPER_LEARNING_CONTRACT",
+    "13": "IMPLEMENTED_LEARN_FROM_ABSTENTION_CONTRACT",
+    "14": "IMPLEMENTED_PAPER_EVOLUTION_CONTRACT",
+    "15": "MANIFEST_READY_NOT_STARTED",
+    "16": "BENCHMARKS_AND_METRICS_DEFINED",
+    "17": "AUTOMATIC_REPORT_CONTRACT_IMPLEMENTED",
+    "18": "TRIAL_002_TRANSITION_DEFINED_NOT_STARTED"
+  },
+  "hard_blockers": [
+    "Railway production source is pinned to f514cf72ea7e2201f0543b1e491eeccf7b0e92c9, so cloud_service_v27.py/v28.py cannot yet be deployed through the currently exposed Railway actions.",
+    "Current v26 production logs still show intermittent Supabase/PostgreSQL CONNECT_TIMEOUT/HTTP500, lease loss and BLOCKED_EXACT_RECOVERY; C must not be marked VERIFIED.",
+    "PR 103 CI currently fails in legacy PAPER Certification safety/import step and full suite; changes are intentionally not merged until failures are resolved or proven unrelated."
+  ],
+  "truth_rules": {
+    "no_fabricated_quotes": true,
+    "no_fabricated_fills": true,
+    "no_fabricated_outcomes": true,
+    "no_backfill_as_forward_maturity": true,
+    "no_automatic_real_money_transition": true
+  }
+}

@@ -1,0 +1,29 @@
+name: First PAPER Trial CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  trial-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest
+      - run: python -m py_compile radar_first_paper_trial_v1.py cloud_service_v28.py
+      - run: python -m pytest -q tests/test_first_paper_trial_v1.py
+      - name: Safety boundary
+        run: |
+          python - <<'PY'
+          import radar_first_paper_trial_v1 as t
+          import cloud_service_v28 as v
+          assert t.REAL_TRADING is False
+          assert v.REAL_TRADING is False
+          assert t.learning_contract()['real_trading'] is False
+          assert t.trial_manifest(git_sha='x',initial_capital=1,risk_rules={})['real_trading'] is False
+          PY
