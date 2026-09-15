@@ -1,9 +1,9 @@
 {
   "version": "1.2.1-dev21-official-update-channel",
-  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_DEV21_OFFICIAL_UPDATE_CHANNEL_LEAN.zip",
-  "sha256": "4ead345139143a856777c49960cdee122bf1ee692dab22d93bc8612602df88d1",
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_DEV21_BOOTSTRAP_PATCH.zip",
+  "sha256": "a204f818531ad34bdfd9fe995afb5bb134d44679b3efba0cf5dba90cecd13a18",
   "channel": "stable",
-  "notes": "DEV21 conecta CEO a un canal oficial de actualizaciones dentro de la propia aplicación. Tras instalar esta versión, las siguientes actualizaciones se podrán comprobar, descargar, preparar e instalar desde CEO sin volver a descargar ZIPs manualmente.",
+  "notes": "DEV21 activa el canal oficial de actualizaciones dentro de CEO. Esta transición aplica de forma segura el delta DEV20→DEV21 sobre una copia verificada de DEV20, conserva la versión anterior intacta y deja el canal preconfigurado para futuras actualizaciones desde la aplicación.",
   "launcher": "ABRIR_CEO.cmd",
-  "published_at": "2026-09-15T19:55:00+02:00"
+  "published_at": "2026-09-15T20:05:00+02:00"
 }
