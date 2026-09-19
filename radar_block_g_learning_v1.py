@@ -38,7 +38,7 @@ def record_outcome(model, *, action, realized_return, benchmark_return=0., drawd
     action=str(action).upper(); rr=float(realized_return); br=float(benchmark_return)
     correct=(rr>br and action=='BUY') or (rr<br and action=='SELL') or (action in ('HOLD','NO_INVERTIR') and abs(rr-br)<.01)
     opportunity_cost=max(0.,rr-br) if action in ('HOLD','NO_INVERTIR') else 0.
-    avoided_loss=max(0.,br-rr) if action in ('HOLD','NO_INVERTIR') else 0.
+    avoided_loss=max(0.,-rr) if action in ('HOLD','NO_INVERTIR') else 0.
     row={'model_id':model['model_id'],'lineage_id':model['lineage_id'],'generation':model['generation'],'action':action,
          'realized_return':rr,'benchmark_return':br,'excess_return':rr-br,'drawdown':abs(float(drawdown)),'costs':max(0.,float(costs)),
          'confidence':_clamp(confidence),'correct':bool(correct),'opportunity_cost':opportunity_cost,'avoided_loss':avoided_loss,
