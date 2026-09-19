@@ -1,7 +1,13 @@
 """Non-weakening wrapper for the legacy pre-1.6 integrity audit through runtime v24."""
 from pathlib import Path
 import json
-import tools.pre160_integrity_ci as legacy
+import importlib.util
+
+# Load the sibling audit by file path so direct execution from tools/ works in CI.
+_legacy_path=Path(__file__).with_name("pre160_integrity_ci.py")
+_spec=importlib.util.spec_from_file_location("pre160_integrity_ci_legacy",_legacy_path)
+legacy=importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(legacy)
 
 def audit(root='.'):
     root=Path(root);findings=[];original_text=legacy._text
