@@ -1,0 +1,20 @@
+{
+  "artifact_name": "CEO_1.4.96-rc1-channel-canary-safe.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.4.95-rc1-update-handoff-consolidation",
+  "notes": "DEV219 safe canary: validates remote detection, download, signature, SHA and package contract. Activation is deliberately blocked by preflight.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-19T12:00:00+00:00",
+  "release_id": "dev219-1.4.96-rc1-channel-canary",
+  "release_sequence": 219,
+  "release_status": "release",
+  "sha256": "6030f28e2786ed039bf81220c74c74fbb0666110b87752ef636fcdb86f7e32e0",
+  "size_bytes": 12648,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.4.96-rc1-channel-canary-safe.zip",
+  "version": "1.4.96-rc1-channel-canary"
+}
