@@ -1,0 +1,37 @@
+name: Build DEV219 CEO update canary
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - 'ceo-updates/DEV219_BUILD_REQUEST.json'
+permissions:
+  contents: write
+jobs:
+  build-canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Build deterministic safe canary
+        run: |
+          cd ceo-updates
+          python build_dev219_canary.py
+      - name: Verify activation is deliberately blocked
+        run: |
+          python - <<'PY'
+          import zipfile,subprocess,tempfile,pathlib,sys
+          z='ceo-updates/CEO_1.4.96-rc1-channel-canary-safe.zip'
+          with tempfile.TemporaryDirectory() as td:
+              with zipfile.ZipFile(z) as f: f.extractall(td)
+              cp=subprocess.run([sys.executable, pathlib.Path(td)/'scripts/update_candidate_preflight.py'])
+              assert cp.returncode==23, cp.returncode
+          PY
+      - name: Commit canary and unsigned manifest
+        run: |
+          git config user.name 'CEO Update Channel Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ceo-updates/CEO_1.4.96-rc1-channel-canary-safe.zip ceo-updates/DEV219_MANIFEST_UNSIGNED.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Build safe DEV219 channel canary'
+          git push origin HEAD:ceo-update-channel
