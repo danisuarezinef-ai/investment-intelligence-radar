@@ -1,0 +1,27 @@
+name: Inspect 1.5.82 scheduler class and constructor
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1582-scheduler-class.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Show scheduler class
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp182
+          mkdir -p tmp182
+          unzip -q ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip -d tmp182
+          grep -n "^class " tmp182/ceo_core/scheduler.py | head -n 20
+          sed -n '280,360p' tmp182/ceo_core/scheduler.py
