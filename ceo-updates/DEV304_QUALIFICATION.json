@@ -1,0 +1,21 @@
+{
+  "artifact": {
+    "name": "CEO_1.5.80-rc1-provider-resilience.zip",
+    "sha256": "e296a3185f069113bf62851852f8de66af9df5619cb9b65a9df157e56d9e47c2",
+    "size_bytes": 1139741
+  },
+  "automatic_provider_revalidation_present": true,
+  "base": "1.5.79-rc1-productive-resume-gate",
+  "candidate": "1.5.80-rc1-provider-resilience",
+  "legacy_model_filter_passed": true,
+  "operator_install_confirmation_required": true,
+  "pre_scheduler_migration_passed": true,
+  "production_ready": false,
+  "provider_wait_observability_passed": true,
+  "quota_wait_zero_recovery_passed": true,
+  "release_sequence": 304,
+  "scheduler_survives_provider_unavailable": true,
+  "security_passed": true,
+  "tests_passed": true,
+  "windows_physical_verified": false
+}
