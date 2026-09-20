@@ -1,0 +1,28 @@
+name: Inspect DEV302 blocked-safe migration markers
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-blocked-safe-markers.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          cat tmp302/ceo_core/blocked_safe_state_v1.py
+          echo '=== progress tracker ==='
+          grep -RIn 'class .*Progress.*Tracker\|productive_pending\|control_pending' tmp302/ceo_core --include='*.py' | head -n 300
