@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.71-rc1-update-confirm-bridge.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.58-rc1-productive-stall-escape",
+  "notes": "DEV295 Update/Confirm Bridge: qualified-release queue, automatic internal signer/publication watcher, bounded fail-closed retries, anti-replay, and preserved human confirmation for installation.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-20T11:18:07Z",
+  "release_id": "dev295-1.5.71-rc1-update-confirm-bridge",
+  "release_sequence": 295,
+  "release_status": "release",
+  "sha256": "10830bd64f5c65ec7a070497e6f08a227dfd76b7a2577de7a5570f389a24133a",
+  "signature_alg": "ed25519",
+  "size_bytes": 1134619,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip",
+  "version": "1.5.71-rc1-update-confirm-bridge"
+}
