@@ -3,7 +3,7 @@ setlocal EnableExtensions
 chcp 65001 >nul 2>nul
 title CEO de IAs - Activar DEV305 1.5.81
 
-set "PS1_URL=https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/ACTIVAR_DEV305_1_5_81.ps1"
+set "PS1_URL=https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/43093902cbdd2a1afe9e0c51ce30ff5d7535239d/ceo-updates/ACTIVAR_DEV305_1_5_81.ps1"
 set "PS1_TMP=%TEMP%\CEO_DEV305_1_5_81_%RANDOM%_%RANDOM%.ps1"
 
 echo ============================================================
