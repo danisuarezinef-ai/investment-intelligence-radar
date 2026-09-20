@@ -35,7 +35,9 @@ jobs:
             ceo_core/replanning.py \
             ceo_core/autonomous_loop.py \
             ceo_core/useful_output_watchdog_v2.py \
-            ceo_core/productive_truth_v2.py; do
+            ceo_core/productive_truth_v2.py \
+            ceo_core/recovery_churn_fuse_v2.py \
+            ceo_core/scheduler.py; do
             cp "/tmp/dev308_exact/$f" "ceo-updates/dev308-inspect/$(basename "$f")"
           done
           python - <<'PY'
