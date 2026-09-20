@@ -65,7 +65,7 @@ def main() -> None:
             "short note", "status note", "brief note", "one sentence",
             "single file", "one file",
         )
-        conjunctions = sum(low.count(token) for token in (" and ", ";", "\n-", "\n*"))
+        conjunctions = sum(low.count(token) for token in (" and ", ";", "\\n-", "\\n*"))
         complex_score = sum(1 for token in complex_terms if token in low)
         simple_score = sum(1 for token in simple_output_terms if token in low)
 
