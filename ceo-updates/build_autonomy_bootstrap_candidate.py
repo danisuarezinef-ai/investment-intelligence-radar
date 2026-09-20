@@ -56,7 +56,7 @@ def main() -> None:
 
         complex_terms = (
             "research", "investigate", "compare", "audit", "analyse", "analyze",
-            "multiple", "several", "all ", "systematic", "review ", "repository",
+            "multiple", "several", " all ", "systematic", "review ", "repository",
             "implement", "refactor", "deploy", "integrate", "across ", "pipeline",
             "database", "architecture", "migration", "benchmark", "experiment",
         )
