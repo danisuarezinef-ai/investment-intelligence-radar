@@ -1,0 +1,45 @@
+name: Reproduce DEV302 pending deadlock
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/reproduce-dev302-pending-deadlock.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect graph transitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          grep -RInE 'class TaskGraph|def refresh|TaskStatus\.PENDING|TaskStatus\.READY|dependencies|depends_on' tmp302/ceo_core --include='*.py' | head -n 1200
+          echo '=== graph source ==='
+          python - <<'PY'
+          import pathlib,re
+          root=pathlib.Path('tmp302/ceo_core')
+          for p in root.glob('*.py'):
+              t=p.read_text(encoding='utf-8',errors='ignore')
+              if 'class TaskGraph' in t:
+                  print('FILE',p)
+                  i=t.index('class TaskGraph')
+                  print(t[i:i+12000])
+          PY
+      - name: Inspect snapshot pending counters
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -nE 'pending|ready|running|completed|Lote conocido|control interno' tmp302/scripts/ceo_stdlib_work_mode.py | head -n 600
