@@ -1,0 +1,92 @@
+name: Verify DEV305 on Windows with 1.5.80 updater
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev305-windows.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Extract 1.5.80 updater and candidate
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force tmp180,tmp181 -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory tmp180 | Out-Null
+          New-Item -ItemType Directory tmp181 | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip tmp180
+          Expand-Archive ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip tmp181
+          python -m pip install --disable-pip-version-check -q -e .\tmp180
+
+      - name: Stage and preflight DEV305
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH=(Resolve-Path .\tmp180).Path
+          @'
+          import dataclasses,json,pathlib,tempfile,time,sys,hashlib
+          from ceo_core.in_app_updater import InAppUpdater,UpdateManifest
+          repo=pathlib.Path.cwd()
+          manifest=json.loads((repo/'ceo-updates/DEV305_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+          artifact=repo/'ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip'
+          data=artifact.read_bytes()
+          assert hashlib.sha256(data).hexdigest()==manifest['sha256']
+          assert len(data)==manifest['size_bytes']
+          manifest['url']=artifact.resolve().as_uri()
+          allowed={f.name for f in dataclasses.fields(UpdateManifest)}
+          m=UpdateManifest(**{k:v for k,v in manifest.items() if k in allowed})
+          with tempfile.TemporaryDirectory(prefix='ceo-dev305-win-') as td:
+              u=InAppUpdater(data_root=td)
+              t=time.perf_counter()
+              row=u.stage(m)
+              stage_s=time.perf_counter()-t
+              assert row['version']=='1.5.81-rc1-endgame-closure'
+              assert row.get('contract_verified') is True,row
+              assert u.progress().get('phase')=='ready_to_install',u.progress()
+              t=time.perf_counter()
+              pre=u.preflight_staged(row['version'],python_executable=sys.executable,timeout=60)
+              pre_s=time.perf_counter()-t
+              assert pre.get('ok') is True,pre
+              print(json.dumps({
+                  'windows_stage_pass':True,
+                  'windows_preflight_pass':True,
+                  'stage_seconds':stage_s,
+                  'preflight_seconds':pre_s,
+                  'version':row['version'],
+                  'contract_verified':row.get('contract_verified'),
+                  'file_count':row.get('file_count'),
+                  'preflight':pre,
+              },indent=2,default=str))
+          '@ | Set-Content -Encoding UTF8 .\verify305.py
+          python .\verify305.py
+
+      - name: Windows endgame semantics smoke
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH=(Resolve-Path .\tmp181).Path
+          @'
+          from ceo_core.scheduler import RELIABILITY_EPOCH
+          from pathlib import Path
+          assert RELIABILITY_EPOCH=='dev305-endgame-closure-v1',RELIABILITY_EPOCH
+          loop=Path('tmp181/ceo_core/autonomous_loop.py').read_text(encoding='utf-8')
+          wd=Path('tmp181/ceo_core/useful_output_watchdog_v2.py').read_text(encoding='utf-8')
+          sch=Path('tmp181/ceo_core/scheduler.py').read_text(encoding='utf-8')
+          assert 'if audit.metadata.get("waiting_provider_v1")' in loop
+          assert '"status": "waiting_provider"' in loop
+          assert 'ESPERANDO PROVEEDOR' in wd
+          assert 'and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))' not in sch
+          print('DEV305_WINDOWS_ENDGAME_SEMANTICS_PASS')
+          '@ | Set-Content -Encoding UTF8 .\smoke305.py
+          python .\smoke305.py
