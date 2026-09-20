@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   gate:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
@@ -24,22 +24,23 @@ jobs:
           python-version: '3.12'
 
       - name: Extract candidate
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-          rm -rf /tmp/ceo181 /tmp/ceo-gate-home /tmp/ceo-autonomy-gate-artifacts
-          mkdir -p /tmp/ceo181 /tmp/ceo-gate-home
-          unzip -q ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip -d /tmp/ceo181
-          python -m pip install --disable-pip-version-check -q -e /tmp/ceo181
+          $root = Join-Path $env:RUNNER_TEMP 'ceo181'
+          Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip $root
+          python -m pip install --disable-pip-version-check -q -e $root
 
       - name: Run real end-to-end autonomy gate
-        shell: bash
+        shell: pwsh
         env:
-          CEO_GATE_ROOT: /tmp/ceo181
-          CEO_GATE_ARTIFACTS: /tmp/ceo-autonomy-gate-artifacts
+          CEO_GATE_ROOT: ${{ runner.temp }}\ceo181
+          CEO_GATE_ARTIFACTS: ${{ runner.temp }}\ceo-autonomy-gate-artifacts
           CEO_NO_BROWSER: "1"
-          HOME: /tmp/ceo-gate-home
-          XDG_DATA_HOME: /tmp/ceo-gate-home/.local/share
+          LOCALAPPDATA: ${{ runner.temp }}\ceo-gate-localappdata
+          APPDATA: ${{ runner.temp }}\ceo-gate-appdata
         run: |
-          set -euo pipefail
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
           python ceo-updates/autonomy_bootstrap_gate_v1.py
