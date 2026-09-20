@@ -1,0 +1,28 @@
+name: Inspect DEV303 scheduler ready loop exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev303-ready-loop.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Ready loop
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp179
+          mkdir -p tmp179
+          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d tmp179
+          sed -n '470,620p' tmp179/ceo_core/scheduler.py
+          echo '=== graph ==='
+          cat tmp179/ceo_core/graph.py
