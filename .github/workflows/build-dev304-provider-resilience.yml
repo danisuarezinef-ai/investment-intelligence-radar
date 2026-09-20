@@ -5,6 +5,8 @@ on:
     branches: [ceo-update-channel]
     paths:
       - '.github/workflows/build-dev304-provider-resilience.yml'
+      - 'ceo-updates/build_dev304_provider_resilience.py'
+      - 'ceo-updates/qualify_dev304_provider_resilience.py'
 
 permissions:
   contents: write
@@ -17,454 +19,16 @@ jobs:
         with:
           ref: ceo-update-channel
           fetch-depth: 1
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Build DEV304 from 1.5.79
+      - name: Build candidate source tree
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf /tmp/dev304
-          mkdir -p /tmp/dev304
-          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d /tmp/dev304
-
-          python - <<'PY'
-          import hashlib, json, pathlib, re
-          root=pathlib.Path('/tmp/dev304')
-          old_version='1.5.79-rc1-productive-resume-gate'
-          new_version='1.5.80-rc1-provider-resilience'
-
-          # ---- Provider classification: quota/no-provider are waits, not task failures.
-          p=root/'ceo_core/provider_resilience_v2.py'
-          t=p.read_text(encoding='utf-8')
-          t=t.replace(
-              'return ProviderRecoveryDecision("quota", True, max(30, backoff), True, True, False)',
-              'return ProviderRecoveryDecision("quota", True, max(300, backoff), True, True, False)',
-              1,
-          )
-          anchor='''        if any(x in text for x in ("401", "403", "invalid api key", "unauthorized", "permission_denied")):
-          '''
-          insert='''        if "no provider can execute" in text or "no compatible provider" in text:
-                      return ProviderRecoveryDecision("provider_unavailable", True, max(60, backoff), False, True, False)
-                  if any(x in text for x in ("401", "403", "invalid api key", "unauthorized", "permission_denied")):
-          '''
-          if t.count(anchor)!=1:
-              raise SystemExit(f'provider resilience anchor count={t.count(anchor)}')
-          t=t.replace(anchor,insert,1)
-          p.write_text(t,encoding='utf-8')
-
-          # ---- Gemini discovery: do not retry known legacy Flash names that listModels
-          # can expose even though generateContent returns 404 for new projects.
-          p=root/'ceo_core/providers/gemini_interactions.py'
-          t=p.read_text(encoding='utf-8')
-          pref_end='''    PROBE_MODEL_LIMIT = 8
-          '''
-          pref_new='''    KNOWN_UNAVAILABLE_MODELS = frozenset({
-                  "gemini-2.5-flash",
-                  "gemini-2.5-flash-lite",
-              })
-              PROBE_MODEL_LIMIT = 8
-          '''
-          if t.count(pref_end)!=1:
-              raise SystemExit('gemini model constant anchor missing')
-          t=t.replace(pref_end,pref_new,1)
-          old_append='''            candidates.append(name.removeprefix("models/"))
-          '''
-          new_append='''            short_name = name.removeprefix("models/")
-                      if short_name in self.KNOWN_UNAVAILABLE_MODELS:
-                          continue
-                      candidates.append(short_name)
-          '''
-          if t.count(old_append)!=1:
-              raise SystemExit(f'gemini discovery append count={t.count(old_append)}')
-          t=t.replace(old_append,new_append,1)
-          p.write_text(t,encoding='utf-8')
-
-          # ---- Scheduler: provider waits do not consume attempts/recovery budget.
-          p=root/'ceo_core/scheduler.py'
-          t=p.read_text(encoding='utf-8')
-
-          sched_lines=t.splitlines()
-          matches=[
-              i for i,line in enumerate(sched_lines[:-1])
-              if line.strip() == 'and not any('
-              and sched_lines[i+1].strip() == 'is_productive(t, self.state)'
-          ]
-          if len(matches)!=1:
-              raise SystemExit(f'progress-kick provider-wait anchor count={len(matches)}')
-          i=matches[0]
-          indent=sched_lines[i][:len(sched_lines[i])-len(sched_lines[i].lstrip())]
-          sched_lines.insert(i, indent+'and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))')
-          t='\n'.join(sched_lines)+'\n'
-
-          sched_lines=t.splitlines()
-          exc_matches=[
-              i for i,line in enumerate(sched_lines)
-              if line.strip() == 'except Exception as exc:  # noqa: BLE001 - scheduler isolates worker failure'
-          ]
-          if len(exc_matches)!=1:
-              raise SystemExit(f'scheduler exception anchor count={len(exc_matches)}')
-          i=exc_matches[0]
-          body_indent=sched_lines[i][:len(sched_lines[i])-len(sched_lines[i].lstrip())]+'    '
-          wait_block='''provider_decision = self.provider_resilience_v2.classify(str(exc), max(1, int(task.attempts)))
-wait_categories = {"quota", "provider_unavailable", "model_unavailable", "transient"}
-if provider_decision.category in wait_categories:
-    retry_seconds = max(30, int(provider_decision.retry_after_seconds or 0))
-    if provider_decision.category == "quota":
-        retry_seconds = max(300, retry_seconds)
-    retry_at = time.time() + retry_seconds
-    task.status = TaskStatus.BLOCKED
-    task.attempts = max(0, int(task.attempts) - 1)
-    task.worker_id = None
-    task.result = (
-        f"WAITING_PROVIDER: {provider_decision.category}; "
-        f"retry in {retry_seconds}s. No recovery budget consumed."
-    )
-    task.metadata["provider_stage"] = "waiting_provider"
-    task.metadata["provider_stage_ts"] = utcnow().isoformat()
-    task.metadata["provider_resilience_v2"] = provider_decision.to_dict()
-    task.metadata["waiting_provider_v1"] = {
-        "active": True,
-        "category": provider_decision.category,
-        "provider": provider_name,
-        "retry_after_seconds": retry_seconds,
-        "retry_after_ts": retry_at,
-        "error": f"{type(exc).__name__}: {exc}"[:1000],
-        "since": utcnow().isoformat(),
-    }
-    task.metadata["retry_after_ts"] = retry_at
-    wait = self.state.metadata.setdefault("provider_wait_v1", {})
-    task_ids = list(dict.fromkeys(list(wait.get("task_ids") or []) + [task.id]))
-    wait.update({
-        "active": True,
-        "category": provider_decision.category,
-        "provider": provider_name,
-        "retry_after_seconds": retry_seconds,
-        "retry_after_ts": retry_at,
-        "task_ids": task_ids[-100:],
-        "reason": str(exc)[:1000],
-        "updated_at": utcnow().isoformat(),
-        "recoveries_consumed": 0,
-    })
-    if provider_name:
-        self.provider_policy.record_failure(
-            self.state,
-            provider_name,
-            rate_limited=provider_decision.category == "quota",
-        )
-    self.decision_trace_v3.append(
-        self.state, "provider_wait", task=task,
-        data={"provider": provider_name, **provider_decision.to_dict()},
-    )
-    self.evidence_ledger_v2.append(
-        self.state, "provider_wait", task=task,
-        data={
-            "provider": provider_name,
-            "category": provider_decision.category,
-            "retry_after_seconds": retry_seconds,
-            "recovery_budget_consumed": False,
-        },
-    )
-    self._activity_event(
-        "provider_wait", task, provider=provider_name,
-        detail=f"{provider_decision.category}: espera acotada de proveedor; no cuenta como recuperación",
-    )
-    return
-'''
-          import textwrap
-          insert_lines=textwrap.indent(textwrap.dedent(wait_block),body_indent).splitlines()
-          sched_lines[i+1:i+1]=insert_lines
-          t='\n'.join(sched_lines)+'\n'
-          p.write_text(t,encoding='utf-8')
-
-          # ---- Productive truth: provider wait is neither productive work nor a stall.
-          p=root/'ceo_core/productive_truth_v2.py'
-          t=p.read_text(encoding='utf-8')
-          status_anchor='''        status = "working" if running else ("planning" if ready else "idle")
-                  if state.paused:
-          '''
-          status_new='''        status = "working" if running else ("planning" if ready else "idle")
-                  provider_wait = dict(state.metadata.get("provider_wait_v1") or {})
-                  if provider_wait.get("active") and not running:
-                      status = "waiting_provider"
-                      stalled = False
-                      reason = "provider temporarily unavailable: " + str(provider_wait.get("category") or "unavailable")
-                  if state.paused:
-          '''
-          if t.count(status_anchor)!=1:
-              raise SystemExit(f'productive truth status anchor count={t.count(status_anchor)}')
-          t=t.replace(status_anchor,status_new,1)
-          # Make stall checks subordinate to provider-wait.
-          t=t.replace(
-              '''        elif completed == 0 and recoveries >= self.recovery_trip and internal_active and not running:
-          ''',
-              '''        elif provider_wait.get("active") and not running:
-                      pass
-                  elif completed == 0 and recoveries >= self.recovery_trip and internal_active and not running:
-          ''',
-              1,
-          )
-          p.write_text(t,encoding='utf-8')
-
-          # ---- Observability: expose WAITING_PROVIDER distinctly.
-          p=root/'ceo_core/observability.py'
-          t=p.read_text(encoding='utf-8')
-          obs_anchor='''        if productive_truth.get("stalled"):
-                      health = "stalled"
-                      health_reasons = [str(productive_truth.get("reason") or "productive output stalled")]
-          '''
-          obs_new='''        if productive_truth.get("status") == "waiting_provider":
-                      health = "waiting_provider"
-                      health_reasons = [str(productive_truth.get("reason") or "provider temporarily unavailable")]
-                  elif productive_truth.get("stalled"):
-                      health = "stalled"
-                      health_reasons = [str(productive_truth.get("reason") or "productive output stalled")]
-          '''
-          if t.count(obs_anchor)!=1:
-              raise SystemExit(f'observability truth anchor count={t.count(obs_anchor)}')
-          p.write_text(t.replace(obs_anchor,obs_new,1),encoding='utf-8')
-
-          # ---- Runtime: migrate before provider validation; always keep local scheduler alive.
-          p=root/'scripts/ceo_stdlib_work_mode.py'
-          t=p.read_text(encoding='utf-8')
-
-          router_old='''    def _router(self):
-                  if not self.execution_enabled:
-                      return None
-                  transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or "auto")
-                  provider = self.AIWorkerProvider(transport)
-                  local_goal_lock = self.GoalLockLocalProviderV1()
-                  return self.MultiProviderRouter([provider, local_goal_lock])
-          '''
-          router_new='''    def _router(self):
-                  local_goal_lock = self.GoalLockLocalProviderV1()
-                  providers = [local_goal_lock]
-                  if self.execution_enabled and self.gemini_key:
-                      transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or "auto")
-                      provider = self.AIWorkerProvider(transport)
-                      providers.insert(0, provider)
-                  return self.MultiProviderRouter(providers)
-          '''
-          if t.count(router_old)!=1:
-              raise SystemExit(f'_router anchor count={t.count(router_old)}')
-          t=t.replace(router_old,router_new,1)
-
-          init_state='''                state = store.prepare_for_resume(state)
-                          self.state = state
-                          self.device_fabric.initialize_windows(state)
-          '''
-          init_new='''                state = store.prepare_for_resume(state)
-                          self.state = state
-                          # DEV304: reliability migration MUST happen before provider validation
-                          # and before a scheduler is required. Otherwise a quota-blocked provider
-                          # can leave historical recovery counters permanently active.
-                          from ceo_core.scheduler import _apply_reliability_epoch_migration
-                          pre_scheduler_migration = _apply_reliability_epoch_migration(state)
-                          state.metadata["pre_scheduler_reliability_migration"] = pre_scheduler_migration
-                          if pre_scheduler_migration.get("changed"):
-                              store.save(state)
-                              self.projects.touch(state)
-                          self.device_fabric.initialize_windows(state)
-          '''
-          if t.count(init_state)!=1:
-              raise SystemExit(f'pre-scheduler migration anchor count={t.count(init_state)}')
-          t=t.replace(init_state,init_new,1)
-
-          t=t.replace(
-              '''                if self.execution_enabled and not state.completed_at and not state.cancelled_at and not state.metadata.get("operator_cancelled"):
-          ''',
-              '''                if not state.paused and not state.completed_at and not state.cancelled_at and not state.metadata.get("operator_cancelled"):
-          ''',
-              1,
-          )
-
-          # Scheduler health no longer depends on an external provider being live.
-          t=t.replace(
-              '''        if state is None or not self.execution_enabled or state.paused or state.completed_at is not None or state.cancelled_at is not None or state.metadata.get("operator_cancelled"):
-          ''',
-              '''        if state is None or state.paused or state.completed_at is not None or state.cancelled_at is not None or state.metadata.get("operator_cancelled"):
-          ''',
-              1,
-          )
-
-          # Initialize bounded automatic provider revalidation state.
-          init_flags='''        self.provider_validation_in_progress = False
-                  self.loop = asyncio.new_event_loop()
-          '''
-          init_flags_new='''        self.provider_validation_in_progress = False
-                  self._next_provider_revalidation_ts = 0.0
-                  self._provider_revalidation_interval_seconds = 300.0
-                  self.loop = asyncio.new_event_loop()
-          '''
-          if t.count(init_flags)!=1:
-              raise SystemExit(f'provider revalidation flags anchor count={t.count(init_flags)}')
-          t=t.replace(init_flags,init_flags_new,1)
-
-          # Add stored-key revalidation background helper before _run_loop.
-          method_anchor='''    def _run_loop(self):
-          '''
-          method_new='''    def start_stored_provider_revalidation_background(self) -> bool:
-                  if self.provider_validation_in_progress:
-                      return False
-                  now = time.time()
-                  if now < float(self._next_provider_revalidation_ts or 0.0):
-                      return False
-                  self._next_provider_revalidation_ts = now + float(self._provider_revalidation_interval_seconds)
-                  self.provider_validation_in_progress = True
-
-                  def _runner():
-                      try:
-                          self.call(self.revalidate_stored_gemini(), timeout=90)
-                      except Exception as exc:
-                          self.gemini_validation_error = f"{type(exc).__name__}: {exc}"[:900]
-                      finally:
-                          self.provider_validation_in_progress = False
-
-                  threading.Thread(target=_runner, name="ceo-provider-revalidation", daemon=True).start()
-                  return True
-
-              def _run_loop(self):
-          '''
-          if t.count(method_anchor)!=1:
-              raise SystemExit(f'provider revalidation method anchor count={t.count(method_anchor)}')
-          t=t.replace(method_anchor,method_new,1)
-
-          # Quota-recognized validation: record provider wait and keep local scheduler alive.
-          recognized_anchor='''                    state.metadata["execution_disabled_reason"] = self.gemini_validation_error
-                              self.projects.store(state.id).save(state)
-                          return await self.snapshot()
-          '''
-          recognized_new='''                    state.metadata["execution_disabled_reason"] = self.gemini_validation_error
-                              state.metadata["provider_wait_v1"] = {
-                                  "active": True,
-                                  "category": "quota" if "QUOTA" in status.upper() else "provider_unavailable",
-                                  "provider": "gemini-interactions",
-                                  "retry_after_seconds": int(self._provider_revalidation_interval_seconds),
-                                  "retry_after_ts": time.time() + float(self._provider_revalidation_interval_seconds),
-                                  "reason": self.gemini_validation_error,
-                                  "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-                                  "recoveries_consumed": 0,
-                              }
-                              self.projects.store(state.id).save(state)
-                              await self._ensure_scheduler_health()
-                          self._next_provider_revalidation_ts = time.time() + float(self._provider_revalidation_interval_seconds)
-                          return await self.snapshot()
-          '''
-          if t.count(recognized_anchor)!=1:
-              raise SystemExit(f'quota recognized anchor count={t.count(recognized_anchor)}')
-          t=t.replace(recognized_anchor,recognized_new,1)
-
-          # Successful validation: clear provider waits, requeue their tasks, hot-swap router.
-          success_anchor='''            state.metadata.pop("execution_disabled_reason", None)
-                      state.metadata.setdefault("require_goal_audit", True)
-          '''
-          success_new='''            state.metadata.pop("execution_disabled_reason", None)
-                      state.metadata.pop("provider_wait_v1", None)
-                      for waiting_task in state.leaf_tasks:
-                          if waiting_task.metadata.get("waiting_provider_v1"):
-                              waiting_task.metadata.pop("waiting_provider_v1", None)
-                              waiting_task.metadata.pop("retry_after_ts", None)
-                              if waiting_task.status == self.TaskStatus.BLOCKED if hasattr(self, "TaskStatus") else False:
-                                  waiting_task.status = self.TaskStatus.WAITING
-                      state.metadata.setdefault("require_goal_audit", True)
-          '''
-          # Avoid introducing a dependency on self.TaskStatus; use local import instead.
-          success_new=success_new.replace(
-              'if waiting_task.status == self.TaskStatus.BLOCKED if hasattr(self, "TaskStatus") else False:\n                                  waiting_task.status = self.TaskStatus.WAITING',
-              'from ceo_core.models import TaskStatus\n                              if waiting_task.status == TaskStatus.BLOCKED:\n                                  waiting_task.status = TaskStatus.WAITING'
-          )
-          if t.count(success_anchor)!=1:
-              raise SystemExit(f'provider success clear anchor count={t.count(success_anchor)}')
-          t=t.replace(success_anchor,success_new,1)
-
-          start_anchor='''            if self.scheduler is None and not state.completed_at and not state.cancelled_at and not state.metadata.get("operator_cancelled"):
-                          self.router = self._router()
-                          self.scheduler = self.ContinuousScheduler(state, None, store, graph=self.Graph(), router=self.router)
-                          self.scheduler.start()
-                  return await self.snapshot()
-          '''
-          start_new='''            self.router = self._router()
-                      if self.scheduler is None and not state.completed_at and not state.cancelled_at and not state.metadata.get("operator_cancelled"):
-                          self.scheduler = self.ContinuousScheduler(state, None, store, graph=self.Graph(), router=self.router)
-                          self.scheduler.start()
-                      elif self.scheduler is not None:
-                          self.scheduler.router = self.router
-                          self.scheduler.graph.refresh(state)
-                      self._next_provider_revalidation_ts = 0.0
-                  return await self.snapshot()
-          '''
-          if t.count(start_anchor)!=1:
-              raise SystemExit(f'provider recovery router hotswap anchor count={t.count(start_anchor)}')
-          t=t.replace(start_anchor,start_new,1)
-
-          # Auto-revalidate a recognized quota-blocked key, but never faster than cooldown.
-          ensure_anchor='''    async def _ensure_scheduler_health(self):
-                  state = self._state_obj()
-          '''
-          ensure_new='''    async def _ensure_scheduler_health(self):
-                  state = self._state_obj()
-                  if (
-                      self.gemini_key_recognized
-                      and not self.execution_enabled
-                      and not self.provider_validation_in_progress
-                      and time.time() >= float(self._next_provider_revalidation_ts or 0.0)
-                  ):
-                      self.start_stored_provider_revalidation_background()
-          '''
-          if t.count(ensure_anchor)!=1:
-              raise SystemExit(f'_ensure_scheduler_health anchor count={t.count(ensure_anchor)}')
-          t=t.replace(ensure_anchor,ensure_new,1)
-
-          # Snapshot should explicitly say ESPERANDO PROVEEDOR.
-          status_anchor='''        if self.scheduler is not None:
-                  operational_status = self.scheduler.operational_status()
-          '''
-          status_new='''        provider_wait = dict(state.metadata.get("provider_wait_v1") or {})
-              if provider_wait.get("active") and scheduler_alive:
-                  operational_status = "ESPERANDO PROVEEDOR"
-              elif self.scheduler is not None:
-                  operational_status = self.scheduler.operational_status()
-          '''
-          if t.count(status_anchor)!=1:
-              raise SystemExit(f'snapshot provider status anchor count={t.count(status_anchor)}')
-          t=t.replace(status_anchor,status_new,1)
-
-          # UI observability label and message.
-          t=t.replace(
-              "stalled:'ATASCADO',attention:'TE NECESITA'",
-              "stalled:'ATASCADO',waiting_provider:'ESPERANDO PROVEEDOR',attention:'TE NECESITA'",
-              1,
-          )
-          t=t.replace(
-              "else if(rawLevel==='stalled'){attBox.textContent='CEO detectó producción nula: está cambiando de estrategia; actividad de proveedor no cuenta como progreso.'}",
-              "else if(rawLevel==='waiting_provider'){attBox.textContent='Proveedor temporalmente no disponible. CEO mantiene el scheduler local y reintentará sin consumir recuperaciones.'}else if(rawLevel==='stalled'){attBox.textContent='CEO detectó producción nula: está cambiando de estrategia; actividad de proveedor no cuenta como progreso.'}",
-              1,
-          )
-
-          # Version identity.
-          t=t.replace(old_version,new_version)
-          p.write_text(t,encoding='utf-8')
-
-          # Update bootstrap identity if present.
-          bp=root/'scripts/install_windows_bootstrap.py'
-          if bp.exists():
-              bt=bp.read_text(encoding='utf-8').replace(old_version,new_version)
-              bp.write_text(bt,encoding='utf-8')
-
-          # Re-hash package contract.
-          cp=root/'CEO_UPDATE_PACKAGE.json'
-          contract=json.loads(cp.read_text(encoding='utf-8'))
-          contract['app_version']=new_version
-          hashes=dict(contract.get('file_hashes') or {})
-          for rel in list(hashes):
-              fp=root/rel
-              if not fp.is_file():
-                  raise SystemExit(f'missing hashed file: {rel}')
-              hashes[rel]=hashlib.sha256(fp.read_bytes()).hexdigest()
-          contract['file_hashes']=hashes
-          cp.write_text(json.dumps(contract,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-          PY
+          python ceo-updates/build_dev304_provider_resilience.py
 
       - name: Install candidate dependencies
         shell: bash
@@ -472,203 +36,117 @@ if provider_decision.category in wait_categories:
           set -euo pipefail
           python -m pip install --disable-pip-version-check -q -e /tmp/dev304
 
-      - name: Compile and inherited regressions
+      - name: Compile candidate
         shell: bash
         run: |
           set -euo pipefail
           cd /tmp/dev304
           export PYTHONPATH="$PWD"
           python -m compileall -q .
+
+      - name: Run inherited reliability gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/dev304
+          export PYTHONPATH="$PWD"
           python scripts/dev292_recovery_failclosed_qualification.py
           python scripts/dev294_internal_update_pipeline_qualification.py
           python scripts/dev295_update_confirm_qualification.py
           python scripts/security_audit.py
 
-      - name: Field regression - quota must wait, not recover
+      - name: Run DEV304 field qualification
         shell: bash
         run: |
           set -euo pipefail
-          cd /tmp/dev304
-          export PYTHONPATH="$PWD"
-          python - <<'PY'
-          import asyncio,time
-          from ceo_core.models import ProjectState,Task,TaskStatus
-          from ceo_core.graph import TaskGraph
-          from ceo_core.scheduler import ContinuousScheduler,_apply_reliability_epoch_migration
-          from ceo_core.productive_truth_v2 import ProductiveTruthV2
-          from ceo_core.routing import MultiProviderRouter
-          from ceo_core.contracts import WorkerProvider,WorkerKind
-          from ceo_core.goal_lock_local_provider_v1 import GoalLockLocalProviderV1
+          PYTHONPATH=/tmp/dev304 python ceo-updates/qualify_dev304_provider_resilience.py
 
-          # Exact field shape: 3 completed + 5 provider-blocked + hundreds of old recoveries.
-          s=ProjectState(goal='PRODUCTIVE_GATE_1 field regression',power_percent=20)
-          for i in range(3):
-              t=Task(title=f'done-{i}',status=TaskStatus.COMPLETE,metadata={'task_role':'productive'})
-              s.tasks[t.id]=t;s.root_task_ids.append(t.id)
-          pending=[]
-          for title in ['Research & discovery','Execution','Verification','Integration','Final audit']:
-              t=Task(title=title,status=TaskStatus.BLOCKED,attempts=1,max_attempts=3,metadata={'task_role':'productive'})
-              s.tasks[t.id]=t;s.root_task_ids.append(t.id);pending.append(t)
-          s.metadata['worker_recoveries']=637
-          s.metadata['autonomy_recovery_tasks_created']=200
-          s.metadata['productive_truth_v2']={'productive_watermark':3,'recoveries_at_watermark':0,'status':'stalled','stalled':True}
-
-          mig=_apply_reliability_epoch_migration(s)
-          assert mig['changed'] is True,mig
-          assert s.metadata['worker_recoveries']==637  # audit counter retained
-          truth=ProductiveTruthV2().assess(s)
-          assert truth.worker_recoveries==0,truth
-          assert truth.stalled is False,truth
-
-          # Mark current external quota wait: truth must become WAITING_PROVIDER, not stalled.
-          s.metadata['provider_wait_v1']={
-              'active':True,'category':'quota','provider':'gemini-interactions',
-              'retry_after_ts':time.time()+300,'retry_after_seconds':300,'recoveries_consumed':0
-          }
-          truth=ProductiveTruthV2().assess(s)
-          assert truth.status=='waiting_provider',truth
-          assert truth.stalled is False,truth
-
-          # Graph must respect provider retry backoff.
-          p=pending[0]
-          p.metadata['retry_after_ts']=time.time()+300
-          TaskGraph().refresh(s)
-          assert p.status==TaskStatus.BLOCKED,p.status
-
-          print('DEV304_FIELD_QUOTA_WAIT_PASS',{
-              'historical_recoveries':637,
-              'epoch_recoveries':truth.worker_recoveries,
-              'status':truth.status,
-              'stalled':truth.stalled,
-              'task_status':p.status.value,
-          })
-          PY
-
-      - name: Scheduler regression - provider 429 consumes zero recoveries
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/dev304
-          export PYTHONPATH="$PWD"
-          python - <<'PY'
-          import asyncio,tempfile
-          from pathlib import Path
-          from ceo_core.models import ProjectState,Task,TaskStatus
-          from ceo_core.graph import TaskGraph
-          from ceo_core.scheduler import ContinuousScheduler
-          from ceo_core.routing import MultiProviderRouter
-          from ceo_core.contracts import WorkerProvider,WorkerKind,WorkerResult
-
-          class QuotaProvider(WorkerProvider):
-              name='quota-provider';kind=WorkerKind.API
-              capabilities=frozenset({'general','reasoning'})
-              def supports(self,task): return True
-              async def execute(self,request):
-                  raise RuntimeError('HTTP 429 RESOURCE_EXHAUSTED quota')
-
-          class Store:
-              def save(self,state): self.last=state
-              def append_event(self,*a,**k): pass
-
-          async def main():
-              s=ProjectState(goal='quota wait scheduler test',power_percent=10)
-              t=Task(title='Research',status=TaskStatus.READY,metadata={'task_role':'productive'})
-              s.tasks[t.id]=t;s.root_task_ids.append(t.id)
-              router=MultiProviderRouter([QuotaProvider()])
-              sched=ContinuousScheduler(s,None,Store(),graph=TaskGraph(),router=router)
-              sched.start()
-              for _ in range(50):
-                  await asyncio.sleep(0.05)
-                  if t.metadata.get('waiting_provider_v1'):
-                      break
-              await sched.stop()
-              assert t.status==TaskStatus.BLOCKED,t.status
-              assert t.metadata['waiting_provider_v1']['category']=='quota',t.metadata
-              assert t.attempts==0,t.attempts
-              assert int(s.metadata.get('worker_recoveries',0) or 0)==0,s.metadata.get('worker_recoveries')
-              assert s.metadata['provider_wait_v1']['recoveries_consumed']==0
-              print('DEV304_SCHEDULER_QUOTA_ZERO_RECOVERY_PASS',t.metadata['waiting_provider_v1'])
-          asyncio.run(main())
-          PY
-
-      - name: Source semantics gates
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/dev304
-          python - <<'PY'
-          from pathlib import Path
-          wm=Path('scripts/ceo_stdlib_work_mode.py').read_text()
-          sch=Path('ceo_core/scheduler.py').read_text()
-          gem=Path('ceo_core/providers/gemini_interactions.py').read_text()
-          obs=Path('ceo_core/observability.py').read_text()
-          truth=Path('ceo_core/productive_truth_v2.py').read_text()
-          assert 'pre_scheduler_reliability_migration' in wm
-          assert 'ESPERANDO PROVEEDOR' in wm
-          assert 'start_stored_provider_revalidation_background' in wm
-          assert 'waiting_provider_v1' in sch
-          assert 'No recovery budget consumed' in sch
-          assert 'KNOWN_UNAVAILABLE_MODELS' in gem
-          assert 'gemini-2.5-flash-lite' in gem
-          assert 'waiting_provider' in obs
-          assert 'waiting_provider' in truth
-          print('DEV304_SOURCE_SEMANTICS_PASS')
-          PY
-
-      - name: Build deterministic package and manifest
+      - name: Build deterministic candidate package
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           import hashlib,json,pathlib,zipfile
           root=pathlib.Path('/tmp/dev304')
-          u=pathlib.Path('ceo-updates')
-          version='1.5.80-rc1-provider-resilience'
-          artifact=f'CEO_{version}.zip'
-          out=u/artifact
+          out=pathlib.Path('ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip')
           out.unlink(missing_ok=True)
-          c=json.loads((root/'CEO_UPDATE_PACKAGE.json').read_text(encoding='utf-8'))
-          required=sorted(c['required_paths'])
-          fixed=(2026,9,20,20,5,0)
+          contract=json.loads((root/'CEO_UPDATE_PACKAGE.json').read_text(encoding='utf-8'))
+          required=sorted(contract['required_paths'])
+          fixed=(2026,9,20,20,15,0)
           with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
               for rel in required:
                   p=root/rel
                   assert p.is_file(),rel
                   info=zipfile.ZipInfo(rel,date_time=fixed)
-                  info.create_system=0;info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0
+                  info.create_system=0
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0
                   z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
-          data=out.read_bytes();sha=hashlib.sha256(data).hexdigest();size=len(data)
+          data=out.read_bytes()
+          sha=hashlib.sha256(data).hexdigest()
+          size=len(data)
           with zipfile.ZipFile(out) as z:
               assert z.testzip() is None
               assert set(z.namelist())==set(required)
-          manifest={
-              'artifact_name':artifact,'channel':'stable','data_schema_version':1,
-              'health_path':'/api/health','launcher':'ABRIR_CEO.cmd','manifest_version':2,
-              'max_app_version':'','min_app_version':'1.5.79-rc1-productive-resume-gate',
-              'notes':'DEV304 Provider Resilience: pre-scheduler reliability migration, scheduler survives provider quota, WAITING_PROVIDER semantics with zero recovery consumption, bounded automatic Gemini revalidation/resume, dynamic legacy-model exclusion, and explicit provider-wait observability.',
-              'package_contract_version':1,'published_at':'2026-09-20T20:05:00Z',
-              'release_id':'dev304-1.5.80-rc1-provider-resilience','release_sequence':304,
-              'release_status':'release','sha256':sha,'signature_alg':'ed25519',
-              'size_bytes':size,
-              'url':f'https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/{artifact}',
-              'version':version
-          }
-          qual={
-              'candidate':version,'base':'1.5.79-rc1-productive-resume-gate',
-              'release_sequence':304,'tests_passed':True,'security_passed':True,
-              'pre_scheduler_migration_passed':True,'quota_wait_zero_recovery_passed':True,
-              'scheduler_survives_provider_unavailable':True,'automatic_provider_revalidation_present':True,
-              'provider_wait_observability_passed':True,'legacy_model_filter_passed':True,
-              'windows_physical_verified':False,'production_ready':False,
-              'operator_install_confirmation_required':True,
-              'artifact':{'name':artifact,'sha256':sha,'size_bytes':size,'entries':len(required)}
-          }
-          (u/'DEV304_MANIFEST_UNSIGNED.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-          (u/'DEV304_QUALIFICATION.json').write_text(json.dumps(qual,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-          print(json.dumps(qual,indent=2))
+          print('DEV304_SHA256='+sha)
+          print('DEV304_SIZE='+str(size))
           PY
 
-      - name: Commit prepared DEV304
+      - name: Generate prepared unsigned release
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,pathlib
+          u=pathlib.Path('ceo-updates')
+          artifact='CEO_1.5.80-rc1-provider-resilience.zip'
+          data=(u/artifact).read_bytes()
+          sha=hashlib.sha256(data).hexdigest()
+          size=len(data)
+          manifest={
+            'artifact_name':artifact,
+            'channel':'stable',
+            'data_schema_version':1,
+            'health_path':'/api/health',
+            'launcher':'ABRIR_CEO.cmd',
+            'manifest_version':2,
+            'max_app_version':'',
+            'min_app_version':'1.5.79-rc1-productive-resume-gate',
+            'notes':'DEV304 Provider Resilience: pre-scheduler reliability migration, scheduler survives provider quota, WAITING_PROVIDER with zero recovery consumption, bounded automatic Gemini revalidation/resume, legacy-model exclusion, and explicit provider-wait observability.',
+            'package_contract_version':1,
+            'published_at':'2026-09-20T20:15:00Z',
+            'release_id':'dev304-1.5.80-rc1-provider-resilience',
+            'release_sequence':304,
+            'release_status':'release',
+            'sha256':sha,
+            'signature_alg':'ed25519',
+            'size_bytes':size,
+            'url':'https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/'+artifact,
+            'version':'1.5.80-rc1-provider-resilience'
+          }
+          qualification={
+            'candidate':'1.5.80-rc1-provider-resilience',
+            'base':'1.5.79-rc1-productive-resume-gate',
+            'release_sequence':304,
+            'tests_passed':True,
+            'security_passed':True,
+            'pre_scheduler_migration_passed':True,
+            'quota_wait_zero_recovery_passed':True,
+            'scheduler_survives_provider_unavailable':True,
+            'automatic_provider_revalidation_present':True,
+            'provider_wait_observability_passed':True,
+            'legacy_model_filter_passed':True,
+            'windows_physical_verified':False,
+            'production_ready':False,
+            'operator_install_confirmation_required':True,
+            'artifact':{'name':artifact,'sha256':sha,'size_bytes':size}
+          }
+          (u/'DEV304_MANIFEST_UNSIGNED.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          (u/'DEV304_QUALIFICATION.json').write_text(json.dumps(qualification,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          print(json.dumps(qualification,indent=2))
+          PY
+
+      - name: Commit prepared candidate only
         shell: bash
         run: |
           set -euo pipefail
