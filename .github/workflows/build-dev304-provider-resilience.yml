@@ -85,13 +85,8 @@ jobs:
           p=root/'ceo_core/scheduler.py'
           t=p.read_text(encoding='utf-8')
 
-          progress_anchor='''                and (self._ticks % 10 == 0 or self.long_runtime.needs_progress_kick(self.state))
-                      and not any(
-          '''
-          progress_new='''                and (self._ticks % 10 == 0 or self.long_runtime.needs_progress_kick(self.state))
-                      and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))
-                      and not any(
-          '''
+          progress_anchor='and not any(\n                    is_productive(t, self.state)'
+          progress_new='and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))\n                and not any(\n                    is_productive(t, self.state)'
           if t.count(progress_anchor)!=1:
               raise SystemExit(f'progress-kick provider-wait anchor count={t.count(progress_anchor)}')
           t=t.replace(progress_anchor,progress_new,1)
