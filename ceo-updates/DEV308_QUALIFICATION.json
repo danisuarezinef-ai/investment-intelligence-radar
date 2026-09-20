@@ -1,0 +1,24 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.84-rc1-executable-route-integrity.zip",
+    "sha256": "223819779e1fe2955337c816fc6171449dab21bae52c471c4a65e08a9db2341f",
+    "size_bytes": 1143780
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.83-rc1-autonomy-runtime-integrity",
+  "candidate": "1.5.84-rc1-executable-route-integrity",
+  "closed_fuse_clears_owned_suppression": true,
+  "detailed_single_file_goal_compact": true,
+  "executable_route_precedes_stale_blocked_state": true,
+  "field_shape_73pct_8recoveries_regression": true,
+  "field_validation_pending": true,
+  "operator_install_confirmation_required": true,
+  "production_ready": false,
+  "productive_ready_is_executable_route": true,
+  "protected_blocks_preserved": true,
+  "release_sequence": 308,
+  "security_passed": true,
+  "tests_passed": true,
+  "windows_stage_preflight_passed": false
+}

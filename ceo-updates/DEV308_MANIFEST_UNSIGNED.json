@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.84-rc1-executable-route-integrity.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.83-rc1-autonomy-runtime-integrity",
+  "notes": "DEV308 Executable Route Integrity: productive READY/RETRY work cannot be classified as a global stall solely from recovery history; a closed recovery fuse clears its owned suppression; active/executable work overrides stale blocked operator state; detailed single-file goals use compact decomposition. Protected safety and human gates remain fail-closed.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-21T00:55:00Z",
+  "release_id": "dev308-1.5.84-rc1-executable-route-integrity",
+  "release_sequence": 308,
+  "release_status": "release",
+  "sha256": "223819779e1fe2955337c816fc6171449dab21bae52c471c4a65e08a9db2341f",
+  "signature_alg": "ed25519",
+  "size_bytes": 1143780,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.84-rc1-executable-route-integrity.zip",
+  "version": "1.5.84-rc1-executable-route-integrity"
+}
