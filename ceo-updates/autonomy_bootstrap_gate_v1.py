@@ -51,16 +51,23 @@ class GateProvider(WorkerProvider):
             self.audit_calls += 1
             generation = int(task.metadata.get("goal_continuity_generation") or state.metadata.get("goal_continuity_generation") or 0)
             required_generation = int(state.metadata.get("min_goal_continuity_generations", 3))
-            refs = [
-                t.id
+            eligible = [
+                t
                 for t in state.leaf_tasks
                 if not t.metadata.get("goal_continuity_audit")
                 and t.status in {TaskStatus.COMPLETE, TaskStatus.PARTIAL_COMPLETE, TaskStatus.COMPLETE_WITH_UNCERTAINTY}
                 and bool((t.result or "").strip())
                 and bool(t.metadata.get("artifacts") or t.metadata.get("evidence_refs") or t.metadata.get("verification_application"))
             ]
+            verification = [
+                t.id for t in eligible
+                if isinstance(t.metadata.get("verification_application"), dict)
+                and str((t.metadata.get("verification_application") or {}).get("verdict") or "").lower() == "pass"
+            ]
+            grounded = [t.id for t in eligible if t.id not in verification]
+            refs = list(dict.fromkeys([*verification[:3], *grounded[:12]]))
 
-            if generation >= required_generation and len(refs) >= 3:
+            if generation >= required_generation and len(refs) >= 3 and verification:
                 payload = {
                     "status": "complete",
                     "reason": "Strict completion evidence exists for the locked objective.",
@@ -90,6 +97,39 @@ class GateProvider(WorkerProvider):
                 success=True,
                 text=text,
                 conversation_id=request.conversation_id or f"gate-audit-{task.id}",
+            )
+
+        if task.metadata.get("verification_task"):
+            target_id = str(task.metadata.get("verifies") or "")
+            artifact = ARTIFACT_DIR / f"verify-{task.id}.md"
+            artifact.write_text(
+                "# Independent verification\n\n"
+                f"Target task: {target_id}\n\n"
+                "Verdict: PASS. The target produced a concrete artifact and substantive result.\n",
+                encoding="utf-8",
+            )
+            verify = {
+                "verdict": "pass",
+                "confidence": 1.0,
+                "reason": "Target has a concrete artifact and substantive output.",
+            }
+            control = {
+                "status": "complete",
+                "reason": "Independent verification completed.",
+                "confidence": 1.0,
+            }
+            return WorkerResult(
+                provider=self.name,
+                kind=self.kind,
+                success=True,
+                text=(
+                    "Independent verification completed successfully.\n"
+                    "<CEO_VERIFY>" + json.dumps(verify) + "</CEO_VERIFY>\n"
+                    "<CEO_RESULT>" + json.dumps(control) + "</CEO_RESULT>"
+                ),
+                artifacts=[str(artifact)],
+                metadata={"sources": [f"gate-verification-source:{target_id}"]},
+                conversation_id=request.conversation_id or f"gate-verify-{task.id}",
             )
 
         artifact = ARTIFACT_DIR / f"{task.id}.md"
@@ -133,7 +173,7 @@ def main() -> int:
 
     started = time.monotonic()
     start_snapshot = engine.call(engine.start_project({
-        "goal": "Create a concise markdown deliverable AUTONOMY_BOOTSTRAP_GATE.md proving that CEO can autonomously plan, execute, verify and close a small objective.",
+        "goal": "Create a concise markdown status report named AUTONOMY_BOOTSTRAP_GATE.md containing the phrase BOOTSTRAP PASS and a short summary of completed work.",
         "name": "Autonomy Bootstrap Gate 1",
         "power_percent": 20,
     }), timeout=60)
