@@ -1,0 +1,31 @@
+name: Inspect DEV302 cutover exact ranges
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-cutover-exact.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Exact cutover ranges
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== install endpoint 1125-1175 ==='
+          sed -n '1125,1175p' tmp302/scripts/ceo_stdlib_work_mode.py
+          echo '=== server port/browser 1170-1225 ==='
+          sed -n '1170,1225p' tmp302/scripts/ceo_stdlib_work_mode.py
+          echo '=== relaunch supervise 135-235 ==='
+          sed -n '135,235p' tmp302/scripts/relaunch_after_update.py
