@@ -1,0 +1,52 @@
+name: Check CEO trusted release signer availability
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/check-ceo-release-signer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      KEY_A: ${{ secrets.CEO_RELEASE_SIGNING_KEY_B64 }}
+      KEY_B: ${{ secrets.CEO_UPDATE_SIGNING_KEY_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check secret presence and public-key match without disclosure
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64, json, os
+          from cryptography.hazmat.primitives import serialization
+          from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+          trusted = "5w2MvS9sPj9Ag7cKfn75Gef4X921siiOsTSN92/SW2k="
+          result = {}
+          for name, envname in [("CEO_RELEASE_SIGNING_KEY_B64","KEY_A"),("CEO_UPDATE_SIGNING_KEY_B64","KEY_B")]:
+              raw = (os.environ.get(envname) or "").strip()
+              row = {"present": bool(raw), "valid_ed25519": False, "matches_ceo_rc1_2026_09": False}
+              if raw:
+                  try:
+                      b = base64.b64decode(raw, validate=True)
+                      if len(b) == 32:
+                          k = Ed25519PrivateKey.from_private_bytes(b)
+                          pub = base64.b64encode(k.public_key().public_bytes(
+                              encoding=serialization.Encoding.Raw,
+                              format=serialization.PublicFormat.Raw,
+                          )).decode("ascii")
+                          row["valid_ed25519"] = True
+                          row["matches_ceo_rc1_2026_09"] = (pub == trusted)
+                  except Exception:
+                      pass
+              result[name] = row
+          print(json.dumps(result, sort_keys=True))
+          PY
