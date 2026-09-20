@@ -1,0 +1,49 @@
+name: DEV308 inspect exact 1.5.83 runtime
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/dev308-inspect-runtime.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+      - name: Extract exact candidate sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev308_exact
+          mkdir -p /tmp/dev308_exact ceo-updates/dev308-inspect
+          unzip -q ceo-updates/CEO_1.5.83-rc1-autonomy-runtime-integrity.zip -d /tmp/dev308_exact
+          for f in             ceo_core/decomposer.py             ceo_core/graph.py             ceo_core/queue_consistency_rebuilder_v1.py             ceo_core/scheduler_reconciler_v1.py             ceo_core/productive_fallback_orchestrator_v1.py             ceo_core/autonomous_loop.py             ceo_core/useful_output_watchdog_v2.py             ceo_core/productive_truth_v2.py; do
+            cp "/tmp/dev308_exact/$f" "ceo-updates/dev308-inspect/$(basename "$f")"
+          done
+          python - <<'PY'
+          import hashlib, json, pathlib
+          root=pathlib.Path('ceo-updates/dev308-inspect')
+          rows={}
+          for p in sorted(root.glob('*.py')):
+              rows[p.name]={'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'size':p.stat().st_size}
+          (root/'SNAPSHOT.json').write_text(json.dumps({
+              'source_artifact':'CEO_1.5.83-rc1-autonomy-runtime-integrity.zip',
+              'files':rows
+          },indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          PY
+      - name: Commit inspection snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/dev308-inspect
+          git commit -m "Snapshot exact 1.5.83 runtime for DEV308 diagnosis"
+          git push origin HEAD:ceo-update-channel
