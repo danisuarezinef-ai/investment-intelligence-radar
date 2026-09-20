@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import pathlib
 import shutil
 import zipfile
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 BASE = REPO / "ceo-updates" / "CEO_1.5.81-rc1-endgame-closure.zip"
-ROOT = pathlib.Path("/tmp/ceo-bootstrap-efficient")
+ROOT = pathlib.Path(os.environ.get("CEO_BOOTSTRAP_BUILD_ROOT", "/tmp/ceo-bootstrap-efficient"))
 VERSION = "1.5.82-rc1-autonomy-bootstrap"
 OLD_VERSION = "1.5.81-rc1-endgame-closure"
 
