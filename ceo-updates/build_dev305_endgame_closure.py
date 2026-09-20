@@ -65,6 +65,24 @@ def patch_productive_truth() -> None:
 def patch_autonomous_loop() -> None:
     p = BUILD_ROOT / "ceo_core" / "autonomous_loop.py"
     text = p.read_text(encoding="utf-8")
+    # A provider-deferred final audit is not terminal. DEV304 recycled every
+    # BLOCKED goal audit, including a legitimate quota wait, producing an endless
+    # retire/recreate cycle at the final 1%.
+    recycle_anchor = '''            if audit.status not in {TaskStatus.FAILED, TaskStatus.BLOCKED}:
+                continue
+'''
+    recycle_new = '''            if audit.status not in {TaskStatus.FAILED, TaskStatus.BLOCKED}:
+                continue
+            if audit.metadata.get("waiting_provider_v1"):
+                continue
+            retry_after = float(audit.metadata.get("retry_after_ts", 0) or 0)
+            if retry_after > datetime.now(timezone.utc).timestamp():
+                continue
+'''
+    if text.count(recycle_anchor) != 1:
+        raise RuntimeError(f"goal-audit recycle provider-wait anchor: {text.count(recycle_anchor)}")
+    text = text.replace(recycle_anchor, recycle_new, 1)
+
     anchor = '''        # Recovery ordering is deliberate: do not jump directly to replanning.
         # The incident ladder below owns retry -> fresh worker -> clean audit ->
         # partial replan -> global replan, which keeps recovery bounded and auditable.
