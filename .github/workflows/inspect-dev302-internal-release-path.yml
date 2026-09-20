@@ -1,0 +1,31 @@
+name: Inspect DEV302 internal release automatic path
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-internal-release-path.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect internal release path
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== coordinator ==='
+          sed -n '1,420p' tmp302/ceo_core/internal_release_coordinator.py
+          echo '=== prepared bridge ==='
+          sed -n '1,420p' tmp302/ceo_core/prepared_release_bridge.py
+          echo '=== work mode coordinator startup ==='
+          grep -nE 'InternalReleaseCoordinator|internal_release|activate_prepared_release|release_coordinator' tmp302/scripts/ceo_stdlib_work_mode.py | head -n 500
