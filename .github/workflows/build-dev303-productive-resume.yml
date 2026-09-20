@@ -206,18 +206,14 @@ jobs:
               raise SystemExit('scheduler init anchor missing')
           t=t.replace(init_anchor,init_new,1)
 
-          kick_old='''                and (self._ticks % 10 == 0 or self.long_runtime.needs_progress_kick(self.state))
-                      and not any(t.status == TaskStatus.READY for t in self.state.leaf_tasks)
-          '''
-          kick_new='''                and (self._ticks % 10 == 0 or self.long_runtime.needs_progress_kick(self.state))
-                      and not any(
+          kick_old='and not any(t.status == TaskStatus.READY for t in self.state.leaf_tasks)'
+          kick_new='''and not any(
                           is_productive(t, self.state)
                           and t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING}
                           for t in self.state.leaf_tasks
-                      )
-          '''
-          if kick_old not in t:
-              raise SystemExit('scheduler progress kick anchor missing')
+                      )'''
+          if t.count(kick_old) != 1:
+              raise SystemExit(f'scheduler progress kick anchor count={t.count(kick_old)}')
           t=t.replace(kick_old,kick_new,1)
           sched.write_text(t,encoding='utf-8')
 
