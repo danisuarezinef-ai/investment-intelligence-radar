@@ -1,0 +1,28 @@
+name: Inspect start_project handoff for consecutive goals
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-consecutive-goal-handoff.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect start project handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp181
+          mkdir -p tmp181
+          unzip -q ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip -d tmp181
+          start=$(grep -n "async def start_project" tmp181/scripts/ceo_stdlib_work_mode.py | head -1 | cut -d: -f1)
+          end=$((start+210))
+          sed -n "${start},${end}p" tmp181/scripts/ceo_stdlib_work_mode.py
