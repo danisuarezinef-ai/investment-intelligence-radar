@@ -1,0 +1,45 @@
+name: Autonomy Bootstrap Gate 1
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/autonomy-bootstrap-gate-1.yml'
+      - 'ceo-updates/autonomy_bootstrap_gate_v1.py'
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Extract candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/ceo181 /tmp/ceo-gate-home /tmp/ceo-autonomy-gate-artifacts
+          mkdir -p /tmp/ceo181 /tmp/ceo-gate-home
+          unzip -q ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip -d /tmp/ceo181
+          python -m pip install --disable-pip-version-check -q -e /tmp/ceo181
+
+      - name: Run real end-to-end autonomy gate
+        shell: bash
+        env:
+          CEO_GATE_ROOT: /tmp/ceo181
+          CEO_GATE_ARTIFACTS: /tmp/ceo-autonomy-gate-artifacts
+          CEO_NO_BROWSER: "1"
+          HOME: /tmp/ceo-gate-home
+          XDG_DATA_HOME: /tmp/ceo-gate-home/.local/share
+        run: |
+          set -euo pipefail
+          python ceo-updates/autonomy_bootstrap_gate_v1.py
