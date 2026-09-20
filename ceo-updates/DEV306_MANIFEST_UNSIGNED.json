@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.82-rc1-autonomy-bootstrap.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.80-rc1-provider-resilience",
+  "notes": "DEV306 Autonomy Bootstrap: inherits endgame closure and provider resilience, adds adaptive compact decomposition for bounded goals, preserves full decomposition for complex goals, and passes Autonomy Bootstrap Gates 1-6 including sandbox self-development with production isolation.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-20T21:50:00Z",
+  "release_id": "dev306-1.5.82-rc1-autonomy-bootstrap",
+  "release_sequence": 306,
+  "release_status": "release",
+  "sha256": "d0200ad571299a71f64292fdc0c2f029b108ae190ec5ec453b0551eb45cf23ba",
+  "signature_alg": "ed25519",
+  "size_bytes": 1141536,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip",
+  "version": "1.5.82-rc1-autonomy-bootstrap"
+}

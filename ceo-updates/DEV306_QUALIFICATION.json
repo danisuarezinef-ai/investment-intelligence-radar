@@ -1,0 +1,26 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.82-rc1-autonomy-bootstrap.zip",
+    "sha256": "d0200ad571299a71f64292fdc0c2f029b108ae190ec5ec453b0551eb45cf23ba",
+    "size_bytes": 1141536
+  },
+  "base": "1.5.80-rc1-provider-resilience",
+  "bootstrap_gate_1_end_to_end": true,
+  "bootstrap_gate_2_consecutive_goals": true,
+  "bootstrap_gate_3_restart_resume": true,
+  "bootstrap_gate_4_provider_outage_resume": true,
+  "bootstrap_gate_5_efficiency": true,
+  "bootstrap_gate_6_self_development_sandbox": true,
+  "candidate": "1.5.82-rc1-autonomy-bootstrap",
+  "inherits": "1.5.81-rc1-endgame-closure",
+  "operator_install_confirmation_required": true,
+  "production_isolation_gate_6": true,
+  "production_ready": false,
+  "release_sequence": 306,
+  "security_passed": true,
+  "tests_passed": true,
+  "windows_stage_preflight_passed": false,
+  "worker_recoveries_gate_5": 0,
+  "worker_recoveries_gate_6": 0
+}
