@@ -1,0 +1,53 @@
+name: Autonomy Bootstrap Gate 6 Self Development
+
+on:
+  push:
+    branches:
+      - ceo-update-channel
+    paths:
+      - ".github/workflows/autonomy-bootstrap-gate-6-selfdev.yml"
+      - "ceo-updates/build_autonomy_bootstrap_candidate.py"
+      - "ceo-updates/autonomy_bootstrap_gate_v1.py"
+      - "ceo-updates/autonomy_bootstrap_gate_v6.py"
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and install bootstrap candidate
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP "ceo-bootstrap-efficient"
+          $env:CEO_BOOTSTRAP_BUILD_ROOT = $root
+          python ceo-updates\build_autonomy_bootstrap_candidate.py
+          if ($LASTEXITCODE -ne 0) { throw "candidate build failed" }
+          python -m pip install --disable-pip-version-check -q -e $root
+          if ($LASTEXITCODE -ne 0) { throw "candidate install failed" }
+          "CEO_GATE_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_NO_BROWSER=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "LOCALAPPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-selfdev-localappdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "APPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-selfdev-appdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_GATE_ARTIFACTS=$(Join-Path $env:RUNNER_TEMP 'ceo-selfdev-artifacts')" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Prepare directories
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:CEO_GATE_ARTIFACTS | Out-Null
+
+      - name: Run self-development sandbox gate
+        shell: pwsh
+        run: python ceo-updates\autonomy_bootstrap_gate_v6.py
