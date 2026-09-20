@@ -1,0 +1,31 @@
+name: Inspect 1.5.58 updater progress stall
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1558-update-progress.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect current updater progress path
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558
+          mkdir -p tmp1558
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          echo '=== UI strings ==='
+          grep -RInE 'Descarga completa|72%|Actualizar CEO|actualiz|download|stage|preflight|confirm' tmp1558/scripts/ceo_stdlib_work_mode.py tmp1558/ceo_core/in_app_updater.py | head -n 900 || true
+          echo '=== updater methods ==='
+          sed -n '1,420p' tmp1558/ceo_core/in_app_updater.py
+          echo '=== update HTTP handlers ==='
+          grep -nE '/api/update|update_' tmp1558/scripts/ceo_stdlib_work_mode.py | head -n 300 || true
