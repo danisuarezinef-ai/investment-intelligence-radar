@@ -1,0 +1,37 @@
+name: Inspect DEV303 stuck state source
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev303-stuck-state.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect stuck state producers and gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp179
+          mkdir -p tmp179
+          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d tmp179
+
+          echo '=== ATASCADO / BLOQUEADO state producers ==='
+          grep -RInE 'ATASCADO|BLOQUEADO|operator_productivity_state|autonomy_stalled|productive_stall|stalled' tmp179/ceo_core tmp179/scripts --include='*.py' | head -n 1800 || true
+
+          echo '=== snapshot / status mapping ==='
+          grep -nE 'operator_productivity_state|ATASCADO|BLOQUEADO|stalled|productive' tmp179/scripts/ceo_stdlib_work_mode.py | head -n 900 || true
+
+          echo '=== autonomous loop ==='
+          sed -n '240,520p' tmp179/ceo_core/autonomous_loop.py
+
+          echo '=== scheduler loop ==='
+          sed -n '300,560p' tmp179/ceo_core/scheduler.py
