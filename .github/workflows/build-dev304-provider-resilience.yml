@@ -96,7 +96,7 @@ jobs:
           i=matches[0]
           indent=sched_lines[i][:len(sched_lines[i])-len(sched_lines[i].lstrip())]
           sched_lines.insert(i, indent+'and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))')
-          t='\\n'.join(sched_lines)+'\\n'
+          t='\n'.join(sched_lines)+'\n'
 
           sched_lines=t.splitlines()
           exc_matches=[
@@ -175,7 +175,7 @@ if provider_decision.category in wait_categories:
           import textwrap
           insert_lines=textwrap.indent(textwrap.dedent(wait_block),body_indent).splitlines()
           sched_lines[i+1:i+1]=insert_lines
-          t='\\n'.join(sched_lines)+'\\n'
+          t='\n'.join(sched_lines)+'\n'
           p.write_text(t,encoding='utf-8')
 
           # ---- Productive truth: provider wait is neither productive work nor a stall.
