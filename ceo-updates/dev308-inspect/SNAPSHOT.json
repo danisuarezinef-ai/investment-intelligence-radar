@@ -4,9 +4,17 @@
       "sha256": "01dc4e43fd1c700f39776a35b14d339a7822c48ecbd75a375d454a065dea013a",
       "size": 39997
     },
+    "blocked_unit_rebuilder_v2.py": {
+      "sha256": "5a674de0c6ef2f1dc677ac88f0bf1902a59afd10c55520ee3273af5c3fa5c1ca",
+      "size": 2672
+    },
     "decomposer.py": {
       "sha256": "ae82d344e1df140ccb138418d4bf0bca75080c702e0eb77b22e80c9122302656",
       "size": 7098
+    },
+    "failure_cause_router_v1.py": {
+      "sha256": "84dd3bf6cc5fff66b39c1a4cde71187184504290084dcb77d15ef29e135edd51",
+      "size": 2574
     },
     "graph.py": {
       "sha256": "0cf91e9527ee0db177a808b84a8f79e489f0578f0d723bca607b6e2bae2357fa",
@@ -23,6 +31,10 @@
     "queue_consistency_rebuilder_v1.py": {
       "sha256": "78677febb0e19c0ca84d61cc40336af3c0558e1e1f16bb37a69df6fd7b10b5b3",
       "size": 2734
+    },
+    "replanning.py": {
+      "sha256": "869cbf0159cd1ad39cc487e9f055196123c40a3fdac43deccccdbfec7a1ff82d",
+      "size": 8700
     },
     "scheduler_reconciler_v1.py": {
       "sha256": "7360c9260fda0c2794340a95c75db89e350213810027dd989f7f3ebe99257754",
