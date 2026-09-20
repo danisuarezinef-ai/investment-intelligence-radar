@@ -1,0 +1,31 @@
+name: Inspect DEV302 update channel identity
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-update-channel-identity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect update channel identity and bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp178
+          mkdir -p tmp178
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp178
+          echo '=== update_channel.py ==='
+          cat tmp178/ceo_core/update_channel.py
+          echo '=== prepared_release_bridge.py ==='
+          cat tmp178/ceo_core/prepared_release_bridge.py
+          echo '=== internal_release_policy.py ==='
+          cat tmp178/ceo_core/internal_release_policy.py
