@@ -1,0 +1,93 @@
+name: Verify DEV307 on Windows with 1.5.82 updater
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev307-windows.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Extract current updater and candidate
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force tmp182,tmp183 -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory tmp182 | Out-Null
+          New-Item -ItemType Directory tmp183 | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip tmp182
+          Expand-Archive ceo-updates/CEO_1.5.83-rc1-autonomy-runtime-integrity.zip tmp183
+          python -m pip install --disable-pip-version-check -q -e .\tmp182
+
+      - name: Stage and preflight DEV307
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH=(Resolve-Path .\tmp182).Path
+          @'
+          import dataclasses,json,pathlib,tempfile,time,sys,hashlib
+          from ceo_core.in_app_updater import InAppUpdater,UpdateManifest
+
+          repo=pathlib.Path.cwd()
+          manifest=json.loads((repo/'ceo-updates/DEV307_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+          artifact=repo/'ceo-updates/CEO_1.5.83-rc1-autonomy-runtime-integrity.zip'
+          data=artifact.read_bytes()
+          assert hashlib.sha256(data).hexdigest()==manifest['sha256']
+          assert len(data)==manifest['size_bytes']
+          manifest['url']=artifact.resolve().as_uri()
+          allowed={f.name for f in dataclasses.fields(UpdateManifest)}
+          m=UpdateManifest(**{k:v for k,v in manifest.items() if k in allowed})
+          with tempfile.TemporaryDirectory(prefix='ceo-dev307-win-') as td:
+              u=InAppUpdater(data_root=td)
+              t=time.perf_counter()
+              row=u.stage(m)
+              stage_s=time.perf_counter()-t
+              assert row['version']=='1.5.83-rc1-autonomy-runtime-integrity'
+              assert row.get('contract_verified') is True,row
+              assert u.progress().get('phase')=='ready_to_install',u.progress()
+              t=time.perf_counter()
+              pre=u.preflight_staged(row['version'],python_executable=sys.executable,timeout=60)
+              pre_s=time.perf_counter()-t
+              assert pre.get('ok') is True,pre
+              print(json.dumps({
+                  'windows_stage_pass':True,
+                  'windows_preflight_pass':True,
+                  'stage_seconds':stage_s,
+                  'preflight_seconds':pre_s,
+                  'version':row['version'],
+                  'contract_verified':row.get('contract_verified'),
+                  'file_count':row.get('file_count'),
+                  'preflight':pre,
+              },indent=2,default=str))
+          '@ | Set-Content -Encoding UTF8 verify307.py
+          python verify307.py
+
+      - name: Windows field-integrity semantics smoke
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH=(Resolve-Path .\tmp183).Path
+          @'
+          from pathlib import Path
+          from ceo_core.scheduler import RELIABILITY_EPOCH
+          assert RELIABILITY_EPOCH=='dev307-autonomy-runtime-integrity-v1',RELIABILITY_EPOCH
+          s=Path('tmp183/ceo_core/scheduler.py').read_text(encoding='utf-8')
+          q=Path('tmp183/ceo_core/self_correction.py').read_text(encoding='utf-8')
+          assert 'worker_terminal_normalization_v1' in s
+          assert 'recovery_budget_consumed": False' in s
+          assert 'released_false_orphan_task_ids' in s
+          assert 'max_quality_repair_generations' in q
+          assert 'bounded_quality_failure' in q
+          print('DEV307_WINDOWS_FIELD_INTEGRITY_PASS')
+          '@ | Set-Content -Encoding UTF8 smoke307.py
+          python smoke307.py
