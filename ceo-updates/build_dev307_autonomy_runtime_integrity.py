@@ -101,7 +101,7 @@ def patch_scheduler() -> None:
                 else:
                     task.status = TaskStatus.FAILED
                     task.result = (task.result or "") + (
-                        "\nInternal worker handoff failed repeatedly; bounded terminal failure for autonomous replanning."
+                        " Internal worker handoff failed repeatedly; bounded terminal failure for autonomous replanning."
                     )
 
                 hist = self.state.metadata.setdefault("worker_terminal_normalization_history", [])
@@ -248,7 +248,7 @@ def patch_quality_correction() -> None:
             task.metadata["quality_repair_root_id"] = lineage_root
             task.result = (
                 (task.result or "")
-                + "\nQuality repair lineage exhausted; handing control to autonomous replanning."
+                + " Quality repair lineage exhausted; handing control to autonomous replanning."
             ).strip()
             event["action"] = "bounded_quality_failure"
             event["repair_generation"] = generation
