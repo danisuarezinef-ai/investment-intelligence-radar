@@ -1,0 +1,27 @@
+name: Inspect 1.5.80 embedded update channel
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1580-embedded-channel.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Show embedded update channel config
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp180
+          mkdir -p tmp180
+          unzip -q ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip -d tmp180
+          find tmp180 -iname '*update*channel*.json' -o -iname 'channel*.json' -o -iname 'update_channel.json'
+          for f in $(find tmp180 -iname '*update*channel*.json' -o -iname 'update_channel.json'); do echo "=== $f ==="; cat "$f"; done
