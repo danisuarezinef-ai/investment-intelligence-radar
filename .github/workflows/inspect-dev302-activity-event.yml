@@ -1,0 +1,30 @@
+name: Inspect DEV302 activity event timestamps
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-activity-event.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect activity event format
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          grep -RIn "def _activity_event\|activity_timeline" tmp302/ceo_core tmp302/scripts --include='*.py' | head -n 300
+          grep -n "def _activity_event" tmp302/ceo_core/scheduler.py
+          start=$(grep -n "def _activity_event" tmp302/ceo_core/scheduler.py | head -1 | cut -d: -f1)
+          end=$((start+80))
+          sed -n "${start},${end}p" tmp302/ceo_core/scheduler.py
