@@ -1,0 +1,35 @@
+name: Inspect 1.5.82 orphan worker exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1582-orphan-worker-exact.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print exact worker lifecycle/recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp182
+          mkdir -p tmp182
+          unzip -q ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip -d tmp182
+          echo '=== scheduler run/recover ==='
+          sed -n '350,560p' tmp182/ceo_core/scheduler.py
+          sed -n '1380,1445p' tmp182/ceo_core/scheduler.py
+          echo '=== operational resilience worker recovery ==='
+          sed -n '180,340p' tmp182/ceo_core/operational_resilience.py
+          echo '=== worker lifecycle ==='
+          cat tmp182/ceo_core/worker_lifecycle_v2.py
+          echo '=== quality gate ==='
+          grep -RIn "class AutomaticQualityGate" tmp182/ceo_core
+          q=$(grep -RIl "class AutomaticQualityGate" tmp182/ceo_core | head -1); [ -n "$q" ] && cat "$q" || true
