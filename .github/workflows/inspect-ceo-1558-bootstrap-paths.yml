@@ -1,0 +1,31 @@
+name: Inspect CEO 1.5.58 internal bootstrap paths
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-ceo-1558-bootstrap-paths.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Search internal bootstrap/self-dev paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558
+          mkdir -p tmp1558
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          echo '=== bootstrap transport ==='
+          grep -RInE 'bootstrap_transport|temporary-github-branch|bootstrap.*update|update.*bootstrap' tmp1558 --include='*.py' --include='*.json' --include='*.md' || true
+          echo '=== self-dev / release handoff ==='
+          grep -RInE 'self_dev|release.*sign|sign.*release|qualified.*release|release.*queue|publication.*watch|publish.*manifest|manifest.*publish' tmp1558/ceo_core tmp1558/scripts --include='*.py' | head -n 500 || true
+          echo '=== shell/action endpoints ==='
+          grep -RInE '/api/.*(shell|exec|command|self|release|sign)|def .*shell|def .*exec|subprocess\.(run|Popen)' tmp1558/scripts/ceo_stdlib_work_mode.py tmp1558/ceo_app/main.py | head -n 500 || true
