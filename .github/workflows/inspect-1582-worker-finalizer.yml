@@ -1,0 +1,28 @@
+name: Inspect 1.5.82 worker finalizer exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1582-worker-finalizer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print runner tail and finalizer dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp182
+          mkdir -p tmp182
+          unzip -q ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip -d tmp182
+          sed -n '1180,1255p' tmp182/ceo_core/scheduler.py
+          echo '=== finalizer helper references ==='
+          grep -nE 'reservation_active|release\(|store.save|worker_id = None|provider_stage' tmp182/ceo_core/scheduler.py | tail -n 140
