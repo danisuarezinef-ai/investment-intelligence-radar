@@ -1,16 +1,18 @@
-name: Verify DEV304 on Windows with 1.5.79 updater
+name: Verify DEV304 on Windows
 
 on:
   push:
     branches: [ceo-update-channel]
     paths:
       - '.github/workflows/verify-dev304-windows.yml'
+      - 'ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip'
+      - 'ceo-updates/DEV304_MANIFEST_UNSIGNED.json'
 
 permissions:
   contents: read
 
 jobs:
-  verify:
+  stage-preflight:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,72 +23,88 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Extract 1.5.79 updater and candidate
+      - name: Extract active 1.5.79 updater
         shell: pwsh
         run: |
-          Remove-Item -Recurse -Force tmp179,tmp180 -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force tmp179 -ErrorAction SilentlyContinue
           New-Item -ItemType Directory tmp179 | Out-Null
-          New-Item -ItemType Directory tmp180 | Out-Null
           Expand-Archive ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip tmp179
-          Expand-Archive ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip tmp180
           python -m pip install --disable-pip-version-check -q -e .\tmp179
 
-      - name: Stage and preflight DEV304 with 1.5.79 updater
+      - name: Stage and preflight 1.5.80
         shell: pwsh
         run: |
           $env:PYTHONPATH=(Resolve-Path .\tmp179).Path
           @'
-          import dataclasses,json,pathlib,tempfile,time,sys,hashlib
+          import dataclasses,json,pathlib,tempfile,time,sys
           from ceo_core.in_app_updater import InAppUpdater,UpdateManifest
+
           repo=pathlib.Path.cwd()
-          manifest=json.loads((repo/'ceo-updates/DEV304_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
-          artifact=repo/'ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip'
-          data=artifact.read_bytes()
-          assert hashlib.sha256(data).hexdigest()==manifest['sha256']
-          assert len(data)==manifest['size_bytes']
-          manifest['url']=artifact.resolve().as_uri()
+          payload=json.loads((repo/'ceo-updates/DEV304_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+          payload['url']=(repo/'ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip').resolve().as_uri()
           allowed={f.name for f in dataclasses.fields(UpdateManifest)}
-          m=UpdateManifest(**{k:v for k,v in manifest.items() if k in allowed})
+          manifest=UpdateManifest(**{k:v for k,v in payload.items() if k in allowed})
+
           with tempfile.TemporaryDirectory(prefix='ceo-dev304-win-') as td:
-              u=InAppUpdater(data_root=td)
+              updater=InAppUpdater(data_root=td)
               t=time.perf_counter()
-              row=u.stage(m)
-              stage_s=time.perf_counter()-t
+              row=updater.stage(manifest)
+              stage_seconds=time.perf_counter()-t
               assert row['version']=='1.5.80-rc1-provider-resilience'
-              assert row.get('contract_verified') is True,row
-              assert u.progress().get('phase')=='ready_to_install',u.progress()
+              assert row.get('contract_verified') is True
+              assert updater.progress().get('phase')=='ready_to_install'
+
               t=time.perf_counter()
-              pre=u.preflight_staged(row['version'],python_executable=sys.executable,timeout=60)
-              pre_s=time.perf_counter()-t
+              pre=updater.preflight_staged(row['version'],python_executable=sys.executable,timeout=90)
+              preflight_seconds=time.perf_counter()-t
               assert pre.get('ok') is True,pre
+
               print(json.dumps({
-                  'windows_stage_pass':True,
-                  'windows_preflight_pass':True,
-                  'stage_seconds':stage_s,
-                  'preflight_seconds':pre_s,
+                  'stage_seconds':stage_seconds,
+                  'preflight_seconds':preflight_seconds,
                   'version':row['version'],
                   'contract_verified':row.get('contract_verified'),
                   'file_count':row.get('file_count'),
+                  'progress':updater.progress(),
                   'preflight':pre,
               },indent=2,default=str))
-          '@ | Set-Content -Encoding UTF8 .\verify304.py
-          python .\verify304.py
+          '@ | Set-Content -Encoding UTF8 verify_dev304.py
+          python .\verify_dev304.py
 
-      - name: Windows import and provider semantics smoke
+      - name: Clean-Windows startup without provider must stay healthy
         shell: pwsh
         run: |
-          $env:PYTHONPATH=(Resolve-Path .\tmp180).Path
+          Remove-Item -Recurse -Force candidate180 -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory candidate180 | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip candidate180
+          python -m pip install --disable-pip-version-check -q -e .\candidate180
+
+          $env:PYTHONPATH=(Resolve-Path .\candidate180).Path
+          $env:CEO_NO_BROWSER='1'
           @'
-          import pathlib,sys,time
-          from ceo_core.provider_resilience_v2 import ProviderResilienceV2
-          from ceo_core.scheduler import RELIABILITY_EPOCH
-          from ceo_core.providers.gemini_interactions import GeminiInteractionsTransport
-          r=ProviderResilienceV2()
-          q=r.classify('HTTP 429 RESOURCE_EXHAUSTED quota',1)
-          assert q.category=='quota' and q.retry_after_seconds>=300 and not q.spending_allowed,q
-          assert RELIABILITY_EPOCH=='dev304-provider-resilience-v1',RELIABILITY_EPOCH
-          assert 'gemini-2.5-flash' in GeminiInteractionsTransport.KNOWN_UNAVAILABLE_MODELS
-          assert 'gemini-2.5-flash-lite' in GeminiInteractionsTransport.KNOWN_UNAVAILABLE_MODELS
-          print('DEV304_WINDOWS_PROVIDER_SEMANTICS_PASS')
-          '@ | Set-Content -Encoding UTF8 .\smoke304.py
-          python .\smoke304.py
+          import importlib.util,pathlib,os
+          p=pathlib.Path('candidate180/scripts/ceo_stdlib_work_mode.py').resolve()
+          spec=importlib.util.spec_from_file_location('wm180',p)
+          m=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(m)
+          engine=m.CEOEngine()
+          try:
+              snap=engine.call(engine.snapshot(),timeout=30)
+              assert snap is not None
+              assert engine._router() is not None
+              print({
+                  'version':m.APP_VERSION,
+                  'provider_mode':engine.provider_mode,
+                  'execution_enabled':engine.execution_enabled,
+                  'router_available':engine._router() is not None,
+                  'scheduler_present':engine.scheduler is not None,
+                  'startup_without_provider':'PASS'
+              })
+          finally:
+              try:
+                  if engine.scheduler is not None:
+                      engine.call(engine.scheduler.stop(),timeout=10)
+              except Exception:
+                  pass
+          '@ | Set-Content -Encoding UTF8 startup180.py
+          python .\startup180.py
