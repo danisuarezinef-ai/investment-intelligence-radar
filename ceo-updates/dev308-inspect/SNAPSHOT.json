@@ -1,0 +1,37 @@
+{
+  "files": {
+    "autonomous_loop.py": {
+      "sha256": "01dc4e43fd1c700f39776a35b14d339a7822c48ecbd75a375d454a065dea013a",
+      "size": 39997
+    },
+    "decomposer.py": {
+      "sha256": "ae82d344e1df140ccb138418d4bf0bca75080c702e0eb77b22e80c9122302656",
+      "size": 7098
+    },
+    "graph.py": {
+      "sha256": "0cf91e9527ee0db177a808b84a8f79e489f0578f0d723bca607b6e2bae2357fa",
+      "size": 7065
+    },
+    "productive_fallback_orchestrator_v1.py": {
+      "sha256": "06eb87e7616838d4927b05682aeebc3429801031ade29fe491be26cb2ed836a8",
+      "size": 2508
+    },
+    "productive_truth_v2.py": {
+      "sha256": "8a36b878fddfb1a3c76c5f9fb8cb741bb5ba5c21f6fc2d68200ab6877e6a0089",
+      "size": 4555
+    },
+    "queue_consistency_rebuilder_v1.py": {
+      "sha256": "78677febb0e19c0ca84d61cc40336af3c0558e1e1f16bb37a69df6fd7b10b5b3",
+      "size": 2734
+    },
+    "scheduler_reconciler_v1.py": {
+      "sha256": "7360c9260fda0c2794340a95c75db89e350213810027dd989f7f3ebe99257754",
+      "size": 5557
+    },
+    "useful_output_watchdog_v2.py": {
+      "sha256": "ccea0424b6528a74964120012073e5b29d15fec878096bf3c974673ff0760760",
+      "size": 3748
+    }
+  },
+  "source_artifact": "CEO_1.5.83-rc1-autonomy-runtime-integrity.zip"
+}
