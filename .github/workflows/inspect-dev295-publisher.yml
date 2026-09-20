@@ -1,0 +1,30 @@
+name: Inspect DEV295 publisher exact contract
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev295-publisher.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp295
+          mkdir -p tmp295
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d tmp295
+          sed -n '1,360p' tmp295/ceo_core/internal_release_publisher.py
+          echo '=== policy ==='
+          cat tmp295/ceo_core/internal_release_policy.py
+          echo '=== security audit cli ==='
+          sed -n '1,260p' tmp295/scripts/security_audit.py
