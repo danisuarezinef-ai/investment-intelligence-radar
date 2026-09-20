@@ -1,0 +1,30 @@
+name: Inspect DEV302 graph readiness exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-graph-readiness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Graph exact
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          cat tmp302/ceo_core/graph.py
+          echo '=== reconciler ==='
+          sed -n '1,180p' tmp302/ceo_core/scheduler_reconciler_v1.py
+          echo '=== snapshot pending ==='
+          grep -nE 'pending=|pending_count|known_batch|Lote conocido|control interno|queue' tmp302/scripts/ceo_stdlib_work_mode.py | head -n 300
