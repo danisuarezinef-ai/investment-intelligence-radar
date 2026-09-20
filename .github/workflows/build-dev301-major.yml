@@ -1,0 +1,228 @@
+name: Build DEV301 major reliability candidate
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/build-dev301-major.yml'
+      - 'ceo-updates/DEV301_PATCH_GZ_B64.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  build-verify-stage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Reconstruct exact candidate from signed-lineage base
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev301-base /tmp/dev301.patch
+          mkdir -p /tmp/dev301-base
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d /tmp/dev301-base
+          base64 -d < ceo-updates/DEV301_PATCH_GZ_B64.txt | gzip -dc > /tmp/dev301.patch
+          cd /tmp/dev301-base
+          patch -p1 --batch --forward < /tmp/dev301.patch
+
+      - name: Validate source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/dev301-base
+          export PYTHONPATH="$PWD"
+          python -m compileall -q .
+          python scripts/dev292_recovery_failclosed_qualification.py
+          python scripts/dev294_internal_update_pipeline_qualification.py
+          python scripts/dev295_update_confirm_qualification.py
+          python scripts/security_audit.py
+          python - <<'PY'
+          import json, hashlib, pathlib, re, subprocess, tempfile
+          root=pathlib.Path('/tmp/dev301-base')
+          c=json.loads((root/'CEO_UPDATE_PACKAGE.json').read_text(encoding='utf-8'))
+          assert c['app_version']=='1.5.77-rc1-reliability-control-plane'
+          required=list(c.get('required_paths') or [])
+          hashes=dict(c.get('file_hashes') or {})
+          missing=[p for p in required if not (root/p).is_file()]
+          assert not missing, missing[:10]
+          bad=[]
+          for rel,exp in hashes.items():
+              got=hashlib.sha256((root/rel).read_bytes()).hexdigest()
+              if got!=exp: bad.append(rel)
+          assert not bad, bad[:10]
+          wm=(root/'scripts/ceo_stdlib_work_mode.py').read_text(encoding='utf-8')
+          for needle in ('id="pauseBtn"','id="resumeBtn"','id="cancelBtn"','/api/cancel','PreparedReleaseBridge'):
+              assert needle in wm, needle
+          m=re.search(r'<script>(.*?)</script>',wm,re.S)
+          assert m
+          js=pathlib.Path('/tmp/dev301-ui.js')
+          js.write_text(m.group(1),encoding='utf-8')
+          subprocess.run(['node','--check',str(js)],check=True)
+          print(json.dumps({
+              'required_paths':len(required),
+              'hashes_verified':len(hashes),
+              'controls':['pause','resume','cancel'],
+              'version':c['app_version']
+          },indent=2))
+          PY
+
+      - name: Run cancellation and recovery adversarial checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/dev301-base
+          export PYTHONPATH="$PWD"
+          python - <<'PY'
+          import tempfile
+          from pathlib import Path
+          from ceo_core.models import ProjectState, Task, TaskStatus, utcnow
+          from ceo_core.sqlite_store import SqliteCheckpointStore
+          from ceo_core.recovery_storm_guard_v1 import RecoveryStormGuardV1
+
+          state=ProjectState(goal='terminal cancellation persistence')
+          state.tasks['t1']=Task(id='t1',title='work',status=TaskStatus.RETRY)
+          state.root_task_ids=['t1']
+          state.cancelled_at=utcnow()
+          state.cancelled_reason='operator_cancelled'
+          state.paused=True
+          state.autonomy_enabled=False
+          state.metadata['operator_cancelled']=True
+          state.metadata['suppress_new_internal_recovery']=True
+          with tempfile.TemporaryDirectory() as td:
+              store=SqliteCheckpointStore(Path(td)/'ceo.db')
+              store.save(state)
+              loaded=store.load()
+              assert loaded and loaded.cancelled_at
+              resumed=store.prepare_for_resume(loaded)
+              assert resumed.paused is True
+              assert resumed.autonomy_enabled is False
+              assert resumed.metadata.get('operator_cancelled') is True
+
+          g=RecoveryStormGuardV1()
+          assert (g.global_trip,g.per_task_trip,g.repeat_trip)==(8,4,2)
+          print('DEV301_ADVERSARIAL_CONTROL_PASS')
+          PY
+
+      - name: Build deterministic ZIP and require byte identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import pathlib, zipfile, hashlib
+          root=pathlib.Path('/tmp/dev301-base')
+          out=pathlib.Path('ceo-updates/CEO_1.5.77-rc1-reliability-control-plane.zip')
+          out.unlink(missing_ok=True)
+          fixed=(2026,9,20,12,0,0)
+          with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(x for x in root.rglob('*') if x.is_file() and '__pycache__' not in x.parts and x.suffix!='.pyc'):
+                  rel=p.relative_to(root).as_posix()
+                  info=zipfile.ZipInfo(rel,date_time=fixed)
+                  info.create_system=0
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0
+                  z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          data=out.read_bytes()
+          sha=hashlib.sha256(data).hexdigest()
+          size=len(data)
+          expected_sha='4c8058c74169cb3da71e33004c8efe0e1570749c88a015e812aaed30727ea433'
+          expected_size=1136201
+          print({'sha256':sha,'size':size})
+          assert sha==expected_sha,(sha,expected_sha)
+          assert size==expected_size,(size,expected_size)
+          with zipfile.ZipFile(out) as z:
+              assert z.testzip() is None
+              assert len(z.namelist())==523
+          PY
+
+      - name: Generate prepared unsigned manifest and qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, pathlib, datetime
+          u=pathlib.Path('ceo-updates')
+          version='1.5.77-rc1-reliability-control-plane'
+          artifact='CEO_1.5.77-rc1-reliability-control-plane.zip'
+          sha='4c8058c74169cb3da71e33004c8efe0e1570749c88a015e812aaed30727ea433'
+          size=1136201
+          manifest={
+            'artifact_name':artifact,
+            'channel':'stable',
+            'data_schema_version':1,
+            'health_path':'/api/health',
+            'launcher':'ABRIR_CEO.cmd',
+            'manifest_version':2,
+            'max_app_version':'',
+            'min_app_version':'1.5.58-rc1-productive-stall-escape',
+            'notes':'DEV301 major reliability/control-plane transition: separate Pause/Resume/Cancel controls; terminal cancellation; recovery storm fuse 8/4/2; two-phase package publication; bounded release retries; deterministic prepared-release bridge; publish-to-update handoff; single-source version identity; exact package hash verification.',
+            'package_contract_version':1,
+            'published_at':'2026-09-20T14:00:00Z',
+            'release_id':'dev301-1.5.77-rc1-reliability-control-plane',
+            'release_sequence':301,
+            'release_status':'release',
+            'sha256':sha,
+            'signature_alg':'ed25519',
+            'size_bytes':size,
+            'url':f'https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/{artifact}',
+            'version':version
+          }
+          (u/'DEV301_MANIFEST_UNSIGNED.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          qualification={
+            'candidate':version,
+            'release_sequence':301,
+            'base':'1.5.71-rc1-update-confirm-bridge',
+            'tests_passed':True,
+            'clean_extract_passed':True,
+            'package_contract_passed':True,
+            'security_passed':True,
+            'failed_tests':0,
+            'security_findings':0,
+            'local_candidate_ready':True,
+            'windows_physical_verified':False,
+            'production_ready':False,
+            'automatic_installation':False,
+            'operator_install_confirmation_required':True,
+            'operator_controls':['pause','resume','cancel'],
+            'cancel_is_terminal':True,
+            'recovery_thresholds':{'global':8,'per_task':4,'repeat':2},
+            'two_phase_publication':True,
+            'deterministic_prepared_release_bridge':True,
+            'artifact':{'name':artifact,'sha256':sha,'size_bytes':size,'entries':523}
+          }
+          (u/'DEV301_QUALIFICATION.json').write_text(json.dumps(qualification,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          PY
+
+      - name: Commit prepared candidate only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "CEO Release Engineering"
+          git config user.email "ceo-release@local.invalid"
+          git add --             ceo-updates/CEO_1.5.77-rc1-reliability-control-plane.zip             ceo-updates/DEV301_MANIFEST_UNSIGNED.json             ceo-updates/DEV301_QUALIFICATION.json
+          if git diff --cached --quiet; then
+            echo "Prepared candidate already staged in branch"
+            exit 0
+          fi
+          git commit -m "Stage verified DEV301 major reliability candidate"
+          git push origin HEAD:ceo-update-channel
+
+      - name: Assert active manifest was not advanced
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          m=json.load(open('ceo-updates/manifest.json',encoding='utf-8'))
+          assert int(m['release_sequence'])==281, m
+          assert m['version']=='1.5.58-rc1-productive-stall-escape', m
+          print('ACTIVE_MANIFEST_UNCHANGED')
+          PY
