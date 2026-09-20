@@ -1,0 +1,36 @@
+name: Inspect DEV302 control-only stall supervisor
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-control-only-stall.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect control-only stall logic
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== scheduler productivity supervisor ==='
+          cat tmp302/ceo_core/scheduler_productivity_supervisor_v1.py
+          echo '=== useful output watchdog ==='
+          cat tmp302/ceo_core/useful_output_watchdog_v2.py
+          echo '=== productive truth ==='
+          cat tmp302/ceo_core/productive_truth_v2.py
+          echo '=== autonomous loop relevant ==='
+          sed -n '230,650p' tmp302/ceo_core/autonomous_loop.py
+          echo '=== progress tracker ==='
+          grep -RIn "class .*Progress" tmp302/ceo_core | head -n 80
+          grep -RIn "productive_pending\|control_pending\|last_productive_progress_at\|batch_progress" tmp302/ceo_core | head -n 300
