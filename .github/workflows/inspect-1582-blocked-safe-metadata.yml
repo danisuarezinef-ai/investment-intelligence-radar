@@ -1,0 +1,30 @@
+name: Inspect 1.5.82 blocked-safe metadata exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1582-blocked-safe-metadata.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Show blocked-safe helper and epoch migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp182
+          mkdir -p tmp182
+          unzip -q ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip -d tmp182
+          cat tmp182/ceo_core/blocked_safe_state_v1.py
+          echo '=== epoch migration ==='
+          sed -n '95,225p' tmp182/ceo_core/scheduler.py
+          echo '=== productive truth epoch ==='
+          grep -n "epoch" tmp182/ceo_core/productive_truth_v2.py
