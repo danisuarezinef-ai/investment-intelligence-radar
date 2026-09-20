@@ -1,0 +1,38 @@
+name: Inspect CEO 1.5.58 update bridge
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-ceo-1558.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Extract updater/signing sources only
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf inspect_out tmp1558
+          mkdir -p inspect_out tmp1558
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          for f in             ceo_core/in_app_updater.py             ceo_core/release_signing_authority.py             ceo_core/update_channel.py             ceo_core/credentials.py             scripts/sign_update_with_local_authority.py             scripts/bootstrap_release_signer.py             scripts/launch_current.py             scripts/relaunch_after_update.py             CEO_UPDATE_PACKAGE.json; do
+            if [ -f "tmp1558/$f" ]; then
+              mkdir -p "inspect_out/$(dirname "$f")"
+              cp "tmp1558/$f" "inspect_out/$f"
+            fi
+          done
+          find inspect_out -type f -maxdepth 4 -print | sort > inspect_out/FILES.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ceo-1558-update-inspection
+          path: inspect_out
+          if-no-files-found: error
+          retention-days: 1
