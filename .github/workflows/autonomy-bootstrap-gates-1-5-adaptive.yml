@@ -1,0 +1,87 @@
+name: Autonomy Bootstrap Gates 1-5 Adaptive
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/autonomy-bootstrap-gates-1-5-adaptive.yml'
+      - 'ceo-updates/build_autonomy_bootstrap_candidate.py'
+      - 'ceo-updates/autonomy_bootstrap_gate_v1.py'
+      - 'ceo-updates/autonomy_bootstrap_gate_v2.py'
+      - 'ceo-updates/autonomy_bootstrap_gate_v3.py'
+      - 'ceo-updates/autonomy_bootstrap_gate_v4.py'
+      - 'ceo-updates/autonomy_bootstrap_gate_v5.py'
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      CEO_NO_BROWSER: "1"
+      LOCALAPPDATA: ${{ runner.temp }}\ceo-bootstrap-localappdata
+      APPDATA: ${{ runner.temp }}\ceo-bootstrap-appdata
+      CEO_GATE_ARTIFACTS: ${{ runner.temp }}\ceo-bootstrap-artifacts
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build adaptive bootstrap candidate
+        shell: pwsh
+        run: |
+          python ceo-updates\build_autonomy_bootstrap_candidate.py
+          if($LASTEXITCODE -ne 0){throw "candidate build failed"}
+
+      - name: Install candidate
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check -q -e C:\tmp\ceo-bootstrap-efficient
+          if($LASTEXITCODE -ne 0) {
+            python -m pip install --disable-pip-version-check -q -e /tmp/ceo-bootstrap-efficient
+          }
+          "CEO_GATE_ROOT=/tmp/ceo-bootstrap-efficient" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Prepare gate dirs
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:CEO_GATE_ARTIFACTS | Out-Null
+
+      - name: Gate 1 - end to end objective
+        shell: pwsh
+        run: |
+          python ceo-updates\autonomy_bootstrap_gate_v1.py
+          if($LASTEXITCODE -ne 0){throw "Gate 1 failed"}
+
+      - name: Gate 2 - consecutive objectives
+        shell: pwsh
+        run: |
+          python ceo-updates\autonomy_bootstrap_gate_v2.py
+          if($LASTEXITCODE -ne 0){throw "Gate 2 failed"}
+
+      - name: Gate 3 - restart resume
+        shell: pwsh
+        run: |
+          python ceo-updates\autonomy_bootstrap_gate_v3.py
+          if($LASTEXITCODE -ne 0){throw "Gate 3 failed"}
+
+      - name: Gate 4 - provider outage resume
+        shell: pwsh
+        run: |
+          python ceo-updates\autonomy_bootstrap_gate_v4.py
+          if($LASTEXITCODE -ne 0){throw "Gate 4 failed"}
+
+      - name: Gate 5 - efficiency
+        shell: pwsh
+        run: |
+          python ceo-updates\autonomy_bootstrap_gate_v5.py
+          if($LASTEXITCODE -ne 0){throw "Gate 5 failed"}
