@@ -34,6 +34,12 @@ jobs:
           cd /tmp/dev301-base
           patch -p1 --batch --forward < /tmp/dev301.patch
 
+      - name: Install candidate-declared Python dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q -e /tmp/dev301-base
+
       - name: Validate source tree
         shell: bash
         run: |
