@@ -1,0 +1,62 @@
+name: Reproduce 1.5.58 staging of DEV301 on Windows
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/reproduce-1558-dev301-windows.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract 1.5.58 and install dependencies
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force tmp1558 -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory tmp1558 | Out-Null
+          Expand-Archive -Path ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -DestinationPath tmp1558
+          python -m pip install --disable-pip-version-check -q -e .\tmp1558
+      - name: Stage DEV301 with exact 1.5.58 updater
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH = (Resolve-Path .\tmp1558).Path
+          @'
+          import dataclasses, json, pathlib, tempfile, time
+          from ceo_core.in_app_updater import InAppUpdater, UpdateManifest
+          repo=pathlib.Path.cwd()
+          manifest_payload=json.loads((repo/'ceo-updates/DEV301_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+          package=(repo/'ceo-updates/CEO_1.5.77-rc1-reliability-control-plane.zip').resolve()
+          manifest_payload['url']=package.as_uri()
+          allowed={f.name for f in dataclasses.fields(UpdateManifest)}
+          manifest=UpdateManifest(**{k:v for k,v in manifest_payload.items() if k in allowed})
+          with tempfile.TemporaryDirectory(prefix='ceo-dev301-stage-win-') as td:
+              updater=InAppUpdater(data_root=td)
+              t=time.perf_counter()
+              row=updater.stage(manifest)
+              elapsed=time.perf_counter()-t
+              progress=updater.progress()
+              staged=updater.list_staged()
+              print(json.dumps({
+                  'elapsed_seconds':elapsed,
+                  'progress':progress,
+                  'receipt_version':row.get('version'),
+                  'contract_verified':row.get('contract_verified'),
+                  'file_count':row.get('file_count'),
+                  'staged_count':len(staged)
+              },indent=2,default=str))
+              assert row['version']=='1.5.77-rc1-reliability-control-plane'
+              assert row.get('contract_verified') is True
+              assert progress.get('phase')=='ready_to_install'
+              assert float(elapsed)<30
+          '@ | Set-Content -Encoding UTF8 .\stage_test.py
+          python .\stage_test.py
