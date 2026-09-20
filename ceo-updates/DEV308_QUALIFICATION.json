@@ -15,10 +15,13 @@
   "field_validation_pending": true,
   "operator_install_confirmation_required": true,
   "production_ready": false,
+  "production_ready_reason": "Awaiting operator-approved installation on the real Windows host and continuation of the existing 73.3% Autonomy Gate project.",
   "productive_ready_is_executable_route": true,
   "protected_blocks_preserved": true,
   "release_sequence": 308,
   "security_passed": true,
   "tests_passed": true,
-  "windows_stage_preflight_passed": false
+  "windows_exact_field_shape_regression_passed": true,
+  "windows_executable_route_semantics_smoke_passed": true,
+  "windows_stage_preflight_passed": true
 }
