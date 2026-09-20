@@ -1,0 +1,30 @@
+name: Inspect CEO_VERIFY protocol for Bootstrap Gate
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-bootstrap-ceo-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect verification parser and prompts
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp181
+          mkdir -p tmp181
+          unzip -q ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip -d tmp181
+          grep -RInE 'CEO_VERIFY|verification_target|verification_application|Independent verification' tmp181/ceo_core --include='*.py' | head -n 1600
+          echo '=== verifier modules ==='
+          for f in tmp181/ceo_core/*.py; do
+            if grep -q 'CEO_VERIFY' "$f"; then echo "FILE $f"; sed -n '1,320p' "$f"; fi
+          done
