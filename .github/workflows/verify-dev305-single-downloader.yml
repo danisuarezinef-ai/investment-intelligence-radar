@@ -1,0 +1,72 @@
+name: Verify DEV305 single downloader activator
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev305-single-downloader.yml'
+      - 'ceo-updates/ACTIVAR_DEV305_1_5_81_UN_SOLO_ARCHIVO.cmd'
+      - 'ceo-updates/ACTIVAR_DEV305_1_5_81.ps1'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Start mock CEO 1.5.80
+        shell: pwsh
+        run: |
+          @'
+          import json
+          from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
+          from pathlib import Path
+          class H(BaseHTTPRequestHandler):
+              def log_message(self,*a): pass
+              def sendj(self,row,code=200):
+                  b=json.dumps(row).encode()
+                  self.send_response(code);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
+              def do_GET(self):
+                  if self.path=='/api/health':
+                      return self.sendj({'ok':True,'version':'1.5.80-rc1-provider-resilience'})
+                  return self.sendj({'error':'not_found'},404)
+              def do_POST(self):
+                  n=int(self.headers.get('Content-Length') or 0)
+                  body=self.rfile.read(n)
+                  Path('downloader-dev305-request.json').write_bytes(body)
+                  if self.path=='/api/internal-release/activate-prepared':
+                      return self.sendj({'ok':True,'status':'PUBLISHED','version':'1.5.81-rc1-endgame-closure','remote_verified':True})
+                  return self.sendj({'error':'not_found'},404)
+          ThreadingHTTPServer(('127.0.0.1',8775),H).serve_forever()
+          '@ | Set-Content -Encoding UTF8 mock.py
+          Start-Process python -ArgumentList "mock.py" -WindowStyle Hidden
+          Start-Sleep -Seconds 2
+
+      - name: Run single downloader activator
+        shell: cmd
+        env:
+          CEO_ACTIVATOR_NO_PAUSE: "1"
+          CEO_ACTIVATOR_NO_BROWSER: "1"
+        run: |
+          call ceo-updates\ACTIVAR_DEV305_1_5_81_UN_SOLO_ARCHIVO.cmd
+          if errorlevel 1 exit /b %errorlevel%
+
+      - name: Verify request and log
+        shell: pwsh
+        run: |
+          $j=Get-Content downloader-dev305-request.json -Raw | ConvertFrom-Json
+          $expected='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/DEV305_MANIFEST_UNSIGNED.json'
+          if($j.manifest_url -ne $expected){throw 'wrong manifest url'}
+          $log="$env:LOCALAPPDATA\CEO de IAs\diagnostics\DEV305_ACTIVACION_1_5_81.log"
+          if(-not (Test-Path $log)){throw 'missing log'}
+          $t=Get-Content $log -Raw
+          if($t -notmatch 'DEV305 publicada y verificada por CEO'){throw 'success missing from log'}
+          Write-Host 'DEV305_SINGLE_DOWNLOADER_PASS'
