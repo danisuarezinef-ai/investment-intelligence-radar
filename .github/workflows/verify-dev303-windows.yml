@@ -1,5 +1,5 @@
 name: Verify DEV303 on Windows with 1.5.78 updater
-# DEV303 rebuild verification trigger
+# DEV303 rebuild verification trigger 2
 
 on:
   push:
