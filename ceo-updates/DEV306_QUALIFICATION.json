@@ -20,7 +20,9 @@
   "release_sequence": 306,
   "security_passed": true,
   "tests_passed": true,
-  "windows_stage_preflight_passed": false,
+  "windows_stage_preflight_passed": true,
   "worker_recoveries_gate_5": 0,
-  "worker_recoveries_gate_6": 0
+  "worker_recoveries_gate_6": 0,
+  "windows_adaptive_decomposition_smoke_passed": true,
+  "production_ready_reason": "Awaiting local signer publication and operator-approved field installation on the user's Windows host."
 }
