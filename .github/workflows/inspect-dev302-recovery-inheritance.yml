@@ -1,0 +1,33 @@
+name: Inspect DEV302 recovery storm inheritance
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-recovery-inheritance.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect recovery guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== storm guard ==='
+          cat tmp302/ceo_core/recovery_storm_guard_v1.py
+          echo '=== budget guard ==='
+          cat tmp302/ceo_core/recovery_budget_guard_v1.py
+          echo '=== churn fuse ==='
+          cat tmp302/ceo_core/recovery_churn_fuse_v2.py
+          echo '=== worker recovery writes ==='
+          grep -RIn 'worker_recoveries' tmp302/ceo_core --include='*.py' | head -n 500
