@@ -1,0 +1,29 @@
+name: Inspect DEV303 provider recovery resume anchors
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev303-provider-recovery-resume.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Resume anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp179
+          mkdir -p tmp179
+          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d tmp179
+          echo '=== work mode 440-610 ==='
+          sed -n '440,610p' tmp179/scripts/ceo_stdlib_work_mode.py
+          echo '=== productive truth ==='
+          cat tmp179/ceo_core/productive_truth_v2.py
