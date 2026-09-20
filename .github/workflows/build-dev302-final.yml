@@ -1,0 +1,254 @@
+name: Build DEV302 final updater reliability revision
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/build-dev302-final.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build 1.5.78 from verified 1.5.77 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev302
+          mkdir -p /tmp/dev302
+          unzip -q ceo-updates/CEO_1.5.77-rc1-reliability-control-plane.zip -d /tmp/dev302
+          python - <<'PY'
+          import hashlib, json, pathlib, re, stat, zipfile
+          root=pathlib.Path('/tmp/dev302')
+          old='1.5.77-rc1-reliability-control-plane'
+          new='1.5.78-rc1-reliable-update-handoff'
+
+          updater=root/'ceo_core/in_app_updater.py'
+          text=updater.read_text(encoding='utf-8')
+          old_atomic='''    @staticmethod
+              def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
+                  path.parent.mkdir(parents=True, exist_ok=True)
+                  tmp = path.with_name(path.name + f".tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}")
+                  try:
+                      with tmp.open("w", encoding="utf-8", newline="\\n") as f:
+                          json.dump(payload, f, ensure_ascii=False, indent=2, sort_keys=True)
+                          f.write("\\n")
+                          f.flush()
+                          os.fsync(f.fileno())
+                      os.replace(tmp, path)
+                  finally:
+                      tmp.unlink(missing_ok=True)
+          '''
+          if old_atomic not in text:
+              raise SystemExit('atomic_json block not found')
+          new_atomic='''    @staticmethod
+              def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
+                  """Atomic JSON write with bounded Windows sharing-violation recovery.
+
+                  Antivirus/indexers and concurrent readers can briefly deny os.replace()
+                  on Windows. Keep atomic semantics, retry only PermissionError, and fail
+                  closed after a bounded wait instead of rejecting a valid release.
+                  """
+                  path.parent.mkdir(parents=True, exist_ok=True)
+                  tmp = path.with_name(path.name + f".tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}")
+                  try:
+                      with tmp.open("w", encoding="utf-8", newline="\\n") as f:
+                          json.dump(payload, f, ensure_ascii=False, indent=2, sort_keys=True)
+                          f.write("\\n")
+                          f.flush()
+                          os.fsync(f.fileno())
+                      last_exc: PermissionError | None = None
+                      for attempt in range(40):
+                          try:
+                              os.replace(tmp, path)
+                              return
+                          except PermissionError as exc:
+                              last_exc = exc
+                              try:
+                                  if path.exists():
+                                      os.chmod(path, stat.S_IREAD | stat.S_IWRITE)
+                              except OSError:
+                                  pass
+                              if attempt >= 39:
+                                  raise
+                              time.sleep(min(0.25, 0.025 * (attempt + 1)))
+                      if last_exc is not None:
+                          raise last_exc
+                  finally:
+                      tmp.unlink(missing_ok=True)
+          '''
+          text=text.replace(old_atomic,new_atomic,1)
+          updater.write_text(text,encoding='utf-8')
+
+          ui=root/'scripts/ceo_stdlib_work_mode.py'
+          u=ui.read_text(encoding='utf-8')
+          old_catch="""catch(e){stopUpdateProgress();$('updateHeadline').textContent='No se pudo actualizar';$('updateDetail').textContent=e.message;setUpdateButton('Reintentar actualización',true);await updateStatus(false)}"""
+          new_catch="""catch(e){stopUpdateProgress();const msg=e.message;await updateStatus(false);$('updateHeadline').textContent='No se pudo actualizar';$('updateDetail').textContent=msg;setUpdateButton('Reintentar actualización',true)}"""
+          if old_catch not in u:
+              raise SystemExit('UI update catch block not found')
+          u=u.replace(old_catch,new_catch,1)
+          ui.write_text(u,encoding='utf-8')
+
+          # Single-source version identity: update contract and any exact remaining runtime marker.
+          contract_path=root/'CEO_UPDATE_PACKAGE.json'
+          c=json.loads(contract_path.read_text(encoding='utf-8'))
+          c['app_version']=new
+
+          # Keep only controlled exact-version replacements in runtime/bootstrap identity surfaces.
+          for rel in ['scripts/ceo_stdlib_work_mode.py','scripts/install_windows_bootstrap.py']:
+              p=root/rel
+              t=p.read_text(encoding='utf-8')
+              if old in t:
+                  p.write_text(t.replace(old,new),encoding='utf-8')
+
+          # Recalculate all contract hashes after modifications.
+          hashes=dict(c.get('file_hashes') or {})
+          for rel in list(hashes):
+              p=root/rel
+              if not p.is_file():
+                  raise SystemExit(f'missing hashed file: {rel}')
+              hashes[rel]=hashlib.sha256(p.read_bytes()).hexdigest()
+          c['file_hashes']=hashes
+          contract_path.write_text(json.dumps(c,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+
+          # Basic source assertions.
+          assert 'for attempt in range(40)' in updater.read_text(encoding='utf-8')
+          assert 'except PermissionError as exc:' in updater.read_text(encoding='utf-8')
+          assert "const msg=e.message;await updateStatus(false);" in ui.read_text(encoding='utf-8')
+          assert c['app_version']==new
+          PY
+
+      - name: Validate revised source and inherited gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q -e /tmp/dev302
+          cd /tmp/dev302
+          export PYTHONPATH="$PWD"
+          python -m compileall -q .
+          python scripts/dev292_recovery_failclosed_qualification.py
+          python scripts/dev294_internal_update_pipeline_qualification.py
+          python scripts/dev295_update_confirm_qualification.py
+          python scripts/security_audit.py
+          python - <<'PY'
+          import json, hashlib, pathlib, re, subprocess, tempfile, threading, time
+          root=pathlib.Path('.')
+          c=json.loads((root/'CEO_UPDATE_PACKAGE.json').read_text(encoding='utf-8'))
+          assert c['app_version']=='1.5.78-rc1-reliable-update-handoff'
+          for rel,expected in (c.get('file_hashes') or {}).items():
+              assert hashlib.sha256((root/rel).read_bytes()).hexdigest()==expected, rel
+
+          # Verify embedded JS remains syntactically valid.
+          wm=(root/'scripts/ceo_stdlib_work_mode.py').read_text(encoding='utf-8')
+          m=re.search(r'<script>(.*?)</script>',wm,re.S); assert m
+          pathlib.Path('/tmp/dev302-ui.js').write_text(m.group(1),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/dev302-ui.js'],check=True)
+
+          # Exercise transient PermissionError recovery without weakening atomic replacement.
+          from ceo_core.in_app_updater import InAppUpdater
+          original_replace=__import__('os').replace
+          calls={'n':0}
+          import os
+          def flaky(src,dst):
+              calls['n']+=1
+              if calls['n']<=4:
+                  raise PermissionError(5,'simulated Windows sharing violation',str(dst))
+              return original_replace(src,dst)
+          os.replace=flaky
+          try:
+              with tempfile.TemporaryDirectory() as td:
+                  p=pathlib.Path(td)/'progress.json'
+                  InAppUpdater._atomic_json(p,{'phase':'verifying'})
+                  assert json.loads(p.read_text())['phase']=='verifying'
+                  assert calls['n']==5
+          finally:
+              os.replace=original_replace
+          print('DEV302_ATOMIC_RETRY_PASS',calls)
+          PY
+
+      - name: Build deterministic package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,pathlib,zipfile
+          root=pathlib.Path('/tmp/dev302')
+          out=pathlib.Path('ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip')
+          out.unlink(missing_ok=True)
+          c=json.loads((root/'CEO_UPDATE_PACKAGE.json').read_text(encoding='utf-8'))
+          required=sorted(c['required_paths'])
+          fixed=(2026,9,20,15,0,0)
+          with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for rel in required:
+                  p=root/rel
+                  assert p.is_file(),rel
+                  info=zipfile.ZipInfo(rel,date_time=fixed)
+                  info.create_system=0
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0
+                  z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          data=out.read_bytes()
+          print('DEV302_SHA256='+hashlib.sha256(data).hexdigest())
+          print('DEV302_SIZE='+str(len(data)))
+          with zipfile.ZipFile(out) as z:
+              assert z.testzip() is None
+              assert set(z.namelist())==set(required)
+          PY
+
+      - name: Generate unsigned manifest and qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,pathlib
+          u=pathlib.Path('ceo-updates')
+          artifact='CEO_1.5.78-rc1-reliable-update-handoff.zip'
+          data=(u/artifact).read_bytes()
+          sha=hashlib.sha256(data).hexdigest()
+          size=len(data)
+          version='1.5.78-rc1-reliable-update-handoff'
+          m={
+            'artifact_name':artifact,'channel':'stable','data_schema_version':1,
+            'health_path':'/api/health','launcher':'ABRIR_CEO.cmd','manifest_version':2,
+            'max_app_version':'','min_app_version':'1.5.58-rc1-productive-stall-escape',
+            'notes':'DEV302 final major reliability transition: all DEV301 control-plane improvements plus bounded Windows atomic-file replacement recovery and persistent updater error visibility.',
+            'package_contract_version':1,'published_at':'2026-09-20T15:00:00Z',
+            'release_id':'dev302-1.5.78-rc1-reliable-update-handoff','release_sequence':302,
+            'release_status':'release','sha256':sha,'signature_alg':'ed25519',
+            'size_bytes':size,
+            'url':f'https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/{artifact}',
+            'version':version
+          }
+          (u/'DEV302_MANIFEST_UNSIGNED.json').write_text(json.dumps(m,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          q={
+            'candidate':version,'base':'1.5.77-rc1-reliability-control-plane',
+            'release_sequence':302,'tests_passed':True,'clean_extract_passed':True,
+            'package_contract_passed':True,'security_passed':True,'security_findings':0,
+            'windows_atomic_replace_retry':True,'updater_error_visibility_preserved':True,
+            'windows_physical_verified':False,'production_ready':False,
+            'operator_install_confirmation_required':True,
+            'artifact':{'name':artifact,'sha256':sha,'size_bytes':size}
+          }
+          (u/'DEV302_QUALIFICATION.json').write_text(json.dumps(q,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          PY
+
+      - name: Commit prepared revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "CEO Release Engineering"
+          git config user.email "ceo-release@local.invalid"
+          git add ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip ceo-updates/DEV302_MANIFEST_UNSIGNED.json ceo-updates/DEV302_QUALIFICATION.json
+          git commit -m "Stage DEV302 final major updater reliability revision"
+          git push origin HEAD:ceo-update-channel
