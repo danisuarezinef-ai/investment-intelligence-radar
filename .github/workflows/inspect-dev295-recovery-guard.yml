@@ -1,0 +1,30 @@
+name: Inspect DEV295 recovery storm guard
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev295-recovery-guard.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp295
+          mkdir -p tmp295
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d tmp295
+          cat tmp295/ceo_core/recovery_storm_guard_v1.py
+          echo '=== budget ==='
+          cat tmp295/ceo_core/recovery_budget_guard_v1.py
+          echo '=== churn ==='
+          cat tmp295/ceo_core/recovery_churn_fuse_v2.py
