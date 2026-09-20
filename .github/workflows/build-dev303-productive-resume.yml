@@ -1,0 +1,644 @@
+name: Build DEV303 productive resume gate
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/build-dev303-productive-resume.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-stage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build DEV303 from verified 1.5.78
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev303
+          mkdir -p /tmp/dev303
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d /tmp/dev303
+          python - <<'PY'
+          import hashlib, json, pathlib
+          root=pathlib.Path('/tmp/dev303')
+          old='1.5.78-rc1-reliable-update-handoff'
+          new='1.5.79-rc1-productive-resume-gate'
+          epoch='dev303-productive-resume-v1'
+
+          def replace_once(path, old_text, new_text):
+              p=root/path
+              t=p.read_text(encoding='utf-8')
+              n=t.count(old_text)
+              if n!=1:
+                  raise SystemExit(f'{path}: expected exactly 1 anchor, got {n}: {old_text[:100]!r}')
+              p.write_text(t.replace(old_text,new_text,1),encoding='utf-8')
+
+          # 1) One-time reliability epoch migration. Historical evidence is retained,
+          # but old recovery counters/control latches cannot poison the new runtime.
+          sched=root/'ceo_core/scheduler.py'
+          t=sched.read_text(encoding='utf-8')
+          anchor='''def utcnow() -> datetime:
+              return datetime.now(timezone.utc)
+
+
+          class ContinuousScheduler:
+          '''
+          migration=f'''def utcnow() -> datetime:
+              return datetime.now(timezone.utc)
+
+
+          RELIABILITY_EPOCH = "{epoch}"
+
+
+          def _apply_reliability_epoch_migration(state: ProjectState) -> dict:
+              marker = state.metadata.setdefault("reliability_epoch_v1", {{}})
+              if marker.get("epoch") == RELIABILITY_EPOCH:
+                  return {{"changed": False, "epoch": RELIABILITY_EPOCH}}
+
+              now = utcnow().isoformat()
+              worker_recoveries = int(state.metadata.get("worker_recoveries", 0) or 0)
+              recovery_tasks = int(state.metadata.get("autonomy_recovery_tasks_created", 0) or 0)
+              productive_done = sum(
+                  1 for task in state.leaf_tasks
+                  if is_productive(task, state)
+                  and task.status in {{TaskStatus.COMPLETE, TaskStatus.PARTIAL_COMPLETE, TaskStatus.COMPLETE_WITH_UNCERTAINTY}}
+              )
+
+              previous = {{
+                  "epoch": marker.get("epoch"),
+                  "worker_recoveries": worker_recoveries,
+                  "autonomy_recovery_tasks_created": recovery_tasks,
+                  "productive_completed": productive_done,
+                  "operator_productivity_state": state.metadata.get("operator_productivity_state"),
+              }}
+              history = marker.setdefault("history", [])
+              history.append({{"ts": now, **previous}})
+              del history[:-20]
+
+              truth = state.metadata.setdefault("productive_truth_v2", {{}})
+              truth.update({{
+                  "epoch": RELIABILITY_EPOCH,
+                  "productive_watermark": productive_done,
+                  "recoveries_at_watermark": worker_recoveries,
+                  "historical_recoveries_before_epoch": worker_recoveries,
+                  "worker_recoveries": 0,
+                  "stalled": False,
+                  "reason": "reliability epoch migrated",
+              }})
+
+              budget = state.metadata.setdefault("recovery_budget_guard_v1", {{}})
+              budget.update({{
+                  "epoch": RELIABILITY_EPOCH,
+                  "productive_watermark": productive_done,
+                  "recoveries_at_watermark": recovery_tasks,
+                  "migration_existing_recoveries": recovery_tasks,
+                  "attempts_without_progress": 0,
+                  "budget_exhausted": False,
+              }})
+              state.metadata.pop("control_plane_recovery_budget_exhausted", None)
+
+              progress = state.metadata.setdefault("productive_progress_guard_v1", {{}})
+              progress.update({{
+                  "epoch": RELIABILITY_EPOCH,
+                  "historical_ticks_before_epoch": int(progress.get("ticks", 0) or 0),
+                  "historical_no_progress_cycles_before_epoch": int(progress.get("no_progress_cycles", 0) or 0),
+                  "historical_control_only_cycles_before_epoch": int(progress.get("control_only_cycles", 0) or 0),
+                  "ticks": 0,
+                  "last_productive_completed": productive_done,
+                  "no_progress_cycles": 0,
+                  "control_only_cycles": 0,
+                  "stalled": False,
+                  "reason": "reliability epoch migrated",
+              }})
+
+              storm = state.metadata.setdefault("recovery_storm_guard_v1", {{}})
+              storm.update({{
+                  "epoch": RELIABILITY_EPOCH,
+                  "productive_watermark": productive_done,
+                  "recoveries_at_watermark": worker_recoveries,
+                  "historical_recoveries_before_epoch": worker_recoveries,
+                  "recoveries_without_progress": 0,
+                  "open": False,
+                  "reason": "reliability epoch migrated",
+              }})
+              state.metadata.pop("recovery_storm_breaker", None)
+              state.metadata.pop("recovery_storm_suppression_owner", None)
+
+              circuit = state.metadata.setdefault("control_churn_circuit_breaker_v1", {{}})
+              circuit.update({{
+                  "epoch": RELIABILITY_EPOCH,
+                  "epoch_started_at": now,
+                  "signature": "none",
+                  "repeated_signature_count": 0,
+                  "open": False,
+              }})
+              state.metadata.pop("control_plane_circuit_open", None)
+              state.metadata.pop("productive_stall_escape_required", None)
+
+              # Retire only stale internal units that the OLD recovery guard made
+              # permanently undispatchable. Do not release protected human gates and
+              # do not erase the blocked-safe evidence.
+              retired = []
+              for task in state.leaf_tasks:
+                  if not is_internal(task, state) or protected_human_gate(task):
+                      continue
+                  reason = str(task.metadata.get("blocked_safe_reason") or "")
+                  source = str(task.metadata.get("blocked_safe_source") or "")
+                  stale_guard_block = (
+                      bool(task.metadata.get("blocked_safe") or task.metadata.get("manual_release_required"))
+                      and source == "scheduler_dispatch_guard"
+                      and reason in {{
+                          "global_recovery_storm_breaker_open",
+                          "task_recovery_budget_exhausted",
+                          "task_attempt_budget_exhausted",
+                      }}
+                  )
+                  stale_exhausted_control = (
+                      task.status in {{TaskStatus.READY, TaskStatus.RETRY, TaskStatus.BLOCKED, TaskStatus.NEEDS_REVIEW}}
+                      and int(task.attempts) >= max(1, int(task.max_attempts))
+                      and not task.metadata.get("explicit_human_gate")
+                  )
+                  if stale_guard_block or stale_exhausted_control:
+                      task.status = TaskStatus.SUPERSEDED
+                      task.worker_id = None
+                      task.metadata["superseded_reason"] = "reliability_epoch_migration_stale_internal_control"
+                      task.metadata["reliability_epoch_retired_at"] = now
+                      task.metadata["reliability_epoch_retired_from"] = RELIABILITY_EPOCH
+                      retired.append(task.id)
+
+              marker.update({{
+                  "epoch": RELIABILITY_EPOCH,
+                  "started_at": now,
+                  "historical_worker_recoveries": worker_recoveries,
+                  "historical_recovery_tasks": recovery_tasks,
+                  "productive_watermark": productive_done,
+                  "retired_stale_internal_task_ids": retired,
+              }})
+              return {{"changed": True, "epoch": RELIABILITY_EPOCH, "retired": retired, "previous": previous}}
+
+
+          class ContinuousScheduler:
+          '''
+          if anchor not in t:
+              raise SystemExit('scheduler epoch anchor missing')
+          t=t.replace(anchor,migration,1)
+
+          init_anchor='''        self.state = state
+                  self.router = router or FixedWorkerRouter(provider)  # type: ignore[arg-type]
+          '''
+          init_new='''        self.state = state
+                  epoch_migration = _apply_reliability_epoch_migration(self.state)
+                  if epoch_migration.get("changed"):
+                      self.state.metadata["reliability_epoch_last_migration"] = epoch_migration
+                  self.router = router or FixedWorkerRouter(provider)  # type: ignore[arg-type]
+          '''
+          if init_anchor not in t:
+              raise SystemExit('scheduler init anchor missing')
+          t=t.replace(init_anchor,init_new,1)
+
+          kick_old='''                and (self._ticks % 10 == 0 or self.long_runtime.needs_progress_kick(self.state))
+                      and not any(t.status == TaskStatus.READY for t in self.state.leaf_tasks)
+          '''
+          kick_new='''                and (self._ticks % 10 == 0 or self.long_runtime.needs_progress_kick(self.state))
+                      and not any(
+                          is_productive(t, self.state)
+                          and t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING}
+                          for t in self.state.leaf_tasks
+                      )
+          '''
+          if kick_old not in t:
+              raise SystemExit('scheduler progress kick anchor missing')
+          t=t.replace(kick_old,kick_new,1)
+          sched.write_text(t,encoding='utf-8')
+
+          # 2) Internal/control work is not sufficient proof of productive work.
+          loop=root/'ceo_core/autonomous_loop.py'
+          t=loop.read_text(encoding='utf-8')
+          run_old='''        runnable = [
+                      t for t in state.leaf_tasks
+                      if t.status in {TaskStatus.READY, TaskStatus.RUNNING, TaskStatus.RETRY}
+                  ]
+                  if runnable:
+                      state.metadata["autonomy_stall_cycles"] = 0
+                      # A previous bounded stall is historical once executable work exists again.
+                      # Keeping it in durable metadata caused the operator UI to report BLOQUEADO
+                      # even while a worker was actively executing a recovered continuity audit.
+                      state.metadata.pop("autonomy_stalled", None)
+                      return {"status": "work_available", "created": 0, "changed": 0}
+          '''
+          run_new='''        productive_runnable = [
+                      t for t in state.leaf_tasks
+                      if is_productive(t, state)
+                      and t.status in {TaskStatus.READY, TaskStatus.RUNNING, TaskStatus.RETRY}
+                  ]
+                  if productive_runnable:
+                      state.metadata["autonomy_stall_cycles"] = 0
+                      state.metadata.pop("autonomy_stalled", None)
+                      return {
+                          "status": "productive_work_available",
+                          "created": 0,
+                          "changed": 0,
+                          "productive_task_ids": [t.id for t in productive_runnable[:20]],
+                      }
+
+                  internal_runnable = [
+                      t for t in state.leaf_tasks
+                      if is_internal(t, state)
+                      and t.status in {TaskStatus.READY, TaskStatus.RUNNING, TaskStatus.RETRY}
+                  ]
+                  if internal_runnable:
+                      state.metadata["control_only_runtime_detected"] = {
+                          "ts": datetime.now(timezone.utc).isoformat(),
+                          "task_ids": [t.id for t in internal_runnable[:20]],
+                          "count": len(internal_runnable),
+                      }
+                      # Deliberately continue. A control-only queue must not suppress
+                      # productive reseeding/replanning for an unfinished objective.
+          '''
+          if run_old not in t:
+              raise SystemExit('autonomous loop runnable anchor missing')
+          loop.write_text(t.replace(run_old,run_new,1),encoding='utf-8')
+
+          # 3) All recovery/productivity guards share the same explicit epoch.
+          p=root/'ceo_core/productive_truth_v2.py'
+          t=p.read_text(encoding='utf-8')
+          old_block='''        recoveries_total = int(state.metadata.get("worker_recoveries", 0) or 0)
+                  meta = state.metadata.setdefault(self.KEY, {})
+                  prior_completed = int(meta.get("productive_watermark", completed))
+                  if completed > prior_completed:
+          '''
+          new_block=f'''        recoveries_total = int(state.metadata.get("worker_recoveries", 0) or 0)
+                  meta = state.metadata.setdefault(self.KEY, {{}})
+                  if meta.get("epoch") != "{epoch}":
+                      meta.update({{
+                          "epoch": "{epoch}",
+                          "productive_watermark": completed,
+                          "recoveries_at_watermark": recoveries_total,
+                          "historical_recoveries_before_epoch": recoveries_total,
+                      }})
+                  prior_completed = int(meta.get("productive_watermark", completed))
+                  if completed > prior_completed:
+          '''
+          if old_block not in t: raise SystemExit('productive truth epoch anchor missing')
+          t=t.replace(old_block,new_block,1)
+          old_migration='''        elif "productive_watermark" not in meta:
+                      # Migration must expose an already-stalled real project instead of hiding
+                      # its historical recovery count behind a fresh baseline.
+                      meta["productive_watermark"] = completed
+                      meta["recoveries_at_watermark"] = 0 if completed == 0 else recoveries_total
+          '''
+          new_migration='''        elif "productive_watermark" not in meta:
+                      meta["productive_watermark"] = completed
+                      meta["recoveries_at_watermark"] = recoveries_total
+          '''
+          if old_migration not in t: raise SystemExit('productive truth old migration missing')
+          p.write_text(t.replace(old_migration,new_migration,1),encoding='utf-8')
+
+          p=root/'ceo_core/recovery_budget_guard_v1.py'
+          t=p.read_text(encoding='utf-8')
+          old_block='''        meta = state.metadata.setdefault(self.KEY, {})
+                  initialized = "productive_watermark" in meta
+                  previous = int(meta.get("productive_watermark", completed))
+                  created_now = int(state.metadata.get("autonomy_recovery_tasks_created", 0) or 0)
+                  if not initialized:
+                      # Upgrade migration: existing historical churn must be visible once.
+                      # The next genuine productive completion starts a clean epoch.
+                      meta["productive_watermark"] = completed
+                      meta["recoveries_at_watermark"] = 0
+                      meta["migration_existing_recoveries"] = created_now
+                      meta["retired_excess_total"] = int(meta.get("retired_excess_total", 0))
+          '''
+          new_block=f'''        meta = state.metadata.setdefault(self.KEY, {{}})
+                  created_now = int(state.metadata.get("autonomy_recovery_tasks_created", 0) or 0)
+                  if meta.get("epoch") != "{epoch}":
+                      meta.update({{
+                          "epoch": "{epoch}",
+                          "productive_watermark": completed,
+                          "recoveries_at_watermark": created_now,
+                          "migration_existing_recoveries": created_now,
+                          "attempts_without_progress": 0,
+                          "budget_exhausted": False,
+                      }})
+                  initialized = "productive_watermark" in meta
+                  previous = int(meta.get("productive_watermark", completed))
+                  if not initialized:
+                      meta["productive_watermark"] = completed
+                      meta["recoveries_at_watermark"] = created_now
+                      meta["migration_existing_recoveries"] = created_now
+                      meta["retired_excess_total"] = int(meta.get("retired_excess_total", 0))
+          '''
+          if old_block not in t: raise SystemExit('recovery budget epoch anchor missing')
+          p.write_text(t.replace(old_block,new_block,1),encoding='utf-8')
+
+          p=root/'ceo_core/productive_progress_guard_v1.py'
+          t=p.read_text(encoding='utf-8')
+          old_block='''        meta = state.metadata.setdefault(self.KEY, {})
+                  previous_completed = int(meta.get("last_productive_completed", completed))
+                  if completed > previous_completed:
+          '''
+          new_block=f'''        meta = state.metadata.setdefault(self.KEY, {{}})
+                  if meta.get("epoch") != "{epoch}":
+                      meta.update({{
+                          "epoch": "{epoch}",
+                          "historical_ticks_before_epoch": int(meta.get("ticks", 0) or 0),
+                          "historical_no_progress_cycles_before_epoch": int(meta.get("no_progress_cycles", 0) or 0),
+                          "historical_control_only_cycles_before_epoch": int(meta.get("control_only_cycles", 0) or 0),
+                          "ticks": 0,
+                          "last_productive_completed": completed,
+                          "no_progress_cycles": 0,
+                          "control_only_cycles": 0,
+                          "stalled": False,
+                          "reason": "reliability epoch migrated",
+                      }})
+                  previous_completed = int(meta.get("last_productive_completed", completed))
+                  if completed > previous_completed:
+          '''
+          if old_block not in t: raise SystemExit('productive progress epoch anchor missing')
+          p.write_text(t.replace(old_block,new_block,1),encoding='utf-8')
+
+          p=root/'ceo_core/control_churn_circuit_breaker_v1.py'
+          t=p.read_text(encoding='utf-8')
+          if 'from datetime import datetime, timezone\n' not in t:
+              t=t.replace('from dataclasses import asdict, dataclass\n','from dataclasses import asdict, dataclass\nfrom datetime import datetime, timezone\n',1)
+          old='''        meta = state.metadata.setdefault(self.KEY, {})
+                  candidates = [t for t in state.leaf_tasks if is_internal(t, state) and not protected_human_gate(t)]
+          '''
+          new_block=f'''        meta = state.metadata.setdefault(self.KEY, {{}})
+                  if meta.get("epoch") != "{epoch}":
+                      meta.update({{
+                          "epoch": "{epoch}",
+                          "epoch_started_at": datetime.now(timezone.utc).isoformat(),
+                          "signature": "none",
+                          "repeated_signature_count": 0,
+                          "open": False,
+                      }})
+                      state.metadata.pop("control_plane_circuit_open", None)
+                  candidates = [t for t in state.leaf_tasks if is_internal(t, state) and not protected_human_gate(t)]
+          '''
+          if old not in t: raise SystemExit('control circuit epoch anchor missing')
+          t=t.replace(old,new_block,1)
+          old_recent='''        recent = list(state.metadata.get("activity_timeline", []) or [])[-100:]
+                  internal_events = [r for r in recent if str(r.get("kind") or "").lower() in {
+          '''
+          new_recent='''        epoch_started_at = str(meta.get("epoch_started_at") or "")
+                  recent = [
+                      r for r in list(state.metadata.get("activity_timeline", []) or [])[-200:]
+                      if not epoch_started_at or str(r.get("ts") or "") >= epoch_started_at
+                  ][-100:]
+                  internal_events = [r for r in recent if str(r.get("kind") or "").lower() in {
+          '''
+          if old_recent not in t: raise SystemExit('control circuit recent anchor missing')
+          p.write_text(t.replace(old_recent,new_recent,1),encoding='utf-8')
+
+          # RecoveryStormGuard also gets an explicit epoch so a pre-existing v1
+          # metadata row from 1.5.78 cannot preserve an open breaker.
+          p=root/'ceo_core/recovery_storm_guard_v1.py'
+          t=p.read_text(encoding='utf-8')
+          old='''        meta = state.metadata.setdefault(self.KEY, {})
+                  prior = int(meta.get("productive_watermark", completed) or 0)
+                  if "productive_watermark" not in meta:
+          '''
+          new_block=f'''        meta = state.metadata.setdefault(self.KEY, {{}})
+                  if meta.get("epoch") != "{epoch}":
+                      meta.update({{
+                          "epoch": "{epoch}",
+                          "productive_watermark": completed,
+                          "recoveries_at_watermark": total,
+                          "historical_recoveries_before_epoch": total,
+                          "recoveries_without_progress": 0,
+                          "open": False,
+                          "reason": "reliability epoch migrated",
+                      }})
+                      state.metadata.pop("recovery_storm_breaker", None)
+                      state.metadata.pop("recovery_storm_suppression_owner", None)
+                  prior = int(meta.get("productive_watermark", completed) or 0)
+                  if "productive_watermark" not in meta:
+          '''
+          if old not in t: raise SystemExit('storm epoch anchor missing')
+          p.write_text(t.replace(old,new_block,1),encoding='utf-8')
+
+          # Version identity.
+          for rel in ['scripts/ceo_stdlib_work_mode.py','scripts/install_windows_bootstrap.py']:
+              p=root/rel
+              tt=p.read_text(encoding='utf-8')
+              if old in tt:
+                  tt=tt.replace(old,new)
+              if '1.5.78-rc1-reliable-update-handoff' in tt:
+                  tt=tt.replace('1.5.78-rc1-reliable-update-handoff',new)
+              p.write_text(tt,encoding='utf-8')
+
+          contract_path=root/'CEO_UPDATE_PACKAGE.json'
+          c=json.loads(contract_path.read_text(encoding='utf-8'))
+          c['app_version']=new
+          hashes=dict(c.get('file_hashes') or {})
+          for rel in list(hashes):
+              fp=root/rel
+              if not fp.is_file(): raise SystemExit(f'missing hashed path {rel}')
+              hashes[rel]=hashlib.sha256(fp.read_bytes()).hexdigest()
+          c['file_hashes']=hashes
+          contract_path.write_text(json.dumps(c,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          PY
+
+      - name: Install candidate dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q -e /tmp/dev303
+
+      - name: Run inherited regressions and security audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/dev303
+          export PYTHONPATH="$PWD"
+          python -m compileall -q .
+          python scripts/dev292_recovery_failclosed_qualification.py
+          python scripts/dev294_internal_update_pipeline_qualification.py
+          python scripts/dev295_update_confirm_qualification.py
+          python scripts/security_audit.py
+
+      - name: Reproduce 663-recovery control-only field loop
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/dev303
+          export PYTHONPATH="$PWD"
+          python - <<'PY'
+          from ceo_core.models import ProjectState,Task,TaskStatus
+          from ceo_core.scheduler import _apply_reliability_epoch_migration, RELIABILITY_EPOCH
+          from ceo_core.productive_truth_v2 import ProductiveTruthV2
+          from ceo_core.recovery_budget_guard_v1 import RecoveryBudgetGuardV1
+          from ceo_core.productive_progress_guard_v1 import ProductiveProgressGuardV1
+          from ceo_core.control_churn_circuit_breaker_v1 import ControlChurnCircuitBreakerV1
+          from ceo_core.recovery_storm_guard_v1 import RecoveryStormGuardV1
+          from ceo_core.autonomous_loop import AutonomousProjectLoop
+          from ceo_core.task_roles_v2 import is_productive,is_internal
+
+          s=ProjectState(goal='Make CEO autonomously productive')
+          # Simulate old real work already completed plus one poisoned internal control item.
+          for i in range(3):
+              t=Task(title=f'productive done {i}',status=TaskStatus.COMPLETE,metadata={'task_role':'productive'})
+              s.tasks[t.id]=t;s.root_task_ids.append(t.id)
+          ctrl=Task(
+              title='Goal continuity audit #88: plan the next autonomous work batch',
+              status=TaskStatus.BLOCKED,attempts=6,max_attempts=6,
+              metadata={
+                  'goal_continuity_audit':True,'control_plane_atomic':True,
+                  'blocked_safe':True,'manual_release_required':True,
+                  'blocked_safe_source':'scheduler_dispatch_guard',
+                  'blocked_safe_reason':'global_recovery_storm_breaker_open',
+              }
+          )
+          s.tasks[ctrl.id]=ctrl;s.root_task_ids.append(ctrl.id)
+          s.metadata['worker_recoveries']=663
+          s.metadata['autonomy_recovery_tasks_created']=221
+          s.metadata['operator_productivity_state']='BLOQUEADO'
+          s.metadata['recovery_storm_breaker']={'open':True,'recoveries_without_progress':663}
+          s.metadata['control_plane_recovery_budget_exhausted']={'attempts_without_progress':221}
+          s.metadata['control_plane_circuit_open']={'events':99}
+          s.metadata['productive_stall_escape_required']=True
+          s.metadata['productive_truth_v2']={'productive_watermark':3,'recoveries_at_watermark':0}
+          s.metadata['recovery_budget_guard_v1']={'productive_watermark':3,'recoveries_at_watermark':0,'budget_exhausted':True}
+          s.metadata['productive_progress_guard_v1']={'ticks':900,'no_progress_cycles':800,'control_only_cycles':700,'stalled':True}
+          s.metadata['control_churn_circuit_breaker_v1']={'signature':'old','repeated_signature_count':99,'open':True}
+          s.metadata['recovery_storm_guard_v1']={'productive_watermark':3,'recoveries_at_watermark':0,'open':True}
+          s.metadata['activity_timeline']=[
+              {'ts':'2026-09-19T12:00:00+00:00','kind':'worker_watchdog_recovery','title':'old recovery'}
+              for _ in range(100)
+          ]
+
+          report=_apply_reliability_epoch_migration(s)
+          assert report['changed'] is True
+          assert s.metadata['reliability_epoch_v1']['epoch']==RELIABILITY_EPOCH
+          assert ctrl.status==TaskStatus.SUPERSEDED
+          assert ctrl.metadata['blocked_safe'] is True  # evidence preserved
+          assert ctrl.metadata['superseded_reason']=='reliability_epoch_migration_stale_internal_control'
+
+          truth=ProductiveTruthV2().assess(s)
+          budget=RecoveryBudgetGuardV1().apply(s)
+          progress=ProductiveProgressGuardV1().assess(s)
+          circuit=ControlChurnCircuitBreakerV1().apply(s,productive_stalled=progress.stalled)
+          storm=RecoveryStormGuardV1(global_trip=8,per_task_trip=4,repeat_trip=2).assess(s)
+
+          assert truth.worker_recoveries==0 and truth.stalled is False,truth
+          assert budget.recovery_events==0 and budget.budget_exhausted is False,budget
+          assert progress.no_progress_cycles<=1 and progress.control_only_cycles==0,progress
+          assert circuit.open is False,circuit
+          assert storm.recoveries_without_progress==0 and storm.open is False,storm
+
+          # A second call/restart must NOT reset the epoch again.
+          s.metadata['worker_recoveries']=665
+          again=_apply_reliability_epoch_migration(s)
+          assert again['changed'] is False
+          truth2=ProductiveTruthV2().assess(s)
+          assert truth2.worker_recoveries==2,truth2
+
+          # A READY internal control item alone must NOT be mistaken for productive work.
+          c2=Task(title='Internal control only',status=TaskStatus.READY,metadata={'control_plane_atomic':True})
+          s.tasks[c2.id]=c2;s.root_task_ids.append(c2.id)
+          assert is_internal(c2,s)
+          assert not is_productive(c2,s)
+          loop=AutonomousProjectLoop()
+          result=loop.ensure_progress(s)
+          assert result.get('status')!='work_available',result
+          assert s.metadata.get('control_only_runtime_detected'),result
+
+          print('DEV303_FIELD_LOOP_REGRESSION_PASS')
+          print({
+              'historical_worker_recoveries':663,
+              'current_epoch_recoveries':truth.worker_recoveries,
+              'budget_events':budget.recovery_events,
+              'storm_open':storm.open,
+              'circuit_open':circuit.open,
+              'retired_stale_internal':report['retired'],
+              'ensure_progress_status':result.get('status'),
+          })
+          PY
+
+      - name: Check scheduler progress-kick semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/dev303
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('ceo_core/scheduler.py').read_text()
+          a=Path('ceo_core/autonomous_loop.py').read_text()
+          assert 'not any(t.status == TaskStatus.READY for t in self.state.leaf_tasks)' not in s
+          assert 'is_productive(t, self.state)' in s
+          assert 'productive_runnable = [' in a
+          assert 'control_only_runtime_detected' in a
+          print('DEV303_PROGRESS_KICK_SEMANTICS_PASS')
+          PY
+
+      - name: Build deterministic package and qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,pathlib,zipfile
+          root=pathlib.Path('/tmp/dev303')
+          u=pathlib.Path('ceo-updates')
+          version='1.5.79-rc1-productive-resume-gate'
+          artifact=f'CEO_{version}.zip'
+          out=u/artifact
+          c=json.loads((root/'CEO_UPDATE_PACKAGE.json').read_text(encoding='utf-8'))
+          required=sorted(c['required_paths'])
+          fixed=(2026,9,20,15,45,0)
+          with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for rel in required:
+                  p=root/rel
+                  assert p.is_file(),rel
+                  info=zipfile.ZipInfo(rel,date_time=fixed)
+                  info.create_system=0;info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0
+                  z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          data=out.read_bytes();sha=hashlib.sha256(data).hexdigest();size=len(data)
+          with zipfile.ZipFile(out) as z:
+              assert z.testzip() is None
+              assert set(z.namelist())==set(required)
+          manifest={
+              'artifact_name':artifact,'channel':'stable','data_schema_version':1,
+              'health_path':'/api/health','launcher':'ABRIR_CEO.cmd','manifest_version':2,
+              'max_app_version':'','min_app_version':'1.5.78-rc1-reliable-update-handoff',
+              'notes':'DEV303 Productive Resume Gate: coherent reliability epoch migration, historical recovery isolation, stale internal control retirement, productive-only liveness gating, and explicit control-only deadlock escape.',
+              'package_contract_version':1,'published_at':'2026-09-20T15:45:00Z',
+              'release_id':'dev303-1.5.79-rc1-productive-resume-gate','release_sequence':303,
+              'release_status':'release','sha256':sha,'signature_alg':'ed25519',
+              'size_bytes':size,
+              'url':f'https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/{artifact}',
+              'version':version
+          }
+          qual={
+              'candidate':version,'base':'1.5.78-rc1-reliable-update-handoff',
+              'release_sequence':303,'tests_passed':True,'clean_extract_passed':True,
+              'package_contract_passed':True,'security_passed':True,'failed_tests':0,'security_findings':0,
+              'field_663_recovery_regression_passed':True,'productive_only_liveness_gate_passed':True,
+              'reliability_epoch_restart_persistence_passed':True,'stale_internal_control_retirement_passed':True,
+              'local_candidate_ready':True,'windows_physical_verified':False,'production_ready':False,
+              'operator_install_confirmation_required':True,
+              'artifact':{'name':artifact,'sha256':sha,'size_bytes':size,'entries':len(required)}
+          }
+          (u/'DEV303_MANIFEST_UNSIGNED.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          (u/'DEV303_QUALIFICATION.json').write_text(json.dumps(qual,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          print(json.dumps(qual,indent=2))
+          PY
+
+      - name: Commit prepared DEV303 only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "CEO Release Engineering"
+          git config user.email "ceo-release@local.invalid"
+          git add ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip ceo-updates/DEV303_MANIFEST_UNSIGNED.json ceo-updates/DEV303_QUALIFICATION.json
+          git commit -m "Stage DEV303 productive resume gate"
+          git push origin HEAD:ceo-update-channel
