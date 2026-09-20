@@ -17,5 +17,9 @@
   "scheduler_survives_provider_unavailable": true,
   "security_passed": true,
   "tests_passed": true,
-  "windows_physical_verified": false
+  "windows_physical_verified": true,
+  "windows_stage_preflight_passed": true,
+  "windows_provider_semantics_smoke_passed": true,
+  "internal_release_trigger_verified": true,
+  "production_ready_reason": "Awaiting operator-approved installation and field validation on the user's Windows host."
 }
