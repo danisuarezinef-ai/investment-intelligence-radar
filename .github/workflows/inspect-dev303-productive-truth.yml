@@ -1,0 +1,33 @@
+name: Inspect DEV303 productive truth exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev303-productive-truth.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print truth/watchdog/observability exact
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp179
+          mkdir -p tmp179
+          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d tmp179
+          echo '=== productive_truth_v2 ==='
+          cat tmp179/ceo_core/productive_truth_v2.py
+          echo '=== useful_output_watchdog_v2 ==='
+          cat tmp179/ceo_core/useful_output_watchdog_v2.py
+          echo '=== observability relevant ==='
+          sed -n '80,165p' tmp179/ceo_core/observability.py
+          echo '=== autonomous ensure_progress full ==='
+          sed -n '300,700p' tmp179/ceo_core/autonomous_loop.py
