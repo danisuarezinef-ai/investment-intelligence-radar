@@ -1,0 +1,31 @@
+name: Inspect DEV295 stop handoff
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev295-stop-handoff.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect engine stop handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp295
+          mkdir -p tmp295
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d tmp295
+          sed -n '310,390p' tmp295/scripts/ceo_stdlib_work_mode.py
+          echo '=== catalog list/register ==='
+          sed -n '1,150p' tmp295/ceo_core/project_catalog.py
+          echo '=== store resume ==='
+          sed -n '80,125p' tmp295/ceo_core/store.py
+          sed -n '170,205p' tmp295/ceo_core/sqlite_store.py
