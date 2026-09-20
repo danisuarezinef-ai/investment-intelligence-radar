@@ -1,0 +1,33 @@
+name: Inspect CEO 1.5.58 launcher runtime
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-ceo-1558-launcher-runtime.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print launcher/runtime metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558
+          mkdir -p tmp1558
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          echo '=== ABRIR_CEO.cmd ==='
+          sed -n '1,220p' tmp1558/ABRIR_CEO.cmd || true
+          echo '=== launch_current.py ==='
+          sed -n '1,280p' tmp1558/scripts/launch_current.py || true
+          echo '=== contract ==='
+          cat tmp1558/CEO_UPDATE_PACKAGE.json
+          echo '=== python launch references ==='
+          grep -RInE 'python|pythonw|py.exe|venv|runtime' tmp1558/ABRIR_CEO.cmd tmp1558/scripts/launch_current.py tmp1558/scripts/install_windows_bootstrap.py | head -n 300 || true
