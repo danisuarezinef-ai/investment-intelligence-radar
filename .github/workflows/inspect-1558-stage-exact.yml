@@ -1,0 +1,29 @@
+name: Inspect 1.5.58 stage exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1558-stage-exact.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect stage exact
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558
+          mkdir -p tmp1558
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          grep -n "def stage_latest" tmp1558/ceo_core/in_app_updater.py
+          start=$(grep -n "def stage_latest" tmp1558/ceo_core/in_app_updater.py | head -1 | cut -d: -f1)
+          end=$((start+220))
+          sed -n "${start},${end}p" tmp1558/ceo_core/in_app_updater.py
