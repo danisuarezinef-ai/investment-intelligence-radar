@@ -1,0 +1,33 @@
+name: Inspect DEV302 productive role imports and ensure-progress head
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-role-imports.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect exact imports and runnable branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== scheduler imports ==='
+          sed -n '1,170p' tmp302/ceo_core/scheduler.py
+          echo '=== autonomous loop imports ==='
+          sed -n '1,110p' tmp302/ceo_core/autonomous_loop.py
+          echo '=== ensure progress 270-345 ==='
+          sed -n '270,345p' tmp302/ceo_core/autonomous_loop.py
+          echo '=== task roles ==='
+          cat tmp302/ceo_core/task_roles_v2.py
