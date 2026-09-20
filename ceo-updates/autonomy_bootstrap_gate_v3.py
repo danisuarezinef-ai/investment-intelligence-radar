@@ -24,6 +24,23 @@ def configure_engine(engine, provider):
     engine._router = lambda: gate1.FixedWorkerRouter(provider)
 
 
+def mark_gate_provider_available(engine, provider):
+    configure_engine(engine, provider)
+    state = engine.state
+    if state is None:
+        return
+    state.metadata.pop("execution_disabled_reason", None)
+    state.metadata.pop("provider_wait_v1", None)
+    for task in state.leaf_tasks:
+        if task.metadata.pop("waiting_provider_v1", None) is not None:
+            task.metadata.pop("retry_after_ts", None)
+            if task.status == TaskStatus.BLOCKED:
+                task.status = TaskStatus.WAITING
+    if engine.scheduler is not None:
+        engine.scheduler.router = gate1.FixedWorkerRouter(provider)
+        engine.scheduler.graph.refresh(state)
+
+
 def state_metrics(state):
     return {
         "project_id": state.id,
@@ -104,6 +121,13 @@ def main() -> int:
     assert engine2.state.goal == original_goal, "restored goal changed"
     assert engine2.state.completed_at is None, "project falsely completed during restart"
     print("RESTART_GATE_RESTORED", json.dumps(restored, default=str))
+
+    # The restart gate models a provider that is available after process restart.
+    # A clean CI profile has no persisted Gemini credential, so _initialize()
+    # correctly places the project in provider-wait. Clear that synthetic wait
+    # exactly as provider revalidation would before testing scheduler resume.
+    mark_gate_provider_available(engine2, provider2)
+    engine2.projects.store(engine2.state.id).save(engine2.state)
 
     # Ensure the restored runtime uses the deterministic gate router and resumes.
     engine2.call(engine2._ensure_scheduler_health(), timeout=20)
