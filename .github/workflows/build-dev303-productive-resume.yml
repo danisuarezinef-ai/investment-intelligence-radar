@@ -423,6 +423,17 @@ jobs:
           if old not in t: raise SystemExit('storm epoch anchor missing')
           p.write_text(t.replace(old,new_block,1),encoding='utf-8')
 
+          # 4) Missing Windows release-signing credential is a local capability
+          # absence, never a global CEO startup failure. Preserve Win32 last-error
+          # correctly so CredReadW(ERROR_NOT_FOUND=1168) returns None as designed.
+          cred=root/'ceo_core/credentials.py'
+          tt=cred.read_text(encoding='utf-8')
+          cred_old='self.advapi = ctypes.windll.advapi32'
+          cred_new='self.advapi = ctypes.WinDLL("advapi32", use_last_error=True)'
+          if tt.count(cred_old) != 1:
+              raise SystemExit(f'credential manager advapi anchor count={tt.count(cred_old)}')
+          cred.write_text(tt.replace(cred_old,cred_new,1),encoding='utf-8')
+
           # Version identity.
           for rel in ['scripts/ceo_stdlib_work_mode.py','scripts/install_windows_bootstrap.py']:
               p=root/rel
@@ -606,7 +617,7 @@ jobs:
               'artifact_name':artifact,'channel':'stable','data_schema_version':1,
               'health_path':'/api/health','launcher':'ABRIR_CEO.cmd','manifest_version':2,
               'max_app_version':'','min_app_version':'1.5.78-rc1-reliable-update-handoff',
-              'notes':'DEV303 Productive Resume Gate: coherent reliability epoch migration, historical recovery isolation, stale internal control retirement, productive-only liveness gating, and explicit control-only deadlock escape.',
+              'notes':'DEV303 Productive Resume Gate: coherent reliability epoch migration, historical recovery isolation, stale internal control retirement, productive-only liveness gating, explicit control-only deadlock escape, and fail-open startup when the optional local release signer is unavailable.',
               'package_contract_version':1,'published_at':'2026-09-20T15:45:00Z',
               'release_id':'dev303-1.5.79-rc1-productive-resume-gate','release_sequence':303,
               'release_status':'release','sha256':sha,'signature_alg':'ed25519',
@@ -619,7 +630,7 @@ jobs:
               'release_sequence':303,'tests_passed':True,'clean_extract_passed':True,
               'package_contract_passed':True,'security_passed':True,'failed_tests':0,'security_findings':0,
               'field_663_recovery_regression_passed':True,'productive_only_liveness_gate_passed':True,
-              'reliability_epoch_restart_persistence_passed':True,'stale_internal_control_retirement_passed':True,
+              'reliability_epoch_restart_persistence_passed':True,'stale_internal_control_retirement_passed':True,'missing_signer_does_not_block_ceo':True,
               'local_candidate_ready':True,'windows_physical_verified':False,'production_ready':False,
               'operator_install_confirmation_required':True,
               'artifact':{'name':artifact,'sha256':sha,'size_bytes':size,'entries':len(required)}
