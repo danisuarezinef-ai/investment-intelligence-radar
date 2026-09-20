@@ -30,7 +30,7 @@ jobs:
           unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d /tmp/dev304
 
           python - <<'PY'
-          import hashlib, json, pathlib
+          import hashlib, json, pathlib, re
           root=pathlib.Path('/tmp/dev304')
           old_version='1.5.79-rc1-productive-resume-gate'
           new_version='1.5.80-rc1-provider-resilience'
@@ -85,11 +85,17 @@ jobs:
           p=root/'ceo_core/scheduler.py'
           t=p.read_text(encoding='utf-8')
 
-          progress_anchor='and not any(\n                    is_productive(t, self.state)'
-          progress_new='and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))\n                and not any(\n                    is_productive(t, self.state)'
-          if t.count(progress_anchor)!=1:
-              raise SystemExit(f'progress-kick provider-wait anchor count={t.count(progress_anchor)}')
-          t=t.replace(progress_anchor,progress_new,1)
+          progress_pattern = r'(?m)^(\\s*)and not any\\(\\n(\\s*)is_productive\\(t, self\\.state\\)'
+          matches=list(re.finditer(progress_pattern,t))
+          if len(matches)!=1:
+              raise SystemExit(f'progress-kick provider-wait anchor count={len(matches)}')
+          m=matches[0]
+          progress_new=(
+              f'{m.group(1)}and not bool((self.state.metadata.get("provider_wait_v1") or {{}}).get("active"))\\n'
+              f'{m.group(1)}and not any(\\n'
+              f'{m.group(2)}is_productive(t, self.state)'
+          )
+          t=t[:m.start()]+progress_new+t[m.end():]
 
           exc_anchor='''        except Exception as exc:  # noqa: BLE001 - scheduler isolates worker failure
                   task.metadata["provider_stage"] = "failed"
