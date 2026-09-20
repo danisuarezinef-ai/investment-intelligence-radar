@@ -1,0 +1,39 @@
+name: Inspect 1.5.82 quality rejection orphan path
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1582-quality-orphan-path.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Exact path
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp182
+          mkdir -p tmp182
+          unzip -q ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip -d tmp182
+          echo '=== scheduler 980-1065 ==='
+          sed -n '980,1065p' tmp182/ceo_core/scheduler.py
+          echo '=== scheduler task runner signature/start/end ==='
+          grep -n "async def _run" tmp182/ceo_core/scheduler.py
+          start=$(grep -n "async def _run" tmp182/ceo_core/scheduler.py|head -1|cut -d: -f1); sed -n "${start},$((start+520))p" tmp182/ceo_core/scheduler.py | tail -n 120
+          echo '=== WorkerRecoverySupervisor only ==='
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tmp182/ceo_core/operational_resilience.py')
+          s=p.read_text()
+          a=s.index('class WorkerRecoverySupervisor')
+          b=s.find('\nclass ',a+10)
+          print(s[a:b if b>0 else None])
+          PY
