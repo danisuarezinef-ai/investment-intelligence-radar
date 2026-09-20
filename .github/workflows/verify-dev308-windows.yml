@@ -1,0 +1,143 @@
+name: Verify DEV308 on Windows with 1.5.83 updater
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev308-windows.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Extract current updater and DEV308 candidate
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force tmp183,tmp184 -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory tmp183 | Out-Null
+          New-Item -ItemType Directory tmp184 | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.83-rc1-autonomy-runtime-integrity.zip tmp183
+          Expand-Archive ceo-updates/CEO_1.5.84-rc1-executable-route-integrity.zip tmp184
+          python -m pip install --disable-pip-version-check -q -e .\tmp183
+
+      - name: Stage and preflight exact DEV308 package
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH=(Resolve-Path .\tmp183).Path
+          @'
+          import dataclasses, hashlib, json, pathlib, sys, tempfile, time
+          from ceo_core.in_app_updater import InAppUpdater, UpdateManifest
+
+          repo=pathlib.Path.cwd()
+          manifest=json.loads((repo/'ceo-updates/DEV308_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+          artifact=repo/'ceo-updates/CEO_1.5.84-rc1-executable-route-integrity.zip'
+          data=artifact.read_bytes()
+          assert hashlib.sha256(data).hexdigest()==manifest['sha256']
+          assert len(data)==manifest['size_bytes']
+
+          manifest['url']=artifact.resolve().as_uri()
+          allowed={f.name for f in dataclasses.fields(UpdateManifest)}
+          m=UpdateManifest(**{k:v for k,v in manifest.items() if k in allowed})
+
+          with tempfile.TemporaryDirectory(prefix='ceo-dev308-win-') as td:
+              u=InAppUpdater(data_root=td)
+              t=time.perf_counter()
+              row=u.stage(m)
+              stage_s=time.perf_counter()-t
+              assert row['version']=='1.5.84-rc1-executable-route-integrity',row
+              assert row.get('contract_verified') is True,row
+              assert u.progress().get('phase')=='ready_to_install',u.progress()
+
+              t=time.perf_counter()
+              pre=u.preflight_staged(row['version'],python_executable=sys.executable,timeout=60)
+              pre_s=time.perf_counter()-t
+              assert pre.get('ok') is True,pre
+
+              print(json.dumps({
+                  'windows_stage_pass':True,
+                  'windows_preflight_pass':True,
+                  'stage_seconds':stage_s,
+                  'preflight_seconds':pre_s,
+                  'version':row['version'],
+                  'contract_verified':row.get('contract_verified'),
+                  'file_count':row.get('file_count'),
+                  'preflight':pre,
+              },indent=2,default=str))
+          '@ | Set-Content -Encoding UTF8 verify308.py
+          python verify308.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV308 Windows stage/preflight failed" }
+
+      - name: Windows executable-route field-shape regression
+        shell: pwsh
+        run: |
+          $root=(Resolve-Path .\tmp184).Path
+          $env:CEO_DEV308_BUILD_ROOT=$root
+          $env:PYTHONPATH=$root
+          python ceo-updates\qualify_dev308_executable_route_integrity.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV308 Windows field-shape regression failed" }
+
+      - name: Exact source semantics smoke
+        shell: pwsh
+        run: |
+          @'
+          from pathlib import Path
+
+          root=Path('tmp184')
+          truth=(root/'ceo_core/productive_truth_v2.py').read_text(encoding='utf-8')
+          fuse=(root/'ceo_core/recovery_churn_fuse_v2.py').read_text(encoding='utf-8')
+          watchdog=(root/'ceo_core/useful_output_watchdog_v2.py').read_text(encoding='utf-8')
+          scheduler=(root/'ceo_core/scheduler.py').read_text(encoding='utf-8')
+          decomposer=(root/'ceo_core/decomposer.py').read_text(encoding='utf-8')
+
+          assert 'and not running and ready == 0' in truth
+          assert "pop('suppress_new_internal_recovery',None)" in fuse
+          assert "fallback_action" not in watchdog or "'executable_route'" in watchdog
+          assert "'executable_route'" in watchdog
+          assert 'dev308-executable-route-integrity-v1' in scheduler
+          assert 'single_explicit_file' in decomposer
+          assert 'len(text) <= 1200' in decomposer
+
+          print('DEV308_WINDOWS_EXECUTABLE_ROUTE_SEMANTICS_PASS')
+          '@ | Set-Content -Encoding UTF8 smoke308.py
+          python smoke308.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV308 Windows semantics smoke failed" }
+
+      - name: Record Windows qualification
+        shell: pwsh
+        run: |
+          @'
+          import json, pathlib
+          p=pathlib.Path('ceo-updates/DEV308_QUALIFICATION.json')
+          q=json.loads(p.read_text(encoding='utf-8'))
+          q['windows_stage_preflight_passed']=True
+          q['windows_exact_field_shape_regression_passed']=True
+          q['windows_executable_route_semantics_smoke_passed']=True
+          q['field_validation_pending']=True
+          q['production_ready']=False
+          q['production_ready_reason']=(
+              'Awaiting operator-approved installation on the real Windows host and '
+              'continuation of the existing 73.3% Autonomy Gate project.'
+          )
+          p.write_text(json.dumps(q,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          '@ | Set-Content -Encoding UTF8 record308.py
+          python record308.py
+
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/DEV308_QUALIFICATION.json
+          git commit -m "Record DEV308 Windows preflight qualification"
+          git push origin HEAD:ceo-update-channel
