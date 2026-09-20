@@ -1,0 +1,31 @@
+name: Inspect DEV302 fallback after inherited stall
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-fallback-after-stall.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect fallback and circuit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== fallback ==='
+          cat tmp302/ceo_core/productive_fallback_orchestrator_v1.py
+          echo '=== control circuit ==='
+          cat tmp302/ceo_core/control_churn_circuit_breaker_v1.py
+          echo '=== progress guard ==='
+          cat tmp302/ceo_core/productive_progress_guard_v1.py
