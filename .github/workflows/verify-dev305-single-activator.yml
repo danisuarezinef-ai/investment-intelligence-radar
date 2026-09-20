@@ -53,8 +53,9 @@ jobs:
         shell: cmd
         env:
           CEO_ACTIVATOR_NO_BROWSER: "1"
+          CEO_ACTIVATOR_NO_PAUSE: "1"
         run: |
-          (echo.) | call ceo-updates\ACTIVAR_DEV305_1_5_81_UNICO.cmd
+          call ceo-updates\ACTIVAR_DEV305_1_5_81_UNICO.cmd
           if errorlevel 1 exit /b %errorlevel%
 
       - name: Verify request and log
