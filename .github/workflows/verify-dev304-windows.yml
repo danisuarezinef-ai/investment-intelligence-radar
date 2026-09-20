@@ -87,7 +87,7 @@ jobs:
           spec=importlib.util.spec_from_file_location('wm180',p)
           m=importlib.util.module_from_spec(spec)
           spec.loader.exec_module(m)
-          engine=m.CEOEngine()
+          engine=m.CEOEngine('')
           try:
               snap=engine.call(engine.snapshot(),timeout=30)
               assert snap is not None
