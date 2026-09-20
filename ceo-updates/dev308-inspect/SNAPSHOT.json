@@ -32,9 +32,17 @@
       "sha256": "78677febb0e19c0ca84d61cc40336af3c0558e1e1f16bb37a69df6fd7b10b5b3",
       "size": 2734
     },
+    "recovery_churn_fuse_v2.py": {
+      "sha256": "53ef3c37337a48257123ec0b039eb59e486eec60476bfaaa60d8afc01110b30e",
+      "size": 1903
+    },
     "replanning.py": {
       "sha256": "869cbf0159cd1ad39cc487e9f055196123c40a3fdac43deccccdbfec7a1ff82d",
       "size": 8700
+    },
+    "scheduler.py": {
+      "sha256": "18149799187481a1b0f70a54e168591d6164598e412bc1360079954a867c68dd",
+      "size": 118854
     },
     "scheduler_reconciler_v1.py": {
       "sha256": "7360c9260fda0c2794340a95c75db89e350213810027dd989f7f3ebe99257754",
