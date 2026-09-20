@@ -1,0 +1,33 @@
+name: Inspect DEV295 state and scheduler loop
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev295-state-loop.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect state and loop
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp295
+          mkdir -p tmp295
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d tmp295
+          echo '=== models ==='
+          sed -n '1,280p' tmp295/ceo_core/models.py
+          echo '=== scheduler loop ==='
+          sed -n '230,390p' tmp295/ceo_core/scheduler.py
+          echo '=== scheduler stop ==='
+          sed -n '220,275p' tmp295/ceo_core/scheduler.py
+          echo '=== project persistence ==='
+          grep -RInE 'class .*Project|prepare_for_resume|set_active|active_project|touch\(' tmp295/ceo_core --include='*.py' | head -n 500
