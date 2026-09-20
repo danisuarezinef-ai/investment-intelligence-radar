@@ -1,0 +1,41 @@
+name: Inspect DEV304 final one-percent closure
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev304-final-one-percent.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect final closure exact
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp180
+          mkdir -p tmp180
+          unzip -q ceo-updates/CEO_1.5.80-rc1-provider-resilience.zip -d tmp180
+
+          echo '=== scheduler 620-710 ==='
+          sed -n '620,710p' tmp180/ceo_core/scheduler.py
+
+          echo '=== autonomous loop 300-470 ==='
+          sed -n '300,470p' tmp180/ceo_core/autonomous_loop.py
+
+          echo '=== productive truth full ==='
+          cat tmp180/ceo_core/productive_truth_v2.py
+
+          echo '=== fallback router/rebuilder ==='
+          cat tmp180/ceo_core/failure_cause_router_v1.py
+          cat tmp180/ceo_core/blocked_unit_rebuilder_v2.py
+
+          echo '=== goal audit/completion references ==='
+          grep -RInE 'goal_audit_passed|require_goal_audit|completed_at|depth_percent.*99|99.*depth_percent|goal completion|completion gate' tmp180/ceo_core tmp180/scripts --include='*.py' | head -n 1500 || true
