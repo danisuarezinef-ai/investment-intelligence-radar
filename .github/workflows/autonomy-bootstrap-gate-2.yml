@@ -1,0 +1,44 @@
+name: Autonomy Bootstrap Gate 2 Consecutive Goals
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/autonomy-bootstrap-gate-2.yml'
+      - 'ceo-updates/autonomy_bootstrap_gate_v2.py'
+      - 'ceo-updates/autonomy_bootstrap_gate_v1.py'
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract candidate
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'ceo181'
+          Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip $root
+          python -m pip install --disable-pip-version-check -q -e $root
+      - name: Run five consecutive autonomous goals
+        shell: pwsh
+        env:
+          CEO_GATE_ROOT: ${{ runner.temp }}\ceo181
+          CEO_GATE_ARTIFACTS: ${{ runner.temp }}\ceo-autonomy-gate-artifacts
+          CEO_NO_BROWSER: "1"
+          LOCALAPPDATA: ${{ runner.temp }}\ceo-gate-localappdata
+          APPDATA: ${{ runner.temp }}\ceo-gate-appdata
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
+          python ceo-updates/autonomy_bootstrap_gate_v2.py
