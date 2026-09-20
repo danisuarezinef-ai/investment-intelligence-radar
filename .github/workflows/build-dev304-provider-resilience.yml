@@ -98,87 +98,84 @@ jobs:
           sched_lines.insert(i, indent+'and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))')
           t='\\n'.join(sched_lines)+'\\n'
 
-          exc_anchor='''        except Exception as exc:  # noqa: BLE001 - scheduler isolates worker failure
-                  task.metadata["provider_stage"] = "failed"
-          '''
-          exc_new='''        except Exception as exc:  # noqa: BLE001 - scheduler isolates worker failure
-                  provider_decision = self.provider_resilience_v2.classify(str(exc), max(1, int(task.attempts)))
-                  wait_categories = {"quota", "provider_unavailable", "model_unavailable", "transient"}
-                  if provider_decision.category in wait_categories:
-                      retry_seconds = max(30, int(provider_decision.retry_after_seconds or 0))
-                      if provider_decision.category == "quota":
-                          retry_seconds = max(300, retry_seconds)
-                      retry_at = time.time() + retry_seconds
-                      task.status = TaskStatus.BLOCKED
-                      # A provider outage/quota denial is not a failed task attempt.
-                      task.attempts = max(0, int(task.attempts) - 1)
-                      task.worker_id = None
-                      task.result = (
-                          f"WAITING_PROVIDER: {provider_decision.category}; "
-                          f"retry in {retry_seconds}s. No recovery budget consumed."
-                      )
-                      task.metadata["provider_stage"] = "waiting_provider"
-                      task.metadata["provider_stage_ts"] = utcnow().isoformat()
-                      task.metadata["provider_resilience_v2"] = provider_decision.to_dict()
-                      task.metadata["waiting_provider_v1"] = {
-                          "active": True,
-                          "category": provider_decision.category,
-                          "provider": provider_name,
-                          "retry_after_seconds": retry_seconds,
-                          "retry_after_ts": retry_at,
-                          "error": f"{type(exc).__name__}: {exc}"[:1000],
-                          "since": utcnow().isoformat(),
-                      }
-                      task.metadata["retry_after_ts"] = retry_at
-                      wait = self.state.metadata.setdefault("provider_wait_v1", {})
-                      task_ids = list(dict.fromkeys(list(wait.get("task_ids") or []) + [task.id]))
-                      wait.update({
-                          "active": True,
-                          "category": provider_decision.category,
-                          "provider": provider_name,
-                          "retry_after_seconds": retry_seconds,
-                          "retry_after_ts": retry_at,
-                          "task_ids": task_ids[-100:],
-                          "reason": str(exc)[:1000],
-                          "updated_at": utcnow().isoformat(),
-                          "recoveries_consumed": 0,
-                      })
-                      if provider_name:
-                          self.provider_policy.record_failure(
-                              self.state,
-                              provider_name,
-                              rate_limited=provider_decision.category == "quota",
-                          )
-                      self.decision_trace_v3.append(
-                          self.state,
-                          "provider_wait",
-                          task=task,
-                          data={"provider": provider_name, **provider_decision.to_dict()},
-                      )
-                      self.evidence_ledger_v2.append(
-                          self.state,
-                          "provider_wait",
-                          task=task,
-                          data={
-                              "provider": provider_name,
-                              "category": provider_decision.category,
-                              "retry_after_seconds": retry_seconds,
-                              "recovery_budget_consumed": False,
-                          },
-                      )
-                      self._activity_event(
-                          "provider_wait",
-                          task,
-                          provider=provider_name,
-                          detail=f"{provider_decision.category}: espera acotada de proveedor; no cuenta como recuperación",
-                      )
-                      return
-
-                  task.metadata["provider_stage"] = "failed"
-          '''
-          if t.count(exc_anchor)!=1:
-              raise SystemExit(f'scheduler exception anchor count={t.count(exc_anchor)}')
-          t=t.replace(exc_anchor,exc_new,1)
+          sched_lines=t.splitlines()
+          exc_matches=[
+              i for i,line in enumerate(sched_lines)
+              if line.strip() == 'except Exception as exc:  # noqa: BLE001 - scheduler isolates worker failure'
+          ]
+          if len(exc_matches)!=1:
+              raise SystemExit(f'scheduler exception anchor count={len(exc_matches)}')
+          i=exc_matches[0]
+          body_indent=sched_lines[i][:len(sched_lines[i])-len(sched_lines[i].lstrip())]+'    '
+          wait_block='''provider_decision = self.provider_resilience_v2.classify(str(exc), max(1, int(task.attempts)))
+wait_categories = {"quota", "provider_unavailable", "model_unavailable", "transient"}
+if provider_decision.category in wait_categories:
+    retry_seconds = max(30, int(provider_decision.retry_after_seconds or 0))
+    if provider_decision.category == "quota":
+        retry_seconds = max(300, retry_seconds)
+    retry_at = time.time() + retry_seconds
+    task.status = TaskStatus.BLOCKED
+    task.attempts = max(0, int(task.attempts) - 1)
+    task.worker_id = None
+    task.result = (
+        f"WAITING_PROVIDER: {provider_decision.category}; "
+        f"retry in {retry_seconds}s. No recovery budget consumed."
+    )
+    task.metadata["provider_stage"] = "waiting_provider"
+    task.metadata["provider_stage_ts"] = utcnow().isoformat()
+    task.metadata["provider_resilience_v2"] = provider_decision.to_dict()
+    task.metadata["waiting_provider_v1"] = {
+        "active": True,
+        "category": provider_decision.category,
+        "provider": provider_name,
+        "retry_after_seconds": retry_seconds,
+        "retry_after_ts": retry_at,
+        "error": f"{type(exc).__name__}: {exc}"[:1000],
+        "since": utcnow().isoformat(),
+    }
+    task.metadata["retry_after_ts"] = retry_at
+    wait = self.state.metadata.setdefault("provider_wait_v1", {})
+    task_ids = list(dict.fromkeys(list(wait.get("task_ids") or []) + [task.id]))
+    wait.update({
+        "active": True,
+        "category": provider_decision.category,
+        "provider": provider_name,
+        "retry_after_seconds": retry_seconds,
+        "retry_after_ts": retry_at,
+        "task_ids": task_ids[-100:],
+        "reason": str(exc)[:1000],
+        "updated_at": utcnow().isoformat(),
+        "recoveries_consumed": 0,
+    })
+    if provider_name:
+        self.provider_policy.record_failure(
+            self.state,
+            provider_name,
+            rate_limited=provider_decision.category == "quota",
+        )
+    self.decision_trace_v3.append(
+        self.state, "provider_wait", task=task,
+        data={"provider": provider_name, **provider_decision.to_dict()},
+    )
+    self.evidence_ledger_v2.append(
+        self.state, "provider_wait", task=task,
+        data={
+            "provider": provider_name,
+            "category": provider_decision.category,
+            "retry_after_seconds": retry_seconds,
+            "recovery_budget_consumed": False,
+        },
+    )
+    self._activity_event(
+        "provider_wait", task, provider=provider_name,
+        detail=f"{provider_decision.category}: espera acotada de proveedor; no cuenta como recuperación",
+    )
+    return
+'''
+          import textwrap
+          insert_lines=textwrap.indent(textwrap.dedent(wait_block),body_indent).splitlines()
+          sched_lines[i+1:i+1]=insert_lines
+          t='\\n'.join(sched_lines)+'\\n'
           p.write_text(t,encoding='utf-8')
 
           # ---- Productive truth: provider wait is neither productive work nor a stall.
