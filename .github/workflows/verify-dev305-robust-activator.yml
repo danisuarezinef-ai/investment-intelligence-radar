@@ -21,6 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Start mock CEO
         shell: pwsh
         run: |
@@ -51,13 +52,11 @@ jobs:
 
       - name: Run PowerShell activator non-interactively
         shell: pwsh
+        env:
+          CEO_ACTIVATOR_NO_PAUSE: "1"
+          CEO_ACTIVATOR_NO_BROWSER: "1"
         run: |
-          $src='ceo-updates\ACTIVAR_DEV305_1_5_81.ps1'
-          $txt=Get-Content $src -Raw
-          $txt=$txt -replace "Read-Host 'Pulsa ENTER para cerrar'","Write-Host 'CI_NO_PAUSE'"
-          $txt=$txt -replace "try \{ Start-Process \('http://127\.0\.0\.1:' \+ \$port \+ '/'\) \} catch \{\}","Write-Host 'CI_NO_BROWSER'"
-          Set-Content -Path .\activator-ci.ps1 -Value $txt -Encoding UTF8
-          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\activator-ci.ps1
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File ceo-updates\ACTIVAR_DEV305_1_5_81.ps1
           if($LASTEXITCODE -ne 0){throw "activator failed: $LASTEXITCODE"}
 
       - name: Verify request and log
