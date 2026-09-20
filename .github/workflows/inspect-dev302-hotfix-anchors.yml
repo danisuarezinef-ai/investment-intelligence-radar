@@ -1,0 +1,37 @@
+name: Inspect DEV302 exact hotfix anchors
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-hotfix-anchors.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print exact anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== scheduler outer kick ==='
+          sed -n '320,390p' tmp302/ceo_core/scheduler.py
+          echo '=== ensure_progress runnable ==='
+          sed -n '330,390p' tmp302/ceo_core/autonomous_loop.py
+          echo '=== productive truth init ==='
+          sed -n '35,90p' tmp302/ceo_core/productive_truth_v2.py
+          echo '=== recovery budget init ==='
+          sed -n '45,110p' tmp302/ceo_core/recovery_budget_guard_v1.py
+          echo '=== progress guard state ==='
+          sed -n '35,100p' tmp302/ceo_core/productive_progress_guard_v1.py
+          echo '=== churn circuit state ==='
+          sed -n '35,100p' tmp302/ceo_core/control_churn_circuit_breaker_v1.py
