@@ -1,0 +1,45 @@
+name: Autonomy Bootstrap Gate 5 Efficiency
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/autonomy-bootstrap-gate-5.yml'
+      - 'ceo-updates/autonomy_bootstrap_gate_v5.py'
+      - 'ceo-updates/autonomy_bootstrap_gate_v1.py'
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract candidate
+        shell: pwsh
+        run: |
+          $zip = if ($env:CEO_BOOTSTRAP_CANDIDATE) { $env:CEO_BOOTSTRAP_CANDIDATE } else { 'ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip' }
+          $root = Join-Path $env:RUNNER_TEMP 'ceo-bootstrap-candidate'
+          Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive $zip $root
+          python -m pip install --disable-pip-version-check -q -e $root
+          "CEO_GATE_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Run efficiency gate
+        shell: pwsh
+        env:
+          CEO_GATE_ARTIFACTS: ${{ runner.temp }}\ceo-autonomy-gate-artifacts
+          CEO_NO_BROWSER: "1"
+          LOCALAPPDATA: ${{ runner.temp }}\ceo-gate-localappdata
+          APPDATA: ${{ runner.temp }}\ceo-gate-appdata
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
+          python ceo-updates/autonomy_bootstrap_gate_v5.py
