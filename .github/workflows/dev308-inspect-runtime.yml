@@ -24,7 +24,18 @@ jobs:
           rm -rf /tmp/dev308_exact
           mkdir -p /tmp/dev308_exact ceo-updates/dev308-inspect
           unzip -q ceo-updates/CEO_1.5.83-rc1-autonomy-runtime-integrity.zip -d /tmp/dev308_exact
-          for f in             ceo_core/decomposer.py             ceo_core/graph.py             ceo_core/queue_consistency_rebuilder_v1.py             ceo_core/scheduler_reconciler_v1.py             ceo_core/productive_fallback_orchestrator_v1.py             ceo_core/autonomous_loop.py             ceo_core/useful_output_watchdog_v2.py             ceo_core/productive_truth_v2.py; do
+          for f in \
+            ceo_core/decomposer.py \
+            ceo_core/graph.py \
+            ceo_core/queue_consistency_rebuilder_v1.py \
+            ceo_core/scheduler_reconciler_v1.py \
+            ceo_core/productive_fallback_orchestrator_v1.py \
+            ceo_core/blocked_unit_rebuilder_v2.py \
+            ceo_core/failure_cause_router_v1.py \
+            ceo_core/replanning.py \
+            ceo_core/autonomous_loop.py \
+            ceo_core/useful_output_watchdog_v2.py \
+            ceo_core/productive_truth_v2.py; do
             cp "/tmp/dev308_exact/$f" "ceo-updates/dev308-inspect/$(basename "$f")"
           done
           python - <<'PY'
@@ -45,5 +56,5 @@ jobs:
           git config user.name "CEO Reliability Engineering"
           git config user.email "ceo-reliability@local.invalid"
           git add ceo-updates/dev308-inspect
-          git commit -m "Snapshot exact 1.5.83 runtime for DEV308 diagnosis"
+          git commit -m "Extend exact 1.5.83 runtime snapshot for DEV308 diagnosis"
           git push origin HEAD:ceo-update-channel
