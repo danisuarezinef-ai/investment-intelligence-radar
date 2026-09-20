@@ -1,0 +1,33 @@
+name: Inspect CEO 1.5.58 trust file
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-ceo-1558-trust.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Extract trust config
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558 inspect_trust
+          mkdir -p tmp1558 inspect_trust
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          cp tmp1558/ceo_core/update_trust.json inspect_trust/update_trust.json
+          cp tmp1558/ceo_core/credentials.py inspect_trust/credentials.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ceo-1558-trust-inspection
+          path: inspect_trust
+          if-no-files-found: error
+          retention-days: 1
