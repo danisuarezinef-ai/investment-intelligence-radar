@@ -1,0 +1,21 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.83-rc1-autonomy-runtime-integrity.zip",
+    "sha256": "878b9b1571de850ad6d4dd2d140e6f67322f5fe6c14b0650c1441b05b82f570e",
+    "size_bytes": 1143165
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.82-rc1-autonomy-bootstrap",
+  "candidate": "1.5.83-rc1-autonomy-runtime-integrity",
+  "field_finished_future_normalization": true,
+  "field_quality_lineage_bounded": true,
+  "field_selective_orphan_migration": true,
+  "field_worker_handoff_bounded": true,
+  "operator_install_confirmation_required": true,
+  "production_ready": false,
+  "release_sequence": 307,
+  "security_passed": true,
+  "tests_passed": true,
+  "windows_stage_preflight_passed": false
+}
