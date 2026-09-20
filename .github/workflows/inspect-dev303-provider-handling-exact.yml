@@ -1,0 +1,37 @@
+name: Inspect DEV303 provider handling exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev303-provider-handling-exact.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Exact provider handling
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp179
+          mkdir -p tmp179
+          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d tmp179
+          echo '=== gemini transport ==='
+          sed -n '1,390p' tmp179/ceo_core/providers/gemini_interactions.py
+          echo '=== provider resilience ==='
+          cat tmp179/ceo_core/provider_resilience_v2.py
+          echo '=== routing ==='
+          cat tmp179/ceo_core/routing.py
+          echo '=== local provider ==='
+          cat tmp179/ceo_core/goal_lock_local_provider_v1.py
+          echo '=== scheduler dispatch/result ==='
+          sed -n '480,900p' tmp179/ceo_core/scheduler.py
+          echo '=== scheduler exception tail ==='
+          sed -n '900,1180p' tmp179/ceo_core/scheduler.py
