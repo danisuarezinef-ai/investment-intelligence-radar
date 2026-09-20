@@ -1,0 +1,20 @@
+{
+  "actionable_block_reason_passed": true,
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.81-rc1-endgame-closure.zip",
+    "sha256": "fc3436831b69d808e162de703fd8d4e855fc9f093fd14cb41eecdf3ed0b9dfce",
+    "size_bytes": 1140668
+  },
+  "base": "1.5.80-rc1-provider-resilience",
+  "candidate": "1.5.81-rc1-endgame-closure",
+  "endgame_99pct_audit_creation_passed": true,
+  "operator_install_confirmation_required": true,
+  "production_ready": false,
+  "provider_wait_fallback_exclusion_passed": true,
+  "release_sequence": 305,
+  "security_passed": true,
+  "tests_passed": true,
+  "waiting_provider_zero_churn_passed": true,
+  "windows_physical_verified": false
+}

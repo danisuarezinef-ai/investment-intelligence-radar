@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.81-rc1-endgame-closure.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.80-rc1-provider-resilience",
+  "notes": "DEV305 Endgame Closure: provider waits no longer suppress local continuity planning, 99-percent goals can create/recycle final audits, provider-deferred work does not enter fallback churn, WAITING_PROVIDER overrides stale blocked state, and blocked UI always exposes a structured cause.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-20T20:30:00Z",
+  "release_id": "dev305-1.5.81-rc1-endgame-closure",
+  "release_sequence": 305,
+  "release_status": "release",
+  "sha256": "fc3436831b69d808e162de703fd8d4e855fc9f093fd14cb41eecdf3ed0b9dfce",
+  "signature_alg": "ed25519",
+  "size_bytes": 1140668,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip",
+  "version": "1.5.81-rc1-endgame-closure"
+}
