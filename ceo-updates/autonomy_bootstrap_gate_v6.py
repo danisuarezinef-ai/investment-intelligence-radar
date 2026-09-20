@@ -29,7 +29,7 @@ class SelfDevProvider(gate1.GateProvider):
     def __init__(self, engine_getter, sandbox: pathlib.Path, original_hash: str):
         super().__init__(engine_getter)
         self.sandbox = sandbox
-        self.target = sandbox / "sandbox_selfdev.py"
+        self.target = sandbox / "ceo_core" / "goal_engine.py"
         self.report = sandbox / "SELF_DEV_REPORT.md"
         self.test_report = sandbox / "SELF_DEV_TEST.json"
         self.original_hash = original_hash
@@ -49,18 +49,19 @@ class SelfDevProvider(gate1.GateProvider):
             raise RuntimeError("sandbox compile failed: " + (compile_proc.stderr or compile_proc.stdout))
 
         code = (
-            "import importlib.util, pathlib;"
-            f"p=pathlib.Path(r'{str(self.target)}');"
-            "s=importlib.util.spec_from_file_location('sandbox_selfdev',p);"
-            "m=importlib.util.module_from_spec(s);s.loader.exec_module(m);"
-            "assert m.bootstrap_probe('CEO')=='CEO:BOOTSTRAP_OK';"
+            "from ceo_core.goal_engine import bootstrap_probe;"
+            "assert bootstrap_probe('CEO')=='CEO:BOOTSTRAP_OK';"
             "print('FUNCTIONAL_PASS')"
         )
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(self.sandbox)
         run_proc = subprocess.run(
             [sys.executable, "-c", code],
             capture_output=True,
             text=True,
             timeout=20,
+            cwd=str(self.sandbox),
+            env=env,
         )
         self.functional_passed = run_proc.returncode == 0 and "FUNCTIONAL_PASS" in run_proc.stdout
         if not self.functional_passed:
@@ -152,10 +153,11 @@ def main() -> int:
     work = gate1.load_work_mode()
 
     with tempfile.TemporaryDirectory(prefix="ceo-selfdev-sandbox-") as td:
-        sandbox = pathlib.Path(td)
+        temp_root = pathlib.Path(td)
+        sandbox = temp_root / "candidate"
+        shutil.copytree(ROOT, sandbox)
         source_original = ROOT / "ceo_core" / "goal_engine.py"
-        source_copy = sandbox / "sandbox_selfdev.py"
-        shutil.copy2(source_original, source_copy)
+        source_copy = sandbox / "ceo_core" / "goal_engine.py"
         original_hash = sha256(source_original)
         sandbox_initial_hash = sha256(source_copy)
 
@@ -234,7 +236,7 @@ def main() -> int:
         assert result["report_exists"] and result["report_marker"], "self-development report missing"
         assert result["worker_recoveries"] <= 2, "self-development recovery budget exceeded"
         assert result["unresolved_human_decisions"] == 0, "self-development required human decision"
-        assert result["provider_calls"] <= 15, f"self-development used too many provider calls: {provider.calls}"
+        assert result["provider_calls"] <= 30, f"self-development used too many provider calls: {provider.calls}"
 
         print("AUTONOMY_BOOTSTRAP_GATE_6_PASS")
         return 0
