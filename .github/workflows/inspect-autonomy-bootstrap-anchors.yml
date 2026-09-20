@@ -1,0 +1,40 @@
+name: Inspect Autonomy Bootstrap Gate anchors
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-autonomy-bootstrap-anchors.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect candidate runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp181
+          mkdir -p tmp181
+          unzip -q ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip -d tmp181
+
+          echo '=== engine/public methods ==='
+          grep -nE '^class CEOEngine|^    (async )?def [A-Za-z_]+\(' tmp181/scripts/ceo_stdlib_work_mode.py | head -n 500
+
+          echo '=== goal/start/create routes ==='
+          grep -nE 'new goal|create.*goal|start.*goal|/api/goal|/api/project|activate.*project|submit_goal|objective|Goal Engine' tmp181/scripts/ceo_stdlib_work_mode.py | head -n 1000 || true
+
+          echo '=== scheduler/provider interfaces ==='
+          grep -RInE '^class .*Provider|def execute\(|async def execute\(|class .*Scheduler|async def start\(|async def stop\(' tmp181/ceo_core --include='*.py' | head -n 1200 || true
+
+          echo '=== deliverable/artifact references ==='
+          grep -RInE 'deliverable|artifact|output_file|write_text|final_output|final deliverable|completed_at|goal_audit_passed' tmp181/ceo_core tmp181/scripts --include='*.py' | head -n 1800 || true
+
+          echo '=== tests/qualification useful patterns ==='
+          find tmp181 -maxdepth 3 -type f \( -name '*test*.py' -o -name '*qualification*.py' \) -print | head -n 300
