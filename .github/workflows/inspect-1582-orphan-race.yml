@@ -1,0 +1,35 @@
+name: Inspect 1.5.82 orphan race exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1582-orphan-race.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Exact race sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp182
+          mkdir -p tmp182
+          unzip -q ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip -d tmp182
+          echo '=== collect finished ==='
+          grep -n "def _collect_finished" tmp182/ceo_core/scheduler.py
+          start=$(grep -n "def _collect_finished" tmp182/ceo_core/scheduler.py|head -1|cut -d: -f1); sed -n "${start},$((start+90))p" tmp182/ceo_core/scheduler.py
+          echo '=== recover live workers ==='
+          start=$(grep -n "def _recover_live_workers" tmp182/ceo_core/scheduler.py|head -1|cut -d: -f1); sed -n "${start},$((start+95))p" tmp182/ceo_core/scheduler.py
+          echo '=== worker recovery supervisor ==='
+          grep -n "class WorkerRecoverySupervisor" tmp182/ceo_core/operational_resilience.py
+          start=$(grep -n "class WorkerRecoverySupervisor" tmp182/ceo_core/operational_resilience.py|head -1|cut -d: -f1); sed -n "${start},$((start+190))p" tmp182/ceo_core/operational_resilience.py
+          echo '=== worker lifecycle full ==='
+          cat tmp182/ceo_core/worker_lifecycle_v2.py
