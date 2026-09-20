@@ -327,15 +327,15 @@ def patch_work_mode() -> None:
 
     # Revalidation state.
     flag = "        self.provider_validation_in_progress = False\n"
-    if text.count(flag) != 1:
-        raise RuntimeError(f"provider validation flag anchor: {text.count(flag)}")
-    text = text.replace(
-        flag,
+    flag_index = text.find(flag)
+    if flag_index < 0:
+        raise RuntimeError("provider validation initialization flag missing")
+    flag_replacement = (
         flag
         + "        self._next_provider_revalidation_ts = 0.0\n"
-        + "        self._provider_revalidation_interval_seconds = 300.0\n",
-        1,
+        + "        self._provider_revalidation_interval_seconds = 300.0\n"
     )
+    text = text[:flag_index] + flag_replacement + text[flag_index + len(flag):]
 
     # Background revalidation uses the existing event-loop call bridge.
     method = '''    def start_stored_provider_revalidation_background(self) -> bool:
