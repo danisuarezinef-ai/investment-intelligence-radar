@@ -1,0 +1,39 @@
+name: Inspect CEO 1.5.58 signer callsites
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-ceo-1558-signer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Locate signer callsites
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558 inspect_signer
+          mkdir -p tmp1558 inspect_signer/files
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          grep -RIlE 'ReleaseSigningAuthority|release_signing_authority|bootstrap_release_signer|sign_update_with_local_authority|sign_manifest|release-signer|SIGNER_' tmp1558             --include='*.py' --include='*.html' --include='*.js' --include='*.cmd' --include='*.json'             | sort > inspect_signer/MATCHED_FILES.txt || true
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            rel="${f#tmp1558/}"
+            mkdir -p "inspect_signer/files/$(dirname "$rel")"
+            cp "$f" "inspect_signer/files/$rel"
+          done < inspect_signer/MATCHED_FILES.txt
+          grep -RInE 'ReleaseSigningAuthority|release_signing_authority|bootstrap_release_signer|sign_update_with_local_authority|sign_manifest|release-signer|SIGNER_' tmp1558             --include='*.py' --include='*.html' --include='*.js' --include='*.cmd' --include='*.json'             > inspect_signer/MATCHES.txt || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ceo-1558-signer-inspection
+          path: inspect_signer
+          if-no-files-found: error
+          retention-days: 1
