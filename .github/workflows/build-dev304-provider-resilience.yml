@@ -85,17 +85,18 @@ jobs:
           p=root/'ceo_core/scheduler.py'
           t=p.read_text(encoding='utf-8')
 
-          progress_pattern = r'(?m)^(\\s*)and not any\\(\\n(\\s*)is_productive\\(t, self\\.state\\)'
-          matches=list(re.finditer(progress_pattern,t))
+          sched_lines=t.splitlines()
+          matches=[
+              i for i,line in enumerate(sched_lines[:-1])
+              if line.strip() == 'and not any('
+              and sched_lines[i+1].strip() == 'is_productive(t, self.state)'
+          ]
           if len(matches)!=1:
               raise SystemExit(f'progress-kick provider-wait anchor count={len(matches)}')
-          m=matches[0]
-          progress_new=(
-              f'{m.group(1)}and not bool((self.state.metadata.get("provider_wait_v1") or {{}}).get("active"))\\n'
-              f'{m.group(1)}and not any(\\n'
-              f'{m.group(2)}is_productive(t, self.state)'
-          )
-          t=t[:m.start()]+progress_new+t[m.end():]
+          i=matches[0]
+          indent=sched_lines[i][:len(sched_lines[i])-len(sched_lines[i].lstrip())]
+          sched_lines.insert(i, indent+'and not bool((self.state.metadata.get("provider_wait_v1") or {}).get("active"))')
+          t='\\n'.join(sched_lines)+'\\n'
 
           exc_anchor='''        except Exception as exc:  # noqa: BLE001 - scheduler isolates worker failure
                   task.metadata["provider_stage"] = "failed"
