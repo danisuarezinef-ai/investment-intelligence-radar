@@ -2,8 +2,8 @@
   "artifact": {
     "entries": 523,
     "name": "CEO_1.5.79-rc1-productive-resume-gate.zip",
-    "sha256": "a241faaae81a3b4755bd7d6a2205bb1f56c0095ac2cec9b4128ca6c619a815c8",
-    "size_bytes": 1138206
+    "sha256": "1dc6ca7436d6fa0af483a787e1f381d942bc6d4d8a925062ca4f51d5767b2845",
+    "size_bytes": 1138215
   },
   "base": "1.5.78-rc1-reliable-update-handoff",
   "candidate": "1.5.79-rc1-productive-resume-gate",
@@ -11,6 +11,7 @@
   "failed_tests": 0,
   "field_663_recovery_regression_passed": true,
   "local_candidate_ready": true,
+  "missing_signer_does_not_block_ceo": true,
   "operator_install_confirmation_required": true,
   "package_contract_passed": true,
   "production_ready": false,
