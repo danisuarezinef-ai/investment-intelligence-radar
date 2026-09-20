@@ -53,5 +53,5 @@ echo.
 echo Log:
 echo %LOCALAPPDATA%\CEO de IAs\diagnostics\DEV305_ACTIVACION_1_5_81.log
 echo.
-pause
+if not "%CEO_ACTIVATOR_NO_PAUSE%"=="1" pause
 exit /b %RC%
