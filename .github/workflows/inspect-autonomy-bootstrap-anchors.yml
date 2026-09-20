@@ -1,4 +1,4 @@
-name: Inspect Autonomy Bootstrap Gate anchors
+name: Inspect Autonomy Bootstrap anchors
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ceo-update-channel
-      - name: Inspect candidate runtime
+      - name: Inspect runnable entry points and goal creation
         shell: bash
         run: |
           set -euo pipefail
@@ -24,17 +24,17 @@ jobs:
           mkdir -p tmp181
           unzip -q ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip -d tmp181
 
-          echo '=== engine/public methods ==='
-          grep -nE '^class CEOEngine|^    (async )?def [A-Za-z_]+\(' tmp181/scripts/ceo_stdlib_work_mode.py | head -n 500
+          echo '=== CLI / work mode entry points ==='
+          grep -RInE 'def main\(|argparse|/api/project|/api/goal|create_project|submit_goal|start_project|new objective|objective' tmp181/scripts tmp181/ceo_core --include='*.py' | head -n 2200 || true
 
-          echo '=== goal/start/create routes ==='
-          grep -nE 'new goal|create.*goal|start.*goal|/api/goal|/api/project|activate.*project|submit_goal|objective|Goal Engine' tmp181/scripts/ceo_stdlib_work_mode.py | head -n 1000 || true
+          echo '=== local provider ==='
+          sed -n '1,320p' tmp181/ceo_core/goal_lock_local_provider_v1.py
 
-          echo '=== scheduler/provider interfaces ==='
-          grep -RInE '^class .*Provider|def execute\(|async def execute\(|class .*Scheduler|async def start\(|async def stop\(' tmp181/ceo_core --include='*.py' | head -n 1200 || true
+          echo '=== project creation / engine methods ==='
+          grep -nE 'async def .*project|def .*project|create_project|start_project|new_project|set_goal|goal=' tmp181/scripts/ceo_stdlib_work_mode.py | head -n 1400 || true
 
-          echo '=== deliverable/artifact references ==='
-          grep -RInE 'deliverable|artifact|output_file|write_text|final_output|final deliverable|completed_at|goal_audit_passed' tmp181/ceo_core tmp181/scripts --include='*.py' | head -n 1800 || true
+          echo '=== API routes POST ==='
+          grep -nE 'do_POST|/api/' tmp181/scripts/ceo_stdlib_work_mode.py | head -n 1700 || true
 
-          echo '=== tests/qualification useful patterns ==='
-          find tmp181 -maxdepth 3 -type f \( -name '*test*.py' -o -name '*qualification*.py' \) -print | head -n 300
+          echo '=== artifact / file write helpers ==='
+          grep -RInE 'write_text\(|write_bytes\(|artifact|deliverable|output_path|workspace' tmp181/ceo_core --include='*.py' | head -n 1700 || true
