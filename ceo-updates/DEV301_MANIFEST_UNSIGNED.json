@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.77-rc1-reliability-control-plane.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.58-rc1-productive-stall-escape",
+  "notes": "DEV301 major reliability/control-plane transition: separate Pause/Resume/Cancel controls; terminal cancellation; recovery storm fuse 8/4/2; two-phase package publication; bounded release retries; deterministic prepared-release bridge; publish-to-update handoff; single-source version identity; exact package hash verification.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-20T14:00:00Z",
+  "release_id": "dev301-1.5.77-rc1-reliability-control-plane",
+  "release_sequence": 301,
+  "release_status": "release",
+  "sha256": "4c8058c74169cb3da71e33004c8efe0e1570749c88a015e812aaed30727ea433",
+  "signature_alg": "ed25519",
+  "size_bytes": 1136201,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.77-rc1-reliability-control-plane.zip",
+  "version": "1.5.77-rc1-reliability-control-plane"
+}

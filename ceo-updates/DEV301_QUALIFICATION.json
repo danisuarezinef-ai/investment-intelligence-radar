@@ -1,0 +1,35 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.77-rc1-reliability-control-plane.zip",
+    "sha256": "4c8058c74169cb3da71e33004c8efe0e1570749c88a015e812aaed30727ea433",
+    "size_bytes": 1136201
+  },
+  "automatic_installation": false,
+  "base": "1.5.71-rc1-update-confirm-bridge",
+  "cancel_is_terminal": true,
+  "candidate": "1.5.77-rc1-reliability-control-plane",
+  "clean_extract_passed": true,
+  "deterministic_prepared_release_bridge": true,
+  "failed_tests": 0,
+  "local_candidate_ready": true,
+  "operator_controls": [
+    "pause",
+    "resume",
+    "cancel"
+  ],
+  "operator_install_confirmation_required": true,
+  "package_contract_passed": true,
+  "production_ready": false,
+  "recovery_thresholds": {
+    "global": 8,
+    "per_task": 4,
+    "repeat": 2
+  },
+  "release_sequence": 301,
+  "security_findings": 0,
+  "security_passed": true,
+  "tests_passed": true,
+  "two_phase_publication": true,
+  "windows_physical_verified": false
+}
