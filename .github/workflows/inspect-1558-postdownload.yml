@@ -1,0 +1,29 @@
+name: Inspect 1.5.58 post-download path
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1558-postdownload.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect post download
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558
+          mkdir -p tmp1558
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          echo '=== progress writer and download ==='
+          sed -n '500,940p' tmp1558/ceo_core/in_app_updater.py
+          echo '=== stage_latest onward ==='
+          sed -n '940,1250p' tmp1558/ceo_core/in_app_updater.py
