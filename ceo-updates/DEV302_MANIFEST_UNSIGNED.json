@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.78-rc1-reliable-update-handoff.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.58-rc1-productive-stall-escape",
+  "notes": "DEV302 final major reliability transition: all DEV301 control-plane improvements plus bounded Windows atomic-file replacement recovery and persistent updater error visibility.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-20T15:00:00Z",
+  "release_id": "dev302-1.5.78-rc1-reliable-update-handoff",
+  "release_sequence": 302,
+  "release_status": "release",
+  "sha256": "4b7fa43511c824e5fa45039480721f604b1e5ef520cfda86a7a9d1f25c02ddbc",
+  "signature_alg": "ed25519",
+  "size_bytes": 1136520,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip",
+  "version": "1.5.78-rc1-reliable-update-handoff"
+}

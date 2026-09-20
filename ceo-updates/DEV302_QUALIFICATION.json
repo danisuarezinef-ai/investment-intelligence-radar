@@ -1,0 +1,20 @@
+{
+  "artifact": {
+    "name": "CEO_1.5.78-rc1-reliable-update-handoff.zip",
+    "sha256": "4b7fa43511c824e5fa45039480721f604b1e5ef520cfda86a7a9d1f25c02ddbc",
+    "size_bytes": 1136520
+  },
+  "base": "1.5.77-rc1-reliability-control-plane",
+  "candidate": "1.5.78-rc1-reliable-update-handoff",
+  "clean_extract_passed": true,
+  "operator_install_confirmation_required": true,
+  "package_contract_passed": true,
+  "production_ready": false,
+  "release_sequence": 302,
+  "security_findings": 0,
+  "security_passed": true,
+  "tests_passed": true,
+  "updater_error_visibility_preserved": true,
+  "windows_atomic_replace_retry": true,
+  "windows_physical_verified": false
+}
