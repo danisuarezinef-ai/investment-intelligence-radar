@@ -1,4 +1,4 @@
-name: Verify DEV304 internal release trigger
+name: Verify DEV304 internal trigger
 
 on:
   push:
@@ -17,7 +17,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ceo-update-channel
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -27,13 +26,17 @@ jobs:
         run: |
           @'
           import json
-          from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
+          from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
           from pathlib import Path
           class H(BaseHTTPRequestHandler):
               def log_message(self,*a): pass
               def sendj(self,row,code=200):
                   b=json.dumps(row).encode()
-                  self.send_response(code);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
+                  self.send_response(code)
+                  self.send_header('Content-Type','application/json')
+                  self.send_header('Content-Length',str(len(b)))
+                  self.end_headers()
+                  self.wfile.write(b)
               def do_GET(self):
                   if self.path=='/api/health':
                       return self.sendj({'ok':True,'version':'1.5.79-rc1-productive-resume-gate'})
@@ -43,14 +46,20 @@ jobs:
                   body=self.rfile.read(n)
                   Path('dev304-trigger-request.json').write_bytes(body)
                   if self.path=='/api/internal-release/activate-prepared':
-                      return self.sendj({'ok':True,'status':'PUBLISHED','version':'1.5.80-rc1-provider-resilience','remote_verified':True})
+                      return self.sendj({
+                          'ok':True,
+                          'status':'PUBLISHED',
+                          'version':'1.5.80-rc1-provider-resilience',
+                          'release_sequence':304,
+                          'remote_verified':True
+                      })
                   return self.sendj({'error':'not_found'},404)
           ThreadingHTTPServer(('127.0.0.1',8775),H).serve_forever()
-          '@ | Set-Content -Encoding UTF8 mock304.py
-          Start-Process python -ArgumentList "mock304.py" -WindowStyle Hidden
+          '@ | Set-Content -Encoding UTF8 mock_dev304.py
+          Start-Process python -ArgumentList "mock_dev304.py" -WindowStyle Hidden
           Start-Sleep -Seconds 2
 
-      - name: Run trigger
+      - name: Execute trigger
         shell: cmd
         env:
           CEO_TRIGGER_NO_BROWSER: "1"
@@ -58,10 +67,9 @@ jobs:
           call ceo-updates\ACTIVAR_DEV304_DESDE_CEO.cmd < nul
           if errorlevel 1 exit /b %errorlevel%
 
-      - name: Validate request
+      - name: Verify request target
         shell: pwsh
         run: |
-          $j=Get-Content dev304-trigger-request.json | ConvertFrom-Json
-          $expected='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/DEV304_MANIFEST_UNSIGNED.json'
-          if($j.manifest_url -ne $expected){throw "wrong manifest URL"}
+          $j=Get-Content dev304-trigger-request.json -Raw | ConvertFrom-Json
+          if($j.manifest_url -ne 'https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/DEV304_MANIFEST_UNSIGNED.json'){throw "wrong manifest url"}
           Write-Host "DEV304_INTERNAL_TRIGGER_PASS"
