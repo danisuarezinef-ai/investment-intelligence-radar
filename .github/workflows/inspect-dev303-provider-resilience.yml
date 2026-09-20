@@ -1,0 +1,33 @@
+name: Inspect DEV303 provider resilience anchors
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev303-provider-resilience.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect provider, startup and scheduler gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp179
+          mkdir -p tmp179
+          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d tmp179
+          echo '=== provider modules ==='
+          grep -RInE 'class .*Gemini|gemini-2\.5|gemini-3\.|HTTP 429|quota|execution_enabled|GENERATION_UNAVAILABLE' tmp179/ceo_core tmp179/scripts --include='*.py' | head -n 1800 || true
+          echo '=== startup init ==='
+          sed -n '150,620p' tmp179/scripts/ceo_stdlib_work_mode.py
+          echo '=== scheduler init/migration ==='
+          sed -n '1,220p' tmp179/ceo_core/scheduler.py
+          echo '=== router/provider error handling ==='
+          grep -RInE 'provider.*error|generation failed|429|404|blocked_safe|recover|retry|TaskStatus' tmp179/ceo_core --include='*.py' | head -n 1800 || true
