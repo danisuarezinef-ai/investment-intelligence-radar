@@ -1,0 +1,101 @@
+name: Verify DEV303 in-memory bridge repair
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev303-bridge-repair.yml'
+      - 'ceo-updates/DEV303_BRIDGE_REPAIR_IN_MEMORY.py'
+      - 'ceo-updates/COMPLETAR_PUENTE_INTERNO_1_5_79.cmd'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile helper and validate launcher structure
+        shell: pwsh
+        run: |
+          python -m py_compile ceo-updates\DEV303_BRIDGE_REPAIR_IN_MEMORY.py
+          @'
+          import pathlib,re,hashlib
+          h=pathlib.Path('ceo-updates/DEV303_BRIDGE_REPAIR_IN_MEMORY.py').read_text(encoding='utf-8')
+          c=pathlib.Path('ceo-updates/COMPLETAR_PUENTE_INTERNO_1_5_79.cmd').read_text(encoding='utf-8')
+          assert 'self.publisher.policy.branch' in h
+          assert 'self.publisher.policy.path_prefix' in h
+          assert 'PreparedReleaseBridge._allowed=corrected_allowed' in h
+          assert 'PreparedReleaseBridge._allowed=original_allowed' in h
+          assert 'NO modifica los archivos instalados de 1.5.78' in c
+          labels=set(re.findall(r'(?m)^:([A-Za-z0-9_]+)\s*$',c))
+          gotos=re.findall(r'(?i)\bgoto\s+([A-Za-z0-9_]+)',c)
+          assert all(g.upper() in {x.upper() for x in labels} for g in gotos)
+          print('HELPER_SHA256',hashlib.sha256(h.encode()).hexdigest())
+          print('LAUNCHER_SHA256',hashlib.sha256(c.encode()).hexdigest())
+          print('DEV303_BRIDGE_REPAIR_STATIC_PASS')
+          '@ | Set-Content -Encoding UTF8 static_check.py
+          python static_check.py
+
+      - name: Simulate installed 1.5.78 and in-memory bridge repair
+        shell: pwsh
+        run: |
+          @'
+          import importlib.util,json,os,pathlib,sys,tempfile,types
+          repo=pathlib.Path.cwd()
+          helper_path=repo/'ceo-updates/DEV303_BRIDGE_REPAIR_IN_MEMORY.py'
+          spec=importlib.util.spec_from_file_location('bridge_repair',helper_path)
+          mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+
+          with tempfile.TemporaryDirectory() as td:
+              local=pathlib.Path(td)
+              os.environ['LOCALAPPDATA']=str(local)
+              root=local/'Programs'/'CEO de IAs'
+              (root/'ceo_core').mkdir(parents=True)
+              (root/'ceo_core'/'prepared_release_bridge.py').write_text('# placeholder',encoding='utf-8')
+              p=local/'CEO de IAs'/'updates'
+              p.mkdir(parents=True)
+              (p/'current.json').write_text(json.dumps({
+                  'version':'1.5.78-rc1-reliable-update-handoff',
+                  'root':str(root)
+              }),encoding='utf-8')
+
+              fakepkg=types.ModuleType('ceo_core'); fakepkg.__path__=[]
+              fake=types.ModuleType('ceo_core.prepared_release_bridge')
+
+              class Policy:
+                  branch='ceo-update-channel'
+                  path_prefix='ceo-updates/'
+              class Publisher:
+                  policy=Policy()
+              class Channel:
+                  intended_repository='danisuarezinef-ai/investment-intelligence-radar'
+              class PreparedReleaseBridge:
+                  def __init__(self):
+                      self.publisher=Publisher(); self.channel=Channel()
+                  def _allowed(self,url):
+                      raise AttributeError("UpdateChannelIdentity object has no attribute 'branch'")
+                  def activate(self,url):
+                      assert self._allowed(url) is True
+                      pkg='https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip'
+                      assert self._allowed(pkg) is True
+                      return {'ok':True,'status':'PUBLISHED','version':mod.VERSION}
+
+              fake.PreparedReleaseBridge=PreparedReleaseBridge
+              sys.modules['ceo_core']=fakepkg
+              sys.modules['ceo_core.prepared_release_bridge']=fake
+
+              mod.fetch_json=lambda url,timeout=30: {'release_sequence':302,'release_id':'dev302'} if 'manifest.json' in url else {}
+              rc=mod.main()
+              assert rc==0,rc
+              assert PreparedReleaseBridge._allowed.__name__=='_allowed'
+              print('DEV303_BRIDGE_REPAIR_RUNTIME_PASS')
+          '@ | Set-Content -Encoding UTF8 runtime_check.py
+          python runtime_check.py
