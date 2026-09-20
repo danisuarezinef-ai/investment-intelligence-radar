@@ -1,0 +1,34 @@
+name: Extract DEV295 work mode source
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/extract-dev295-workmode.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Extract source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp295 out
+          mkdir -p tmp295 out/scripts
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d tmp295
+          cp tmp295/scripts/ceo_stdlib_work_mode.py out/scripts/
+          cp tmp295/CEO_UPDATE_PACKAGE.json out/
+          cp tmp295/pyproject.toml out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dev295-workmode-source
+          path: out
+          if-no-files-found: error
+          retention-days: 1
