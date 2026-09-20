@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.79-rc1-productive-resume-gate.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.78-rc1-reliable-update-handoff",
+  "notes": "DEV303 Productive Resume Gate: coherent reliability epoch migration, historical recovery isolation, stale internal control retirement, productive-only liveness gating, and explicit control-only deadlock escape.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-20T15:45:00Z",
+  "release_id": "dev303-1.5.79-rc1-productive-resume-gate",
+  "release_sequence": 303,
+  "release_status": "release",
+  "sha256": "a241faaae81a3b4755bd7d6a2205bb1f56c0095ac2cec9b4128ca6c619a815c8",
+  "signature_alg": "ed25519",
+  "size_bytes": 1138206,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip",
+  "version": "1.5.79-rc1-productive-resume-gate"
+}
