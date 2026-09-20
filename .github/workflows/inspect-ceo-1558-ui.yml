@@ -1,0 +1,39 @@
+name: Inspect CEO 1.5.58 update UI callsites
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-ceo-1558-ui.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Locate updater/UI callsites
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558 inspect_ui
+          mkdir -p tmp1558 inspect_ui/files
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          grep -RIlE 'InAppUpdater|fetch_manifest|Actualizar|actualizaci[oó]n|stage\(|activate\(' tmp1558             --include='*.py' --include='*.html' --include='*.js' --include='*.cmd'             | sort > inspect_ui/MATCHED_FILES.txt || true
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            rel="${f#tmp1558/}"
+            mkdir -p "inspect_ui/files/$(dirname "$rel")"
+            cp "$f" "inspect_ui/files/$rel"
+          done < inspect_ui/MATCHED_FILES.txt
+          grep -RInE 'InAppUpdater|fetch_manifest|Actualizar|actualizaci[oó]n|stage\(|activate\(' tmp1558             --include='*.py' --include='*.html' --include='*.js' --include='*.cmd'             > inspect_ui/MATCHES.txt || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ceo-1558-update-ui-inspection
+          path: inspect_ui
+          if-no-files-found: error
+          retention-days: 1
