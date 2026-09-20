@@ -1,0 +1,31 @@
+name: Inspect DEV295 controls base
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev295-controls.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect DEV295 control surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp295
+          mkdir -p tmp295
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d tmp295
+          echo '=== control words in work mode ==='
+          grep -nEi 'pause|resume|cancel|pausa|reanudar|cancelar|objective|goal|stop|continu' tmp295/scripts/ceo_stdlib_work_mode.py | head -n 500 || true
+          echo '=== endpoints ==='
+          grep -nE 'path == "/api/|def do_POST|def do_GET' tmp295/scripts/ceo_stdlib_work_mode.py | head -n 500 || true
+          echo '=== version markers ==='
+          grep -RInE '1\.5\.71|APP_VERSION|VERSION =' tmp295 --include='*.py' --include='*.json' --include='*.toml' | head -n 200 || true
