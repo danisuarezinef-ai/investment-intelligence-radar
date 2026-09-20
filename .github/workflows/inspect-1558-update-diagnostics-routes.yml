@@ -1,0 +1,27 @@
+name: Inspect 1.5.58 update diagnostics routes
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1558-update-diagnostics-routes.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect diagnostics API
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp1558
+          mkdir -p tmp1558
+          unzip -q ceo-updates/CEO_1.5.58-rc1-productive-stall-escape.zip -d tmp1558
+          grep -nE '/api/update/(progress|status|diagn|recover|transaction|summary|stage)' tmp1558/scripts/ceo_stdlib_work_mode.py || true
+          grep -nE 'update_(diagn|recover|transaction|summary)|updater\.(diagnostics|recover_dead_update|transaction_status|operator_summary)' tmp1558/scripts/ceo_stdlib_work_mode.py || true
