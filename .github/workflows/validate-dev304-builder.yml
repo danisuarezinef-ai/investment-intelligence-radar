@@ -1,0 +1,31 @@
+name: Validate DEV304 builder YAML
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/validate-dev304-builder.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Validate YAML syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e 'require "yaml"; YAML.load_file(".github/workflows/build-dev304-provider-resilience.yml"); puts "YAML_PARSE_PASS"'
+          python - <<'PY'
+          from pathlib import Path
+          p=Path(".github/workflows/build-dev304-provider-resilience.yml")
+          s=p.read_text()
+          for i,line in enumerate(s.splitlines(),1):
+              if "t='" in line and "join(sched_lines)" in line:
+                  print(i,repr(line))
+          PY
