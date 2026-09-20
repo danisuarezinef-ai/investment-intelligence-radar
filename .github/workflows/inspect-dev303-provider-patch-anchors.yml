@@ -1,0 +1,37 @@
+name: Inspect DEV303 provider resilience patch anchors
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev303-provider-patch-anchors.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print exact anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp179
+          mkdir -p tmp179
+          unzip -q ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip -d tmp179
+          echo '=== provider_resilience_v2 ==='
+          cat tmp179/ceo_core/provider_resilience_v2.py
+          echo '=== routing ==='
+          cat tmp179/ceo_core/routing.py
+          echo '=== scheduler 760-900 ==='
+          sed -n '760,900p' tmp179/ceo_core/scheduler.py
+          echo '=== scheduler 900-1040 ==='
+          sed -n '900,1040p' tmp179/ceo_core/scheduler.py
+          echo '=== work mode 260-340 ==='
+          sed -n '260,340p' tmp179/scripts/ceo_stdlib_work_mode.py
+          echo '=== work mode 450-535 ==='
+          sed -n '450,535p' tmp179/scripts/ceo_stdlib_work_mode.py
