@@ -21,5 +21,11 @@
   "windows_stage_preflight_passed": true,
   "windows_provider_semantics_smoke_passed": true,
   "internal_release_trigger_verified": true,
-  "production_ready_reason": "Awaiting operator-approved installation and field validation on the user's Windows host."
+  "production_ready_reason": "Awaiting operator-approved installation and field validation on the user's Windows host.",
+  "windows_stage_passed": true,
+  "windows_preflight_passed": true,
+  "windows_providerless_startup_passed": true,
+  "windows_stage_seconds": 0.686,
+  "windows_preflight_seconds": 1.94,
+  "field_production_verification_pending": true
 }
