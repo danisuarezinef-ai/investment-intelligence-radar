@@ -1,0 +1,31 @@
+name: Inspect DEV302 scheduler dispatch gates exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-dispatch-gates.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Exact scheduler gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp302
+          mkdir -p tmp302
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp302
+          echo '=== scheduler 269-573 ==='
+          sed -n '269,573p' tmp302/ceo_core/scheduler.py
+          echo '=== work mode scheduler constructors/start ==='
+          sed -n '250,470p' tmp302/scripts/ceo_stdlib_work_mode.py
+          echo '=== work mode start/activate ==='
+          sed -n '700,875p' tmp302/scripts/ceo_stdlib_work_mode.py
