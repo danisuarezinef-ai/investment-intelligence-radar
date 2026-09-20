@@ -1,0 +1,44 @@
+name: Inspect Bootstrap efficiency sources
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-bootstrap-efficiency.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect planning and verification fanout
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp181
+          mkdir -p tmp181
+          unzip -q ceo-updates/CEO_1.5.81-rc1-endgame-closure.zip -d tmp181
+
+          echo '=== planning.py ==='
+          cat tmp181/ceo_core/planning.py
+          echo '=== decomposer.py ==='
+          cat tmp181/ceo_core/decomposer.py
+          echo '=== verification plan ==='
+          sed -n '1,190p' tmp181/ceo_core/verification_v2.py
+          echo '=== scheduler verification task creation ==='
+          grep -nE 'layered_verification\.build_tasks|verification_scheduled|build_tasks\(' tmp181/ceo_core/scheduler.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tmp181/ceo_core/scheduler.py')
+          lines=p.read_text().splitlines()
+          for i,l in enumerate(lines,1):
+              if 'layered_verification.build_tasks' in l or 'verification_scheduled' in l:
+                  print('---',i,'---')
+                  for j in range(max(1,i-30),min(len(lines),i+65)+1):
+                      print(f'{j}: {lines[j-1]}')
+          PY
