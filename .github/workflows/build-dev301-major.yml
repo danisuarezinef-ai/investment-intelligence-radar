@@ -128,9 +128,12 @@ jobs:
           out=pathlib.Path('ceo-updates/CEO_1.5.77-rc1-reliability-control-plane.zip')
           out.unlink(missing_ok=True)
           fixed=(2026,9,20,12,0,0)
+          contract=__import__('json').loads((root/'CEO_UPDATE_PACKAGE.json').read_text(encoding='utf-8'))
+          required=sorted(contract['required_paths'])
           with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
-              for p in sorted(x for x in root.rglob('*') if x.is_file() and '__pycache__' not in x.parts and x.suffix!='.pyc'):
-                  rel=p.relative_to(root).as_posix()
+              for rel in required:
+                  p=root/rel
+                  assert p.is_file(), rel
                   info=zipfile.ZipInfo(rel,date_time=fixed)
                   info.create_system=0
                   info.compress_type=zipfile.ZIP_DEFLATED
