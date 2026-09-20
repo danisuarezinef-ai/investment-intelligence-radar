@@ -1,0 +1,29 @@
+name: Inspect DEV295 internal release coordinator
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev295-release-coordinator.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print coordinator
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp295
+          mkdir -p tmp295
+          unzip -q ceo-updates/CEO_1.5.71-rc1-update-confirm-bridge.zip -d tmp295
+          echo '=== internal_release_coordinator.py ==='
+          sed -n '1,360p' tmp295/ceo_core/internal_release_coordinator.py
+          echo '=== related files ==='
+          grep -RInE 'qualified-release|release queue|release_queue|internal_release|prepared manifest|MANIFEST_UNSIGNED|unsigned' tmp295/ceo_core tmp295/scripts --include='*.py' | head -n 500 || true
