@@ -1,0 +1,30 @@
+name: Inspect 1.5.82 quality correction exact
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-1582-quality-correction.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Inspect quality gate correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp182
+          mkdir -p tmp182
+          unzip -q ceo-updates/CEO_1.5.82-rc1-autonomy-bootstrap.zip -d tmp182
+          grep -RIn "def recover_quality_failure\|class .*QualityGate\|quality_below_threshold" tmp182/ceo_core --include='*.py'
+          echo '=== self correction module ==='
+          q=$(grep -RIl "def recover_quality_failure" tmp182/ceo_core | head -1); cat "$q"
+          echo '=== automatic quality gate module ==='
+          q=$(grep -RIl "class AutomaticQualityGate" tmp182/ceo_core | head -1); cat "$q"
