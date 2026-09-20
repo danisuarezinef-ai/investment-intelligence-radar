@@ -28,7 +28,7 @@ function Finish([int]$Code) {
     Write-Host ''
     Write-Host ('Log: ' + $logFile)
     Write-Host ''
-    Read-Host 'Pulsa ENTER para cerrar'
+    if ($env:CEO_ACTIVATOR_NO_PAUSE -ne '1') { Read-Host 'Pulsa ENTER para cerrar' }
     exit $Code
 }
 
@@ -91,7 +91,7 @@ try {
     Write-Host '  4. Confirmar'
     Write-Host ''
 
-    try { Start-Process ('http://127.0.0.1:' + $port + '/') } catch {}
+    if ($env:CEO_ACTIVATOR_NO_BROWSER -ne '1') { try { Start-Process ('http://127.0.0.1:' + $port + '/') } catch {} }
     Finish 0
 }
 catch {
