@@ -1,0 +1,132 @@
+name: Verify DEV301 activator
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev301-activator.yml'
+      - 'ceo-updates/DEV301_SIGN_AND_ACTIVATE.py'
+      - 'ceo-updates/ACTIVAR_ACTUALIZACION_MAYOR_1_5_77.cmd'
+      - 'ceo-updates/DEV301_MANIFEST_UNSIGNED.json'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile helper and validate exact release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile ceo-updates/DEV301_SIGN_AND_ACTIVATE.py
+          python - <<'PY'
+          import ast, hashlib, json, pathlib, re
+          root=pathlib.Path('ceo-updates')
+          helper=(root/'DEV301_SIGN_AND_ACTIVATE.py').read_text(encoding='utf-8')
+          cmd=(root/'ACTIVAR_ACTUALIZACION_MAYOR_1_5_77.cmd').read_text(encoding='utf-8')
+          manifest=json.loads((root/'DEV301_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+
+          expected={
+              'version':'1.5.77-rc1-reliability-control-plane',
+              'release_sequence':301,
+              'release_id':'dev301-1.5.77-rc1-reliability-control-plane',
+              'artifact_name':'CEO_1.5.77-rc1-reliability-control-plane.zip',
+              'size_bytes':1136201,
+              'sha256':'4c8058c74169cb3da71e33004c8efe0e1570749c88a015e812aaed30727ea433',
+          }
+          for k,v in expected.items():
+              assert manifest[k]==v,(k,manifest[k],v)
+
+          tree=ast.parse(helper)
+          constants={}
+          for node in tree.body:
+              if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name):
+                  try: constants[node.targets[0].id]=ast.literal_eval(node.value)
+                  except Exception: pass
+          mapping={
+              'VERSION':'version',
+              'RELEASE_SEQUENCE':'release_sequence',
+              'RELEASE_ID':'release_id',
+              'PACKAGE_NAME':'artifact_name',
+              'PACKAGE_SIZE':'size_bytes',
+              'PACKAGE_SHA256':'sha256',
+          }
+          for hk,mk in mapping.items():
+              assert constants.get(hk)==manifest[mk],(hk,constants.get(hk),manifest[mk])
+
+          forbidden=['DEV295','1.5.71-rc1-update-confirm-bridge','CEO_1.5.71-rc1-update-confirm-bridge.zip']
+          for token in forbidden:
+              assert token not in helper, token
+              assert token not in cmd, token
+
+          required_cmd=[
+              'DEV301_SIGN_AND_ACTIVATE.py',
+              '1.5.77 FIRMADA, PUBLICADA Y VERIFICADA',
+              'Actualizar CEO  -  Confirmar',
+              ':PUBLISHED',
+              ':SIGNED_ONLY',
+              'if "%RC%"=="0" goto PUBLISHED',
+              'if "%RC%"=="10" goto SIGNED_ONLY',
+              'NO crea ni rota claves',
+              'NO exporta la clave privada',
+              'NO instala sin tu confirmacion en CEO',
+          ]
+          for token in required_cmd:
+              assert token in cmd, token
+
+          assert 'format c:' not in cmd.lower()
+          assert 'del /s' not in cmd.lower()
+          assert 'rd /s' not in cmd.lower()
+          assert 'shutdown' not in cmd.lower()
+          assert 'reg delete' not in cmd.lower()
+          assert 'credential' not in cmd.lower()
+
+          print(json.dumps({
+              'helper_sha256':hashlib.sha256(helper.encode('utf-8')).hexdigest(),
+              'launcher_sha256':hashlib.sha256(cmd.encode('utf-8')).hexdigest(),
+              'release_identity':'PASS',
+              'forbidden_old_release_refs':'PASS',
+              'cmd_control_flow':'PASS',
+              'destructive_command_scan':'PASS',
+          },indent=2))
+          PY
+
+      - name: Verify helper fails closed outside Windows
+        shell: bash
+        run: |
+          set +e
+          python ceo-updates/DEV301_SIGN_AND_ACTIVATE.py > /tmp/dev301-helper.out 2>&1
+          rc=$?
+          set -e
+          cat /tmp/dev301-helper.out
+          test "$rc" -eq 6
+          grep -q '"status": "WINDOWS_REQUIRED"' /tmp/dev301-helper.out
+          grep -q '"private_key_exported": false' /tmp/dev301-helper.out
+
+      - name: Validate launcher structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import pathlib,re
+          p=pathlib.Path('ceo-updates/ACTIVAR_ACTUALIZACION_MAYOR_1_5_77.cmd')
+          text=p.read_text(encoding='utf-8')
+          labels=set(re.findall(r'(?m)^:([A-Za-z0-9_]+)\s*$',text))
+          gotos=re.findall(r'(?i)\bgoto\s+([A-Za-z0-9_]+)',text)
+          missing=[g for g in gotos if g.upper() not in {x.upper() for x in labels}]
+          assert not missing,missing
+          assert text.count('setlocal EnableExtensions')==1
+          assert text.count('"%PYEXE%" -u "%HELPER%"')==1
+          assert text.count('pause')>=4
+          print({'labels':sorted(labels),'gotos':gotos,'missing':missing,'status':'PASS'})
+          PY
