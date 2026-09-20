@@ -7,15 +7,15 @@
   "manifest_version": 2,
   "max_app_version": "",
   "min_app_version": "1.5.78-rc1-reliable-update-handoff",
-  "notes": "DEV303 Productive Resume Gate: coherent reliability epoch migration, historical recovery isolation, stale internal control retirement, productive-only liveness gating, explicit control-only deadlock escape, and fail-open startup when the optional local release signer is unavailable.",
+  "notes": "DEV303 Productive Resume Gate: coherent reliability epoch migration, historical recovery isolation, stale internal control retirement, productive-only liveness gating, explicit control-only deadlock escape, fail-open startup when the optional local release signer is unavailable, and corrected prepared-release branch authorization.",
   "package_contract_version": 1,
   "published_at": "2026-09-20T15:45:00Z",
   "release_id": "dev303-1.5.79-rc1-productive-resume-gate",
   "release_sequence": 303,
   "release_status": "release",
-  "sha256": "1dc6ca7436d6fa0af483a787e1f381d942bc6d4d8a925062ca4f51d5767b2845",
+  "sha256": "ad0513114df36eb02ce3013ac7068a476d6e99547666a24de36d4f3f55f6f75a",
   "signature_alg": "ed25519",
-  "size_bytes": 1138215,
+  "size_bytes": 1138219,
   "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.79-rc1-productive-resume-gate.zip",
   "version": "1.5.79-rc1-productive-resume-gate"
 }
