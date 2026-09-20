@@ -1,0 +1,27 @@
+name: Inspect DEV302 prepared bridge response
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev302-prepared-bridge-response.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Print prepared bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp178
+          mkdir -p tmp178
+          unzip -q ceo-updates/CEO_1.5.78-rc1-reliable-update-handoff.zip -d tmp178
+          cat tmp178/ceo_core/prepared_release_bridge.py
+          grep -nE 'activate_prepared_release|internal_release_status' tmp178/scripts/ceo_stdlib_work_mode.py
