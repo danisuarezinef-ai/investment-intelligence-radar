@@ -1,6 +1,7 @@
 param(
   [Parameter(Mandatory=$true)][string]$RecipePath,
   [Parameter(Mandatory=$true)][string]$Prompt,
+  [string]$ConversationUrl = "",
   [string]$ProfileDir = "",
   [int]$Port = 9227,
   [int]$TimeoutSeconds = 180,
@@ -173,6 +174,8 @@ function Current-Responses([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]
 
 $recipe = Get-Content -Raw -Encoding UTF8 $RecipePath | ConvertFrom-Json
 if(-not $recipe.url) { throw "Recipe URL missing" }
+$targetUrl = [string]$recipe.url
+if($ConversationUrl) { $targetUrl = $ConversationUrl }
 
 if(-not $ProfileDir) {
   $base = $env:LOCALAPPDATA
@@ -190,14 +193,14 @@ if(-not $NoLaunch) {
     "--user-data-dir=$ProfileDir",
     "--no-first-run",
     "--no-default-browser-check",
-    [string]$recipe.url
+    $targetUrl
   )
   Start-Process -FilePath $chrome -ArgumentList $args | Out-Null
 }
 
 try {
   Wait-DevTools $Port ([Math]::Min(30,$TimeoutSeconds)) | Out-Null
-  $target = Get-PageTarget $Port ([string]$recipe.url) ([Math]::Min(30,$TimeoutSeconds))
+  $target = Get-PageTarget $Port $targetUrl ([Math]::Min(30,$TimeoutSeconds))
   $ws = Connect-CDP ([string]$target.webSocketDebuggerUrl)
   try {
     Send-CDP $ws "Runtime.enable" @{} | Out-Null
