@@ -1,0 +1,171 @@
+name: Deep CEO architecture audit
+
+on:
+  push:
+    branches: [ceo-deep-stabilization-audit]
+    paths:
+      - '.github/workflows/deep-ceo-architecture-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-deep-stabilization-audit
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare field base and later candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v186 /tmp/v189native /tmp/v192 audit
+          mkdir -p /tmp/v186 /tmp/v189native /tmp/v192 audit
+          unzip -q ceo-updates/CEO_1.5.86-rc1-provider-session-integrity.zip -d /tmp/v186
+          unzip -q ceo-updates/CEO_1.5.89-rc1-native-transport-integrity.zip -d /tmp/v189native
+          unzip -q ceo-updates/CEO_1.5.92-rc1-native-transport-integrity.zip -d /tmp/v192
+          python - <<'PY'
+          import ast, hashlib, json, pathlib
+          roots={
+              "1.5.86":pathlib.Path("/tmp/v186"),
+              "1.5.89-native":pathlib.Path("/tmp/v189native"),
+              "1.5.92-linear":pathlib.Path("/tmp/v192"),
+          }
+          def inventory(root):
+              out={}
+              for p in root.rglob("*"):
+                  if p.is_file():
+                      rel=p.relative_to(root).as_posix()
+                      out[rel]=hashlib.sha256(p.read_bytes()).hexdigest()
+              return out
+          inv={k:inventory(v) for k,v in roots.items()}
+          def diff(a,b):
+              pa,pb=inv[a],inv[b]
+              keys=sorted(set(pa)|set(pb))
+              return {
+                  "added":[k for k in keys if k not in pa],
+                  "removed":[k for k in keys if k not in pb],
+                  "changed":[k for k in keys if k in pa and k in pb and pa[k]!=pb[k]],
+              }
+          report={
+              "files":{k:len(v) for k,v in inv.items()},
+              "diff_186_to_189native":diff("1.5.86","1.5.89-native"),
+              "diff_186_to_192":diff("1.5.86","1.5.92-linear"),
+              "diff_189native_to_192":diff("1.5.89-native","1.5.92-linear"),
+          }
+          pathlib.Path("audit/version_diff.json").write_text(json.dumps(report,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+          PY
+      - name: Build runtime import graph
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast, json, pathlib
+          root=pathlib.Path("ceo-canonical")
+          pyfiles={p.relative_to(root).as_posix():p for p in root.rglob("*.py")}
+          module_to_rel={}
+          for rel in pyfiles:
+              if rel.endswith("/__init__.py"):
+                  mod=rel[:-12].replace("/",".")
+              else:
+                  mod=rel[:-3].replace("/",".")
+              module_to_rel[mod]=rel
+          edges={rel:set() for rel in pyfiles}
+          for rel,p in pyfiles.items():
+              try: tree=ast.parse(p.read_text(encoding="utf-8"))
+              except Exception: continue
+              cur=rel[:-3].replace("/",".")
+              pkg=cur.rsplit(".",1)[0] if "." in cur else ""
+              for n in ast.walk(tree):
+                  names=[]
+                  if isinstance(n,ast.Import):
+                      names=[x.name for x in n.names]
+                  elif isinstance(n,ast.ImportFrom):
+                      if n.level:
+                          parts=pkg.split(".") if pkg else []
+                          base=".".join(parts[:max(0,len(parts)-n.level+1)])
+                          names=[(base+"."+ (n.module or "")).strip(".")]
+                      elif n.module:
+                          names=[n.module]
+                  for name in names:
+                      candidates=[name]
+                      parts=name.split(".")
+                      for i in range(len(parts),0,-1):
+                          candidates.append(".".join(parts[:i]))
+                      for c in candidates:
+                          if c in module_to_rel:
+                              edges[rel].add(module_to_rel[c]); break
+          seeds=[
+              "scripts/ceo_stdlib_work_mode.py",
+              "scripts/launch_current.py",
+              "scripts/relaunch_after_update.py",
+              "ceo_app/main.py",
+          ]
+          seen=set(); stack=[s for s in seeds if s in edges]
+          while stack:
+              x=stack.pop()
+              if x in seen: continue
+              seen.add(x)
+              stack.extend(edges.get(x,()))
+          core_all=[r for r in pyfiles if r.startswith("ceo_core/")]
+          android=[r for r in pyfiles if "/android_" in ("/"+r) or r.startswith("ceo_core/mobile") or "android" in pathlib.Path(r).name.lower()]
+          report={
+              "python_files_total":len(pyfiles),
+              "runtime_reachable":len(seen),
+              "runtime_unreachable":len(pyfiles)-len(seen),
+              "core_files_total":len(core_all),
+              "android_mobile_files":len(set(android)),
+              "seeds":seeds,
+              "reachable":sorted(seen),
+              "unreachable":sorted(set(pyfiles)-seen),
+          }
+          pathlib.Path("audit/import_graph.json").write_text(json.dumps(report,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+          PY
+      - name: Static risk scan
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast,json,pathlib,re
+          root=pathlib.Path("ceo-canonical")
+          rows=[]
+          totals={}
+          pats={
+             "broad_except_pass":re.compile(r"except\s+Exception(?:\s+as\s+\w+)?\s*:\s*(?:#.*\n\s*)?pass\b"),
+             "bare_except":re.compile(r"except\s*:\s*"),
+             "shell_true":re.compile(r"shell\s*=\s*True"),
+             "while_true":re.compile(r"while\s+True\s*:"),
+             "execution_enabled":re.compile(r"execution_enabled"),
+             "time_sleep":re.compile(r"time\.sleep\("),
+             "subprocess":re.compile(r"subprocess\."),
+             "global_mutation":re.compile(r"\bglobal\s+\w+"),
+          }
+          for p in root.rglob("*.py"):
+              text=p.read_text(encoding="utf-8",errors="replace")
+              rel=p.relative_to(root).as_posix()
+              row={"path":rel}
+              hit=False
+              for name,pat in pats.items():
+                  n=len(pat.findall(text))
+                  if n:
+                      row[name]=n; totals[name]=totals.get(name,0)+n; hit=True
+              if hit: rows.append(row)
+          pathlib.Path("audit/static_risks.json").write_text(json.dumps({"totals":totals,"files":rows},indent=2,sort_keys=True)+"\n",encoding="utf-8")
+          PY
+      - name: Compile base and later candidates
+        shell: bash
+        run: |
+          python -m compileall -q ceo-canonical
+          python -m compileall -q /tmp/v189native
+          python -m compileall -q /tmp/v192
+      - name: Commit audit evidence
+        shell: bash
+        run: |
+          git config user.name "CEO Stabilization Audit"
+          git config user.email "ceo-stabilization@local.invalid"
+          git add audit
+          git commit -m "Record architecture, version-diff and risk audit"
+          git push origin HEAD:ceo-deep-stabilization-audit
