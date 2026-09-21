@@ -1,0 +1,25 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.88-rc1-provider-trust-integrity.zip",
+    "sha256": "5a4bb72cd463b8a8470933f2bd692cd195a65d3d9a0943b550df8e7544dee8ca",
+    "size_bytes": 1151348
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.87-rc1-update-shell-integrity",
+  "candidate": "1.5.88-rc1-provider-trust-integrity",
+  "dev311_update_shell_inherited": true,
+  "direct_min_base": "1.5.86-rc1-provider-session-integrity",
+  "encrypted_trust_persistence": true,
+  "explicit_auth_rejection_revokes_trust": true,
+  "field_validation_pending": true,
+  "operator_install_confirmation_required": true,
+  "production_ready": false,
+  "release_sequence": 312,
+  "restart_trust_restore": true,
+  "security_passed": true,
+  "single_file_activator_verified": false,
+  "tests_passed": true,
+  "transport_failure_preserves_authenticated_state": true,
+  "windows_stage_preflight_passed": false
+}

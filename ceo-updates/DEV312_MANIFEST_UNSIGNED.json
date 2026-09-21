@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.88-rc1-provider-trust-integrity.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.86-rc1-provider-session-integrity",
+  "notes": "DEV312 Provider Trust Integrity: authenticated Gemini-key trust is persisted encrypted with Windows DPAPI and bound to the exact key fingerprint; transport errors and restart-time ConnectError cannot demote a previously authenticated credential; only an explicit authentication rejection revokes trust. Includes DEV311 update-shell and single-instance app-window fixes.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-21T12:45:00Z",
+  "release_id": "dev312-1.5.88-rc1-provider-trust-integrity",
+  "release_sequence": 312,
+  "release_status": "release",
+  "sha256": "5a4bb72cd463b8a8470933f2bd692cd195a65d3d9a0943b550df8e7544dee8ca",
+  "signature_alg": "ed25519",
+  "size_bytes": 1151348,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.88-rc1-provider-trust-integrity.zip",
+  "version": "1.5.88-rc1-provider-trust-integrity"
+}
