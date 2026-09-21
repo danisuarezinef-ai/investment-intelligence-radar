@@ -28,9 +28,9 @@ jobs:
         shell: pwsh
         run: |
           Push-Location ceo-browser
-          python -m py_compile browser_ai_worker.py test_browser_ai_worker.py test_harness_server.py
+          python -m py_compile browser_ai_worker.py programming_browser_loop.py test_browser_ai_worker.py test_programming_browser_loop.py test_harness_server.py
           if ($LASTEXITCODE -ne 0) { throw "compile failed" }
-          python -m unittest -v test_browser_ai_worker.py
+          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
           Pop-Location
 
@@ -82,14 +82,18 @@ jobs:
           from pathlib import Path
           scope=Path("ceo-browser/BROWSER_AI_WORKER_SCOPE.md").read_text(encoding="utf-8")
           core=Path("ceo-browser/browser_ai_worker.py").read_text(encoding="utf-8")
+          coding=Path("ceo-browser/programming_browser_loop.py").read_text(encoding="utf-8")
           driver=Path("ceo-browser/windows_chatgpt_cdp_driver.ps1").read_text(encoding="utf-8")
           recipe=Path("ceo-browser/recipes/chatgpt_web.json").read_text(encoding="utf-8")
-          joined="\n".join([core,driver,recipe])
+          joined="\n".join([core,coding,driver,recipe])
           assert "api.openai.com" not in joined.lower()
           assert "OPENAI_API_KEY" not in joined
           assert "no se modifica" in scope and "MVP_FIELD" in scope
           assert "no se publica una nueva versión de CEO" in scope
           assert "no se usa OpenAI API de pago" in scope
+          assert "git push" not in coding.lower()
+          assert "git commit" not in coding.lower()
+          assert "api.openai.com" not in coding.lower()
           print("FREE_BROWSER_BOUNDARY_PASS")
           '@ | Set-Content -Encoding UTF8 boundary.py
           python boundary.py
