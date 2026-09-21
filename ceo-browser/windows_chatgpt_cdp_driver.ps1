@@ -247,6 +247,34 @@ function Find-PromptInput([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]$
   return Eval-JS $ws $expr
 }
 
+function Current-Responses([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]$selectors) {
+  $sel = Selectors-Js @($selectors)
+  $expr = @"
+(() => {
+ const sels=$sel;
+ const roots=[document];
+ for(let i=0;i<roots.length;i++){
+   const root=roots[i];
+   let all=[];try{all=[...root.querySelectorAll("*")]}catch(e){}
+   for(const el of all){if(el.shadowRoot)roots.push(el.shadowRoot)}
+ }
+ for(const s of sels){
+   let nodes=[];
+   for(const root of roots){
+     try{nodes.push(...root.querySelectorAll(s))}catch(e){}
+   }
+   if(nodes.length){
+     return nodes.map((e,i)=>({i,text:(e.innerText||e.textContent||"").trim()})).filter(x=>x.text);
+   }
+ }
+ return [];
+})()
+"@
+  $value = Eval-JS $ws $expr
+  if($null -eq $value) { return @() }
+  return @($value)
+}
+
 function Get-SessionState([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]$loggedInSelectors,[object[]]$loginSelectors,[bool]$hasInput) {
   $logged=Selectors-Js @($loggedInSelectors)
   $login=Selectors-Js @($loginSelectors)
