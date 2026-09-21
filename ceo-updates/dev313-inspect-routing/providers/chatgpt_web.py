@@ -269,7 +269,9 @@ class ChatGPTWebTransport(AITransport):
             str(self.timeout_seconds),
         ]
         if request.conversation_id:
-            cmd.extend(["-ConversationUrl", str(request.conversation_id), "-NoLaunch"])
+            # Preserve the exact chat while still allowing Chrome to relaunch after
+            # a transient process loss.
+            cmd.extend(["-ConversationUrl", str(request.conversation_id)])
 
         try:
             creationflags = getattr(asyncio.subprocess, "CREATE_NO_WINDOW", 0)
