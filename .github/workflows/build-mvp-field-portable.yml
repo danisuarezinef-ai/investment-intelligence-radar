@@ -50,18 +50,11 @@ jobs:
         run: |
           @'
           import asyncio
-          import importlib.util
           import json
-          import os
           import pathlib
           import tempfile
 
-          root = pathlib.Path(os.environ["CEO_MVP_FIELD_EXACT"])
-          mod_path = root / "ceo_core" / "mvp_field_first_real_goal.py"
-          spec = importlib.util.spec_from_file_location("mvp_exact", mod_path)
-          mod = importlib.util.module_from_spec(spec)
-          assert spec and spec.loader
-          spec.loader.exec_module(mod)
+          import ceo_core.mvp_field_first_real_goal as mod
 
           def report():
               sentence = (
@@ -175,11 +168,8 @@ jobs:
         shell: pwsh
         run: |
           @'
-          import asyncio, importlib.util, os, pathlib, tempfile
-          root=pathlib.Path(os.environ["CEO_MVP_FIELD_EXACT"])
-          p=root/"ceo_core"/"mvp_field_first_real_goal.py"
-          spec=importlib.util.spec_from_file_location("mvp_exact_retry",p)
-          mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+          import asyncio, tempfile
+          import ceo_core.mvp_field_first_real_goal as mod
           calls={"n":0}
           class P:
               name="gemini-interactions"
