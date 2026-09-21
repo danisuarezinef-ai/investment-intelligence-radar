@@ -155,13 +155,20 @@ class PatchSandbox:
     def run_tests(self, command: list[str], *, timeout_seconds: int = 180) -> tuple[bool, str]:
         if not command:
             raise ValueError("test command required")
-        proc = subprocess.run(
-            command,
-            cwd=self.root,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-        )
+        # Rapid AI-generated edits can preserve both source size and coarse Windows
+        # mtime long enough for Python to reuse stale bytecode. Give every test run a
+        # fresh pycache root so the test result reflects the current candidate.
+        with tempfile.TemporaryDirectory(prefix="ceo-test-pycache-") as pycache:
+            env = os.environ.copy()
+            env["PYTHONPYCACHEPREFIX"] = pycache
+            proc = subprocess.run(
+                command,
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                env=env,
+            )
         output = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
         return proc.returncode == 0, output[-12_000:]
 
