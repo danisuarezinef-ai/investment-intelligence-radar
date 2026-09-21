@@ -36,6 +36,7 @@ REQUIRED_FIRST_TRIAL_FILES = (
     "run_b15_b18_physical_task.py",
     "run_b20_code_gate.ps1",
     "run_b20_code_gate.py",
+    "run_browser_restart_gate.ps1",
     "run_b29_b30_full_field_gate.ps1",
     "finalize_browser_field.py",
     "programming_browser_loop.py",
