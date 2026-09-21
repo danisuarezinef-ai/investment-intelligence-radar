@@ -701,353 +701,353 @@
       "pass": 100
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['897dfd229a674c49b16874133900cea0', 'a7b8d0706ba1427f8f756972fc6a0e90'], 'grounded_refs': ['897dfd229a674c49b16874133900cea0', 'a7b8d0706ba1427f8f756972fc6a0e90'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['6a67283403374474812de4250ff829b8', '58cfd42202a24e1d95acfc2bb44ffce4'], 'grounded_refs': ['6a67283403374474812de4250ff829b8', '58cfd42202a24e1d95acfc2bb44ffce4'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-0",
-      "ok": false,
+      "ok": true,
       "pass": 101
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['adfd863db8d944f1b876b23bf534fa24', '1992fa02f0eb4330adcca390829611b4'], 'grounded_refs': ['adfd863db8d944f1b876b23bf534fa24', '1992fa02f0eb4330adcca390829611b4'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['c873313c814848e1b3ed46e0ba35ccc4', 'fedc357598d74cd593aaeca0f06c4895'], 'grounded_refs': ['c873313c814848e1b3ed46e0ba35ccc4', 'fedc357598d74cd593aaeca0f06c4895'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-1",
-      "ok": false,
+      "ok": true,
       "pass": 102
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['6d34063a305e4843b4cd3923de95a6be', '6f1fc1923a964387894ed44d109eaafd'], 'grounded_refs': ['6d34063a305e4843b4cd3923de95a6be', '6f1fc1923a964387894ed44d109eaafd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['d1c5f5a15b2d4a929cd88ab5b41fc0ad', 'c4bccad113324681921701241e2b38cb'], 'grounded_refs': ['d1c5f5a15b2d4a929cd88ab5b41fc0ad', 'c4bccad113324681921701241e2b38cb'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-2",
-      "ok": false,
+      "ok": true,
       "pass": 103
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['660f513631f540848c3151a604728372', '7c4522dfb8bc43468f3ac38ccef3f2fe'], 'grounded_refs': ['660f513631f540848c3151a604728372', '7c4522dfb8bc43468f3ac38ccef3f2fe'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['582936e60ecf4038962eb8fd6ca46781', 'c6f0494f8e944aa0b9e3702bf063730b'], 'grounded_refs': ['582936e60ecf4038962eb8fd6ca46781', 'c6f0494f8e944aa0b9e3702bf063730b'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-3",
-      "ok": false,
+      "ok": true,
       "pass": 104
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['e62855b80c314b18b0be87457e31ee72', '71f07219f1fc435089efc0ed4f5d45cd'], 'grounded_refs': ['e62855b80c314b18b0be87457e31ee72', '71f07219f1fc435089efc0ed4f5d45cd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['7148cbf83b6d43ff9dc6d22dd78852c6', '02c683652efb4beea7a70b2976018ba9'], 'grounded_refs': ['7148cbf83b6d43ff9dc6d22dd78852c6', '02c683652efb4beea7a70b2976018ba9'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-4",
-      "ok": false,
+      "ok": true,
       "pass": 105
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['54786af76c1246489dc6035e2ef7e387', 'd5296d54f665424dae160b40c2c4613b'], 'grounded_refs': ['54786af76c1246489dc6035e2ef7e387', 'd5296d54f665424dae160b40c2c4613b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['f9ebcac57a294c57abc9241d118c01fc', 'a0855c4c27e4487d9f238f7d60441413'], 'grounded_refs': ['f9ebcac57a294c57abc9241d118c01fc', 'a0855c4c27e4487d9f238f7d60441413'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-5",
-      "ok": false,
+      "ok": true,
       "pass": 106
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['1e4111dbbbca429a8393d2e0633ce29f', 'b17cc10e26f543c78ac89c6542e96671'], 'grounded_refs': ['1e4111dbbbca429a8393d2e0633ce29f', 'b17cc10e26f543c78ac89c6542e96671'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['540a7b4f8e52408ab817360cd410c4b8', '63284e2c14104de4aa0c5ab53c1b30a2'], 'grounded_refs': ['540a7b4f8e52408ab817360cd410c4b8', '63284e2c14104de4aa0c5ab53c1b30a2'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-6",
-      "ok": false,
+      "ok": true,
       "pass": 107
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['d3b4182dd662480ca01ee08d766dd7c0', 'c4edd0a841724c0788d9bfcbc131b2d7'], 'grounded_refs': ['d3b4182dd662480ca01ee08d766dd7c0', 'c4edd0a841724c0788d9bfcbc131b2d7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['266955db546f4d9cba7b07d92952c8d6', 'def2bc286ee7423fba7b283d30977816'], 'grounded_refs': ['266955db546f4d9cba7b07d92952c8d6', 'def2bc286ee7423fba7b283d30977816'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-7",
-      "ok": false,
+      "ok": true,
       "pass": 108
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['e94c5b1957804fd6bfbdd6644e7389c8', '9d6dd6bac6124cf4b04ac145dc3a1ccc'], 'grounded_refs': ['e94c5b1957804fd6bfbdd6644e7389c8', '9d6dd6bac6124cf4b04ac145dc3a1ccc'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['2726bdc3909f4e61956ccecdfac83105', '2dcdfc54df214690a6b16fbd3ab684fd'], 'grounded_refs': ['2726bdc3909f4e61956ccecdfac83105', '2dcdfc54df214690a6b16fbd3ab684fd'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-8",
-      "ok": false,
+      "ok": true,
       "pass": 109
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['98e09bd5980e45309d41598afae96978', 'e20b55690c294bf0affb6b80e0d593f0'], 'grounded_refs': ['98e09bd5980e45309d41598afae96978', 'e20b55690c294bf0affb6b80e0d593f0'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['c988503e1d9549b59bfcf8335dfd74e0', 'e150faf829d84521b8a6a0987c9eaef3'], 'grounded_refs': ['c988503e1d9549b59bfcf8335dfd74e0', 'e150faf829d84521b8a6a0987c9eaef3'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-9",
-      "ok": false,
+      "ok": true,
       "pass": 110
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['4a7d07f669fe41d0a28a7c2ec4f28efb', '71077ceef8a14ff9a1c9d9d7435967f5'], 'grounded_refs': ['4a7d07f669fe41d0a28a7c2ec4f28efb', '71077ceef8a14ff9a1c9d9d7435967f5'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['27902249d6f14764b8d6f4b8fa24354d', 'd152566825d341ca8f51e4f1bce15771'], 'grounded_refs': ['27902249d6f14764b8d6f4b8fa24354d', 'd152566825d341ca8f51e4f1bce15771'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-10",
-      "ok": false,
+      "ok": true,
       "pass": 111
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['06b8219d08a84e468da01d6010d5a3db', '4fb702050b8d49739f5fea8251db2f4d'], 'grounded_refs': ['06b8219d08a84e468da01d6010d5a3db', '4fb702050b8d49739f5fea8251db2f4d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['3283966155f549608bbb1962727a20d8', '5cc9e8ba1a9940cc97901d74de004d05'], 'grounded_refs': ['3283966155f549608bbb1962727a20d8', '5cc9e8ba1a9940cc97901d74de004d05'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-11",
-      "ok": false,
+      "ok": true,
       "pass": 112
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['8423aa3d43d3487681700bee28e0c4c6', 'a2294ae8859e47dda57350617202b53a'], 'grounded_refs': ['8423aa3d43d3487681700bee28e0c4c6', 'a2294ae8859e47dda57350617202b53a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['af7deb0ca6e94ba3bf10002326eee745', '9eddf14cee2f48ff89bd0b28ef2708f6'], 'grounded_refs': ['af7deb0ca6e94ba3bf10002326eee745', '9eddf14cee2f48ff89bd0b28ef2708f6'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-12",
-      "ok": false,
+      "ok": true,
       "pass": 113
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['f8bcdf2df3a84f0d8eccf68e07fb7088', '80446b4225464589bc8acecac31e7543'], 'grounded_refs': ['f8bcdf2df3a84f0d8eccf68e07fb7088', '80446b4225464589bc8acecac31e7543'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['54cb43a041114bbca40071e901b7cab8', '31e519540717409388cb2546871524c3'], 'grounded_refs': ['54cb43a041114bbca40071e901b7cab8', '31e519540717409388cb2546871524c3'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-13",
-      "ok": false,
+      "ok": true,
       "pass": 114
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['41c70dc27598485cad2ff1a12d367bdb', '9d6c9cf8499e44508715d344adcd4e95'], 'grounded_refs': ['41c70dc27598485cad2ff1a12d367bdb', '9d6c9cf8499e44508715d344adcd4e95'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['a3ecefd2faf544f4816b3702e1c18976', '8556ae3e975d47d5acb3dda22a7fc63c'], 'grounded_refs': ['a3ecefd2faf544f4816b3702e1c18976', '8556ae3e975d47d5acb3dda22a7fc63c'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-14",
-      "ok": false,
+      "ok": true,
       "pass": 115
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['8d645dfd153841f98a638a846c6973d7', '8093dde4fc0d434c99868a6f64b6c13a'], 'grounded_refs': ['8d645dfd153841f98a638a846c6973d7', '8093dde4fc0d434c99868a6f64b6c13a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['3796981fe7aa445595ac8b2c433a44b6', 'c542234f802141f28dee68e520eb3ca5'], 'grounded_refs': ['3796981fe7aa445595ac8b2c433a44b6', 'c542234f802141f28dee68e520eb3ca5'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-15",
-      "ok": false,
+      "ok": true,
       "pass": 116
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['30c906089f7845758dea9f2366d066a6', '1938ee5e43304b22989e5f2151f8786d'], 'grounded_refs': ['30c906089f7845758dea9f2366d066a6', '1938ee5e43304b22989e5f2151f8786d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['7baad294e0004f0f9ee7be5e8992d870', 'bd4661c9db6b48ad993e819d8aa4124d'], 'grounded_refs': ['7baad294e0004f0f9ee7be5e8992d870', 'bd4661c9db6b48ad993e819d8aa4124d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-16",
-      "ok": false,
+      "ok": true,
       "pass": 117
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['0ee64907cb884026965678083f9d2c52', 'bcc0d48414ed4ae8a0a67635270da944'], 'grounded_refs': ['0ee64907cb884026965678083f9d2c52', 'bcc0d48414ed4ae8a0a67635270da944'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['2bc8b1298fcf47f98f69feb0f0580f24', '62694c006ebf4422ae0949ee8b6843cb'], 'grounded_refs': ['2bc8b1298fcf47f98f69feb0f0580f24', '62694c006ebf4422ae0949ee8b6843cb'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-17",
-      "ok": false,
+      "ok": true,
       "pass": 118
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['87e90fb013b04e7eb3e896c61c019798', '64aa2e1dcb3f4b8a91cec87a174fd506'], 'grounded_refs': ['87e90fb013b04e7eb3e896c61c019798', '64aa2e1dcb3f4b8a91cec87a174fd506'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['cbfbdd23e46744c78e4d32afac653411', '05a98ad9868045a684bd572747c6ae1d'], 'grounded_refs': ['cbfbdd23e46744c78e4d32afac653411', '05a98ad9868045a684bd572747c6ae1d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-18",
-      "ok": false,
+      "ok": true,
       "pass": 119
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['641d1b4641da4395b2e2c3b2d19222cd', '1b6d083ce57a49d6bcdd818974c19782'], 'grounded_refs': ['641d1b4641da4395b2e2c3b2d19222cd', '1b6d083ce57a49d6bcdd818974c19782'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['be8d14683a0e44de949b4bb7954a5642', '07a65f2040784db59bbd123ec52d1861'], 'grounded_refs': ['be8d14683a0e44de949b4bb7954a5642', '07a65f2040784db59bbd123ec52d1861'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-19",
-      "ok": false,
+      "ok": true,
       "pass": 120
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['6ae338c76b80454ea1b09e2a5d0b40fc', '329d9bb7f6ed464dba369ed81a78cf74'], 'grounded_refs': ['6ae338c76b80454ea1b09e2a5d0b40fc', '329d9bb7f6ed464dba369ed81a78cf74'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['9396d0e187734bba999c258cff2340a6', '0e22ae9628a246bc8669d35a82b4d3de'], 'grounded_refs': ['9396d0e187734bba999c258cff2340a6', '0e22ae9628a246bc8669d35a82b4d3de'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-20",
-      "ok": false,
+      "ok": true,
       "pass": 121
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['19b27eb24e8c4b9f927aab8a2e35f579', '368d48adb3614ad3874a2ca9c696a66e'], 'grounded_refs': ['19b27eb24e8c4b9f927aab8a2e35f579', '368d48adb3614ad3874a2ca9c696a66e'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['714de2610f93411db51b7bf47bd4fbc0', 'e7dd97f8297b4dafb815bee017d6b1d0'], 'grounded_refs': ['714de2610f93411db51b7bf47bd4fbc0', 'e7dd97f8297b4dafb815bee017d6b1d0'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-21",
-      "ok": false,
+      "ok": true,
       "pass": 122
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['1b7d6c7e78f74028adf6ccc3f51d8137', '67bb1c357af74449b3c1dbb9942f102b'], 'grounded_refs': ['1b7d6c7e78f74028adf6ccc3f51d8137', '67bb1c357af74449b3c1dbb9942f102b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['2e8dec53a16b46bb8d8487d13fb2cb9e', 'be472b0019874bdb80dde5b38796ee05'], 'grounded_refs': ['2e8dec53a16b46bb8d8487d13fb2cb9e', 'be472b0019874bdb80dde5b38796ee05'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-22",
-      "ok": false,
+      "ok": true,
       "pass": 123
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['79826d816ad94837bb67d13a9b609a11', 'ec042d32d9474605929bef35914c6289'], 'grounded_refs': ['79826d816ad94837bb67d13a9b609a11', 'ec042d32d9474605929bef35914c6289'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['713f31c10c6247a09e46d362a5fd98f0', '15b37935a05b443bb8c8b7c79d54eeed'], 'grounded_refs': ['713f31c10c6247a09e46d362a5fd98f0', '15b37935a05b443bb8c8b7c79d54eeed'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-23",
-      "ok": false,
+      "ok": true,
       "pass": 124
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['67084e17aac5405e996c31c3691f4025', '0447d88f93104e2280a3e59f43c7fb5f'], 'grounded_refs': ['67084e17aac5405e996c31c3691f4025', '0447d88f93104e2280a3e59f43c7fb5f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['96b817c00e7147adb4c2bd7a7cf482af', '829785deee7b4846a36a0d5f529ea587'], 'grounded_refs': ['96b817c00e7147adb4c2bd7a7cf482af', '829785deee7b4846a36a0d5f529ea587'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-24",
-      "ok": false,
+      "ok": true,
       "pass": 125
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['e651c6fc1f614c089f082c953aab928f', 'df2552048ea346448dfbb79104cbf786'], 'grounded_refs': ['e651c6fc1f614c089f082c953aab928f', 'df2552048ea346448dfbb79104cbf786'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['d926e74605f6487db32b4491009bcadb', '05e2be6ad11c4de48f820d1e4986c4ba'], 'grounded_refs': ['d926e74605f6487db32b4491009bcadb', '05e2be6ad11c4de48f820d1e4986c4ba'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-25",
-      "ok": false,
+      "ok": true,
       "pass": 126
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['41b43632734c47629d44ac01eeaae11d', '090435e92aac4bff874069dcfaac0472'], 'grounded_refs': ['41b43632734c47629d44ac01eeaae11d', '090435e92aac4bff874069dcfaac0472'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['87d90894146943328996151163da738a', '394ec14b7f334dd38ba158c6a2aa1603'], 'grounded_refs': ['87d90894146943328996151163da738a', '394ec14b7f334dd38ba158c6a2aa1603'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-26",
-      "ok": false,
+      "ok": true,
       "pass": 127
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['cc4b8d25d7a54cb798864b7e82b6ee0b', '07a954e7f74f46eba246878d4ed05dfd'], 'grounded_refs': ['cc4b8d25d7a54cb798864b7e82b6ee0b', '07a954e7f74f46eba246878d4ed05dfd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['07ffa338874844a199a94a0c58ad1dce', 'd479372661604b59aeaf6813383af0b2'], 'grounded_refs': ['07ffa338874844a199a94a0c58ad1dce', 'd479372661604b59aeaf6813383af0b2'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-27",
-      "ok": false,
+      "ok": true,
       "pass": 128
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['50f8618c54254cd8a77d4d5484cd58c2', '260c9ad2bb34470ab83c62dc0668b707'], 'grounded_refs': ['50f8618c54254cd8a77d4d5484cd58c2', '260c9ad2bb34470ab83c62dc0668b707'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['facc4bd8510c400bae87db722c167360', 'd81c5b41b10448eeb81b7eed7d8723ab'], 'grounded_refs': ['facc4bd8510c400bae87db722c167360', 'd81c5b41b10448eeb81b7eed7d8723ab'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-28",
-      "ok": false,
+      "ok": true,
       "pass": 129
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['ee6c1822cad74cd1a46862a7faa15d95', 'ce3b15dddec84d09a2609b420a28939e'], 'grounded_refs': ['ee6c1822cad74cd1a46862a7faa15d95', 'ce3b15dddec84d09a2609b420a28939e'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['3fb3ffd528de471dbd95b9168fc9b24e', '4ab78fe78af14d64a04ec300b10f8a5d'], 'grounded_refs': ['3fb3ffd528de471dbd95b9168fc9b24e', '4ab78fe78af14d64a04ec300b10f8a5d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-29",
-      "ok": false,
+      "ok": true,
       "pass": 130
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['527447fd1e0f4521b32ff58054d41695', '93c1c7e010bc49dd94bb6b116259d5ff'], 'grounded_refs': ['527447fd1e0f4521b32ff58054d41695', '93c1c7e010bc49dd94bb6b116259d5ff'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['d4fb3dbdaa234f7d8b8b5db869a07352', '9bcf182d6eec4610ba4957fca52fd120'], 'grounded_refs': ['d4fb3dbdaa234f7d8b8b5db869a07352', '9bcf182d6eec4610ba4957fca52fd120'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-30",
-      "ok": false,
+      "ok": true,
       "pass": 131
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['9229751fb1e24733a693a680c24b5b56', 'eb37667b227043278f87c7341c12c4c7'], 'grounded_refs': ['9229751fb1e24733a693a680c24b5b56', 'eb37667b227043278f87c7341c12c4c7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['aefcbd6c355043a698d2ed3309d068cb', 'f5c4a0885b32491d84e1a0bf6bf8a312'], 'grounded_refs': ['aefcbd6c355043a698d2ed3309d068cb', 'f5c4a0885b32491d84e1a0bf6bf8a312'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-31",
-      "ok": false,
+      "ok": true,
       "pass": 132
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['abf1ff40957e43139aa3f9f169792cd7', 'd93039ddb69a483a8d3fd49e20094f1b'], 'grounded_refs': ['abf1ff40957e43139aa3f9f169792cd7', 'd93039ddb69a483a8d3fd49e20094f1b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['f5a2da51690f4b78a760cd3f971517df', '4aa52a9f14dd46259ca2914f221b217e'], 'grounded_refs': ['f5a2da51690f4b78a760cd3f971517df', '4aa52a9f14dd46259ca2914f221b217e'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-32",
-      "ok": false,
+      "ok": true,
       "pass": 133
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['0d4842eda392434b810471f2f02fe88c', '2e4824e6b106472382590d92a83fb490'], 'grounded_refs': ['0d4842eda392434b810471f2f02fe88c', '2e4824e6b106472382590d92a83fb490'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['cf9c557a5846476cbb5569719b69f351', 'b18d91b406bf47c2b3efdef6214677ba'], 'grounded_refs': ['cf9c557a5846476cbb5569719b69f351', 'b18d91b406bf47c2b3efdef6214677ba'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-33",
-      "ok": false,
+      "ok": true,
       "pass": 134
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['f9af844fe6714fdc9e39dfa4ec01d18e', '58302e2859444a21a08e33c49d428a07'], 'grounded_refs': ['f9af844fe6714fdc9e39dfa4ec01d18e', '58302e2859444a21a08e33c49d428a07'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['13ac99b9b4374c96ba5df74d6602e9ad', '26809faae0714f9fbc088608b0aaf269'], 'grounded_refs': ['13ac99b9b4374c96ba5df74d6602e9ad', '26809faae0714f9fbc088608b0aaf269'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-34",
-      "ok": false,
+      "ok": true,
       "pass": 135
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['61a0a78aac7541c48845144c0330ede5', 'adb91ba27c224526ae6725d9359e27c7'], 'grounded_refs': ['61a0a78aac7541c48845144c0330ede5', 'adb91ba27c224526ae6725d9359e27c7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['bd1c68946416472ca101b44a63be5a61', 'db0265fb173f483fb7f4eed11da07723'], 'grounded_refs': ['bd1c68946416472ca101b44a63be5a61', 'db0265fb173f483fb7f4eed11da07723'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-35",
-      "ok": false,
+      "ok": true,
       "pass": 136
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['da324b9c23204e5db9598db4e529f775', 'e8e1b3911b7c461b8f39488a962f91ff'], 'grounded_refs': ['da324b9c23204e5db9598db4e529f775', 'e8e1b3911b7c461b8f39488a962f91ff'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['2b843baf40e24aec8770b2e6b5bbc56d', 'e45e7e082735425ead7a010b5ca3018c'], 'grounded_refs': ['2b843baf40e24aec8770b2e6b5bbc56d', 'e45e7e082735425ead7a010b5ca3018c'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-36",
-      "ok": false,
+      "ok": true,
       "pass": 137
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['0f7a7b985085438081a587c61841c198', 'f28a678761ed495d92cbbf0d824bca5b'], 'grounded_refs': ['0f7a7b985085438081a587c61841c198', 'f28a678761ed495d92cbbf0d824bca5b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['8d065b3454cd4540a9ded47584062f6c', '01ad73d3051144eaadebf532b3a64168'], 'grounded_refs': ['8d065b3454cd4540a9ded47584062f6c', '01ad73d3051144eaadebf532b3a64168'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-37",
-      "ok": false,
+      "ok": true,
       "pass": 138
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['c60fd6611e7e4cefb8f21d951bbf3549', 'd3fb724fec76427285e6ff7d4875d99c'], 'grounded_refs': ['c60fd6611e7e4cefb8f21d951bbf3549', 'd3fb724fec76427285e6ff7d4875d99c'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['aa8569d13d9745fe8e0d680e89896fe8', '1795bf0ee39e4022b50888ce924936a2'], 'grounded_refs': ['aa8569d13d9745fe8e0d680e89896fe8', '1795bf0ee39e4022b50888ce924936a2'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-38",
-      "ok": false,
+      "ok": true,
       "pass": 139
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['817e13737447450e97b14cd92b448e9f', '6a16db64cc6d4a94a536230c86f71946'], 'grounded_refs': ['817e13737447450e97b14cd92b448e9f', '6a16db64cc6d4a94a536230c86f71946'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['2a4758d95c5f4bd380ddfb83b525806f', '0a42e93aca1243ee80b9fe3760fa8d26'], 'grounded_refs': ['2a4758d95c5f4bd380ddfb83b525806f', '0a42e93aca1243ee80b9fe3760fa8d26'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-39",
-      "ok": false,
+      "ok": true,
       "pass": 140
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['fd2bdcbda1c749bfbf21283960d6a655', '0d62c24c8bdf4dd997c2d9f217882871'], 'grounded_refs': ['fd2bdcbda1c749bfbf21283960d6a655', '0d62c24c8bdf4dd997c2d9f217882871'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['00a8043fbd3241158b46ba865aa453b8', '13afe35dcf1f4d3e8dc28eabad95711d'], 'grounded_refs': ['00a8043fbd3241158b46ba865aa453b8', '13afe35dcf1f4d3e8dc28eabad95711d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-40",
-      "ok": false,
+      "ok": true,
       "pass": 141
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['828f173bc4b54c3fa5a9fd7c6aaea853', '9d333a08b5ff4e6e8980b6165b27d39f'], 'grounded_refs': ['828f173bc4b54c3fa5a9fd7c6aaea853', '9d333a08b5ff4e6e8980b6165b27d39f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['341cf7fdb735485ead3cd9ddfbd67ee4', '6d102a74317f4f98a33d217b385ca275'], 'grounded_refs': ['341cf7fdb735485ead3cd9ddfbd67ee4', '6d102a74317f4f98a33d217b385ca275'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-41",
-      "ok": false,
+      "ok": true,
       "pass": 142
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['ca297e65b60046a3a14c8d2abbd57446', '2a3ae356fe614b93b9d9da8db9877251'], 'grounded_refs': ['ca297e65b60046a3a14c8d2abbd57446', '2a3ae356fe614b93b9d9da8db9877251'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['74f802c261d7457c840963afeeba8d7d', '65a252fc0c1642028abcfd9e3e4bd5b2'], 'grounded_refs': ['74f802c261d7457c840963afeeba8d7d', '65a252fc0c1642028abcfd9e3e4bd5b2'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-42",
-      "ok": false,
+      "ok": true,
       "pass": 143
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['429f395bfe3648f7932db541fe7cbaaf', 'ce757d82425b49a9af5e75f8072277c6'], 'grounded_refs': ['429f395bfe3648f7932db541fe7cbaaf', 'ce757d82425b49a9af5e75f8072277c6'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['0b01f428e6594c7cb4df0d39336cd501', '36fa0226ac564659aec3528bced26c84'], 'grounded_refs': ['0b01f428e6594c7cb4df0d39336cd501', '36fa0226ac564659aec3528bced26c84'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-43",
-      "ok": false,
+      "ok": true,
       "pass": 144
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['7c8e5a30c0ed4797a3850f9a1b47bd48', 'ffa179e408394881a118cfe8bf50b470'], 'grounded_refs': ['7c8e5a30c0ed4797a3850f9a1b47bd48', 'ffa179e408394881a118cfe8bf50b470'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['d879ea2e7b3841568183cc4875508a2c', 'a49b2156d3ae41d5a6d01187f9a0554c'], 'grounded_refs': ['d879ea2e7b3841568183cc4875508a2c', 'a49b2156d3ae41d5a6d01187f9a0554c'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-44",
-      "ok": false,
+      "ok": true,
       "pass": 145
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['79c5c6999923408aa26d536dd7f89c6f', 'f6818396d88e4bd9a4d4130aa2071205'], 'grounded_refs': ['79c5c6999923408aa26d536dd7f89c6f', 'f6818396d88e4bd9a4d4130aa2071205'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['3e3209582c87400dbf8b90e47206079b', 'f2919751dc3e4484a9b0c2c605f57a34'], 'grounded_refs': ['3e3209582c87400dbf8b90e47206079b', 'f2919751dc3e4484a9b0c2c605f57a34'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-45",
-      "ok": false,
+      "ok": true,
       "pass": 146
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['e132309f74114544a25ccccb6818b22d', '42449563bde6459ba5405f75187ad8c0'], 'grounded_refs': ['e132309f74114544a25ccccb6818b22d', '42449563bde6459ba5405f75187ad8c0'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['fac1aa6ff4dd4cbca9e6a68d5745263e', 'c2cdca25791545f79d1330d019177f7f'], 'grounded_refs': ['fac1aa6ff4dd4cbca9e6a68d5745263e', 'c2cdca25791545f79d1330d019177f7f'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-46",
-      "ok": false,
+      "ok": true,
       "pass": 147
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['3efa0991caf44813ad94cf051df5f36d', '0ad0794b79d2455182d4e2d259fa1709'], 'grounded_refs': ['3efa0991caf44813ad94cf051df5f36d', '0ad0794b79d2455182d4e2d259fa1709'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['fcd269a1da9447529dc6b7570c285495', 'c8abc4b54597437fa0221da4f979e493'], 'grounded_refs': ['fcd269a1da9447529dc6b7570c285495', 'c8abc4b54597437fa0221da4f979e493'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-47",
-      "ok": false,
+      "ok": true,
       "pass": 148
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['b1996565914e41f0af0f8864d4090369', '642a86645da74b54a95d10f678618614'], 'grounded_refs': ['b1996565914e41f0af0f8864d4090369', '642a86645da74b54a95d10f678618614'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['34bef0e994464bdda3f0bc08d7874fac', '056f637c9561463ab7dc5597c5cbc60d'], 'grounded_refs': ['34bef0e994464bdda3f0bc08d7874fac', '056f637c9561463ab7dc5597c5cbc60d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-48",
-      "ok": false,
+      "ok": true,
       "pass": 149
     },
     {
-      "detail": "{'eligible': False, 'evidence_refs': ['43ebb3f4a59a46d88994ee66bc96d301', '52f4236c2bff4c209272f28d5dc2546b'], 'grounded_refs': ['43ebb3f4a59a46d88994ee66bc96d301', '52f4236c2bff4c209272f28d5dc2546b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "detail": "{'eligible': True, 'evidence_refs': ['3f571f4a9b9545e2aa8988c413f7f10b', '81312ad6883d461b985b8c507d33f69d'], 'grounded_refs': ['3f571f4a9b9545e2aa8988c413f7f10b', '81312ad6883d461b985b8c507d33f69d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-49",
-      "ok": false,
+      "ok": true,
       "pass": 150
     },
     {
@@ -2101,7 +2101,7 @@
       "pass": 300
     }
   ],
-  "failed": 89,
+  "failed": 39,
   "failures": [
     {
       "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
@@ -2172,356 +2172,6 @@
       "name": "recovery=9,mode=4",
       "ok": false,
       "pass": 50
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['897dfd229a674c49b16874133900cea0', 'a7b8d0706ba1427f8f756972fc6a0e90'], 'grounded_refs': ['897dfd229a674c49b16874133900cea0', 'a7b8d0706ba1427f8f756972fc6a0e90'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-0",
-      "ok": false,
-      "pass": 101
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['adfd863db8d944f1b876b23bf534fa24', '1992fa02f0eb4330adcca390829611b4'], 'grounded_refs': ['adfd863db8d944f1b876b23bf534fa24', '1992fa02f0eb4330adcca390829611b4'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-1",
-      "ok": false,
-      "pass": 102
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['6d34063a305e4843b4cd3923de95a6be', '6f1fc1923a964387894ed44d109eaafd'], 'grounded_refs': ['6d34063a305e4843b4cd3923de95a6be', '6f1fc1923a964387894ed44d109eaafd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-2",
-      "ok": false,
-      "pass": 103
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['660f513631f540848c3151a604728372', '7c4522dfb8bc43468f3ac38ccef3f2fe'], 'grounded_refs': ['660f513631f540848c3151a604728372', '7c4522dfb8bc43468f3ac38ccef3f2fe'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-3",
-      "ok": false,
-      "pass": 104
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['e62855b80c314b18b0be87457e31ee72', '71f07219f1fc435089efc0ed4f5d45cd'], 'grounded_refs': ['e62855b80c314b18b0be87457e31ee72', '71f07219f1fc435089efc0ed4f5d45cd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-4",
-      "ok": false,
-      "pass": 105
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['54786af76c1246489dc6035e2ef7e387', 'd5296d54f665424dae160b40c2c4613b'], 'grounded_refs': ['54786af76c1246489dc6035e2ef7e387', 'd5296d54f665424dae160b40c2c4613b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-5",
-      "ok": false,
-      "pass": 106
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['1e4111dbbbca429a8393d2e0633ce29f', 'b17cc10e26f543c78ac89c6542e96671'], 'grounded_refs': ['1e4111dbbbca429a8393d2e0633ce29f', 'b17cc10e26f543c78ac89c6542e96671'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-6",
-      "ok": false,
-      "pass": 107
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['d3b4182dd662480ca01ee08d766dd7c0', 'c4edd0a841724c0788d9bfcbc131b2d7'], 'grounded_refs': ['d3b4182dd662480ca01ee08d766dd7c0', 'c4edd0a841724c0788d9bfcbc131b2d7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-7",
-      "ok": false,
-      "pass": 108
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['e94c5b1957804fd6bfbdd6644e7389c8', '9d6dd6bac6124cf4b04ac145dc3a1ccc'], 'grounded_refs': ['e94c5b1957804fd6bfbdd6644e7389c8', '9d6dd6bac6124cf4b04ac145dc3a1ccc'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-8",
-      "ok": false,
-      "pass": 109
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['98e09bd5980e45309d41598afae96978', 'e20b55690c294bf0affb6b80e0d593f0'], 'grounded_refs': ['98e09bd5980e45309d41598afae96978', 'e20b55690c294bf0affb6b80e0d593f0'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-9",
-      "ok": false,
-      "pass": 110
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['4a7d07f669fe41d0a28a7c2ec4f28efb', '71077ceef8a14ff9a1c9d9d7435967f5'], 'grounded_refs': ['4a7d07f669fe41d0a28a7c2ec4f28efb', '71077ceef8a14ff9a1c9d9d7435967f5'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-10",
-      "ok": false,
-      "pass": 111
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['06b8219d08a84e468da01d6010d5a3db', '4fb702050b8d49739f5fea8251db2f4d'], 'grounded_refs': ['06b8219d08a84e468da01d6010d5a3db', '4fb702050b8d49739f5fea8251db2f4d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-11",
-      "ok": false,
-      "pass": 112
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['8423aa3d43d3487681700bee28e0c4c6', 'a2294ae8859e47dda57350617202b53a'], 'grounded_refs': ['8423aa3d43d3487681700bee28e0c4c6', 'a2294ae8859e47dda57350617202b53a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-12",
-      "ok": false,
-      "pass": 113
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['f8bcdf2df3a84f0d8eccf68e07fb7088', '80446b4225464589bc8acecac31e7543'], 'grounded_refs': ['f8bcdf2df3a84f0d8eccf68e07fb7088', '80446b4225464589bc8acecac31e7543'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-13",
-      "ok": false,
-      "pass": 114
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['41c70dc27598485cad2ff1a12d367bdb', '9d6c9cf8499e44508715d344adcd4e95'], 'grounded_refs': ['41c70dc27598485cad2ff1a12d367bdb', '9d6c9cf8499e44508715d344adcd4e95'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-14",
-      "ok": false,
-      "pass": 115
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['8d645dfd153841f98a638a846c6973d7', '8093dde4fc0d434c99868a6f64b6c13a'], 'grounded_refs': ['8d645dfd153841f98a638a846c6973d7', '8093dde4fc0d434c99868a6f64b6c13a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-15",
-      "ok": false,
-      "pass": 116
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['30c906089f7845758dea9f2366d066a6', '1938ee5e43304b22989e5f2151f8786d'], 'grounded_refs': ['30c906089f7845758dea9f2366d066a6', '1938ee5e43304b22989e5f2151f8786d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-16",
-      "ok": false,
-      "pass": 117
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['0ee64907cb884026965678083f9d2c52', 'bcc0d48414ed4ae8a0a67635270da944'], 'grounded_refs': ['0ee64907cb884026965678083f9d2c52', 'bcc0d48414ed4ae8a0a67635270da944'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-17",
-      "ok": false,
-      "pass": 118
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['87e90fb013b04e7eb3e896c61c019798', '64aa2e1dcb3f4b8a91cec87a174fd506'], 'grounded_refs': ['87e90fb013b04e7eb3e896c61c019798', '64aa2e1dcb3f4b8a91cec87a174fd506'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-18",
-      "ok": false,
-      "pass": 119
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['641d1b4641da4395b2e2c3b2d19222cd', '1b6d083ce57a49d6bcdd818974c19782'], 'grounded_refs': ['641d1b4641da4395b2e2c3b2d19222cd', '1b6d083ce57a49d6bcdd818974c19782'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-19",
-      "ok": false,
-      "pass": 120
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['6ae338c76b80454ea1b09e2a5d0b40fc', '329d9bb7f6ed464dba369ed81a78cf74'], 'grounded_refs': ['6ae338c76b80454ea1b09e2a5d0b40fc', '329d9bb7f6ed464dba369ed81a78cf74'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-20",
-      "ok": false,
-      "pass": 121
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['19b27eb24e8c4b9f927aab8a2e35f579', '368d48adb3614ad3874a2ca9c696a66e'], 'grounded_refs': ['19b27eb24e8c4b9f927aab8a2e35f579', '368d48adb3614ad3874a2ca9c696a66e'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-21",
-      "ok": false,
-      "pass": 122
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['1b7d6c7e78f74028adf6ccc3f51d8137', '67bb1c357af74449b3c1dbb9942f102b'], 'grounded_refs': ['1b7d6c7e78f74028adf6ccc3f51d8137', '67bb1c357af74449b3c1dbb9942f102b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-22",
-      "ok": false,
-      "pass": 123
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['79826d816ad94837bb67d13a9b609a11', 'ec042d32d9474605929bef35914c6289'], 'grounded_refs': ['79826d816ad94837bb67d13a9b609a11', 'ec042d32d9474605929bef35914c6289'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-23",
-      "ok": false,
-      "pass": 124
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['67084e17aac5405e996c31c3691f4025', '0447d88f93104e2280a3e59f43c7fb5f'], 'grounded_refs': ['67084e17aac5405e996c31c3691f4025', '0447d88f93104e2280a3e59f43c7fb5f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-24",
-      "ok": false,
-      "pass": 125
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['e651c6fc1f614c089f082c953aab928f', 'df2552048ea346448dfbb79104cbf786'], 'grounded_refs': ['e651c6fc1f614c089f082c953aab928f', 'df2552048ea346448dfbb79104cbf786'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-25",
-      "ok": false,
-      "pass": 126
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['41b43632734c47629d44ac01eeaae11d', '090435e92aac4bff874069dcfaac0472'], 'grounded_refs': ['41b43632734c47629d44ac01eeaae11d', '090435e92aac4bff874069dcfaac0472'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-26",
-      "ok": false,
-      "pass": 127
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['cc4b8d25d7a54cb798864b7e82b6ee0b', '07a954e7f74f46eba246878d4ed05dfd'], 'grounded_refs': ['cc4b8d25d7a54cb798864b7e82b6ee0b', '07a954e7f74f46eba246878d4ed05dfd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-27",
-      "ok": false,
-      "pass": 128
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['50f8618c54254cd8a77d4d5484cd58c2', '260c9ad2bb34470ab83c62dc0668b707'], 'grounded_refs': ['50f8618c54254cd8a77d4d5484cd58c2', '260c9ad2bb34470ab83c62dc0668b707'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-28",
-      "ok": false,
-      "pass": 129
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['ee6c1822cad74cd1a46862a7faa15d95', 'ce3b15dddec84d09a2609b420a28939e'], 'grounded_refs': ['ee6c1822cad74cd1a46862a7faa15d95', 'ce3b15dddec84d09a2609b420a28939e'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-29",
-      "ok": false,
-      "pass": 130
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['527447fd1e0f4521b32ff58054d41695', '93c1c7e010bc49dd94bb6b116259d5ff'], 'grounded_refs': ['527447fd1e0f4521b32ff58054d41695', '93c1c7e010bc49dd94bb6b116259d5ff'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-30",
-      "ok": false,
-      "pass": 131
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['9229751fb1e24733a693a680c24b5b56', 'eb37667b227043278f87c7341c12c4c7'], 'grounded_refs': ['9229751fb1e24733a693a680c24b5b56', 'eb37667b227043278f87c7341c12c4c7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-31",
-      "ok": false,
-      "pass": 132
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['abf1ff40957e43139aa3f9f169792cd7', 'd93039ddb69a483a8d3fd49e20094f1b'], 'grounded_refs': ['abf1ff40957e43139aa3f9f169792cd7', 'd93039ddb69a483a8d3fd49e20094f1b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-32",
-      "ok": false,
-      "pass": 133
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['0d4842eda392434b810471f2f02fe88c', '2e4824e6b106472382590d92a83fb490'], 'grounded_refs': ['0d4842eda392434b810471f2f02fe88c', '2e4824e6b106472382590d92a83fb490'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-33",
-      "ok": false,
-      "pass": 134
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['f9af844fe6714fdc9e39dfa4ec01d18e', '58302e2859444a21a08e33c49d428a07'], 'grounded_refs': ['f9af844fe6714fdc9e39dfa4ec01d18e', '58302e2859444a21a08e33c49d428a07'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-34",
-      "ok": false,
-      "pass": 135
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['61a0a78aac7541c48845144c0330ede5', 'adb91ba27c224526ae6725d9359e27c7'], 'grounded_refs': ['61a0a78aac7541c48845144c0330ede5', 'adb91ba27c224526ae6725d9359e27c7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-35",
-      "ok": false,
-      "pass": 136
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['da324b9c23204e5db9598db4e529f775', 'e8e1b3911b7c461b8f39488a962f91ff'], 'grounded_refs': ['da324b9c23204e5db9598db4e529f775', 'e8e1b3911b7c461b8f39488a962f91ff'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-36",
-      "ok": false,
-      "pass": 137
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['0f7a7b985085438081a587c61841c198', 'f28a678761ed495d92cbbf0d824bca5b'], 'grounded_refs': ['0f7a7b985085438081a587c61841c198', 'f28a678761ed495d92cbbf0d824bca5b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-37",
-      "ok": false,
-      "pass": 138
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['c60fd6611e7e4cefb8f21d951bbf3549', 'd3fb724fec76427285e6ff7d4875d99c'], 'grounded_refs': ['c60fd6611e7e4cefb8f21d951bbf3549', 'd3fb724fec76427285e6ff7d4875d99c'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-38",
-      "ok": false,
-      "pass": 139
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['817e13737447450e97b14cd92b448e9f', '6a16db64cc6d4a94a536230c86f71946'], 'grounded_refs': ['817e13737447450e97b14cd92b448e9f', '6a16db64cc6d4a94a536230c86f71946'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-39",
-      "ok": false,
-      "pass": 140
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['fd2bdcbda1c749bfbf21283960d6a655', '0d62c24c8bdf4dd997c2d9f217882871'], 'grounded_refs': ['fd2bdcbda1c749bfbf21283960d6a655', '0d62c24c8bdf4dd997c2d9f217882871'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-40",
-      "ok": false,
-      "pass": 141
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['828f173bc4b54c3fa5a9fd7c6aaea853', '9d333a08b5ff4e6e8980b6165b27d39f'], 'grounded_refs': ['828f173bc4b54c3fa5a9fd7c6aaea853', '9d333a08b5ff4e6e8980b6165b27d39f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-41",
-      "ok": false,
-      "pass": 142
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['ca297e65b60046a3a14c8d2abbd57446', '2a3ae356fe614b93b9d9da8db9877251'], 'grounded_refs': ['ca297e65b60046a3a14c8d2abbd57446', '2a3ae356fe614b93b9d9da8db9877251'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-42",
-      "ok": false,
-      "pass": 143
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['429f395bfe3648f7932db541fe7cbaaf', 'ce757d82425b49a9af5e75f8072277c6'], 'grounded_refs': ['429f395bfe3648f7932db541fe7cbaaf', 'ce757d82425b49a9af5e75f8072277c6'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-43",
-      "ok": false,
-      "pass": 144
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['7c8e5a30c0ed4797a3850f9a1b47bd48', 'ffa179e408394881a118cfe8bf50b470'], 'grounded_refs': ['7c8e5a30c0ed4797a3850f9a1b47bd48', 'ffa179e408394881a118cfe8bf50b470'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-44",
-      "ok": false,
-      "pass": 145
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['79c5c6999923408aa26d536dd7f89c6f', 'f6818396d88e4bd9a4d4130aa2071205'], 'grounded_refs': ['79c5c6999923408aa26d536dd7f89c6f', 'f6818396d88e4bd9a4d4130aa2071205'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-45",
-      "ok": false,
-      "pass": 146
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['e132309f74114544a25ccccb6818b22d', '42449563bde6459ba5405f75187ad8c0'], 'grounded_refs': ['e132309f74114544a25ccccb6818b22d', '42449563bde6459ba5405f75187ad8c0'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-46",
-      "ok": false,
-      "pass": 147
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['3efa0991caf44813ad94cf051df5f36d', '0ad0794b79d2455182d4e2d259fa1709'], 'grounded_refs': ['3efa0991caf44813ad94cf051df5f36d', '0ad0794b79d2455182d4e2d259fa1709'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-47",
-      "ok": false,
-      "pass": 148
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['b1996565914e41f0af0f8864d4090369', '642a86645da74b54a95d10f678618614'], 'grounded_refs': ['b1996565914e41f0af0f8864d4090369', '642a86645da74b54a95d10f678618614'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-48",
-      "ok": false,
-      "pass": 149
-    },
-    {
-      "detail": "{'eligible': False, 'evidence_refs': ['43ebb3f4a59a46d88994ee66bc96d301', '52f4236c2bff4c209272f28d5dc2546b'], 'grounded_refs': ['43ebb3f4a59a46d88994ee66bc96d301', '52f4236c2bff4c209272f28d5dc2546b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
-      "family": "completion",
-      "name": "single-file-verified-49",
-      "ok": false,
-      "pass": 150
     },
     {
       "detail": "{'manifest': 'DEV219_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
@@ -2729,8 +2379,8 @@
   ],
   "families": {
     "completion": {
-      "fail": 50,
-      "pass": 0
+      "fail": 0,
+      "pass": 50
     },
     "decomposition": {
       "fail": 0,
@@ -2753,7 +2403,7 @@
       "pass": 40
     }
   },
-  "passed": 211,
+  "passed": 261,
   "schema": 1,
   "total": 300
 }
