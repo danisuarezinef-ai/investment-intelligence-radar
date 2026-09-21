@@ -2,8 +2,8 @@
   "artifact": {
     "entries": 523,
     "name": "CEO_1.5.88-rc1-provider-trust-integrity.zip",
-    "sha256": "5a4bb72cd463b8a8470933f2bd692cd195a65d3d9a0943b550df8e7544dee8ca",
-    "size_bytes": 1151348
+    "sha256": "149e3f605af6b51eeac98eae7aa0b18b2883a391b9c7515b9c487c56485af0a7",
+    "size_bytes": 1151760
   },
   "autonomy_bootstrap_gates_1_6_repassed": true,
   "base": "1.5.87-rc1-update-shell-integrity",

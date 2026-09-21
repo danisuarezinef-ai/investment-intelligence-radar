@@ -13,9 +13,9 @@
   "release_id": "dev312-1.5.88-rc1-provider-trust-integrity",
   "release_sequence": 312,
   "release_status": "release",
-  "sha256": "5a4bb72cd463b8a8470933f2bd692cd195a65d3d9a0943b550df8e7544dee8ca",
+  "sha256": "149e3f605af6b51eeac98eae7aa0b18b2883a391b9c7515b9c487c56485af0a7",
   "signature_alg": "ed25519",
-  "size_bytes": 1151348,
+  "size_bytes": 1151760,
   "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.88-rc1-provider-trust-integrity.zip",
   "version": "1.5.88-rc1-provider-trust-integrity"
 }
