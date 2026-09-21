@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -46,7 +47,10 @@ def main() -> int:
             failures.append(f"{name}: {type(exc).__name__}: {exc}")
             continue
         ok = bool(row.get("ok")) and row.get("status") == expected_status
-        if int(row.get("api_calls") or 0) != 0 or int(row.get("paid_api_calls") or 0) != 0:
+        if "api_calls" not in row or "paid_api_calls" not in row:
+            ok = False
+            failures.append(f"{name}: explicit API counters are missing")
+        elif int(row.get("api_calls")) != 0 or int(row.get("paid_api_calls")) != 0:
             ok = False
             failures.append(f"{name}: API counter is not zero")
         if not ok:
@@ -71,6 +75,11 @@ def main() -> int:
         artifact_path = Path(str(b18.get("artifact_path") or ""))
         if not artifact_path.is_file():
             failures.append("B18: persisted artifact file is missing")
+        else:
+            expected_sha = str(b18.get("artifact_sha256") or "")
+            actual_sha = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+            if not expected_sha or actual_sha != expected_sha:
+                failures.append("B18: persisted artifact SHA-256 mismatch")
 
     b20_path = root / "B19_B20_CODE_GATE.json"
     if b20_path.is_file():
