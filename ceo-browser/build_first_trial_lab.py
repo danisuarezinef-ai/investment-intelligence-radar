@@ -61,6 +61,7 @@ README="""CEO DE IAs — PRIMERA PRUEBA BROWSER LAB
 1. Este paquete es un LAB portátil. NO actualiza CEO estable.
 2. El motor browser es multi-proveedor: ChatGPT, Claude, Gemini, Perplexity y Grok.
 3. Esta primera validación física usa ChatGPT porque conserva la sesión que ya abriste; no es una dependencia arquitectónica.
+4. La campaña funcional NO reinicia Chrome entre turnos; utiliza una única sesión para evitar aperturas/pestañas innecesarias.
 4. Doble clic en EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd.
 5. El lanzador realiza Gate 0 y después B29-B30.
 6. Si el proveedor web requiere login, hazlo manualmente. No se automatiza CAPTCHA/2FA.
