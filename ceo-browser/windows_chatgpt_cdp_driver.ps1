@@ -604,7 +604,7 @@ try {
     $inputSelector=[string]$candidate.selector
     $beforeRows = @(Current-Responses $ws @($recipe.response_selectors))
     $before = $beforeRows.Count
-    $userMessageSelectors=@($recipe.user_message_selectors)
+    $userMessageSelectors=@($recipe.user_message_selectors | Where-Object { $_ })
     $beforeUserRows=if($userMessageSelectors.Count -gt 0){@(Current-Responses $ws $userMessageSelectors)}else{@()}
     $beforeUsers=$beforeUserRows.Count
     $promptJson = To-JsString $Prompt
@@ -709,31 +709,45 @@ try {
     $latestUsers=$beforeUsers
     $latestResponses=$before
 
-    function Wait-SubmissionEvidence([int]$seconds) {
+    function Get-SubmissionEvidence([int]$seconds) {
       $deadlineLocal=[DateTime]::UtcNow.AddSeconds([Math]::Max(1,$seconds))
+      $seenBusy=$false
+      $composerLocal=[string]$Prompt
+      $usersLocal=$beforeUsers
+      $responsesLocal=$before
       while([DateTime]::UtcNow -lt $deadlineLocal){
         Start-Sleep -Milliseconds 250
         $busyLocal=Get-BusyState $ws @($recipe.busy_selectors)
-        if($busyLocal){$script:busySeen=$true}
+        if($busyLocal){$seenBusy=$true}
         $rowsLocal=@(Current-Responses $ws @($recipe.response_selectors))
         $userRowsLocal=if($userMessageSelectors.Count -gt 0){@(Current-Responses $ws $userMessageSelectors)}else{@()}
         $composerLocal=Get-ComposerText $ws $inputSelector
-        $script:latestComposer=[string]$composerLocal
-        $script:latestUsers=$userRowsLocal.Count
-        $script:latestResponses=$rowsLocal.Count
+        $usersLocal=$userRowsLocal.Count
+        $responsesLocal=$rowsLocal.Count
         if(
           $busyLocal -or
-          $userRowsLocal.Count -gt $beforeUsers -or
-          $rowsLocal.Count -gt $before -or
+          $usersLocal -gt $beforeUsers -or
+          $responsesLocal -gt $before -or
           ([string]$composerLocal).Length -lt [Math]::Max(1,[int]($Prompt.Length*0.5))
         ){
-          return $true
+          return [pscustomobject]@{
+            verified=$true;busy_seen=$seenBusy;composer=[string]$composerLocal;
+            users=$usersLocal;responses=$responsesLocal
+          }
         }
       }
-      return $false
+      return [pscustomobject]@{
+        verified=$false;busy_seen=$seenBusy;composer=[string]$composerLocal;
+        users=$usersLocal;responses=$responsesLocal
+      }
     }
 
-    $submissionVerified=Wait-SubmissionEvidence 6
+    $evidence1=Get-SubmissionEvidence 6
+    $submissionVerified=[bool]$evidence1.verified
+    $busySeen=[bool]$evidence1.busy_seen
+    $latestComposer=[string]$evidence1.composer
+    $latestUsers=[int]$evidence1.users
+    $latestResponses=[int]$evidence1.responses
 
     # Safe one-time alternate: only if nothing whatsoever indicates submission and
     # the full prompt still remains in the composer. This avoids blind double-send.
@@ -760,7 +774,12 @@ try {
         }
         if($alternateMethod){
           $sendMethod=$sendMethod + "->" + $alternateMethod
-          $submissionVerified=Wait-SubmissionEvidence 8
+          $evidence2=Get-SubmissionEvidence 8
+          $submissionVerified=[bool]$evidence2.verified
+          $busySeen=([bool]$busySeen -or [bool]$evidence2.busy_seen)
+          $latestComposer=[string]$evidence2.composer
+          $latestUsers=[int]$evidence2.users
+          $latestResponses=[int]$evidence2.responses
         }
       }
     }
