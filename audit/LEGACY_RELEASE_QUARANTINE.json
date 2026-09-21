@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "status": "historical_evidence_quarantine",
+  "policy": "These artifacts/manifests are not eligible for future stable publication. History is preserved for incident analysis.",
+  "invalid_stable_manifests": [
+    "DEV219_MANIFEST_UNSIGNED.json",
+    "DEV293_MANIFEST_UNSIGNED.json",
+    "DEV295_MANIFEST_UNSIGNED.json",
+    "DEV301_MANIFEST_UNSIGNED.json",
+    "DEV302_MANIFEST_UNSIGNED.json",
+    "DEV303_MANIFEST_UNSIGNED.json",
+    "DEV304_MANIFEST_UNSIGNED.json",
+    "DEV305_MANIFEST_UNSIGNED.json",
+    "DEV306_MANIFEST_UNSIGNED.json",
+    "DEV307_MANIFEST_UNSIGNED.json",
+    "DEV308_MANIFEST_UNSIGNED.json",
+    "DEV309_MANIFEST_UNSIGNED.json",
+    "DEV310_MANIFEST_UNSIGNED.json",
+    "DEV311_MANIFEST_UNSIGNED.json",
+    "DEV312_MANIFEST_UNSIGNED.json",
+    "DEV313_MANIFEST_UNSIGNED.json",
+    "DEV314_MANIFEST_UNSIGNED.json",
+    "DEV316_MANIFEST_UNSIGNED.json",
+    "DEV75_MANIFEST_UNSIGNED.json"
+  ],
+  "numeric_version_collisions": {
+    "1.4.96": [
+      "CEO_1.4.96-rc1-channel-canary-safe.zip",
+      "CEO_1.4.96-rc1-channel-canary-stage-only-v2.zip",
+      "CEO_1.4.96-rc1-channel-canary-stage-only.zip"
+    ],
+    "1.5.89": [
+      "CEO_1.5.89-rc1-deterministic-completion.zip",
+      "CEO_1.5.89-rc1-native-transport-integrity.zip"
+    ],
+    "1.5.90": [
+      "CEO_1.5.90-rc1-capability-scoped-provider.zip",
+      "CEO_1.5.90-rc1-native-transport-integrity.zip"
+    ]
+  },
+  "rules": [
+    "stable/release requires production_ready=true",
+    "stable/release requires field_validation_pending=false",
+    "stable/release requires complete Windows lifecycle evidence",
+    "a numeric version line identifies exactly one release artifact",
+    "quarantined history may be inspected but never reactivated"
+  ]
+}
