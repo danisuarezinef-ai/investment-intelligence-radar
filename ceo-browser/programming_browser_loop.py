@@ -75,7 +75,9 @@ class PowerShellChatGPTWebTransport:
             str(self.timeout_seconds),
         ]
         if conversation_url:
-            cmd += ["-ConversationUrl", conversation_url, "-NoLaunch"]
+            # Keep the exact conversation URL, but allow the driver to relaunch Chrome
+            # with the persistent profile if the prior browser process disappeared.
+            cmd += ["-ConversationUrl", conversation_url]
         proc = subprocess.run(
             cmd,
             capture_output=True,
