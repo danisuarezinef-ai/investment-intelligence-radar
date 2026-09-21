@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.92-rc1-native-transport-integrity.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.86-rc1-provider-session-integrity",
+  "notes": "DEV316 Native Transport Integrity: Windows Gemini transport forces IPv4 for the primary httpx path and automatically falls back to a Windows-native HTTPS request when Python/httpx cannot connect. Sensitive headers are supplied over stdin, not process arguments. Provider outages no longer block local project intake. Includes DEV311 updater/app-window, DEV312 encrypted provider trust, DEV313 deterministic completion, DEV314 capability-scoped provider behavior, and DEV315 field-endurance certification.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-21T14:15:00Z",
+  "release_id": "dev316-1.5.92-rc1-native-transport-integrity",
+  "release_sequence": 316,
+  "release_status": "release",
+  "sha256": "781c396abc6ebd191ae1c8ee32141e48d354a9a8f2ae6870035607324c1afabc",
+  "signature_alg": "ed25519",
+  "size_bytes": 1160437,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.92-rc1-native-transport-integrity.zip",
+  "version": "1.5.92-rc1-native-transport-integrity"
+}

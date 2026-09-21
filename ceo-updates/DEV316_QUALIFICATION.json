@@ -1,0 +1,30 @@
+{
+  "api_key_not_in_process_arguments": true,
+  "artifact": {
+    "entries": 525,
+    "name": "CEO_1.5.92-rc1-native-transport-integrity.zip",
+    "sha256": "781c396abc6ebd191ae1c8ee32141e48d354a9a8f2ae6870035607324c1afabc",
+    "size_bytes": 1160437
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.91-rc1-field-endurance-certification",
+  "candidate": "1.5.92-rc1-native-transport-integrity",
+  "dev311_update_shell_inherited": true,
+  "dev312_provider_trust_inherited": true,
+  "dev313_deterministic_completion_inherited": true,
+  "dev314_capability_scoped_provider_inherited": true,
+  "dev315_field_endurance_inherited": true,
+  "direct_min_base": "1.5.86-rc1-provider-session-integrity",
+  "field_validation_pending": true,
+  "httpx_ipv4_primary": true,
+  "native_route_reached_google_without_real_key": true,
+  "operator_install_confirmation_required": true,
+  "production_ready": false,
+  "provider_outage_local_intake_allowed": true,
+  "release_sequence": 316,
+  "security_passed": true,
+  "single_file_activator_verified": false,
+  "tests_passed": true,
+  "windows_native_fallback": true,
+  "windows_stage_preflight_passed": false
+}
