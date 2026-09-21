@@ -302,10 +302,18 @@ class ChatGPTWebTransport(AITransport):
         if not isinstance(row, dict) or not row.get("ok"):
             status = str(row.get("status") if isinstance(row, dict) else "ERROR")
             detail = str(row.get("detail") if isinstance(row, dict) else row)
-            if status == "LOGIN_OR_UI_REQUIRED":
+            if status in {"LOGIN_REQUIRED", "LOGIN_OR_UI_REQUIRED"}:
                 raise RuntimeError(
                     "BROWSER_LOGIN_REQUIRED: abre ChatGPT en el perfil de CEO e inicia sesión una vez"
                 )
+            if status == "PROMPT_INPUT_MISMATCH":
+                raise RuntimeError(f"BROWSER_PROMPT_INPUT_MISMATCH: {detail}")
+            if status == "PROMPT_NOT_SUBMITTED":
+                raise RuntimeError(f"BROWSER_PROMPT_NOT_SUBMITTED: {detail}")
+            if status == "RESPONSE_TIMEOUT":
+                raise RuntimeError(f"BROWSER_RESPONSE_TIMEOUT: {detail}")
+            if status == "CONVERSATION_DRIFT":
+                raise RuntimeError(f"BROWSER_CONVERSATION_DRIFT: {detail}")
             raise RuntimeError(f"{status}: {detail}")
 
         text = str(row.get("response") or "").strip()
@@ -325,5 +333,14 @@ class ChatGPTWebTransport(AITransport):
                 "provider_surface": "chatgpt-web",
                 "api_required": False,
                 "selector": row.get("selector"),
+                "input_strategy": row.get("input_strategy"),
+                "typed_chars": int(row.get("typed_chars") or 0),
+                "send_method": row.get("send_method"),
+                "submission_verified": bool(row.get("submission_verified")),
+                "generation_started": bool(row.get("generation_started")),
+                "busy_seen": bool(row.get("busy_seen")),
+                "completion_reason": row.get("completion_reason"),
+                "conversation_stable": bool(row.get("conversation_stable")),
+                "response_index": int(row.get("response_index") or 0),
             },
         )
