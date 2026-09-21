@@ -17,6 +17,14 @@ if(-not $python){throw "Python no encontrado"}
 Write-Host "=========================================================="
 Write-Host " CEO DE IAs - PRIMERA CAMPANA FUNCIONAL B29-B30"
 Write-Host "=========================================================="
+$marker=Join-Path (Resolve-Path (Join-Path $base "..\..")).Path "CEO_FIRST_TRIAL_LAB.json"
+if(Test-Path $marker){
+  try{
+    $build=Get-Content -Raw -Encoding UTF8 $marker | ConvertFrom-Json
+    Write-Host (" BUILD ID: " + [string]$build.build_id)
+    Write-Host (" SOURCE:   " + [string]$build.source_sha)
+  }catch{}
+}
 Write-Host "Este lanzador abre una sola sesion de navegador y NO ejecuta B38 automaticamente."
 Write-Host "No actualiza CEO estable, no hace merge y no usa APIs."
 
