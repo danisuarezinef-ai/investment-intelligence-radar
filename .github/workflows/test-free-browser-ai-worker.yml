@@ -560,7 +560,7 @@ jobs:
           if($runner -notmatch "human_review_required"){throw "B38 review boundary missing"}
 
           $candidate=Get-Content -Raw -Encoding UTF8 "ceo-browser\real_code_candidate.py"
-          if($candidate -match 'git\\([^\\n]*"push"' -or $candidate -match 'git\\([^\\n]*"merge"'){throw "B31-B38 candidate code contains forbidden promotion action"}
+          if($candidate -match 'git\([^\r\n]*"push"' -or $candidate -match 'git\([^\r\n]*"merge"'){throw "B31-B38 candidate code contains forbidden promotion action"}
           Write-Host "B38_CANDIDATE_RUNNER_READY_PASS"
 
       - name: Exercise CEO AITransport through Chrome with zero API keys
