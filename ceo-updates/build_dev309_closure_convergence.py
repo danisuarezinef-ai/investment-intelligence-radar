@@ -260,6 +260,62 @@ def patch_scheduler() -> None:
     if f'RELIABILITY_EPOCH = "{EPOCH}"' not in s:
         raise RuntimeError("scheduler epoch replacement failed")
 
+    helper_anchor = f'''RELIABILITY_EPOCH = "{EPOCH}"
+
+
+'''
+    helper_block = f'''RELIABILITY_EPOCH = "{EPOCH}"
+
+
+def _promote_provider_artifact_to_deliverable(workspace_root: str, target: str, artifacts: list[str]) -> dict:
+    """Promote one real provider text artifact to an explicit workspace deliverable."""
+    target = str(target or "").strip()
+    if not target:
+        return {{"promoted": False, "reason": "missing_target"}}
+    allowed = {{".md", ".txt", ".json", ".csv", ".html"}}
+    if pathlib.Path(target).suffix.lower() not in allowed:
+        return {{"promoted": False, "reason": "unsupported_target_extension"}}
+
+    root = pathlib.Path(workspace_root).resolve()
+    source = None
+    for raw in artifacts or []:
+        candidate = pathlib.Path(str(raw))
+        candidates = [candidate] if candidate.is_absolute() else [root / candidate]
+        for p in candidates:
+            try:
+                rp = p.resolve()
+            except Exception:
+                continue
+            if rp.is_file() and rp.suffix.lower() in allowed and rp.stat().st_size <= 2_000_000:
+                source = rp
+                break
+        if source is not None:
+            break
+    if source is None:
+        return {{"promoted": False, "reason": "no_real_text_artifact"}}
+
+    try:
+        content = source.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return {{"promoted": False, "reason": "artifact_not_utf8_text"}}
+    if not content.strip():
+        return {{"promoted": False, "reason": "artifact_empty"}}
+
+    row = FilesystemOperations(root).write_text(target, content)
+    return {{
+        "promoted": True,
+        "target": target,
+        "source": str(source),
+        "sha256": row.get("sha256"),
+        "size_bytes": row.get("size_bytes"),
+    }}
+
+
+'''
+    if s.count(helper_anchor) != 1:
+        raise RuntimeError(f"scheduler promotion helper anchor={{s.count(helper_anchor)}}")
+    s = s.replace(helper_anchor, helper_block, 1)
+
     migration_anchor = '''    state.metadata.pop("control_plane_circuit_open", None)
     state.metadata.pop("productive_stall_escape_required", None)
 
@@ -410,6 +466,53 @@ def patch_scheduler() -> None:
                         result.success = False
                         result.error = f"Workspace artifact write failed: {type(exc).__name__}: {exc}"
 
+            # Compatibility path for providers that return a real file artifact but
+            # do not yet emit write_files. Never invent content: promotion requires
+            # a readable provider-produced file.
+            closure_target = str(task.metadata.get("closure_target_deliverable") or "").strip()
+            already_targeted = (
+                any(
+                    pathlib.Path(str(a)).name.lower() == pathlib.Path(closure_target).name.lower()
+                    for a in (result.artifacts or [])
+                )
+                if closure_target else False
+            )
+            if result.success and closure_target and workspace_root and not already_targeted:
+                promotion = _promote_provider_artifact_to_deliverable(
+                    workspace_root, closure_target, list(result.artifacts or [])
+                )
+                task.metadata["closure_artifact_promotion_v1"] = promotion
+                if promotion.get("promoted"):
+                    try:
+                        exchange = ArtifactExchangeLayer(workspace_root)
+                        verified = exchange.register(
+                            self.state, closure_target, task_id=task.id, direction="worker_output"
+                        )
+                        evidence = self.deliverable_evidence_v1.record_file(
+                            self.state, task, pathlib.Path(workspace_root) / closure_target, root=workspace_root
+                        )
+                        if closure_target not in result.artifacts:
+                            result.artifacts.append(closure_target)
+                        artifact_id = verified.get("artifact_id")
+                        if artifact_id:
+                            task.metadata.setdefault("verified_artifacts", []).append(artifact_id)
+                        task.metadata.setdefault("workspace_writes_v1", []).append({
+                            "path": closure_target,
+                            "source_artifact": promotion.get("source"),
+                            "sha256": promotion.get("sha256"),
+                            "size_bytes": promotion.get("size_bytes"),
+                            "artifact_id": artifact_id,
+                            "evidence_ref": evidence.ref,
+                            "compatibility_promotion": True,
+                        })
+                        self._activity_event(
+                            "closure_artifact_promoted", task, provider=provider_name,
+                            detail=f"Artefacto real promovido al entregable requerido {closure_target}",
+                        )
+                    except Exception as exc:
+                        result.success = False
+                        result.error = f"Closure artifact promotion failed: {type(exc).__name__}: {exc}"
+
             if result.success and not str(result.text or "").strip() and not list(result.artifacts or []):
 '''
     if s.count(result_anchor) != 1:
@@ -515,6 +618,21 @@ def patch_scheduler() -> None:
         raise RuntimeError(f"scheduler gap close anchor={s.count(close_anchor)}")
     s = s.replace(close_anchor, close_new, 1)
 
+    metadata_anchor = '''                    "goal_gap_snapshot": list(gaps[:12]),
+                },
+'''
+    metadata_new = '''                    "goal_gap_snapshot": list(gaps[:12]),
+                    **(
+                        {"closure_target_deliverable": target}
+                        if missing_deliverables and index == 0
+                        else {}
+                    ),
+                },
+'''
+    if s.count(metadata_anchor) != 1:
+        raise RuntimeError(f"scheduler closure target metadata anchor={s.count(metadata_anchor)}")
+    s = s.replace(metadata_anchor, metadata_new, 1)
+
     p.write_text(s, encoding="utf-8")
 
 
@@ -613,6 +731,7 @@ def main() -> None:
             "explicit_file_deliverable_inference",
             "guarded_workspace_write_protocol",
             "artifact_registration_and_hash_evidence",
+            "provider_artifact_to_exact_deliverable_promotion",
             "audit_evidence_candidates_with_real_task_ids",
             "deterministic_auto_evidence_refs",
             "bounded_single_artifact_completion_profile",
