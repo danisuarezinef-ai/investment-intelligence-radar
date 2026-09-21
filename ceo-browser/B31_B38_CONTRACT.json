@@ -4,14 +4,14 @@
   "branch": "free-browser-ai-worker",
   "objective": "Prepare the first field-gated self-development candidate on real CEO code using ChatGPT web, while guaranteeing source immutability and human-only promotion.",
   "status": {
-    "B31_require_browser_field_verified": "IMPLEMENTED_CI_PENDING",
-    "B32_isolated_real_code_candidate_workspace": "IMPLEMENTED_CI_PENDING",
-    "B33_candidate_baseline_and_source_hashes": "IMPLEMENTED_CI_PENDING",
-    "B34_edit_allowlist_and_sensitive_path_policy": "IMPLEMENTED_CI_PENDING",
-    "B35_diff_size_binary_and_scope_limits": "IMPLEMENTED_CI_PENDING",
-    "B36_predefined_tests_and_original_source_immutability": "IMPLEMENTED_CI_PENDING",
-    "B37_candidate_evidence_patch_bundle": "IMPLEMENTED_CI_PENDING",
-    "B38_first_real_ceo_self_development_candidate": "RUNNER_READY_PHYSICAL_PENDING"
+    "B31_require_browser_field_verified": "COMPLETE_CI_VERIFIED",
+    "B32_isolated_real_code_candidate_workspace": "COMPLETE_CI_VERIFIED",
+    "B33_candidate_baseline_and_source_hashes": "COMPLETE_CI_VERIFIED",
+    "B34_edit_allowlist_and_sensitive_path_policy": "COMPLETE_CI_VERIFIED",
+    "B35_diff_size_binary_and_scope_limits": "COMPLETE_CI_VERIFIED",
+    "B36_predefined_tests_and_original_source_immutability": "COMPLETE_CI_VERIFIED",
+    "B37_candidate_evidence_patch_bundle": "COMPLETE_CI_VERIFIED",
+    "B38_first_real_ceo_self_development_candidate": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING"
   },
   "B31": {
     "required_state": "BROWSER_FIELD_STATE.json",
@@ -84,5 +84,25 @@
     "no_commit_push_merge": true,
     "no_production_release": true,
     "no_automatic_purchase": true
+  },
+  "verification": {
+    "workflow_run_id": 35653809170,
+    "verified_head": "8ce13c7cfadf43830964614ea64c8db1b01812a9",
+    "conclusion": "success",
+    "passed": [
+      "all prior B03-B30 browser gates and contracts",
+      "B31 hard block before BROWSER_FIELD_VERIFIED=true",
+      "B32 isolated candidate git workspace with no remotes",
+      "B33 baseline commit and source SHA-256 evidence",
+      "B34 allowed-edit-path and sensitive-path enforcement",
+      "B35 changed-file, changed-line and binary-diff limits",
+      "B36 predefined tests plus original source hash immutability",
+      "B37 patch/evidence bundle ending only at human review",
+      "B38 physical runner contract targeting a real copied CEO source file",
+      "B38 candidate cannot commit, push, merge or promote production",
+      "zero-API AITransport integration",
+      "FREE-ONLY/no-production boundary"
+    ],
+    "real_chatgpt_b38_candidate_verified": false
   }
 }
