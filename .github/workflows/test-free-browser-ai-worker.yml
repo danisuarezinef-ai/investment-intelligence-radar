@@ -145,6 +145,21 @@ jobs:
           [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\open_chatgpt_profile.ps1"),[ref]$tokens2,[ref]$errors2)
           if($errors2.Count -gt 0){$errors2 | ForEach-Object { Write-Host $_.Message }; throw "PowerShell login helper parse failed"}
 
+      - name: Real-UI input and clean-start contract
+        shell: pwsh
+        run: |
+          $driver=Get-Content -Raw -Encoding UTF8 "ceo-browser\windows_chatgpt_cdp_driver.ps1"
+          if($driver -notmatch 'Input\.insertText'){throw "browser-level text input missing"}
+          if($driver -notmatch 'Clear-RestoredTabState'){throw "pre-launch restored-tab cleanup missing"}
+          if($driver -notmatch 'Default.*Sessions'){throw "Chrome session restore cleanup path missing"}
+          $domAssign='\binput\.value\s*=|\binput\.textContent\s*='
+          $b09=$driver.Substring($driver.IndexOf('# B09'),$driver.IndexOf('# B10')-$driver.IndexOf('# B09'))
+          if($b09 -match $domAssign){throw "B09 still mutates composer DOM directly"}
+          $launch=$driver.IndexOf('Start-Process -FilePath $chrome')
+          $cleanup=$driver.IndexOf('Clear-RestoredTabState $ProfileDir $targetUrl')
+          if($cleanup -lt 0 -or $launch -lt 0 -or $cleanup -gt $launch){throw "restored-tab cleanup must happen before browser launch"}
+          Write-Host "REAL_UI_INPUT_CLEAN_START_PASS"
+
       - name: Start local fake web AI
         shell: pwsh
         run: |
@@ -658,8 +673,10 @@ jobs:
           if($contract.invariant.automatic_purchase -ne $false){throw "purchase boundary weakened"}
           $orchestrator=Get-Content -Raw -Encoding UTF8 "ceo-browser\first_trial_orchestrator.py"
           if($orchestrator -match "run_b38_real_ceo_candidate"){throw "orchestrator must not start B38"}
-          if($orchestrator -notmatch "run_browser_restart_gate"){throw "restart gate missing from orchestrator"}
+          if($orchestrator -match 'restart_gate=base/"run_browser_restart_gate.ps1"'){throw "restart gate must not run in the functional campaign"}
+          if($orchestrator -notmatch "SKIPPED_ADVISORY"){throw "restart advisory state missing"}
           if($orchestrator -notmatch "run_b29_b30_full_field_gate"){throw "B29-B30 missing from orchestrator"}
+          if($orchestrator -notmatch "reset_owned_browser"){throw "single-campaign owned-browser reset missing"}
           Write-Host "FIRST_TRIAL_40_CONTRACT_PASS"
 
       - name: Build and inspect portable first-trial LAB
