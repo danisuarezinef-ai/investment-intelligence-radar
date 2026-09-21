@@ -1,0 +1,88 @@
+{
+  "phase": "B31-B38",
+  "date": "2026-09-21",
+  "branch": "free-browser-ai-worker",
+  "objective": "Prepare the first field-gated self-development candidate on real CEO code using ChatGPT web, while guaranteeing source immutability and human-only promotion.",
+  "status": {
+    "B31_require_browser_field_verified": "IMPLEMENTED_CI_PENDING",
+    "B32_isolated_real_code_candidate_workspace": "IMPLEMENTED_CI_PENDING",
+    "B33_candidate_baseline_and_source_hashes": "IMPLEMENTED_CI_PENDING",
+    "B34_edit_allowlist_and_sensitive_path_policy": "IMPLEMENTED_CI_PENDING",
+    "B35_diff_size_binary_and_scope_limits": "IMPLEMENTED_CI_PENDING",
+    "B36_predefined_tests_and_original_source_immutability": "IMPLEMENTED_CI_PENDING",
+    "B37_candidate_evidence_patch_bundle": "IMPLEMENTED_CI_PENDING",
+    "B38_first_real_ceo_self_development_candidate": "RUNNER_READY_PHYSICAL_PENDING"
+  },
+  "B31": {
+    "required_state": "BROWSER_FIELD_STATE.json",
+    "required_flag": "BROWSER_FIELD_VERIFIED=true",
+    "zero_api_required": true,
+    "production_promotion_must_be_false": true,
+    "automatic_merge_must_be_false": true
+  },
+  "B32": {
+    "workspace_kind": "isolated local git candidate",
+    "remotes_allowed": 0,
+    "baseline_commit_count": 1,
+    "source_checkout_modified": false
+  },
+  "B33": {
+    "baseline_commit_recorded": true,
+    "original_source_sha256_recorded": true,
+    "final_candidate_sha256_recorded": true
+  },
+  "B34": {
+    "allowed_paths_only": true,
+    "forbidden_path_fragments": [
+      ".env",
+      "secret",
+      "credential",
+      "private_key",
+      ".pem",
+      ".pfx",
+      ".key",
+      "signing",
+      "keystore",
+      "current.json",
+      "mvp_field",
+      "real_trading"
+    ]
+  },
+  "B35": {
+    "max_changed_files": 2,
+    "max_changed_lines": 160,
+    "binary_diff_allowed": false
+  },
+  "B36": {
+    "test_command_predefined_by_ceo": true,
+    "ai_supplied_commands_allowed": false,
+    "tests_must_pass": true,
+    "original_source_hash_must_remain_identical": true
+  },
+  "B37": {
+    "candidate_status": "CANDIDATE_READY_FOR_HUMAN_REVIEW",
+    "patch_sha256": true,
+    "evidence_json": true,
+    "commit_push_merge": false
+  },
+  "B38": {
+    "launcher": "EJECUTAR_B38_CANDIDATE.cmd",
+    "target_source": "ceo-browser/simple_browser_task.py",
+    "objective": "Reject Windows reserved device names in SafeArtifactStore paths",
+    "candidate_only": true,
+    "physical_verification": false,
+    "automatic_merge": false,
+    "production_promotion": false,
+    "human_review_required": true,
+    "api_calls_required": 0
+  },
+  "boundaries": {
+    "no_openai_api": true,
+    "no_paid_api": true,
+    "no_new_provider": true,
+    "no_source_checkout_mutation": true,
+    "no_commit_push_merge": true,
+    "no_production_release": true,
+    "no_automatic_purchase": true
+  }
+}
