@@ -1,0 +1,102 @@
+name: Verify DEV311 on Windows with 1.5.86 updater
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev311-windows.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Extract current updater and DEV311 candidate
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force tmp186,tmp187 -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory tmp186 | Out-Null
+          New-Item -ItemType Directory tmp187 | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.86-rc1-provider-session-integrity.zip tmp186
+          Expand-Archive ceo-updates/CEO_1.5.87-rc1-update-shell-integrity.zip tmp187
+          python -m pip install --disable-pip-version-check -q -e .\tmp186
+
+      - name: Stage and preflight exact DEV311 package
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH=(Resolve-Path .\tmp186).Path
+          @'
+          import dataclasses, hashlib, json, pathlib, sys, tempfile
+          from ceo_core.in_app_updater import InAppUpdater, UpdateManifest
+
+          repo=pathlib.Path.cwd()
+          manifest=json.loads((repo/'ceo-updates/DEV311_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+          artifact=repo/'ceo-updates/CEO_1.5.87-rc1-update-shell-integrity.zip'
+          data=artifact.read_bytes()
+          assert hashlib.sha256(data).hexdigest()==manifest['sha256']
+          assert len(data)==manifest['size_bytes']
+
+          manifest['url']=artifact.resolve().as_uri()
+          allowed={f.name for f in dataclasses.fields(UpdateManifest)}
+          m=UpdateManifest(**{k:v for k,v in manifest.items() if k in allowed})
+
+          with tempfile.TemporaryDirectory(prefix='ceo-dev311-win-') as td:
+              u=InAppUpdater(data_root=td)
+              row=u.stage(m)
+              assert row['version']=='1.5.87-rc1-update-shell-integrity',row
+              assert row.get('contract_verified') is True,row
+              assert u.progress().get('phase')=='ready_to_install',u.progress()
+              pre=u.preflight_staged(row['version'],python_executable=sys.executable,timeout=60)
+              assert pre.get('ok') is True,pre
+              print(json.dumps({
+                  'windows_stage_pass':True,
+                  'windows_preflight_pass':True,
+                  'version':row['version'],
+                  'contract_verified':row.get('contract_verified'),
+                  'file_count':row.get('file_count'),
+                  'preflight':pre,
+              },indent=2,default=str))
+          '@ | Set-Content -Encoding UTF8 verify311.py
+          python verify311.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV311 Windows stage/preflight failed" }
+
+      - name: Exact update-shell regression on Windows
+        shell: pwsh
+        run: |
+          $root=(Resolve-Path .\tmp187).Path
+          $env:CEO_DEV311_BUILD_ROOT=$root
+          $env:PYTHONPATH=$root
+          python ceo-updates\qualify_dev311_update_shell_integrity.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV311 Windows update-shell qualification failed" }
+
+      - name: Semantics smoke
+        shell: pwsh
+        run: |
+          @'
+          from pathlib import Path
+          root=Path('tmp187')
+          ui=(root/'scripts/ceo_stdlib_work_mode.py').read_text(encoding='utf-8')
+          launcher=(root/'scripts/launch_current.py').read_text(encoding='utf-8')
+          assert "installable=(r&&r.receipt" in ui
+          assert "ready_to_install'&&!updateActionBusy" in ui
+          assert "updateActionBusy=true" in ui
+          assert "EXISTING_INSTANCE_OPENED" in launcher
+          assert "--app={url}" in launcher
+          assert "_probe_existing_ceo()" in launcher
+          print('DEV311_WINDOWS_UPDATE_SHELL_SEMANTICS_PASS')
+          '@ | Set-Content -Encoding UTF8 smoke311.py
+          python smoke311.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV311 Windows semantics smoke failed" }
