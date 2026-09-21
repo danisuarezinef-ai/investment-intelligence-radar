@@ -23,7 +23,7 @@ jobs:
           rm -rf /tmp/dev310-exact ceo-updates/dev310-inspect
           mkdir -p /tmp/dev310-exact ceo-updates/dev310-inspect
           unzip -q ceo-updates/CEO_1.5.86-rc1-provider-session-integrity.zip -d /tmp/dev310-exact
-          for f in             scripts/ceo_stdlib_work_mode.py             scripts/relaunch_after_update.py             scripts/install_windows_bootstrap.py             ceo_core/in_app_updater.py             ceo_core/windows_shell.py             ABRIR_CEO.cmd; do
+          for f in             scripts/ceo_stdlib_work_mode.py             scripts/relaunch_after_update.py             scripts/install_windows_bootstrap.py             scripts/launch_current.py             ceo_core/in_app_updater.py             ceo_core/windows_shell.py             ABRIR_CEO.cmd; do
             cp "/tmp/dev310-exact/$f" "ceo-updates/dev310-inspect/$(basename "$f")"
           done
       - name: Commit snapshot
