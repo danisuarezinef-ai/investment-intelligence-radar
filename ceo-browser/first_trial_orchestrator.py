@@ -41,6 +41,25 @@ def run_powershell(script: Path, *, profile_dir: Path, port: int, timeout: int) 
     return proc.returncode,bounded_text(output)
 
 
+def reset_owned_browser(*, base: Path, profile_dir: Path) -> tuple[bool, str]:
+    """Close only Chrome/Edge processes using CEO's exclusive profile."""
+    if os.name != "nt":
+        return True, "non-Windows: no owned browser reset required"
+    script=base/"recover_first_trial.ps1"
+    if not script.is_file():
+        return False, f"recovery script missing: {script}"
+    proc=subprocess.run(
+        [
+            "powershell.exe","-NoProfile","-ExecutionPolicy","Bypass","-File",str(script),
+            "-ProfileDir",str(profile_dir),
+        ],
+        capture_output=True,text=True,timeout=45,
+        creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0),
+    )
+    output=((proc.stdout or "")+"\n"+(proc.stderr or "")).strip()
+    return proc.returncode==0,bounded_text(output,12000)
+
+
 def main() -> int:
     parser=argparse.ArgumentParser()
     base=Path(__file__).resolve().parent
@@ -56,6 +75,22 @@ def main() -> int:
     evidence=Path(args.evidence_dir).expanduser().resolve()
     evidence.mkdir(parents=True,exist_ok=True)
 
+    reset_ok,reset_detail=reset_owned_browser(base=base,profile_dir=profile)
+    if not reset_ok:
+        failure={
+            "schema_version":1,
+            "created_at_epoch":int(time.time()),
+            "stage":"OWNED_BROWSER_RESET_FAILED",
+            "profile_dir":str(profile),
+            "detail":reset_detail,
+            "BROWSER_FIELD_VERIFIED":False,
+            "first_autodevelopment_launch_allowed":False,
+        }
+        atomic_json(evidence/"PRIMERA_PRUEBA_CEO_RESULTADO.json",failure)
+        print(json.dumps(failure,ensure_ascii=False))
+        return 6
+    print("[OK] Navegador anterior de CEO cerrado/limpio; login persistente conservado.")
+
     report=run_preflight(
         browser_ai_dir=base,
         profile_dir=profile,
@@ -67,6 +102,8 @@ def main() -> int:
         "created_at_epoch":int(time.time()),
         "trial_id":report.trial_id,
         "stage":"PREFLIGHT",
+        "owned_browser_reset_status":"PASS",
+        "owned_browser_reset_detail":reset_detail,
         "preflight_status":report.status,
         "selected_cdp_port":report.selected_cdp_port,
         "restart_gate_status":"NOT_RUN",
