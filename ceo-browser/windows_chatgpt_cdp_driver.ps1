@@ -383,10 +383,20 @@ function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$se
  const e=findMarked(document);
  if(!e) return "";
  if(e.tagName==="TEXTAREA" || e.tagName==="INPUT") return String(e.value||"");
+ if(e.getAttribute("contenteditable")==="true" || e.getAttribute("role")==="textbox"){
+   return String(e.innerText||e.textContent||"");
+ }
  return String(e.textContent||"");
 })()
 "@
   return [string](Eval-JS $ws $expr)
+}
+
+function Normalize-ComposerText([string]$value) {
+  $s=[regex]::Replace([string]$value,"\\r\\n?","\\n")
+  $s=$s.Replace([char]0x00A0,[char]0x20)
+  $s=$s.TrimEnd([char[]]@([char]10))
+  return $s
 }
 
 function Get-BusyState([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]$selectors) {
@@ -643,8 +653,8 @@ try {
     Start-Sleep -Milliseconds 650
 
     $actualTyped=Get-ComposerText $ws $inputSelector
-    $expectedNormalized = [regex]::Replace([string]$Prompt,"\r\n?","\n")
-    $actualNormalized = [regex]::Replace([string]$actualTyped,"\r\n?","\n")
+    $expectedNormalized = Normalize-ComposerText ([string]$Prompt)
+    $actualNormalized = Normalize-ComposerText ([string]$actualTyped)
     if($actualNormalized -ne $expectedNormalized) {
       Write-JsonResult @{
         ok=$false
@@ -652,7 +662,9 @@ try {
         provider=[string]$recipe.provider
         expected_chars=$Prompt.Length
         typed_chars=[string]$actualTyped.Length
-        detail="B09 browser-level typed prompt did not match the intended prompt before submission."
+        expected_normalized_chars=[int]$expectedNormalized.Length
+        actual_normalized_chars=[int]$actualNormalized.Length
+        detail="B09 browser-level typed prompt differed after contenteditable normalization."
       }
       exit 6
     }
@@ -760,7 +772,7 @@ try {
     # original prompt remains exactly intact.
     $alternateMethod=""
     if(-not $submissionVerified){
-      $composerNormalized=[regex]::Replace([string]$latestComposer,"\r\n?","\n")
+      $composerNormalized=Normalize-ComposerText ([string]$latestComposer)
       $safeToRetry=(
         $composerNormalized -eq $expectedNormalized -and
         $latestUsers -eq $beforeUsers -and
