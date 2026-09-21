@@ -46,7 +46,10 @@ jobs:
             ceo_core/deliverable_evidence_engine_v1.py \
             ceo_core/context.py \
             scripts/ceo_stdlib_work_mode.py \
-            ceo_core/goal_engine.py; do
+            ceo_core/goal_engine.py \
+            ceo_core/ai_worker.py \
+            ceo_core/providers/gemini_interactions.py \
+            ceo_core/self_hosting_tools.py; do
             cp "/tmp/dev308_exact/$f" "ceo-updates/dev308-inspect/$(basename "$f")"
           done
           python - <<'PY'
