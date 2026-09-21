@@ -1,0 +1,21 @@
+{
+  "artifact": {
+    "entries": 524,
+    "name": "CEO_1.5.89-rc1-deterministic-completion.zip",
+    "sha256": "4d84cb952691cd12b684549a7f74228f536019f03a131dafa708603fb6945e49",
+    "size_bytes": 1154931
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.88-rc1-provider-trust-integrity",
+  "candidate": "1.5.89-rc1-deterministic-completion",
+  "evidence_hash_bound_certificate": true,
+  "field_endurance_non_bypassable": true,
+  "field_validation_pending": true,
+  "installation_deferred_by_operator": true,
+  "pending_certification_no_ai_churn": true,
+  "production_ready": false,
+  "provider_independent_completion": true,
+  "release_sequence": 313,
+  "security_passed": true,
+  "tests_passed": true
+}
