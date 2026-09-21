@@ -1,0 +1,195 @@
+name: Build DEV311 Update Shell Integrity
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/build-dev311-update-shell-integrity.yml'
+      - 'ceo-updates/build_dev311_update_shell_integrity.py'
+      - 'ceo-updates/qualify_dev311_update_shell_integrity.py'
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-package:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build DEV311 candidate
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP "ceo-dev311"
+          $env:CEO_DEV311_BUILD_ROOT = $root
+          python ceo-updates\build_dev311_update_shell_integrity.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV311 build failed" }
+          python -m pip install --disable-pip-version-check -q -e $root
+          if ($LASTEXITCODE -ne 0) { throw "DEV311 install failed" }
+          "CEO_DEV311_BUILD_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_GATE_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_NO_BROWSER=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "LOCALAPPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-dev311-localappdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "APPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-dev311-appdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_GATE_ARTIFACTS=$(Join-Path $env:RUNNER_TEMP 'ceo-dev311-artifacts')" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Compile and focused qualification
+        shell: pwsh
+        run: |
+          Push-Location $env:CEO_DEV311_BUILD_ROOT
+          python -m compileall -q .
+          if ($LASTEXITCODE -ne 0) { throw "compile failed" }
+          Pop-Location
+          python ceo-updates\qualify_dev311_update_shell_integrity.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV311 focused qualification failed" }
+
+      - name: Inherited safety and updater regression
+        shell: pwsh
+        run: |
+          Push-Location $env:CEO_DEV311_BUILD_ROOT
+          python scripts\dev292_recovery_failclosed_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV292 failed" }
+          python scripts\dev294_internal_update_pipeline_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV294 failed" }
+          python scripts\dev295_update_confirm_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV295 failed" }
+          python scripts\security_audit.py
+          if ($LASTEXITCODE -ne 0) { throw "security audit failed" }
+          Pop-Location
+
+      - name: Re-run identical Autonomy Bootstrap Gates 1-6
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:CEO_GATE_ARTIFACTS | Out-Null
+          python ceo-updates\autonomy_bootstrap_gate_v1.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG1 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v2.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG2 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v3.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG3 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v4.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG4 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v5.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG5 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v6.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG6 failed" }
+
+      - name: Package deterministic DEV311
+        shell: pwsh
+        run: |
+          @'
+          import hashlib, json, os, pathlib, zipfile
+          root = pathlib.Path(os.environ["CEO_DEV311_BUILD_ROOT"])
+          outdir = pathlib.Path("ceo-updates")
+          version = "1.5.87-rc1-update-shell-integrity"
+          artifact = f"CEO_{version}.zip"
+          out = outdir / artifact
+          out.unlink(missing_ok=True)
+
+          contract = json.loads((root / "CEO_UPDATE_PACKAGE.json").read_text(encoding="utf-8"))
+          assert contract["app_version"] == version
+          required = sorted(contract["required_paths"])
+          fixed = (2026, 9, 21, 11, 30, 0)
+
+          with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+              for rel in required:
+                  p = root / rel
+                  assert p.is_file(), rel
+                  info = zipfile.ZipInfo(rel, date_time=fixed)
+                  info.create_system = 0
+                  info.compress_type = zipfile.ZIP_DEFLATED
+                  info.external_attr = 0
+                  z.writestr(info, p.read_bytes(), compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+
+          data = out.read_bytes()
+          sha = hashlib.sha256(data).hexdigest()
+          size = len(data)
+
+          manifest = {
+              "artifact_name": artifact,
+              "channel": "stable",
+              "data_schema_version": 1,
+              "health_path": "/api/health",
+              "launcher": "ABRIR_CEO.cmd",
+              "manifest_version": 2,
+              "max_app_version": "",
+              "min_app_version": "1.5.86-rc1-provider-session-integrity",
+              "notes": (
+                  "DEV311 Update Shell Integrity: ready-to-install is driven directly by the "
+                  "verified stage receipt and self-heals from ready_to_install telemetry; update "
+                  "actions are single-flight; the Windows shortcut reuses an existing healthy CEO "
+                  "backend and opens it in browser app mode instead of starting a second scheduler."
+              ),
+              "package_contract_version": 1,
+              "published_at": "2026-09-21T11:30:00Z",
+              "release_id": "dev311-1.5.87-rc1-update-shell-integrity",
+              "release_sequence": 311,
+              "release_status": "release",
+              "sha256": sha,
+              "signature_alg": "ed25519",
+              "size_bytes": size,
+              "url": (
+                  "https://raw.githubusercontent.com/danisuarezinef-ai/"
+                  "investment-intelligence-radar/ceo-update-channel/ceo-updates/" + artifact
+              ),
+              "version": version,
+          }
+
+          qualification = {
+              "candidate": version,
+              "base": "1.5.86-rc1-provider-session-integrity",
+              "release_sequence": 311,
+              "tests_passed": True,
+              "security_passed": True,
+              "stage_receipt_ready_transition": True,
+              "ready_to_install_self_heal": True,
+              "update_single_flight": True,
+              "single_instance_shortcut": True,
+              "existing_backend_app_mode": True,
+              "human_install_confirmation_preserved": True,
+              "autonomy_bootstrap_gates_1_6_repassed": True,
+              "windows_stage_preflight_passed": False,
+              "single_file_activator_verified": False,
+              "field_validation_pending": True,
+              "production_ready": False,
+              "operator_install_confirmation_required": True,
+              "artifact": {
+                  "name": artifact,
+                  "sha256": sha,
+                  "size_bytes": size,
+                  "entries": len(required),
+              },
+          }
+
+          (outdir / "DEV311_MANIFEST_UNSIGNED.json").write_text(
+              json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          (outdir / "DEV311_QUALIFICATION.json").write_text(
+              json.dumps(qualification, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(qualification, indent=2))
+          '@ | Set-Content -Encoding UTF8 package311.py
+          python package311.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV311 package failed" }
+
+      - name: Commit DEV311 candidate
+        shell: pwsh
+        run: |
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/CEO_1.5.87-rc1-update-shell-integrity.zip ceo-updates/DEV311_MANIFEST_UNSIGNED.json ceo-updates/DEV311_QUALIFICATION.json
+          git commit -m "Stage DEV311 update shell integrity candidate"
+          git push origin HEAD:ceo-update-channel
