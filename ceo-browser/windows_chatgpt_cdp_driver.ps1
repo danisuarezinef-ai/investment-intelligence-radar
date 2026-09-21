@@ -604,6 +604,9 @@ try {
     $inputSelector=[string]$candidate.selector
     $beforeRows = @(Current-Responses $ws @($recipe.response_selectors))
     $before = $beforeRows.Count
+    $userMessageSelectors=@($recipe.user_message_selectors)
+    $beforeUserRows=if($userMessageSelectors.Count -gt 0){@(Current-Responses $ws $userMessageSelectors)}else{@()}
+    $beforeUsers=$beforeUserRows.Count
     $promptJson = To-JsString $Prompt
     $inputSelJson = To-JsString $inputSelector
     $sendSel = Selectors-Js @($recipe.send_selectors)
@@ -637,7 +640,7 @@ try {
     # Input.insertText is handled by Chrome as genuine text input and reaches the
     # site's editor/framework state (unlike direct DOM assignment).
     Send-CDP $ws "Input.insertText" @{text=[string]$Prompt} | Out-Null
-    Start-Sleep -Milliseconds 250
+    Start-Sleep -Milliseconds 650
 
     $actualTyped=Get-ComposerText $ws $inputSelector
     $expectedNormalized = [regex]::Replace([string]$Prompt,"\r\n?","\n")
@@ -655,9 +658,8 @@ try {
     }
     $typed=[pscustomobject]@{typed_chars=[int]$actualTyped.Length}
 
-    # B10 — submit through a real visible send control when possible.
-    # If the UI exposes no send button, fall back to CDP keyboard events instead
-    # of synthetic DOM KeyboardEvents.
+    # B10 — submit through a real browser interaction. Confirm delivery from
+    # multiple independent UI signals before proceeding.
     $sendExpr = @"
 (() => {
  const findMarked=(root)=>{
@@ -680,13 +682,17 @@ try {
    const s=getComputedStyle(e),r=e.getBoundingClientRect();
    return s.display!=="none" && s.visibility!=="hidden" && Number(s.opacity||1)>0 && r.width>1 && r.height>1;
  };
+ const diagnostics=[];
  for(const s of $sendSel){
    for(const root of roots){
      let b=null;try{b=root.querySelector(s)}catch(e){}
-     if(visible(b)){b.click();return {ok:true,method:"button-click",selector:s}}
+     if(b){
+       diagnostics.push({selector:s,disabled:!!b.disabled,ariaDisabled:b.getAttribute("aria-disabled")||"",visible:visible(b)});
+       if(visible(b)){b.click();return {ok:true,method:"button-click",selector:s,diagnostics:diagnostics}}
+     }
    }
  }
- return {ok:true,method:"cdp-enter",selector:""};
+ return {ok:true,method:"cdp-enter",selector:"",diagnostics:diagnostics};
 })()
 "@
     $sent = Eval-JS $ws $sendExpr
@@ -697,30 +703,88 @@ try {
       Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
     }
 
-    # B10 submission acknowledgement: do not proceed merely because click/Enter
-    # was attempted. Require observable browser evidence.
-    $submitDeadline=[DateTime]::UtcNow.AddSeconds([Math]::Min(12,$TimeoutSeconds))
     $submissionVerified=$false
     $busySeen=$false
-    while([DateTime]::UtcNow -lt $submitDeadline){
-      Start-Sleep -Milliseconds 250
-      $busy=Get-BusyState $ws @($recipe.busy_selectors)
-      if($busy){$busySeen=$true}
-      $rowsNow=@(Current-Responses $ws @($recipe.response_selectors))
-      $composerNow=Get-ComposerText $ws $inputSelector
-      if($busy -or $rowsNow.Count -gt $before -or ([string]$composerNow).Length -lt [Math]::Max(1,[int]($Prompt.Length*0.5))){
-        $submissionVerified=$true
-        break
+    $latestComposer=[string]$Prompt
+    $latestUsers=$beforeUsers
+    $latestResponses=$before
+
+    function Wait-SubmissionEvidence([int]$seconds) {
+      $deadlineLocal=[DateTime]::UtcNow.AddSeconds([Math]::Max(1,$seconds))
+      while([DateTime]::UtcNow -lt $deadlineLocal){
+        Start-Sleep -Milliseconds 250
+        $busyLocal=Get-BusyState $ws @($recipe.busy_selectors)
+        if($busyLocal){$script:busySeen=$true}
+        $rowsLocal=@(Current-Responses $ws @($recipe.response_selectors))
+        $userRowsLocal=if($userMessageSelectors.Count -gt 0){@(Current-Responses $ws $userMessageSelectors)}else{@()}
+        $composerLocal=Get-ComposerText $ws $inputSelector
+        $script:latestComposer=[string]$composerLocal
+        $script:latestUsers=$userRowsLocal.Count
+        $script:latestResponses=$rowsLocal.Count
+        if(
+          $busyLocal -or
+          $userRowsLocal.Count -gt $beforeUsers -or
+          $rowsLocal.Count -gt $before -or
+          ([string]$composerLocal).Length -lt [Math]::Max(1,[int]($Prompt.Length*0.5))
+        ){
+          return $true
+        }
+      }
+      return $false
+    }
+
+    $submissionVerified=Wait-SubmissionEvidence 6
+
+    # Safe one-time alternate: only if nothing whatsoever indicates submission and
+    # the full prompt still remains in the composer. This avoids blind double-send.
+    $alternateMethod=""
+    if(-not $submissionVerified){
+      $composerNormalized=[regex]::Replace([string]$latestComposer,"\r\n?","\n")
+      $safeToRetry=(
+        $composerNormalized -eq $expectedNormalized -and
+        $latestUsers -eq $beforeUsers -and
+        $latestResponses -eq $before -and
+        -not $busySeen
+      )
+      if($safeToRetry){
+        if($sendMethod -eq "button-click"){
+          $alternateMethod="cdp-enter"
+          Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+          Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+        }else{
+          Start-Sleep -Milliseconds 700
+          $sent2=Eval-JS $ws $sendExpr
+          if($sent2.ok -and [string]$sent2.method -eq "button-click"){
+            $alternateMethod="button-click"
+          }
+        }
+        if($alternateMethod){
+          $sendMethod=$sendMethod + "->" + $alternateMethod
+          $submissionVerified=Wait-SubmissionEvidence 8
+        }
       }
     }
+
     if(-not $submissionVerified){
+      $diag=[ordered]@{
+        primary_send=$sent
+        final_send_method=$sendMethod
+        composer_chars=[string]$latestComposer.Length
+        prompt_chars=[int]$Prompt.Length
+        user_messages_before=$beforeUsers
+        user_messages_after=$latestUsers
+        assistant_messages_before=$before
+        assistant_messages_after=$latestResponses
+        busy_seen=[bool]$busySeen
+      }
       Write-JsonResult @{
         ok=$false
         status="PROMPT_NOT_SUBMITTED"
         provider=[string]$recipe.provider
         send_method=$sendMethod
         typed_chars=[int]$typed.typed_chars
-        detail="B10 found no browser evidence that the prompt was submitted."
+        submission_diagnostics=$diag
+        detail=("B10 saw no submission evidence after safe primary/alternate actions. " + ($diag | ConvertTo-Json -Compress -Depth 6))
       }
       exit 7
     }
