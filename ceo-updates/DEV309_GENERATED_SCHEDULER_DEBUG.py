@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pathlib
+import re
+
 import asyncio
 import statistics
 import time
@@ -1481,7 +1484,6 @@ class ContinuousScheduler:
     @staticmethod
     def _normalized_task_title(title: str) -> str:
         import re
-import pathlib
         return re.sub(r"[^a-z0-9áéíóúüñ]+", " ", str(title or "").lower()).strip()
 
     def _filter_novel_continuity_followups(self, *, audit: Task, spawned: list[Task], preexisting_task_ids: set[str]) -> list[Task]:
@@ -1553,7 +1555,7 @@ import pathlib
                     (
                         f"Create the missing deliverable {target} in the CEO workspace. "
                         "Your substantive response must be the complete intended file content and your CEO_RESULT must use "
-                        f"write_files=[{{"path":"{target}","content":"...complete content..."}}]. "
+                        "Set write_files to one entry whose path is the target filename and whose content is the complete file content. "
                         "Do not merely describe the file. Use the locked project goal to include every requested field."
                     ),
                     ["reasoning"], "general",
