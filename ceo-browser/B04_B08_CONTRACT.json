@@ -1,0 +1,78 @@
+{
+  "phase": "B04-B08",
+  "date": "2026-09-21",
+  "branch": "free-browser-ai-worker",
+  "status": {
+    "B04_persistent_exclusive_profile": "COMPLETE_CI_VERIFIED_PHYSICAL_PENDING",
+    "B05_one_time_manual_login": "COMPLETE_CI_VERIFIED_REAL_CHATGPT_LOGIN_PENDING",
+    "B06_automatic_session_reuse": "COMPLETE_CI_VERIFIED_REAL_CHATGPT_SESSION_PENDING",
+    "B07_cdp_navigation_no_coordinates": "COMPLETE_CI_VERIFIED_PHYSICAL_PENDING",
+    "B08_robust_prompt_discovery": "COMPLETE_CI_VERIFIED_REAL_CHATGPT_UI_PENDING"
+  },
+  "B04": {
+    "canonical_profile": "%LOCALAPPDATA%\\CEO de IAs\\browser-profile",
+    "marker": "CEO_BROWSER_PROFILE.json",
+    "exclusive_profile": true,
+    "persists_between_browser_restarts": true,
+    "no_api_required": true
+  },
+  "B05": {
+    "human_login_only": true,
+    "captcha_bypass": false,
+    "two_factor_bypass": false,
+    "states": [
+      "LOGIN_REQUIRED",
+      "SESSION_READY"
+    ],
+    "session_status_file": "CEO_BROWSER_SESSION.json",
+    "helper": "open_chatgpt_profile.ps1"
+  },
+  "B06": {
+    "reopen_uses_same_profile": true,
+    "session_storage_persistence_tested": true,
+    "driver_reuses_existing_cdp_browser_when_available": true
+  },
+  "B07": {
+    "navigation_transport": "Chrome DevTools Protocol",
+    "commands": [
+      "Page.navigate",
+      "Runtime.evaluate"
+    ],
+    "screen_coordinates": false,
+    "sendkeys_navigation": false
+  },
+  "B08": {
+    "discovery_layers": [
+      "ordered provider recipe selectors",
+      "visibility/enabled checks",
+      "shadow-root traversal",
+      "semantic fallback over textarea/input/contenteditable/role=textbox",
+      "semantic hint scoring",
+      "search-field penalty"
+    ],
+    "result_metadata": [
+      "selector",
+      "input_strategy",
+      "input_matched"
+    ]
+  },
+  "verification": {
+    "workflow_run_id": 35648504245,
+    "conclusion": "success",
+    "gates": [
+      "B02 scope freeze",
+      "B03 Chrome CDP control",
+      "B04 exclusive persistent profile",
+      "B05 login-required fail-safe",
+      "B05 manual-login completion simulation",
+      "B06 session persistence across browser restart",
+      "B07 Page.navigate without screen coordinates",
+      "B08 semantic prompt-input fallback",
+      "two-turn browser conversation",
+      "zero-API AITransport",
+      "FREE-ONLY boundary"
+    ],
+    "real_chatgpt_user_machine_verified": false
+  },
+  "next": "B09-B13: type/send a real prompt, detect generation completion, capture the full response, and preserve the same ChatGPT conversation; then execute the first simple real task."
+}
