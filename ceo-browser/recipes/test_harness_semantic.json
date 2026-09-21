@@ -1,0 +1,31 @@
+{
+  "provider": "test-harness",
+  "url": "http://127.0.0.1:8765/",
+  "input_selectors": [
+    "#definitely-missing",
+    "textarea[data-never='x']"
+  ],
+  "input_semantic_hints": [
+    "ask",
+    "message",
+    "prompt"
+  ],
+  "send_selectors": [
+    "button[data-testid='send-button']"
+  ],
+  "response_selectors": [
+    "[data-message-author-role='assistant']"
+  ],
+  "busy_selectors": [
+    "button[data-testid='stop-button']"
+  ],
+  "logged_in_selectors": [
+    "button[data-testid='profile-button']"
+  ],
+  "login_required_selectors": [
+    "a[data-testid='login-button']"
+  ],
+  "constraints": {
+    "test_only": true
+  }
+}
