@@ -30,6 +30,9 @@ _SECRET_PATTERNS = [
 REQUIRED_FIRST_TRIAL_FILES = (
     "windows_chatgpt_cdp_driver.ps1",
     "open_chatgpt_profile.ps1",
+    "open_web_ai_profile.ps1",
+    "provider_registry.json",
+    "browser_provider_pool.py",
     "recipes/chatgpt_web.json",
     "run_b09_b14_physical_gate.ps1",
     "run_b15_b18_physical_gate.ps1",
@@ -37,6 +40,7 @@ REQUIRED_FIRST_TRIAL_FILES = (
     "run_b20_code_gate.ps1",
     "run_b20_code_gate.py",
     "run_browser_restart_gate.ps1",
+    "run_field_campaign.py",
     "run_b29_b30_full_field_gate.ps1",
     "finalize_browser_field.py",
     "programming_browser_loop.py",
