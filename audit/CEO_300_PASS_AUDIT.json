@@ -8,66 +8,66 @@
       "pass": 1
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 1, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 1, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=1,mode=1",
       "ok": true,
       "pass": 2
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 2, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 2, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=2,mode=2",
       "ok": true,
       "pass": 3
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 3, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 3, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=3,mode=3",
       "ok": true,
       "pass": 4
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 4, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '4 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 4, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=4,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 5
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 5, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 5, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=5,mode=0",
       "ok": true,
       "pass": 6
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 6, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 6, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=6,mode=1",
       "ok": true,
       "pass": 7
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 7, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 7, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=7,mode=2",
       "ok": true,
       "pass": 8
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 8, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 8, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=8,mode=3",
       "ok": true,
       "pass": 9
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 9, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '9 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 9, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=9,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 10
     },
     {
@@ -78,66 +78,66 @@
       "pass": 11
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 1, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 1, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=1,mode=1",
       "ok": true,
       "pass": 12
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 2, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 2, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=2,mode=2",
       "ok": true,
       "pass": 13
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 3, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 3, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=3,mode=3",
       "ok": true,
       "pass": 14
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 4, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '4 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 4, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=4,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 15
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 5, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 5, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=5,mode=0",
       "ok": true,
       "pass": 16
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 6, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 6, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=6,mode=1",
       "ok": true,
       "pass": 17
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 7, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 7, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=7,mode=2",
       "ok": true,
       "pass": 18
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 8, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 8, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=8,mode=3",
       "ok": true,
       "pass": 19
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 9, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '9 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 9, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=9,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 20
     },
     {
@@ -148,66 +148,66 @@
       "pass": 21
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 1, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 1, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=1,mode=1",
       "ok": true,
       "pass": 22
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 2, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 2, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=2,mode=2",
       "ok": true,
       "pass": 23
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 3, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 3, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=3,mode=3",
       "ok": true,
       "pass": 24
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 4, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '4 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 4, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=4,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 25
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 5, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 5, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=5,mode=0",
       "ok": true,
       "pass": 26
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 6, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 6, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=6,mode=1",
       "ok": true,
       "pass": 27
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 7, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 7, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=7,mode=2",
       "ok": true,
       "pass": 28
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 8, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 8, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=8,mode=3",
       "ok": true,
       "pass": 29
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 9, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '9 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 9, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=9,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 30
     },
     {
@@ -218,66 +218,66 @@
       "pass": 31
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 1, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 1, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=1,mode=1",
       "ok": true,
       "pass": 32
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 2, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 2, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=2,mode=2",
       "ok": true,
       "pass": 33
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 3, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 3, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=3,mode=3",
       "ok": true,
       "pass": 34
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 4, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '4 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 4, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=4,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 35
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 5, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 5, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=5,mode=0",
       "ok": true,
       "pass": 36
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 6, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 6, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=6,mode=1",
       "ok": true,
       "pass": 37
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 7, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 7, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=7,mode=2",
       "ok": true,
       "pass": 38
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 8, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 8, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=8,mode=3",
       "ok": true,
       "pass": 39
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 9, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '9 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 9, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=9,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 40
     },
     {
@@ -288,66 +288,66 @@
       "pass": 41
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 1, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 1, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=1,mode=1",
       "ok": true,
       "pass": 42
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 2, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 2, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=2,mode=2",
       "ok": true,
       "pass": 43
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 3, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 3, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=3,mode=3",
       "ok": true,
       "pass": 44
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 4, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '4 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 4, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=4,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 45
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 5, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 5, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=5,mode=0",
       "ok": true,
       "pass": 46
     },
     {
-      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 6, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 6, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=6,mode=1",
       "ok": true,
       "pass": 47
     },
     {
-      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 7, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 7, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=7,mode=2",
       "ok": true,
       "pass": 48
     },
     {
-      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 8, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 8, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=8,mode=3",
       "ok": true,
       "pass": 49
     },
     {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "detail": "{'truth': {'status': 'stalled', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 9, 'useful_output_rate': 0.0, 'stalled': True, 'reason': '9 recoveries without any productive completion'}, 'wd': {'status': 'BLOQUEADO', 'stalled': True, 'recoveries_without_progress': 9, 'fuse_open': True, 'fallback_action': 'noop', 'repaired_units': 0}}",
       "family": "scheduler",
       "name": "recovery=9,mode=4",
-      "ok": false,
+      "ok": true,
       "pass": 50
     },
     {
@@ -701,350 +701,350 @@
       "pass": 100
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['8ff71dfd5b1f48ef8bb8c2e3c9b5f83d', '181ea6dc69a8426f8bd17239a3f4ad2b'], 'grounded_refs': ['8ff71dfd5b1f48ef8bb8c2e3c9b5f83d', '181ea6dc69a8426f8bd17239a3f4ad2b'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['ef2d65e171a4499183f3321d7844355e', 'c798258b2f4941558edfac362440b903'], 'grounded_refs': ['ef2d65e171a4499183f3321d7844355e', 'c798258b2f4941558edfac362440b903'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-0",
       "ok": true,
       "pass": 101
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['e606ec6d88e04b789e3e1ac142ab5e8b', '7dcc477a8c9f48e1925d9a495cc75113'], 'grounded_refs': ['e606ec6d88e04b789e3e1ac142ab5e8b', '7dcc477a8c9f48e1925d9a495cc75113'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['5a1d60e421c446868faa4954f94894f5', '535d710a0122425aa37bc7b5a4b4700d'], 'grounded_refs': ['5a1d60e421c446868faa4954f94894f5', '535d710a0122425aa37bc7b5a4b4700d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-1",
       "ok": true,
       "pass": 102
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['45aacb52d7634d738507dca5b0cf7012', '7a2124407ab040c09c5b49cf2fd4183a'], 'grounded_refs': ['45aacb52d7634d738507dca5b0cf7012', '7a2124407ab040c09c5b49cf2fd4183a'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['4915bb9dc6024a2e84c07b831f6ebeb0', 'ac3a66710bf44ae29d6ba66416d30048'], 'grounded_refs': ['4915bb9dc6024a2e84c07b831f6ebeb0', 'ac3a66710bf44ae29d6ba66416d30048'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-2",
       "ok": true,
       "pass": 103
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['2f2ddc05760545159044e88caee5abab', 'bc902ba552184741a25660aef49cb120'], 'grounded_refs': ['2f2ddc05760545159044e88caee5abab', 'bc902ba552184741a25660aef49cb120'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['b14bf95229d44c77a26f39525841cff2', '846d440e7bf64f3b97319ba5524172d5'], 'grounded_refs': ['b14bf95229d44c77a26f39525841cff2', '846d440e7bf64f3b97319ba5524172d5'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-3",
       "ok": true,
       "pass": 104
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['9c71c2b384834e09a2af455188136a8e', '329261c74c2041c58af42f9ab5d2e45d'], 'grounded_refs': ['9c71c2b384834e09a2af455188136a8e', '329261c74c2041c58af42f9ab5d2e45d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['8b35fe79c2104ae082a6c76932263d11', '98cb83e3d685485db22cc2e0a393e883'], 'grounded_refs': ['8b35fe79c2104ae082a6c76932263d11', '98cb83e3d685485db22cc2e0a393e883'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-4",
       "ok": true,
       "pass": 105
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['c5e3197a3a1e41bdb8f98eca12e2d341', '89d3b5821dc74fa684480bbc17be19df'], 'grounded_refs': ['c5e3197a3a1e41bdb8f98eca12e2d341', '89d3b5821dc74fa684480bbc17be19df'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['c4e56630b09949028ccad2762a15a5f0', 'b367a60c54a149498a45b8ebf8a51129'], 'grounded_refs': ['c4e56630b09949028ccad2762a15a5f0', 'b367a60c54a149498a45b8ebf8a51129'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-5",
       "ok": true,
       "pass": 106
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['8335e2e4b3fc4dc99ea38f19546c1c3b', '549a3262bb58446e9b6cb8069fb829ad'], 'grounded_refs': ['8335e2e4b3fc4dc99ea38f19546c1c3b', '549a3262bb58446e9b6cb8069fb829ad'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['7fcd06d9176f49eebb7d120fae7f60ea', '29702fe2957a469e9d9626905dc027c4'], 'grounded_refs': ['7fcd06d9176f49eebb7d120fae7f60ea', '29702fe2957a469e9d9626905dc027c4'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-6",
       "ok": true,
       "pass": 107
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['5f468380b2324598b9b583f0c6868ef5', 'bda689eaf24c47eaac860ea381af64e3'], 'grounded_refs': ['5f468380b2324598b9b583f0c6868ef5', 'bda689eaf24c47eaac860ea381af64e3'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['68d7dc45bef04e059914968443456992', '9afee40c05fc4135b2d2e118ecdae8ed'], 'grounded_refs': ['68d7dc45bef04e059914968443456992', '9afee40c05fc4135b2d2e118ecdae8ed'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-7",
       "ok": true,
       "pass": 108
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['5aeb0d873a6e4c199018f6135f5c2f65', '83b3a772c0e34f3699cdf88fc5755bdf'], 'grounded_refs': ['5aeb0d873a6e4c199018f6135f5c2f65', '83b3a772c0e34f3699cdf88fc5755bdf'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['1f2cfb2db0544701a649e7759be6e7c4', 'e33def8f306d409d882df067fc70c850'], 'grounded_refs': ['1f2cfb2db0544701a649e7759be6e7c4', 'e33def8f306d409d882df067fc70c850'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-8",
       "ok": true,
       "pass": 109
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['9f7308c342f44cac954c2c2475c377aa', 'c01981cee84c495f8dd072af90a10035'], 'grounded_refs': ['9f7308c342f44cac954c2c2475c377aa', 'c01981cee84c495f8dd072af90a10035'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['68928a37d71c454fbb134d970fc8b7d9', '5188b0e45258463e9a291e46da0f0704'], 'grounded_refs': ['68928a37d71c454fbb134d970fc8b7d9', '5188b0e45258463e9a291e46da0f0704'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-9",
       "ok": true,
       "pass": 110
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['0be411dd1788483cbcd14c1c6352dee3', 'd041b0029dd84ae99c4bb73eca7fff57'], 'grounded_refs': ['0be411dd1788483cbcd14c1c6352dee3', 'd041b0029dd84ae99c4bb73eca7fff57'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['be40448d18fc4170b3336dbd42286598', 'f5045615c4664b188b22b2b1a25d7f11'], 'grounded_refs': ['be40448d18fc4170b3336dbd42286598', 'f5045615c4664b188b22b2b1a25d7f11'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-10",
       "ok": true,
       "pass": 111
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['306948a5fe214d21bc4ac083e696419f', '1ff6752d75384a379df42eb0049ef786'], 'grounded_refs': ['306948a5fe214d21bc4ac083e696419f', '1ff6752d75384a379df42eb0049ef786'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['514a8b8a138c422e85aab530687b74a8', '5799a84a21f346f9ad024b99336ed7c8'], 'grounded_refs': ['514a8b8a138c422e85aab530687b74a8', '5799a84a21f346f9ad024b99336ed7c8'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-11",
       "ok": true,
       "pass": 112
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['f7751ea1166a4e3dbb12472f87034a0a', 'f22474f92526404b9773bf497d4eaf64'], 'grounded_refs': ['f7751ea1166a4e3dbb12472f87034a0a', 'f22474f92526404b9773bf497d4eaf64'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['426a6702b1d24b909dc7a913633292a3', 'b4fb4e524f6b49419f8704d5a6384ad1'], 'grounded_refs': ['426a6702b1d24b909dc7a913633292a3', 'b4fb4e524f6b49419f8704d5a6384ad1'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-12",
       "ok": true,
       "pass": 113
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['abb9675a8cdf4177a031bf34ffe5d34f', '0d61f20c492248a8a6476ac94c75b23b'], 'grounded_refs': ['abb9675a8cdf4177a031bf34ffe5d34f', '0d61f20c492248a8a6476ac94c75b23b'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['a1f7ed8d2b5d415a94d587b4b8855e6a', 'cfce3d889233406d8b8e4eaaf67db966'], 'grounded_refs': ['a1f7ed8d2b5d415a94d587b4b8855e6a', 'cfce3d889233406d8b8e4eaaf67db966'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-13",
       "ok": true,
       "pass": 114
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['21114f457ffe495c9eebe0513ec98637', '0c96be1b61a04ba0b4a041eb6b1e8707'], 'grounded_refs': ['21114f457ffe495c9eebe0513ec98637', '0c96be1b61a04ba0b4a041eb6b1e8707'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['6c6ed90811d946b19e126838109ea991', '22fcb3dfc6e74480abcbb8cbca64e8e7'], 'grounded_refs': ['6c6ed90811d946b19e126838109ea991', '22fcb3dfc6e74480abcbb8cbca64e8e7'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-14",
       "ok": true,
       "pass": 115
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['eb8215b382344dbc98517bc752c00e44', '1fb6eea55e6f495c8cc1e80ed5a0b2c6'], 'grounded_refs': ['eb8215b382344dbc98517bc752c00e44', '1fb6eea55e6f495c8cc1e80ed5a0b2c6'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['e77eea5dd584412bba19e73bd6454780', '79ba2584c21048a1b99713a2e9b0b78c'], 'grounded_refs': ['e77eea5dd584412bba19e73bd6454780', '79ba2584c21048a1b99713a2e9b0b78c'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-15",
       "ok": true,
       "pass": 116
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['3c9fc3fa3e054dfe8a414eb412cf01a9', '8886d555a5c046f1bba89ca8a22f46c0'], 'grounded_refs': ['3c9fc3fa3e054dfe8a414eb412cf01a9', '8886d555a5c046f1bba89ca8a22f46c0'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['88fd858fc85a4c4591f762d28aa94291', 'cc2137bb36f14f5a9b192d1a4da7c756'], 'grounded_refs': ['88fd858fc85a4c4591f762d28aa94291', 'cc2137bb36f14f5a9b192d1a4da7c756'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-16",
       "ok": true,
       "pass": 117
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['88ff7ac9721c4e01b1da659212b18252', 'c446d4a3b1fd44f280097488c61ff0a4'], 'grounded_refs': ['88ff7ac9721c4e01b1da659212b18252', 'c446d4a3b1fd44f280097488c61ff0a4'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['7d8b9b33ccfb44c5afd5b4c6e0e39b8f', '9d85d8f19d984f5b8062845a49b12e9c'], 'grounded_refs': ['7d8b9b33ccfb44c5afd5b4c6e0e39b8f', '9d85d8f19d984f5b8062845a49b12e9c'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-17",
       "ok": true,
       "pass": 118
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['89fea4e9531a4b7d8c345136f55890a1', '81c05d6792aa4e5c9edaee5fee0a291d'], 'grounded_refs': ['89fea4e9531a4b7d8c345136f55890a1', '81c05d6792aa4e5c9edaee5fee0a291d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['8c5334e22591498bb5dd0b0243b9e7bf', 'e521b587d2d444edb6680b0212a345f2'], 'grounded_refs': ['8c5334e22591498bb5dd0b0243b9e7bf', 'e521b587d2d444edb6680b0212a345f2'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-18",
       "ok": true,
       "pass": 119
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['6c898cbea9aa4cb6b1423ddcd091db14', '6f5d35783c8f4783be43c8665b2ed60c'], 'grounded_refs': ['6c898cbea9aa4cb6b1423ddcd091db14', '6f5d35783c8f4783be43c8665b2ed60c'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['6ec9f28e68eb487a8b7474f1405f0e21', '327fd9cdf530462f8058734106e0cfd9'], 'grounded_refs': ['6ec9f28e68eb487a8b7474f1405f0e21', '327fd9cdf530462f8058734106e0cfd9'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-19",
       "ok": true,
       "pass": 120
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['88a12647837b43ff967fb7982861ee12', '4c76a552d11640ee8713ae5a666beebc'], 'grounded_refs': ['88a12647837b43ff967fb7982861ee12', '4c76a552d11640ee8713ae5a666beebc'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['7e5dee006b5044e789d0e791bac1ad6d', 'a45bb759939e4bf9af6591c5d34d06a0'], 'grounded_refs': ['7e5dee006b5044e789d0e791bac1ad6d', 'a45bb759939e4bf9af6591c5d34d06a0'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-20",
       "ok": true,
       "pass": 121
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['642e6231eb5248b090d98c6bb9fffa7d', '094bb936ad924e3db08e2b3ba4752a47'], 'grounded_refs': ['642e6231eb5248b090d98c6bb9fffa7d', '094bb936ad924e3db08e2b3ba4752a47'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['067245d5fad840b8ab70181ec23e932d', '8a214e9e2ce843c3a7dea88129185c0f'], 'grounded_refs': ['067245d5fad840b8ab70181ec23e932d', '8a214e9e2ce843c3a7dea88129185c0f'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-21",
       "ok": true,
       "pass": 122
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['886948ceffee499a9a3b7e43573e7be3', 'c81aa9c7e076465bb3c1217442874fa8'], 'grounded_refs': ['886948ceffee499a9a3b7e43573e7be3', 'c81aa9c7e076465bb3c1217442874fa8'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['d463710377b74e15a5f99bfcc739fcce', '789ee09c2d214adeb98e816af464ceb4'], 'grounded_refs': ['d463710377b74e15a5f99bfcc739fcce', '789ee09c2d214adeb98e816af464ceb4'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-22",
       "ok": true,
       "pass": 123
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['a6142a3b9d1f40c9b4e3ce6259819105', 'ab0609641d204615886ccde21dce64b8'], 'grounded_refs': ['a6142a3b9d1f40c9b4e3ce6259819105', 'ab0609641d204615886ccde21dce64b8'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['08a145beaee249d3bdbe124057df839e', 'fa843c731afe434cb80a538b762ffc6d'], 'grounded_refs': ['08a145beaee249d3bdbe124057df839e', 'fa843c731afe434cb80a538b762ffc6d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-23",
       "ok": true,
       "pass": 124
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['9517bd924d3f4dd68c52a3cc7eac2688', '7c8ece383f5747f8a8b63eec30908640'], 'grounded_refs': ['9517bd924d3f4dd68c52a3cc7eac2688', '7c8ece383f5747f8a8b63eec30908640'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['6e71e9e171d443269a88eca24ba9a160', '40d682ac9d1f4573bf86496faa33d218'], 'grounded_refs': ['6e71e9e171d443269a88eca24ba9a160', '40d682ac9d1f4573bf86496faa33d218'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-24",
       "ok": true,
       "pass": 125
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['83701f31ce5048c6a64fb49e81c00e97', 'a98f47ba3412446483d693d2d80c06d0'], 'grounded_refs': ['83701f31ce5048c6a64fb49e81c00e97', 'a98f47ba3412446483d693d2d80c06d0'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['f858144c0a294937824f64f1b960b3c0', 'ddded4bc8ed2477b9bf92501a83be903'], 'grounded_refs': ['f858144c0a294937824f64f1b960b3c0', 'ddded4bc8ed2477b9bf92501a83be903'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-25",
       "ok": true,
       "pass": 126
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['a79dfd1f28964647962ddb0f7b9ea557', '713e8cd257844f1c959a084e0227480d'], 'grounded_refs': ['a79dfd1f28964647962ddb0f7b9ea557', '713e8cd257844f1c959a084e0227480d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['692237f5d9d84c53bf6df5eb18df7f67', '9c1802df26e34c6192f947f7fb45d77a'], 'grounded_refs': ['692237f5d9d84c53bf6df5eb18df7f67', '9c1802df26e34c6192f947f7fb45d77a'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-26",
       "ok": true,
       "pass": 127
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['ae58262604de4012bf5e22637193900e', '0b5c002e3e7e49859dbe53346c510bee'], 'grounded_refs': ['ae58262604de4012bf5e22637193900e', '0b5c002e3e7e49859dbe53346c510bee'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['e4720c624c584949af5bba9c270b0538', '7cc256de590f474fb2b2ed7cb9f081d3'], 'grounded_refs': ['e4720c624c584949af5bba9c270b0538', '7cc256de590f474fb2b2ed7cb9f081d3'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-27",
       "ok": true,
       "pass": 128
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['c6dc0f6aa206478883babb3dc603680e', '790f7d9a2cba4efa890494ce7fc3b561'], 'grounded_refs': ['c6dc0f6aa206478883babb3dc603680e', '790f7d9a2cba4efa890494ce7fc3b561'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['e4b3526127ba4b75a5014002a5277d02', 'de34ed1721814aa1b9c7fe845cf4fa26'], 'grounded_refs': ['e4b3526127ba4b75a5014002a5277d02', 'de34ed1721814aa1b9c7fe845cf4fa26'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-28",
       "ok": true,
       "pass": 129
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['f7798b26dde74d228170ec7102ab78ce', '8848a9c04a37459997a79067de87ab08'], 'grounded_refs': ['f7798b26dde74d228170ec7102ab78ce', '8848a9c04a37459997a79067de87ab08'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['f162a72e90d14c329925df3066f4e50c', '8719d0b60d3e4eaeb6ee31259d4a6381'], 'grounded_refs': ['f162a72e90d14c329925df3066f4e50c', '8719d0b60d3e4eaeb6ee31259d4a6381'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-29",
       "ok": true,
       "pass": 130
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['f6287f170a514bd6877ff6731267b1d6', 'f409451420d6434d88dc0d5f78fbf634'], 'grounded_refs': ['f6287f170a514bd6877ff6731267b1d6', 'f409451420d6434d88dc0d5f78fbf634'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['bb329d9d42e94a4ea56540f048ff5b40', '614f242bcea44fbea93f41d8fdcb79dc'], 'grounded_refs': ['bb329d9d42e94a4ea56540f048ff5b40', '614f242bcea44fbea93f41d8fdcb79dc'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-30",
       "ok": true,
       "pass": 131
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['d6dd4c5a5a324cd3a154147796ed2370', '2d13f6373b264e9abd97f5cab73dc1d4'], 'grounded_refs': ['d6dd4c5a5a324cd3a154147796ed2370', '2d13f6373b264e9abd97f5cab73dc1d4'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['1e3dd09e79ea4a21898be50b2706e6bf', '2742f517342849b9b775e7e8abba89ba'], 'grounded_refs': ['1e3dd09e79ea4a21898be50b2706e6bf', '2742f517342849b9b775e7e8abba89ba'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-31",
       "ok": true,
       "pass": 132
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['13727f0abfcd4e2992ec272ff3431442', '1b4e40b9c19c4df2a27d110c3f3fb7cf'], 'grounded_refs': ['13727f0abfcd4e2992ec272ff3431442', '1b4e40b9c19c4df2a27d110c3f3fb7cf'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['872ffc9e17314f62958ba7b116b390c4', '60ae2c411c6940f5ac52efc33d869f05'], 'grounded_refs': ['872ffc9e17314f62958ba7b116b390c4', '60ae2c411c6940f5ac52efc33d869f05'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-32",
       "ok": true,
       "pass": 133
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['da78f95a09ae42c5af1ff3c46165061c', 'cf4d7e1218a84081b9c60e861a5c718d'], 'grounded_refs': ['da78f95a09ae42c5af1ff3c46165061c', 'cf4d7e1218a84081b9c60e861a5c718d'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['c664f64b7613496bb7a7b1e2527e1f73', '4bf5a073f340420ba5551adeafec37c8'], 'grounded_refs': ['c664f64b7613496bb7a7b1e2527e1f73', '4bf5a073f340420ba5551adeafec37c8'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-33",
       "ok": true,
       "pass": 134
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['10f95830ab0c4330bd5a6ca3516e8a7f', '0702c5442379463d8e0a32d0ffe3d23b'], 'grounded_refs': ['10f95830ab0c4330bd5a6ca3516e8a7f', '0702c5442379463d8e0a32d0ffe3d23b'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['3e2a3e460e664e04b2640ff5c39fc49e', '2d0e1998fa7d4a6184d30df654db7d95'], 'grounded_refs': ['3e2a3e460e664e04b2640ff5c39fc49e', '2d0e1998fa7d4a6184d30df654db7d95'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-34",
       "ok": true,
       "pass": 135
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['3c33ab7e82834a44828086046959a6f4', 'd37f7d3e49314ea69ce880b47ebfc936'], 'grounded_refs': ['3c33ab7e82834a44828086046959a6f4', 'd37f7d3e49314ea69ce880b47ebfc936'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['c4b34e7ccf93472c9e02452e521308fd', 'bc22a2a7acce476c848614a72e970c04'], 'grounded_refs': ['c4b34e7ccf93472c9e02452e521308fd', 'bc22a2a7acce476c848614a72e970c04'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-35",
       "ok": true,
       "pass": 136
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['a53f8f8800db441791f860932c90efc0', '3d3a56dbe0294174b8459c2214402ab4'], 'grounded_refs': ['a53f8f8800db441791f860932c90efc0', '3d3a56dbe0294174b8459c2214402ab4'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['de1aa7a9a0b54280a9020c516ecdcc17', 'ed5ee4c0758f409688fc8c516a215785'], 'grounded_refs': ['de1aa7a9a0b54280a9020c516ecdcc17', 'ed5ee4c0758f409688fc8c516a215785'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-36",
       "ok": true,
       "pass": 137
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['d17076af32c941e88bed92886658931c', '6b962c44a13d40f29d6f2e6bfd43945b'], 'grounded_refs': ['d17076af32c941e88bed92886658931c', '6b962c44a13d40f29d6f2e6bfd43945b'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['c4885ccd496b4bbf9123e66773168300', '44e9b0555916472a9bf9dc26b7d8731a'], 'grounded_refs': ['c4885ccd496b4bbf9123e66773168300', '44e9b0555916472a9bf9dc26b7d8731a'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-37",
       "ok": true,
       "pass": 138
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['3a11e87a6c734bd6b2de30fef1932bb4', '4399dbc6c6954da483f10e54d335bfe1'], 'grounded_refs': ['3a11e87a6c734bd6b2de30fef1932bb4', '4399dbc6c6954da483f10e54d335bfe1'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['591cd6ec43a04628af03c0b2c4b6b84f', '56471fd7f63e4535ad91ad4ef0244f3e'], 'grounded_refs': ['591cd6ec43a04628af03c0b2c4b6b84f', '56471fd7f63e4535ad91ad4ef0244f3e'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-38",
       "ok": true,
       "pass": 139
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['52e20c2074654cee80ff868bdff859f1', 'dc384ed55fd04d4eb8b1242bc92ecb25'], 'grounded_refs': ['52e20c2074654cee80ff868bdff859f1', 'dc384ed55fd04d4eb8b1242bc92ecb25'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['084030b26dea4852a0ed69a50ac1d8ee', 'b00d56aafdcb4adaaa3a5371f6c976da'], 'grounded_refs': ['084030b26dea4852a0ed69a50ac1d8ee', 'b00d56aafdcb4adaaa3a5371f6c976da'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-39",
       "ok": true,
       "pass": 140
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['0b90187984094da9a1e264e4d2bdb010', 'a03a2f34e7254bac9d9e3b7ec33ae42c'], 'grounded_refs': ['0b90187984094da9a1e264e4d2bdb010', 'a03a2f34e7254bac9d9e3b7ec33ae42c'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['2fc397b95c06429da8872256f448d834', '68adff1204df4136801148987bc078ec'], 'grounded_refs': ['2fc397b95c06429da8872256f448d834', '68adff1204df4136801148987bc078ec'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-40",
       "ok": true,
       "pass": 141
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['69d8cc02d0a84aea9913bd6d3d785145', '78b312fec6284d918477cc88096f1a52'], 'grounded_refs': ['69d8cc02d0a84aea9913bd6d3d785145', '78b312fec6284d918477cc88096f1a52'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['438d47a17cd4465baea36ef28bd44ee2', '8e296a6110b8441a8db958956ebddfee'], 'grounded_refs': ['438d47a17cd4465baea36ef28bd44ee2', '8e296a6110b8441a8db958956ebddfee'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-41",
       "ok": true,
       "pass": 142
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['0919a197c31c4d03a9a67e988e675f2f', '7f5e1f592aaf4a53ad7f7f1745758efa'], 'grounded_refs': ['0919a197c31c4d03a9a67e988e675f2f', '7f5e1f592aaf4a53ad7f7f1745758efa'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['15e081b2c0d346f896568c2e262d3ff2', 'f6cabfe538aa4fb18c3af91593ca0c43'], 'grounded_refs': ['15e081b2c0d346f896568c2e262d3ff2', 'f6cabfe538aa4fb18c3af91593ca0c43'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-42",
       "ok": true,
       "pass": 143
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['ce77d8febec04d0cb65f2c3c28d0fb9b', '14ab2d5bb7e542df9de8dbb37305d39e'], 'grounded_refs': ['ce77d8febec04d0cb65f2c3c28d0fb9b', '14ab2d5bb7e542df9de8dbb37305d39e'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['99b13256f89341018cad06b147256715', 'd6b655333a30424f8bf15e8f2b732c20'], 'grounded_refs': ['99b13256f89341018cad06b147256715', 'd6b655333a30424f8bf15e8f2b732c20'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-43",
       "ok": true,
       "pass": 144
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['6400b5c51e0143899e71f5230258f9ed', '2f297902f5f94a599268deacf8876b41'], 'grounded_refs': ['6400b5c51e0143899e71f5230258f9ed', '2f297902f5f94a599268deacf8876b41'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['0d444537752247588e2ca33b309a4950', 'e54a5f029b9948b8b087919cba1754be'], 'grounded_refs': ['0d444537752247588e2ca33b309a4950', 'e54a5f029b9948b8b087919cba1754be'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-44",
       "ok": true,
       "pass": 145
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['a867f24985254dbb810f54ed2b9ac25d', 'f69390ccabc841a482b63affcfe178b5'], 'grounded_refs': ['a867f24985254dbb810f54ed2b9ac25d', 'f69390ccabc841a482b63affcfe178b5'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['8e67a0b31b7a4a0a89093545ea38951b', '5bb2c15a43484915969fafe66f323cf5'], 'grounded_refs': ['8e67a0b31b7a4a0a89093545ea38951b', '5bb2c15a43484915969fafe66f323cf5'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-45",
       "ok": true,
       "pass": 146
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['cdc2cf44ea434e51ae3b6b19dd6617a3', '42f85179f7ff4b21ad56b78c5bb6565f'], 'grounded_refs': ['cdc2cf44ea434e51ae3b6b19dd6617a3', '42f85179f7ff4b21ad56b78c5bb6565f'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['e0f50aa61c6f4a0b9bcc79272dc9b639', '25f815f2c4ef40829d0a683bc1a576c5'], 'grounded_refs': ['e0f50aa61c6f4a0b9bcc79272dc9b639', '25f815f2c4ef40829d0a683bc1a576c5'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-46",
       "ok": true,
       "pass": 147
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['f677fa685ff44fce8985108757544705', 'eaeb718b26a34d579032ac2dcb1cdc77'], 'grounded_refs': ['f677fa685ff44fce8985108757544705', 'eaeb718b26a34d579032ac2dcb1cdc77'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['20ab07f3b1e2462fbfb5536f70550ef5', '5c6ced75ae184ad783ccb8fe8db512e6'], 'grounded_refs': ['20ab07f3b1e2462fbfb5536f70550ef5', '5c6ced75ae184ad783ccb8fe8db512e6'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-47",
       "ok": true,
       "pass": 148
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['44752f5631ef46239c29b96c5e988e63', 'd12fa451a9b740c2b29963a28b9148d7'], 'grounded_refs': ['44752f5631ef46239c29b96c5e988e63', 'd12fa451a9b740c2b29963a28b9148d7'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['1fc93965c89148c0ab5a9513c2066e97', '6a60553e2e2c47489cccf0cba84a954f'], 'grounded_refs': ['1fc93965c89148c0ab5a9513c2066e97', '6a60553e2e2c47489cccf0cba84a954f'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-48",
       "ok": true,
       "pass": 149
     },
     {
-      "detail": "{'eligible': True, 'evidence_refs': ['718a84e92a2b4ffd843de948e63432ff', '75b1b897db6c4806b7bab5961eb1c57e'], 'grounded_refs': ['718a84e92a2b4ffd843de948e63432ff', '75b1b897db6c4806b7bab5961eb1c57e'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
+      "detail": "{'eligible': True, 'evidence_refs': ['653b28cb6b604b7690be4ca103d2c838', 'a0937d0a336e4fd3a11da36ca9304f9a'], 'grounded_refs': ['653b28cb6b604b7690be4ca103d2c838', 'a0937d0a336e4fd3a11da36ca9304f9a'], 'gaps': [], 'generation': 0, 'required_generation': 0}",
       "family": "completion",
       "name": "single-file-verified-49",
       "ok": true,
@@ -1401,352 +1401,352 @@
       "pass": 200
     },
     {
-      "detail": "{'manifest': 'DEV219_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV219_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['tests_passed!=true', 'security_passed!=true', 'clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV219_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 201
     },
     {
-      "detail": "{'manifest': 'DEV293_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV293_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['tests_passed!=true', 'security_passed!=true', 'clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV293_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 202
     },
     {
-      "detail": "{'manifest': 'DEV295_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV295_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['tests_passed!=true', 'security_passed!=true', 'clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV295_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 203
     },
     {
-      "detail": "{'manifest': 'DEV301_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV301_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV301_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 204
     },
     {
-      "detail": "{'manifest': 'DEV302_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV302_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV302_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 205
     },
     {
-      "detail": "{'manifest': 'DEV303_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV303_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV303_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 206
     },
     {
-      "detail": "{'manifest': 'DEV304_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV304_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV304_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 207
     },
     {
-      "detail": "{'manifest': 'DEV305_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV305_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV305_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 208
     },
     {
-      "detail": "{'manifest': 'DEV306_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV306_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV306_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 209
     },
     {
-      "detail": "{'manifest': 'DEV307_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV307_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV307_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 210
     },
     {
-      "detail": "{'manifest': 'DEV308_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV308_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV308_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 211
     },
     {
-      "detail": "{'manifest': 'DEV309_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV309_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV309_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 212
     },
     {
-      "detail": "{'manifest': 'DEV310_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV310_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV310_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 213
     },
     {
-      "detail": "{'manifest': 'DEV311_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV311_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV311_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 214
     },
     {
-      "detail": "{'manifest': 'DEV312_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV312_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV312_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 215
     },
     {
-      "detail": "{'manifest': 'DEV313_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV313_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV313_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 216
     },
     {
-      "detail": "{'manifest': 'DEV314_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV314_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV314_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 217
     },
     {
-      "detail": "{'manifest': 'DEV315_MANIFEST_UNSIGNED.json', 'stable': False, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV315_MANIFEST_UNSIGNED.json', 'stable': False, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true'], 'quarantined': False}",
       "family": "release",
       "name": "DEV315_MANIFEST_UNSIGNED.json",
       "ok": true,
       "pass": 218
     },
     {
-      "detail": "{'manifest': 'DEV316_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "detail": "{'manifest': 'DEV316_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV316_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 219
     },
     {
-      "detail": "{'manifest': 'DEV75_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "detail": "{'manifest': 'DEV75_MANIFEST_UNSIGNED.json', 'stable': True, 'firewall_allowed': False, 'problems': ['tests_passed!=true', 'security_passed!=true', 'clean_extract_passed!=true', 'package_contract_passed!=true', 'production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'], 'quarantined': True}",
       "family": "release",
       "name": "DEV75_MANIFEST_UNSIGNED.json",
-      "ok": false,
+      "ok": true,
       "pass": 220
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 221
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 222
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 223
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 224
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 225
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 226
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 227
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 228
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 229
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 230
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 231
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 232
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 233
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 234
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 235
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 236
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 237
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 238
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 239
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 240
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 241
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 242
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 243
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 244
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 245
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 246
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 247
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 248
     },
     {
       "detail": "{}",
       "family": "release",
-      "name": "unique-version-bytes",
+      "name": "numeric-version-collisions-contained",
       "ok": true,
       "pass": 249
     },
     {
-      "detail": "{}",
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
       "family": "release",
-      "name": "unique-release-sequence",
+      "name": "firewall-rejects-local-only-candidate",
       "ok": true,
       "pass": 250
     },
@@ -2101,211 +2101,8 @@
       "pass": 300
     }
   ],
-  "failed": 39,
+  "failed": 10,
   "failures": [
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=4,mode=4",
-      "ok": false,
-      "pass": 5
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=9,mode=4",
-      "ok": false,
-      "pass": 10
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=4,mode=4",
-      "ok": false,
-      "pass": 15
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=9,mode=4",
-      "ok": false,
-      "pass": 20
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=4,mode=4",
-      "ok": false,
-      "pass": 25
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=9,mode=4",
-      "ok": false,
-      "pass": 30
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=4,mode=4",
-      "ok": false,
-      "pass": 35
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=9,mode=4",
-      "ok": false,
-      "pass": 40
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=4,mode=4",
-      "ok": false,
-      "pass": 45
-    },
-    {
-      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
-      "family": "scheduler",
-      "name": "recovery=9,mode=4",
-      "ok": false,
-      "pass": 50
-    },
-    {
-      "detail": "{'manifest': 'DEV219_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV219_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 201
-    },
-    {
-      "detail": "{'manifest': 'DEV293_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV293_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 202
-    },
-    {
-      "detail": "{'manifest': 'DEV295_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV295_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 203
-    },
-    {
-      "detail": "{'manifest': 'DEV301_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV301_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 204
-    },
-    {
-      "detail": "{'manifest': 'DEV302_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV302_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 205
-    },
-    {
-      "detail": "{'manifest': 'DEV303_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV303_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 206
-    },
-    {
-      "detail": "{'manifest': 'DEV304_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV304_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 207
-    },
-    {
-      "detail": "{'manifest': 'DEV305_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV305_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 208
-    },
-    {
-      "detail": "{'manifest': 'DEV306_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV306_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 209
-    },
-    {
-      "detail": "{'manifest': 'DEV307_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV307_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 210
-    },
-    {
-      "detail": "{'manifest': 'DEV308_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV308_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 211
-    },
-    {
-      "detail": "{'manifest': 'DEV309_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV309_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 212
-    },
-    {
-      "detail": "{'manifest': 'DEV310_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV310_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 213
-    },
-    {
-      "detail": "{'manifest': 'DEV311_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV311_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 214
-    },
-    {
-      "detail": "{'manifest': 'DEV312_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV312_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 215
-    },
-    {
-      "detail": "{'manifest': 'DEV313_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV313_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 216
-    },
-    {
-      "detail": "{'manifest': 'DEV314_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV314_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 217
-    },
-    {
-      "detail": "{'manifest': 'DEV316_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
-      "family": "release",
-      "name": "DEV316_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 219
-    },
-    {
-      "detail": "{'manifest': 'DEV75_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
-      "family": "release",
-      "name": "DEV75_MANIFEST_UNSIGNED.json",
-      "ok": false,
-      "pass": 220
-    },
     {
       "detail": "{'silent_launcher_exceptions': 4}",
       "family": "launcher_updater",
@@ -2395,15 +2192,15 @@
       "pass": 50
     },
     "release": {
-      "fail": 19,
-      "pass": 31
+      "fail": 0,
+      "pass": 50
     },
     "scheduler": {
-      "fail": 10,
-      "pass": 40
+      "fail": 0,
+      "pass": 50
     }
   },
-  "passed": 261,
+  "passed": 290,
   "schema": 1,
   "total": 300
 }
