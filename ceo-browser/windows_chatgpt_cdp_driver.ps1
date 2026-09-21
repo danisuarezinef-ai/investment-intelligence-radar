@@ -7,7 +7,8 @@ param(
   [int]$Port = 9227,
   [int]$TimeoutSeconds = 180,
   [switch]$NoLaunch,
-  [switch]$AllowManualLogin
+  [switch]$AllowManualLogin,
+  [switch]$ProbeOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -179,7 +180,7 @@ if($PromptFile) {
   if(-not (Test-Path $PromptFile)) { throw "Prompt file not found" }
   $Prompt = Get-Content -Raw -Encoding UTF8 $PromptFile
 }
-if(-not $Prompt) { throw "Prompt required" }
+if(-not $ProbeOnly -and -not $Prompt) { throw "Prompt required" }
 $targetUrl = [string]$recipe.url
 if($ConversationUrl) { $targetUrl = $ConversationUrl }
 
@@ -210,6 +211,21 @@ try {
   $ws = Connect-CDP ([string]$target.webSocketDebuggerUrl)
   try {
     Send-CDP $ws "Runtime.enable" @{} | Out-Null
+    if($ProbeOnly) {
+      $pageUrl = [string](Eval-JS $ws "location.href")
+      $title = [string](Eval-JS $ws "document.title")
+      Write-JsonResult @{
+        ok=$true
+        status="BROWSER_CONTROL_READY"
+        provider=[string]$recipe.provider
+        browser_executable=$chrome
+        conversation_url=$pageUrl
+        title=$title
+        cdp_port=$Port
+        profile_dir=$ProfileDir
+      }
+      exit 0
+    }
     $loginWait = [Math]::Min($TimeoutSeconds,45)
     if($AllowManualLogin) { $loginWait = [Math]::Min($TimeoutSeconds,300) }
     $inputSelector = Wait-Input $ws @($recipe.input_selectors) $loginWait
