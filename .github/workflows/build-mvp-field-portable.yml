@@ -256,5 +256,9 @@ jobs:
           git config user.email "ceo-mvp-field@local.invalid"
           git pull --rebase origin mvp-field-first-real-goal
           git add ceo-updates/mvp_field/CEO_MVP_FIELD_FIRST_REAL_GOAL.zip ceo-updates/mvp_field/MVP_FIELD_QUALIFICATION.json
-          git commit -m "Stage isolated MVP_FIELD portable field bundle"
-          git push origin HEAD:mvp-field-first-real-goal
+          if (git diff --cached --quiet) {
+            Write-Host "Portable artifact is byte-identical; nothing to commit."
+          } else {
+            git commit -m "Stage isolated MVP_FIELD portable field bundle"
+            git push origin HEAD:mvp-field-first-real-goal
+          }
