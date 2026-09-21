@@ -69,6 +69,7 @@ def main() -> int:
         "stage":"PREFLIGHT",
         "preflight_status":report.status,
         "selected_cdp_port":report.selected_cdp_port,
+        "restart_gate_status":"NOT_RUN",
         "field_gate_status":"NOT_RUN",
         "BROWSER_FIELD_VERIFIED":False,
         "first_autodevelopment_launch_allowed":False,
@@ -101,6 +102,20 @@ def main() -> int:
         print(json.dumps(consolidated,ensure_ascii=False))
         return 0
 
+    restart_gate=base/"run_browser_restart_gate.ps1"
+    restart_code,restart_output=run_powershell(
+        restart_gate,profile_dir=profile,port=report.selected_cdp_port,timeout=args.timeout
+    )
+    (evidence/"FIRST_TRIAL_BROWSER_RESTART.log").write_text(bounded_text(restart_output),encoding="utf-8")
+    consolidated["evidence"]["restart_gate_log"]=str(evidence/"FIRST_TRIAL_BROWSER_RESTART.log")
+    consolidated["restart_gate_status"]="PASS" if restart_code==0 else "FAIL"
+    if restart_code!=0:
+        consolidated["stage"]="RESTART_GATE_FAILED"
+        consolidated["failure_reason"]="browser restart/same-conversation gate failed"
+        atomic_json(evidence/"PRIMERA_PRUEBA_CEO_RESULTADO.json",consolidated)
+        print(json.dumps(consolidated,ensure_ascii=False))
+        return 4
+
     gate=base/"run_b29_b30_full_field_gate.ps1"
     code,output=run_powershell(
         gate,profile_dir=profile,port=report.selected_cdp_port,timeout=args.timeout
@@ -113,6 +128,7 @@ def main() -> int:
     field=read_json(field_path) if field_path.is_file() else {}
     evidence_fingerprints={}
     for name in (
+        "BROWSER_RESTART_GATE.json",
         "B09_B14_PHYSICAL_GATE.json",
         "B15_B18_PHYSICAL_GATE.json",
         "B19_B20_CODE_GATE.json",
