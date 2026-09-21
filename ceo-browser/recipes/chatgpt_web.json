@@ -23,7 +23,8 @@
   "send_selectors": [
     "button[data-testid='send-button']",
     "button[aria-label*='Send']",
-    "button[aria-label*='Enviar']"
+    "button[aria-label*='Enviar']",
+    "button[aria-label*='Submit']"
   ],
   "response_selectors": [
     "[data-message-author-role='assistant']",
@@ -55,5 +56,9 @@
     "no_purchase": true,
     "no_subscription_change": true,
     "manual_login_allowed": true
-  }
+  },
+  "user_message_selectors": [
+    "[data-message-author-role='user']",
+    "article [data-message-author-role='user']"
+  ]
 }
