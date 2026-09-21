@@ -13,7 +13,6 @@ from first_trial_safety import (
     atomic_json,
     bounded_text,
     go_criteria,
-    local_root if False else None,
     run_preflight,
 )
 
