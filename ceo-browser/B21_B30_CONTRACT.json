@@ -4,16 +4,16 @@
   "branch": "free-browser-ai-worker",
   "objective": "Make zero-API browser work resumable, idempotent, conservative under failure, and physically field-qualifiable before any real-code candidate work.",
   "status": {
-    "B21_persistent_task_ledger": "IMPLEMENTED_CI_PENDING",
-    "B22_idempotent_completed_task_reuse": "IMPLEMENTED_CI_PENDING",
-    "B23_turn_checkpoints": "IMPLEMENTED_CI_PENDING",
-    "B24_conservative_resume_states": "IMPLEMENTED_CI_PENDING",
-    "B25_failure_classification": "IMPLEMENTED_CI_PENDING",
-    "B26_one_safe_retry_and_browser_relaunch": "IMPLEMENTED_CI_PENDING",
-    "B27_artifact_integrity_on_resume": "IMPLEMENTED_CI_PENDING",
-    "B28_guarded_sandbox_rollback": "IMPLEMENTED_CI_PENDING",
-    "B29_full_physical_gate_sequence": "RUNNER_READY_PHYSICAL_PENDING",
-    "B30_browser_field_verified_gate": "RUNNER_READY_PHYSICAL_PENDING"
+    "B21_persistent_task_ledger": "COMPLETE_CI_VERIFIED",
+    "B22_idempotent_completed_task_reuse": "COMPLETE_CI_VERIFIED",
+    "B23_turn_checkpoints": "COMPLETE_CI_VERIFIED",
+    "B24_conservative_resume_states": "COMPLETE_CI_VERIFIED",
+    "B25_failure_classification": "COMPLETE_CI_VERIFIED",
+    "B26_one_safe_retry_and_browser_relaunch": "COMPLETE_CI_VERIFIED",
+    "B27_artifact_integrity_on_resume": "COMPLETE_CI_VERIFIED",
+    "B28_guarded_sandbox_rollback": "COMPLETE_CI_VERIFIED",
+    "B29_full_physical_gate_sequence": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING",
+    "B30_browser_field_verified_gate": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING"
   },
   "B21": {
     "storage": "one atomic JSON record per task",
@@ -92,5 +92,26 @@
     "no_production_release": true,
     "no_automatic_merge": true,
     "no_automatic_purchase": true
+  },
+  "verification": {
+    "workflow_run_id": 35652250118,
+    "verified_head": "1eca33797087c477d48f8445d910fe871e33fdb7",
+    "conclusion": "success",
+    "passed": [
+      "all prior B03-B20 browser gates",
+      "B21 atomic persistent task ledger",
+      "B22 idempotent completed-task reuse and unfinished-key suppression",
+      "B23 turn checkpoint hashes and conversation state",
+      "B24 interrupted RUNNING task becomes WAITING_REVIEW with no auto-resend",
+      "B25 safe-retry / ambiguous / human-action / permanent failure classification",
+      "B26 one safe retry maximum plus Chrome relaunch with same conversation URL",
+      "B27 artifact SHA-256 and character-count integrity verification",
+      "B28 guarded disposable-sandbox rollback with no remotes",
+      "B29 full physical gate runner contract",
+      "B30 strict field finalizer with explicit zero-API evidence and artifact hash",
+      "zero-API AITransport integration",
+      "free-only/no-production boundaries"
+    ],
+    "physical_field_gate_verified": false
   }
 }
