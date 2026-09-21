@@ -5,6 +5,7 @@ on:
     branches: [free-browser-ai-worker]
     paths:
       - 'ceo-browser/**'
+      - 'ceo-updates/dev313-inspect-routing/**'
       - '.github/workflows/test-free-browser-ai-worker.yml'
 
 permissions:
@@ -33,6 +34,38 @@ jobs:
           python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
           Pop-Location
+
+      - name: CEO browser-first source contract
+        shell: pwsh
+        run: |
+          python -m py_compile ceo-updates\dev313-inspect-routing\ceo_stdlib_work_mode.py
+          python -m py_compile ceo-updates\dev313-inspect-routing\routing.py
+          python -m py_compile ceo-updates\dev313-inspect-routing\providers\chatgpt_web.py
+          @'
+          from pathlib import Path
+          work=Path("ceo-updates/dev313-inspect-routing/ceo_stdlib_work_mode.py").read_text(encoding="utf-8")
+          routing=Path("ceo-updates/dev313-inspect-routing/routing.py").read_text(encoding="utf-8")
+          provider=Path("ceo-updates/dev313-inspect-routing/providers/chatgpt_web.py").read_text(encoding="utf-8")
+          assert 'primary_ai_surface = "chatgpt-web"' in work
+          assert 'self.no_api_required = True' in work
+          assert 'CEO_ALLOW_OPTIONAL_API' in work
+          assert 'providers.insert(0, self.AIWorkerProvider(self.browser_transport))' in work
+          assert 'from ceo_core.providers.gemini_interactions import GeminiInteractionsTransport' in work
+          # The Gemini import must be inside the lazy optional helper, not CEOEngine startup.
+          assert work.index('def _gemini_transport_class') < work.index('from ceo_core.providers.gemini_interactions import GeminiInteractionsTransport')
+          assert 'execution_enabled = False' not in work
+          assert 'Primero activa y valida Gemini' not in work
+          assert 'Gemini no está validado' not in work
+          assert 'browser_first_cold_start' in routing
+          assert 'p.kind.value == "browser"' in routing
+          assert 'kind = WorkerKind.BROWSER' in provider
+          assert '"api_calls": 0' in provider
+          assert '"paid_api_calls": 0' in provider
+          assert 'api.openai.com' not in provider.lower()
+          print("CEO_BROWSER_FIRST_SOURCE_PASS")
+          '@ | Set-Content -Encoding UTF8 browser_first_source.py
+          python browser_first_source.py
+          if ($LASTEXITCODE -ne 0) { throw "browser-first source contract failed" }
 
       - name: PowerShell syntax check
         shell: pwsh
@@ -74,6 +107,74 @@ jobs:
           $row=$raw | ConvertFrom-Json
           if(-not $row.ok){throw "browser turn 2 failed: $raw"}
           if($row.response -notmatch "HARNESS_RESPONSE: SEGUNDO_TURNO"){throw "wrong second response: $($row.response)"}
+
+      - name: Exercise CEO AITransport through Chrome with zero API keys
+        shell: pwsh
+        run: |
+          $pkg=Join-Path $env:RUNNER_TEMP "ceo-browser-transport-test"
+          New-Item -ItemType Directory -Force -Path "$pkg\ceo_core\providers" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$pkg\ceo_core\browser_ai\recipes" | Out-Null
+          Set-Content -Encoding UTF8 "$pkg\ceo_core\__init__.py" ""
+          Set-Content -Encoding UTF8 "$pkg\ceo_core\providers\__init__.py" ""
+          Copy-Item "ceo-updates\dev313-inspect-routing\providers\chatgpt_web.py" "$pkg\ceo_core\providers\chatgpt_web.py"
+          Copy-Item "ceo-browser\windows_chatgpt_cdp_driver.ps1" "$pkg\ceo_core\browser_ai\windows_chatgpt_cdp_driver.ps1"
+          Copy-Item "ceo-browser\recipes\test_harness.json" "$pkg\ceo_core\browser_ai\recipes\test_harness.json"
+          @'
+          from dataclasses import dataclass, field
+          from typing import Any
+          class AITransport: pass
+          @dataclass
+          class AITransportRequest:
+              prompt: str
+              conversation_id: str|None=None
+              turn_index: int=0
+              metadata: dict[str,Any]=field(default_factory=dict)
+          @dataclass
+          class AITransportResponse:
+              text: str
+              conversation_id: str|None=None
+              usage: dict[str,Any]=field(default_factory=dict)
+              artifacts: list[str]=field(default_factory=list)
+              suggested_followups: list[str]=field(default_factory=list)
+              metadata: dict[str,Any]=field(default_factory=dict)
+          '@ | Set-Content -Encoding UTF8 "$pkg\ceo_core\ai_worker.py"
+          @'
+          from dataclasses import dataclass, field
+          from enum import Enum
+          from typing import Any
+          class WorkerKind(str,Enum):
+              API="api"; BROWSER="browser"; LOCAL="local"; FILE="file"; MOCK="mock"
+          @dataclass
+          class ProviderHealth:
+              provider: str
+              available: bool=True
+              detail: str=""
+              metadata: dict[str,Any]=field(default_factory=dict)
+          '@ | Set-Content -Encoding UTF8 "$pkg\ceo_core\contracts.py"
+          @'
+          import asyncio, os, pathlib, sys
+          root=pathlib.Path(os.environ["CEO_TRANSPORT_TEST_ROOT"])
+          sys.path.insert(0,str(root))
+          os.environ["CEO_BROWSER_RECIPE_PATH"]=str(root/"ceo_core"/"browser_ai"/"recipes"/"test_harness.json")
+          from ceo_core.ai_worker import AITransportRequest
+          from ceo_core.providers.chatgpt_web import ChatGPTWebTransport
+          async def main():
+              t=ChatGPTWebTransport(profile_dir=root/"profile",port=9231,timeout_seconds=30)
+              h=await t.healthcheck()
+              assert h.available,h
+              r1=await t.send(AITransportRequest(prompt="CEO_TRANSPORT_PRIMER_TURNO"))
+              assert "CEO_TRANSPORT_PRIMER_TURNO" in r1.text,r1
+              assert r1.usage["api_calls"]==0 and r1.usage["paid_api_calls"]==0,r1.usage
+              assert r1.conversation_id
+              r2=await t.send(AITransportRequest(prompt="CEO_TRANSPORT_SEGUNDO_TURNO",conversation_id=r1.conversation_id,turn_index=1))
+              assert "CEO_TRANSPORT_SEGUNDO_TURNO" in r2.text,r2
+              assert r2.conversation_id==r1.conversation_id,(r1.conversation_id,r2.conversation_id)
+              print("CEO_AI_TRANSPORT_BROWSER_ZERO_API_PASS")
+          asyncio.run(main())
+          '@ | Set-Content -Encoding UTF8 transport_test.py
+          $env:CEO_TRANSPORT_TEST_ROOT=$pkg
+          python transport_test.py
+          if ($LASTEXITCODE -ne 0) { throw "CEO browser transport integration failed" }
 
       - name: Enforce free-only and no-production boundaries
         shell: pwsh
