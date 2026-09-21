@@ -1,6 +1,7 @@
 {
   "provider": "test-harness",
   "url": "http://127.0.0.1:8765/",
+  "conversation_url_regex": "/c/[^/?#]+",
   "input_selectors": [
     "#prompt-textarea",
     "textarea",
