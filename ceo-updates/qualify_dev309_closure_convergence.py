@@ -42,7 +42,7 @@ def test_goal_deliverable_inference():
 
 def test_protocol_write_files_and_evidence_refs():
     text = """Resultado sustantivo.
-<CEO_RESULT>{"status":"complete","reason":"done","evidence_refs":["abc123"],"write_files":[{"path":"AUTONOMY_GATE_1.md","content":"# Gate\nOK"}]}</CEO_RESULT>"""
+<CEO_RESULT>{"status":"complete","reason":"done","evidence_refs":["abc123"],"write_files":[{"path":"AUTONOMY_GATE_1.md","content":"# Gate OK"}]}</CEO_RESULT>"""
     d = extract_directive(text)
     assert d is not None
     assert d.evidence_refs == ["abc123"]
