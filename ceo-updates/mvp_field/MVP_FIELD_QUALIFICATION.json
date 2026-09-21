@@ -1,0 +1,19 @@
+{
+  "artifact": "CEO_MVP_FIELD_FIRST_REAL_GOAL.zip",
+  "base_package": "CEO_1.5.89-rc1-native-transport-integrity.zip",
+  "continuous_scheduler_used": false,
+  "entry_count": 528,
+  "goal_id": "FIELD-MVP-01",
+  "max_provider_retry_after_initial_attempt": 1,
+  "maximum_steps_with_single_correction": 6,
+  "mode": "MVP_FIELD",
+  "multi_provider_used": false,
+  "normal_steps": 4,
+  "normal_windows_app_modified": false,
+  "physical_field_pending": true,
+  "production_ready": false,
+  "sha256": "9a42154670a0b16a6baee3abe281c05795815f4226ebceec45bf720cddb681bf",
+  "size_bytes": 1166579,
+  "stable_update_channel_modified": false,
+  "success_metric": "delivery_pass"
+}
