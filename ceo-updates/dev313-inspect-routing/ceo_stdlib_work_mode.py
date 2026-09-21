@@ -219,7 +219,7 @@ class CEOEngine:
         self.browser_control_verified = False
         self.browser_control_probe = {}
         self.no_api_required = True
-        self.primary_ai_surface = "chatgpt-web"
+        self.primary_ai_surface = "browser-provider-pool"
         self.projects = ProjectCatalog(self.data_dir / "projects")
         self.progress_tracker = StableProgressTracker()
         self.device_fabric = AdaptiveDeviceFabric()
@@ -239,7 +239,7 @@ class CEOEngine:
         self.gemini_key = self._pending_gemini_key if startup_trust else None
         self.execution_enabled = bool(self.browser_provider_ready)
         self.provider_mode = (
-            "chatgpt-web-ready"
+            "browser-provider-pool-ready"
             if self.browser_provider_ready
             else (
                 "gemini-authenticated-waiting"
@@ -298,7 +298,7 @@ class CEOEngine:
             except Exception as exc:
                 self.gemini_validation_error = f"{type(exc).__name__}: {exc}"[:900]
                 if self.gemini_key_recognized:
-                    self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
+                    self.provider_mode = "browser-provider-pool-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
                     self.gemini_key_status = self.gemini_key_status or "TRANSPORT_UNAVAILABLE"
                 else:
                     self.provider_mode = "gemini-validation-deferred"
@@ -366,7 +366,7 @@ class CEOEngine:
 
         self.execution_enabled = bool(self.browser_provider_ready or (allow_optional_api and self.gemini_key))
         if self.browser_provider_ready:
-            self.provider_mode = "chatgpt-web-ready"
+            self.provider_mode = "browser-provider-pool-ready"
         return self.MultiProviderRouter(providers)
 
     def _ensure_project_workspace(self, state):
@@ -409,7 +409,7 @@ class CEOEngine:
                         self.gemini_key = self._pending_gemini_key
                         self.gemini_key_recognized = True
                         self.gemini_key_status = self.gemini_key_status or "TRUSTED_PREVIOUSLY_VERIFIED"
-                        self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
+                        self.provider_mode = "browser-provider-pool-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
                         self.gemini_model = str(migrated_trust.get("model") or "") or self.gemini_model
                 self.state = state
                 from ceo_core.scheduler import _apply_reliability_epoch_migration
@@ -656,7 +656,7 @@ class CEOEngine:
                 self.gemini_key_recognized = False
                 self.execution_enabled = bool(self.browser_provider_ready)
                 self.gemini_key_status = status
-                self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-validation-failed"
+                self.provider_mode = "browser-provider-pool-ready" if self.browser_provider_ready else "gemini-validation-failed"
                 raise RuntimeError(f"Google rechazó la clave Gemini: {detail}")
 
             recognized = bool(authenticated is True or models_visible > 0 or prior_trust)
@@ -692,7 +692,7 @@ class CEOEngine:
             self.gemini_validation_error = f"{status}: {detail}"[:900]
             self.execution_enabled = bool(self.browser_provider_ready)
             self.gemini_model = str(probe.get("model") or "") or None
-            self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
+            self.provider_mode = "browser-provider-pool-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
             self._next_provider_revalidation_ts = (
                 time.time() + float(self._provider_revalidation_interval_seconds)
             )
@@ -745,7 +745,7 @@ class CEOEngine:
         self.gemini_key_status = "LIVE_VERIFIED"
         self.execution_enabled = True
         self.gemini_model = str(probe.get("model") or "") or None
-        self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-live-verified"
+        self.provider_mode = "browser-provider-pool-ready" if self.browser_provider_ready else "gemini-live-verified"
         self._next_provider_revalidation_ts = 0.0
 
         state = self._state_obj()
@@ -801,7 +801,7 @@ class CEOEngine:
             # revalidation never erases a previously-good runtime credential.
             self.gemini_validation_error = f"{type(exc).__name__}: {exc}"[:900]
             if self.gemini_key_recognized:
-                self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
+                self.provider_mode = "browser-provider-pool-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
                 self.gemini_key_status = self.gemini_key_status or "TRANSPORT_UNAVAILABLE"
             else:
                 self.provider_mode = "gemini-validation-deferred"
