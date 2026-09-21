@@ -1,0 +1,320 @@
+{
+  "phase": "FIRST_TRIAL_GATE_0",
+  "date": "2026-09-21",
+  "branch": "free-browser-ai-worker",
+  "objective": "Close all 40 corrections, tests and operational safeguards before the first real CEO self-development trial.",
+  "statuses": {
+    "T01_freeze_first_trial_scope": "COMPLETE_CI_PENDING",
+    "T02_audit_physical_package": "COMPLETE_CI_PENDING",
+    "T03_single_first_trial_launcher": "COMPLETE_CI_PENDING",
+    "T04_windows_preflight": "COMPLETE_CI_PENDING",
+    "T05_duplicate_ceo_browser_detection": "COMPLETE_CI_PENDING",
+    "T06_safe_cdp_port_selection": "COMPLETE_CI_PENDING",
+    "T07_persistent_profile_validation": "COMPLETE_CI_PENDING",
+    "T08_one_time_manual_login": "RUNNER_READY_PHYSICAL_PENDING",
+    "T09_chatgpt_ui_selector_validation": "RUNNER_READY_PHYSICAL_PENDING",
+    "T10_exact_prompt_typing_verification": "RUNNER_READY_PHYSICAL_PENDING",
+    "T11_submission_acknowledgement_and_no_double_send": "RUNNER_READY_PHYSICAL_PENDING",
+    "T12_streaming_completion_capture": "RUNNER_READY_PHYSICAL_PENDING",
+    "T13_same_conversation_continuity": "RUNNER_READY_PHYSICAL_PENDING",
+    "T14_browser_close_relaunch_continuity": "RUNNER_READY_PHYSICAL_PENDING",
+    "T15_ceo_restart_interrupted_turn_safety": "COMPLETE_CI_PENDING",
+    "T16_physical_artifact_gate": "RUNNER_READY_PHYSICAL_PENDING",
+    "T17_path_edge_cases": "COMPLETE_CI_PENDING",
+    "T18_idempotency": "COMPLETE_CI_PENDING",
+    "T19_artifact_tamper_detection": "COMPLETE_CI_PENDING",
+    "T20_physical_coding_gate": "RUNNER_READY_PHYSICAL_PENDING",
+    "T21_invalid_patch_rejection": "COMPLETE_CI_PENDING",
+    "T22_failing_test_rejection_correction": "COMPLETE_CI_PENDING",
+    "T23_sandbox_rollback": "COMPLETE_CI_PENDING",
+    "T24_predefined_command_boundary": "COMPLETE_CI_PENDING",
+    "T25_prompt_injection_content_boundary": "COMPLETE_CI_PENDING",
+    "T26_secret_redaction": "COMPLETE_CI_PENDING",
+    "T27_bounded_logs": "COMPLETE_CI_PENDING",
+    "T28_timestamp_correlation_evidence_fingerprints": "COMPLETE_CI_PENDING",
+    "T29_unified_result_report": "COMPLETE_CI_PENDING",
+    "T30_ci_vs_physical_vs_real_chatgpt_levels": "COMPLETE_CI_PENDING",
+    "T31_b29_b30_rehearsal": "RUNNER_READY_PHYSICAL_PENDING",
+    "T32_hard_separation_before_b38": "COMPLETE_CI_PENDING",
+    "T33_b38_isolated_candidate": "RUNNER_READY_PHYSICAL_PENDING",
+    "T34_b38_regression_coverage": "COMPLETE_CI_PENDING",
+    "T35_original_source_immutability": "COMPLETE_CI_PENDING",
+    "T36_reviewable_patch_bundle": "COMPLETE_CI_PENDING",
+    "T37_human_only_promotion": "COMPLETE_CI_PENDING",
+    "T38_emergency_recovery": "COMPLETE_CI_PENDING",
+    "T39_portable_lab_no_stable_replacement": "COMPLETE_CI_PENDING",
+    "T40_explicit_go_criteria": "COMPLETE_CI_PENDING"
+  },
+  "items": [
+    {
+      "id": 1,
+      "name": "Freeze first-trial scope",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "Gate 0 only: preflight -> restart gate -> B29-B30; B38 separate"
+    },
+    {
+      "id": 2,
+      "name": "Audit physical package",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "audit_first_trial_package + SHA-256 manifest"
+    },
+    {
+      "id": 3,
+      "name": "Single first-trial launcher",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd"
+    },
+    {
+      "id": 4,
+      "name": "Windows preflight",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "Python/Git/browser/profile/disk/port/package checks"
+    },
+    {
+      "id": 5,
+      "name": "Duplicate CEO-browser detection",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "Profile-scoped Chrome/Edge duplicate check"
+    },
+    {
+      "id": 6,
+      "name": "Safe CDP port selection",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "Reuse only owned profile CDP; otherwise bounded fallback"
+    },
+    {
+      "id": 7,
+      "name": "Persistent profile validation",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "Writable/exclusive marker/session checks"
+    },
+    {
+      "id": 8,
+      "name": "One-time manual login",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B05/B29 login helper; no CAPTCHA/2FA bypass"
+    },
+    {
+      "id": 9,
+      "name": "ChatGPT UI selector validation",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B08 semantic fallback + real B29"
+    },
+    {
+      "id": 10,
+      "name": "Exact prompt typing verification",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B09"
+    },
+    {
+      "id": 11,
+      "name": "Submission acknowledgement and no double-send",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B10 + durable ambiguous-failure policy"
+    },
+    {
+      "id": 12,
+      "name": "Streaming completion capture",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B11-B12"
+    },
+    {
+      "id": 13,
+      "name": "Same-conversation continuity",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B13/B14"
+    },
+    {
+      "id": 14,
+      "name": "Browser close/relaunch continuity",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "run_browser_restart_gate.ps1"
+    },
+    {
+      "id": 15,
+      "name": "CEO restart / interrupted-turn safety",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "B24 RUNNING -> WAITING_REVIEW; no auto-resend"
+    },
+    {
+      "id": 16,
+      "name": "Physical artifact gate",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B18"
+    },
+    {
+      "id": 17,
+      "name": "Path edge cases",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "Unicode/spaces/absolute/escape + B38 reserved-name regression"
+    },
+    {
+      "id": 18,
+      "name": "Idempotency",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "B22 completed-task reuse without second browser call"
+    },
+    {
+      "id": 19,
+      "name": "Artifact tamper detection",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "B27 SHA-256/char-count integrity"
+    },
+    {
+      "id": 20,
+      "name": "Physical coding gate",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B20"
+    },
+    {
+      "id": 21,
+      "name": "Invalid patch rejection",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "git apply --check + regression test"
+    },
+    {
+      "id": 22,
+      "name": "Failing-test rejection/correction",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "B20 loop tests"
+    },
+    {
+      "id": 23,
+      "name": "Sandbox rollback",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "B28 marker+no-remotes reset/clean"
+    },
+    {
+      "id": 24,
+      "name": "Predefined command boundary",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "CEO supplies tests; AI response cannot supply executed commands"
+    },
+    {
+      "id": 25,
+      "name": "Prompt-injection/content boundary",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "Only structured artifact/patch blocks consumed"
+    },
+    {
+      "id": 26,
+      "name": "Secret redaction",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "first_trial_safety.redact_secrets + bounded field logs"
+    },
+    {
+      "id": 27,
+      "name": "Bounded logs",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "256 KiB max and truncation marker"
+    },
+    {
+      "id": 28,
+      "name": "Timestamp/correlation/evidence fingerprints",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "trial_id + epoch + SHA-256 + mtime/size"
+    },
+    {
+      "id": 29,
+      "name": "Unified result report",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "PRIMERA_PRUEBA_CEO_RESULTADO.json"
+    },
+    {
+      "id": 30,
+      "name": "CI vs physical vs real ChatGPT levels",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "verification_levels fields"
+    },
+    {
+      "id": 31,
+      "name": "B29-B30 rehearsal",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "single orchestrator invokes field gate"
+    },
+    {
+      "id": 32,
+      "name": "Hard separation before B38",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "orchestrator never starts B38"
+    },
+    {
+      "id": 33,
+      "name": "B38 isolated candidate",
+      "status": "RUNNER_READY_PHYSICAL_PENDING",
+      "evidence": "B38 copied real CEO source only"
+    },
+    {
+      "id": 34,
+      "name": "B38 regression coverage",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "reserved Windows names + valid conman/normal names"
+    },
+    {
+      "id": 35,
+      "name": "Original source immutability",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "B36 SHA-256 before/after"
+    },
+    {
+      "id": 36,
+      "name": "Reviewable patch bundle",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "B37 patch+SHA+JSON evidence"
+    },
+    {
+      "id": 37,
+      "name": "Human-only promotion",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "candidate max state HUMAN_REVIEW; no merge/push/update"
+    },
+    {
+      "id": 38,
+      "name": "Emergency recovery",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "RECUPERAR_PRUEBA_CEO.cmd profile-scoped only"
+    },
+    {
+      "id": 39,
+      "name": "Portable LAB, no stable replacement",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "CEO_FIRST_TRIAL_LAB.zip marker installable_update=false"
+    },
+    {
+      "id": 40,
+      "name": "Explicit GO criteria",
+      "status": "COMPLETE_CI_PENDING",
+      "evidence": "preflight GO + physical field verified + zero API + promotion off"
+    }
+  ],
+  "launchers": {
+    "rehearsal": "EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd",
+    "recovery": "RECUPERAR_PRUEBA_CEO.cmd",
+    "first_autodevelopment": "EJECUTAR_B38_CANDIDATE.cmd"
+  },
+  "invariant": {
+    "b38_auto_start": false,
+    "openai_api": false,
+    "paid_api": false,
+    "stable_update": false,
+    "current_json": false,
+    "automatic_merge": false,
+    "automatic_push": false,
+    "automatic_purchase": false,
+    "human_review_before_promotion": true
+  },
+  "physical_pending": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    16,
+    20,
+    31,
+    33
+  ],
+  "verification": null
+}
