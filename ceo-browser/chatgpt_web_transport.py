@@ -77,6 +77,54 @@ class ChatGPTWebTransport(AITransport):
             return False, f"ChatGPT recipe missing: {self.recipe}"
         return True, "browser host ready; web login may still be required"
 
+    async def probe_control(self) -> dict[str, Any]:
+        ready, detail = self.host_ready()
+        if not ready:
+            return {"ok": False, "status": "BROWSER_UNAVAILABLE", "detail": detail}
+        powershell = self._powershell()
+        assert powershell
+        self.profile_dir.mkdir(parents=True, exist_ok=True)
+        cmd = [
+            powershell,
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(self.driver),
+            "-RecipePath",
+            str(self.recipe),
+            "-ProfileDir",
+            str(self.profile_dir),
+            "-Port",
+            str(self.port),
+            "-TimeoutSeconds",
+            "30",
+            "-ProbeOnly",
+        ]
+        import subprocess as _subprocess
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            creationflags=getattr(_subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=45)
+        raw = stdout.decode("utf-8", "replace").strip()
+        if not raw:
+            return {
+                "ok": False,
+                "status": "BROWSER_CONTROL_FAILED",
+                "detail": stderr.decode("utf-8", "replace")[-1000:],
+            }
+        try:
+            row = json.loads(raw.splitlines()[-1])
+        except Exception:
+            return {"ok": False, "status": "BROWSER_CONTROL_BAD_JSON", "detail": raw[-1000:]}
+        if not isinstance(row, dict):
+            return {"ok": False, "status": "BROWSER_CONTROL_BAD_RESULT", "detail": str(row)[:1000]}
+        row["api_required"] = False
+        return row
+
     async def healthcheck(self) -> ProviderHealth:
         ready, detail = self.host_ready()
         return ProviderHealth(
