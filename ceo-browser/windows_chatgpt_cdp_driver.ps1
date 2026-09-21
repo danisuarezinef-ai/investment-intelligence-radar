@@ -66,7 +66,23 @@ function Get-PageTarget([int]$port,[string]$wantedUrl,[int]$timeoutSeconds) {
           $wantedUrl.StartsWith([string]$_.url)
         } | Select-Object -First 1
         if($match) { return $match }
-        # Never fall back to an unrelated restored tab. Wait for the requested target.
+
+        # If the exact URL is not open yet, reuse only a tab from the same origin.
+        # This preserves legitimate navigation (root -> /c/... or query changes)
+        # without ever falling back to restored localhost/error tabs.
+        try {
+          $wanted=[Uri]$wantedUrl
+          $sameOrigin=$pages | Where-Object {
+            try {
+              $u=[Uri]([string]$_.url)
+              $u.Scheme -eq $wanted.Scheme -and
+              $u.Host -eq $wanted.Host -and
+              $u.Port -eq $wanted.Port
+            } catch { $false }
+          } | Select-Object -First 1
+          if($sameOrigin) { return $sameOrigin }
+        } catch {}
+        # Otherwise wait for the requested target instead of selecting an unrelated tab.
       }
     } catch {}
     Start-Sleep -Milliseconds 250
