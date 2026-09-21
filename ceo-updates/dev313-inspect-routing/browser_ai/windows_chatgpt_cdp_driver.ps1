@@ -275,6 +275,77 @@ function Current-Responses([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]
   return @($value)
 }
 
+
+function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$selector) {
+  $sel=To-JsString $selector
+  $expr=@"
+(() => {
+ const findMarked=(root)=>{
+   try{const e=root.querySelector($sel);if(e)return e;}catch(e){}
+   let all=[];try{all=[...root.querySelectorAll("*")]}catch(e){}
+   for(const el of all){if(el.shadowRoot){const x=findMarked(el.shadowRoot);if(x)return x}}
+   return null;
+ };
+ const e=findMarked(document);
+ if(!e) return "";
+ if(e.tagName==="TEXTAREA" || e.tagName==="INPUT") return String(e.value||"");
+ return String(e.textContent||"");
+})()
+"@
+  return [string](Eval-JS $ws $expr)
+}
+
+function Get-BusyState([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]$selectors) {
+  $sel=Selectors-Js @($selectors)
+  $expr=@"
+(() => {
+ const sels=$sel;
+ const roots=[document];
+ for(let i=0;i<roots.length;i++){
+   const root=roots[i];
+   let all=[];try{all=[...root.querySelectorAll("*")]}catch(e){}
+   for(const el of all){if(el.shadowRoot)roots.push(el.shadowRoot)}
+ }
+ const visible=(e)=>{
+   if(!e) return false;
+   const s=getComputedStyle(e),r=e.getBoundingClientRect();
+   return s.display!=="none" && s.visibility!=="hidden" && Number(s.opacity||1)>0 && r.width>1 && r.height>1;
+ };
+ for(const s of sels){
+   for(const root of roots){
+     let nodes=[];try{nodes=[...root.querySelectorAll(s)]}catch(e){}
+     if(nodes.some(visible)) return true;
+   }
+ }
+ return false;
+})()
+"@
+  return [bool](Eval-JS $ws $expr)
+}
+
+function Normalize-ConversationUrl([string]$url) {
+  if(-not $url){ return "" }
+  try {
+    $u=[Uri]$url
+    return $u.GetLeftPart([System.UriPartial]::Path).TrimEnd("/")
+  } catch {
+    return $url.TrimEnd("/")
+  }
+}
+
+function Wait-StablePageUrl([System.Net.WebSockets.ClientWebSocket]$ws,[int]$timeoutSeconds=8) {
+  $deadline=[DateTime]::UtcNow.AddSeconds($timeoutSeconds)
+  $last=""
+  $stable=0
+  while([DateTime]::UtcNow -lt $deadline){
+    $now=[string](Eval-JS $ws "location.href")
+    if($now -and $now -eq $last){$stable+=1}else{$stable=0;$last=$now}
+    if($stable -ge 2){return $now}
+    Start-Sleep -Milliseconds 300
+  }
+  return $last
+}
+
 function Get-SessionState([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]$loggedInSelectors,[object[]]$loginSelectors,[bool]$hasInput) {
   $logged=Selectors-Js @($loggedInSelectors)
   $login=Selectors-Js @($loginSelectors)
@@ -431,12 +502,14 @@ try {
     }
 
     $inputSelector=[string]$candidate.selector
-    $before = @(Current-Responses $ws @($recipe.response_selectors)).Count
+    $beforeRows = @(Current-Responses $ws @($recipe.response_selectors))
+    $before = $beforeRows.Count
     $promptJson = To-JsString $Prompt
     $inputSelJson = To-JsString $inputSelector
     $sendSel = Selectors-Js @($recipe.send_selectors)
 
-    $sendExpr = @"
+    # B09 — type first, then verify the composer contains the intended prompt.
+    $typeExpr = @"
 (() => {
  const findMarked=(root)=>{
    try{const e=root.querySelector($inputSelJson);if(e)return e;}catch(e){}
@@ -445,7 +518,7 @@ try {
    return null;
  };
  const input=findMarked(document);
- if(!input) return {ok:false,stage:"input_missing"};
+ if(!input) return {ok:false,stage:"input_missing",value:""};
  const prompt=$promptJson;
  input.focus();
  if(input.tagName==="TEXTAREA" || input.tagName==="INPUT"){
@@ -457,40 +530,123 @@ try {
    const range=document.createRange(); range.selectNodeContents(input); range.collapse(false);
    const selection=window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
    document.execCommand("insertText",false,prompt);
-   if(!(input.innerText||input.textContent||"").trim()){input.textContent=prompt}
+   if(String(input.textContent||"")!==prompt){input.textContent=prompt}
  }
- input.dispatchEvent(new Event("input",{bubbles:true}));
+ input.dispatchEvent(new InputEvent("input",{bubbles:true,inputType:"insertText",data:null}));
  input.dispatchEvent(new Event("change",{bubbles:true}));
- const sends=$sendSel;
- for(const s of sends){
-   const b=document.querySelector(s);
-   if(b && !b.disabled){ b.click(); return {ok:true,send:s}; }
+ const value=(input.tagName==="TEXTAREA" || input.tagName==="INPUT") ? String(input.value||"") : String(input.textContent||"");
+ return {ok:true,stage:"typed",value:value,typed_chars:value.length};
+})()
+"@
+    $typed = Eval-JS $ws $typeExpr
+    $expectedNormalized = [regex]::Replace([string]$Prompt,"\r\n?","\n")
+    $actualNormalized = [regex]::Replace([string]$typed.value,"\r\n?","\n")
+    if(-not $typed.ok -or $actualNormalized -ne $expectedNormalized) {
+      Write-JsonResult @{
+        ok=$false
+        status="PROMPT_INPUT_MISMATCH"
+        provider=[string]$recipe.provider
+        expected_chars=$Prompt.Length
+        typed_chars=if($typed){[int]$typed.typed_chars}else{0}
+        detail="B09 typed prompt did not match the intended prompt before submission."
+      }
+      exit 6
+    }
+
+    # B10 — submit through a real visible send control when possible.
+    # If the UI exposes no send button, fall back to CDP keyboard events instead
+    # of synthetic DOM KeyboardEvents.
+    $sendExpr = @"
+(() => {
+ const findMarked=(root)=>{
+   try{const e=root.querySelector($inputSelJson);if(e)return e;}catch(e){}
+   let all=[];try{all=[...root.querySelectorAll("*")]}catch(e){}
+   for(const el of all){if(el.shadowRoot){const x=findMarked(el.shadowRoot);if(x)return x}}
+   return null;
+ };
+ const input=findMarked(document);
+ if(!input) return {ok:false,stage:"input_missing"};
+ input.focus();
+ const roots=[document];
+ for(let i=0;i<roots.length;i++){
+   const root=roots[i];
+   let all=[];try{all=[...root.querySelectorAll("*")]}catch(e){}
+   for(const el of all){if(el.shadowRoot)roots.push(el.shadowRoot)}
  }
- input.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",code:"Enter",bubbles:true}));
- input.dispatchEvent(new KeyboardEvent("keyup",{key:"Enter",code:"Enter",bubbles:true}));
- return {ok:true,send:"enter-fallback"};
+ const visible=(e)=>{
+   if(!e || e.disabled || e.getAttribute("aria-disabled")==="true") return false;
+   const s=getComputedStyle(e),r=e.getBoundingClientRect();
+   return s.display!=="none" && s.visibility!=="hidden" && Number(s.opacity||1)>0 && r.width>1 && r.height>1;
+ };
+ for(const s of $sendSel){
+   for(const root of roots){
+     let b=null;try{b=root.querySelector(s)}catch(e){}
+     if(visible(b)){b.click();return {ok:true,method:"button-click",selector:s}}
+   }
+ }
+ return {ok:true,method:"cdp-enter",selector:""};
 })()
 "@
     $sent = Eval-JS $ws $sendExpr
     if(-not $sent.ok) { throw ("Could not send prompt: " + ($sent | ConvertTo-Json -Compress)) }
+    $sendMethod=[string]$sent.method
+    if($sendMethod -eq "cdp-enter"){
+      Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+      Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+    }
 
+    # B10 submission acknowledgement: do not proceed merely because click/Enter
+    # was attempted. Require observable browser evidence.
+    $submitDeadline=[DateTime]::UtcNow.AddSeconds([Math]::Min(12,$TimeoutSeconds))
+    $submissionVerified=$false
+    $busySeen=$false
+    while([DateTime]::UtcNow -lt $submitDeadline){
+      Start-Sleep -Milliseconds 250
+      $busy=Get-BusyState $ws @($recipe.busy_selectors)
+      if($busy){$busySeen=$true}
+      $rowsNow=@(Current-Responses $ws @($recipe.response_selectors))
+      $composerNow=Get-ComposerText $ws $inputSelector
+      if($busy -or $rowsNow.Count -gt $before -or ([string]$composerNow).Length -lt [Math]::Max(1,[int]($Prompt.Length*0.5))){
+        $submissionVerified=$true
+        break
+      }
+    }
+    if(-not $submissionVerified){
+      Write-JsonResult @{
+        ok=$false
+        status="PROMPT_NOT_SUBMITTED"
+        provider=[string]$recipe.provider
+        send_method=$sendMethod
+        typed_chars=[int]$typed.typed_chars
+        detail="B10 found no browser evidence that the prompt was submitted."
+      }
+      exit 7
+    }
+
+    # B11/B12 — wait for a new assistant response and only finish after the
+    # generation indicator is absent and the full response is stable.
     $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
     $last = ""
     $stable = 0
     $captured = ""
+    $generationStarted=$busySeen
+    $completionReason=""
+    $responseIndex=-1
     while([DateTime]::UtcNow -lt $deadline) {
-      Start-Sleep -Milliseconds 800
+      Start-Sleep -Milliseconds 650
       $rows = @(Current-Responses $ws @($recipe.response_selectors))
+      $busy = Get-BusyState $ws @($recipe.busy_selectors)
+      if($busy){$busySeen=$true;$generationStarted=$true}
       if($rows.Count -le $before) { continue }
+      $generationStarted=$true
       $text = [string]$rows[-1].text
       if(-not $text) { continue }
+      $responseIndex=$rows.Count-1
 
-      $busySel = Selectors-Js @($recipe.busy_selectors)
-      $busyExpr = "(() => { const sels=$busySel; return sels.some(s=>!!document.querySelector(s)); })()"
-      $busy = [bool](Eval-JS $ws $busyExpr)
       if($text -eq $last) { $stable += 1 } else { $stable = 0; $last = $text }
-      if((-not $busy -and $stable -ge 2) -or $stable -ge 5) {
+      if(-not $busy -and $stable -ge 2) {
         $captured = $text
+        $completionReason=if($busySeen){"busy-cleared-and-response-stable"}else{"response-stable-without-busy-signal"}
         break
       }
     }
@@ -500,12 +656,33 @@ try {
         ok=$false
         status="RESPONSE_TIMEOUT"
         provider=[string]$recipe.provider
-        detail="A stable assistant response was not captured before timeout."
+        generation_started=[bool]$generationStarted
+        busy_seen=[bool]$busySeen
+        detail="B11/B12 did not observe a complete stable assistant response before timeout."
       }
       exit 5
     }
 
-    $pageUrl = [string](Eval-JS $ws "location.href")
+    # B13 — allow a new-chat URL to settle to /c/... and prevent conversation
+    # drift on continuation turns.
+    $pageUrl = Wait-StablePageUrl $ws ([Math]::Min(10,$TimeoutSeconds))
+    $conversationStable=[bool]$pageUrl
+    if($ConversationUrl){
+      $wantedConversation=Normalize-ConversationUrl $ConversationUrl
+      $actualConversation=Normalize-ConversationUrl $pageUrl
+      if($wantedConversation -ne $actualConversation){
+        Write-JsonResult @{
+          ok=$false
+          status="CONVERSATION_DRIFT"
+          provider=[string]$recipe.provider
+          requested_conversation_url=$ConversationUrl
+          actual_conversation_url=$pageUrl
+          detail="B13 continuation turn left the requested browser conversation."
+        }
+        exit 8
+      }
+    }
+
     $row=@{
       ok=$true
       status="COMPLETE"
@@ -513,6 +690,14 @@ try {
       conversation_url=$pageUrl
       response=$captured
       response_chars=$captured.Length
+      response_index=$responseIndex
+      typed_chars=[int]$typed.typed_chars
+      send_method=$sendMethod
+      submission_verified=[bool]$submissionVerified
+      generation_started=[bool]$generationStarted
+      busy_seen=[bool]$busySeen
+      completion_reason=$completionReason
+      conversation_stable=[bool]$conversationStable
       selector=$inputSelector
       input_strategy=[string]$candidate.strategy
       input_matched=[string]$candidate.matched
