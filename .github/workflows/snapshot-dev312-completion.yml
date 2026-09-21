@@ -1,0 +1,36 @@
+name: Snapshot exact DEV312 completion runtime
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/snapshot-dev312-completion.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Extract exact DEV312 completion files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev312-exact ceo-updates/dev312-inspect
+          mkdir -p /tmp/dev312-exact ceo-updates/dev312-inspect
+          unzip -q ceo-updates/CEO_1.5.88-rc1-provider-trust-integrity.zip -d /tmp/dev312-exact
+          for f in             ceo_core/goal_completion_gate.py             ceo_core/completion.py             ceo_core/autonomous_loop.py             ceo_core/deliverable_evidence_engine_v1.py             ceo_core/scheduler.py             ceo_core/models.py             scripts/ceo_stdlib_work_mode.py; do
+            cp "/tmp/dev312-exact/$f" "ceo-updates/dev312-inspect/$(basename "$f")"
+          done
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/dev312-inspect
+          git commit -m "Snapshot exact DEV312 completion runtime"
+          git push origin HEAD:ceo-update-channel
