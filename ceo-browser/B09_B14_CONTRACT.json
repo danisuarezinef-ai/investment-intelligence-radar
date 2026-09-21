@@ -4,16 +4,19 @@
   "branch": "free-browser-ai-worker",
   "objective": "Complete one robust two-turn ChatGPT web conversation through Chrome with zero API dependency.",
   "status": {
-    "B09_type_prompt_and_verify": "IMPLEMENTED_CI_PENDING",
-    "B10_submit_and_acknowledge": "IMPLEMENTED_CI_PENDING",
-    "B11_detect_generation_completion": "IMPLEMENTED_CI_PENDING",
-    "B12_capture_full_latest_response": "IMPLEMENTED_CI_PENDING",
-    "B13_preserve_same_conversation": "IMPLEMENTED_CI_PENDING",
-    "B14_real_chatgpt_two_turn_gate": "RUNNER_READY_PHYSICAL_PENDING"
+    "B09_type_prompt_and_verify": "COMPLETE_CI_VERIFIED",
+    "B10_submit_and_acknowledge": "COMPLETE_CI_VERIFIED",
+    "B11_detect_generation_completion": "COMPLETE_CI_VERIFIED",
+    "B12_capture_full_latest_response": "COMPLETE_CI_VERIFIED",
+    "B13_preserve_same_conversation": "COMPLETE_CI_VERIFIED",
+    "B14_real_chatgpt_two_turn_gate": "RUNNER_CI_VERIFIED_REAL_CHATGPT_PHYSICAL_PENDING"
   },
   "B09": {
     "rule": "Never submit until the browser composer content matches the intended prompt.",
-    "evidence": ["typed_chars", "PROMPT_INPUT_MISMATCH fail-closed"]
+    "evidence": [
+      "typed_chars",
+      "PROMPT_INPUT_MISMATCH fail-closed"
+    ]
   },
   "B10": {
     "preferred_submit": "visible send button click",
@@ -22,13 +25,21 @@
     "acknowledgement_required": true
   },
   "B11": {
-    "signals": ["busy/stop control", "new assistant response", "response stability"],
+    "signals": [
+      "busy/stop control",
+      "new assistant response",
+      "response stability"
+    ],
     "completion_rule": "assistant response must be stable while busy signal is absent"
   },
   "B12": {
     "capture": "latest full assistant response text",
     "no_response_truncation_in_driver": true,
-    "metadata": ["response_chars", "response_index", "completion_reason"]
+    "metadata": [
+      "response_chars",
+      "response_index",
+      "completion_reason"
+    ]
   },
   "B13": {
     "new_chat_url_settle": true,
@@ -52,5 +63,21 @@
     "no_paid_api": true,
     "no_radar_changes": true,
     "no_production_release": true
+  },
+  "verification": {
+    "workflow_run_id": 35650216648,
+    "verified_head": "943b54ff137a267e73dd8f0abaef68080d3676fe",
+    "conclusion": "success",
+    "passed": [
+      "B09 exact prompt typing verification",
+      "B10 CDP Enter fallback and submission acknowledgement",
+      "B11 generation start/completion detection",
+      "B12 full streamed-response capture including final tail",
+      "B13 new-chat URL transition and same-conversation second turn",
+      "B14 physical runner contract",
+      "CEO AITransport zero-API integration",
+      "FREE-ONLY boundary"
+    ],
+    "real_chatgpt_user_machine_verified": false
   }
 }
