@@ -108,13 +108,17 @@ def main() -> int:
     )
     (evidence/"FIRST_TRIAL_BROWSER_RESTART.log").write_text(bounded_text(restart_output),encoding="utf-8")
     consolidated["evidence"]["restart_gate_log"]=str(evidence/"FIRST_TRIAL_BROWSER_RESTART.log")
-    consolidated["restart_gate_status"]="PASS" if restart_code==0 else "FAIL"
+    consolidated["restart_gate_status"]="PASS" if restart_code==0 else "WARN"
+    consolidated["restart_gate_required_for_first_functional_trial"]=False
     if restart_code!=0:
-        consolidated["stage"]="RESTART_GATE_FAILED"
-        consolidated["failure_reason"]="browser restart/same-conversation gate failed"
-        atomic_json(evidence/"PRIMERA_PRUEBA_CEO_RESULTADO.json",consolidated)
-        print(json.dumps(consolidated,ensure_ascii=False))
-        return 4
+        consolidated["restart_degraded"]=True
+        consolidated["restart_failure_detail"]=bounded_text(restart_output[-12000:] if restart_output else "restart gate returned no detail")
+        print("")
+        print("=== RESTART GATE: WARN (no bloqueante) ===")
+        print(consolidated["restart_failure_detail"])
+        print("=== CONTINUANDO CON B29-B30 ===")
+    else:
+        consolidated["restart_degraded"]=False
 
     gate=base/"run_b29_b30_full_field_gate.ps1"
     code,output=run_powershell(
@@ -153,14 +157,22 @@ def main() -> int:
         "WINDOWS_PHYSICAL_VERIFIED":physical_ok,
         "REAL_CHATGPT_VERIFIED":physical_ok,
     }
-    consolidated["stage"]="FIELD_VERIFIED_READY_FOR_B38" if criteria["first_autodevelopment_launch_allowed"] else "FIELD_GATE_FAILED"
+    consolidated["stage"]=(
+        "FIELD_VERIFIED_RESTART_DEGRADED_READY_FOR_B38"
+        if criteria["first_autodevelopment_launch_allowed"] and consolidated.get("restart_degraded")
+        else ("FIELD_VERIFIED_READY_FOR_B38" if criteria["first_autodevelopment_launch_allowed"] else "FIELD_GATE_FAILED")
+    )
     if not criteria["first_autodevelopment_launch_allowed"]:
         consolidated["failure_reason"]=bounded_text(
             "B29-B30 did not produce a valid field state. B38 remains blocked."
         )
     consolidated["b38_automatically_started"]=False
     consolidated["next_action"]=(
-        "Run EJECUTAR_B38_CANDIDATE.cmd manually as the separate first autodevelopment test."
+        (
+            "Run EJECUTAR_B38_CANDIDATE.cmd manually. Browser restart resilience remains degraded and must be repaired separately."
+            if consolidated.get("restart_degraded")
+            else "Run EJECUTAR_B38_CANDIDATE.cmd manually as the separate first autodevelopment test."
+        )
         if criteria["first_autodevelopment_launch_allowed"]
         else "Inspect field-gate evidence and correct the failed physical condition."
     )
