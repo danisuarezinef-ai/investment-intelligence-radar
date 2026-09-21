@@ -100,6 +100,39 @@ def test_dpapi_trust_roundtrip():
                 os.environ["LOCALAPPDATA"] = old
 
 
+def test_legacy_1586_trust_migration():
+    class S:
+        def __init__(self):
+            self.metadata = {
+                "gemini_dpapi_saved": True,
+                "gemini_key_recognized": True,
+                "gemini_live_verified": True,
+                "gemini_model": "gemini-legacy",
+            }
+
+    key = "AIza" + "M"*35
+    old_load = work._load_windows_dpapi_gemini_trust
+    old_save = work._save_windows_dpapi_gemini_trust
+    calls = {"saved": 0}
+    try:
+        work._load_windows_dpapi_gemini_trust = lambda candidate: {}
+        def _save(candidate, *, model=None, source="verified"):
+            assert candidate == key
+            assert model == "gemini-legacy"
+            assert source == "dev312_legacy_migration"
+            calls["saved"] += 1
+            return True
+        work._save_windows_dpapi_gemini_trust = _save
+        row = work._migrate_legacy_gemini_trust(S(), key)
+        assert row["migrated"] is True, row
+        assert row["reason"] == "legacy_authenticated_key_bound", row
+        assert calls["saved"] == 1
+        return {"migrated": True, "saved": calls["saved"]}
+    finally:
+        work._load_windows_dpapi_gemini_trust = old_load
+        work._save_windows_dpapi_gemini_trust = old_save
+
+
 async def test_prior_trust_survives_connect_error():
     key = "AIza" + "C"*35
     ImmediateTransport.response = {
@@ -183,6 +216,8 @@ async def test_explicit_401_revokes_trust():
 def test_startup_and_ui_semantics():
     text = (ROOT / "scripts" / "ceo_stdlib_work_mode.py").read_text(encoding="utf-8")
     assert "startup_trust = _load_windows_dpapi_gemini_trust" in text
+    assert "_migrate_legacy_gemini_trust(state, self._pending_gemini_key)" in text
+    assert "dev312_gemini_trust_migration" in text
     assert '"TRUSTED_PREVIOUSLY_VERIFIED" if startup_trust else None' in text
     assert 'self.provider_mode = "gemini-authenticated-waiting"' in text
     assert 'self.provider_mode = "gemini-validation-deferred"' in text
@@ -208,6 +243,7 @@ def test_dev311_inherited():
 async def main_async():
     rows = {
         "dpapi": test_dpapi_trust_roundtrip(),
+        "legacy_migration": test_legacy_1586_trust_migration(),
         "transport": await test_prior_trust_survives_connect_error(),
         "hard_reject": await test_explicit_401_revokes_trust(),
         "startup_ui": test_startup_and_ui_semantics(),
