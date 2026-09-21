@@ -80,8 +80,9 @@ class PromptSizer:
         if task.expected_artifact:
             artifact_rule = (
                 f"\nEXPECTED ARTIFACT: {task.expected_artifact}\n"
-                "If this is a programming task, return complete file content or a unified diff inside "
-                "<CEO_PATCH>...</CEO_PATCH>; do not claim a file was written."
+                "If this is a programming task, return a unified diff inside <CEO_PATCH>...</CEO_PATCH>. "
+                "Otherwise put only the artifact body inside <CEO_ARTIFACT>...</CEO_ARTIFACT>. "
+                "Do not claim that you wrote a local file; CEO will persist the captured artifact."
             )
         prompt = (
             f"{mode}\n\n"
