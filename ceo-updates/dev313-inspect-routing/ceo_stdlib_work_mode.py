@@ -111,8 +111,9 @@ state=s;const live=!!s.execution_enabled;const real=s.operational_status||'SIN P
 const working=!!(s.active&&live&&schedulerAlive&&['TRABAJANDO','PLANIFICANDO','VERIFICANDO','CORRIGIENDO'].includes(real));
 $('op').textContent=s.active?real:'SIN PROYECTO';$('op').style.color=working?'#176d2d':(['BLOQUEADO','SIN SCHEDULER'].includes(real)?'#8b2f1f':'#7a5600');
 const keyRecognized=!!s.gemini_key_recognized;const keyStatus=String(s.gemini_key_status||'');
-$('provider').textContent=(live?'IA conectada':(keyRecognized?'Clave Gemini autenticada · proveedor en espera':'IA no activa'))+(schedulerAlive?' · motor activo':' · motor detenido');
-$('execPill').textContent=live?'✓ Gemini VALIDADO y activo':(keyRecognized?'⏳ Gemini autenticado · EN ESPERA':'⚠ Gemini NO activo');$('execPill').className='pill '+(live?'live':'warn');$('keyBox').style.display=live?'none':'flex';
+const browserReady=!!s.browser_provider_ready;
+$('provider').textContent=(browserReady?'ChatGPT web · Chrome':(live?'IA conectada':'IA web no disponible'))+(schedulerAlive?' · motor activo':' · motor detenido');
+$('execPill').textContent=browserReady?'✓ IA WEB preparada · sin API requerida':(live?'✓ IA conectada':'⚠ IA web no disponible');$('execPill').className='pill '+((browserReady||live)?'live':'warn');$('keyBox').style.display='none';
 const geminiFailed=!live&&s.provider_mode==='gemini-validation-failed';const geminiErr=String(s.gemini_validation_error||'').slice(0,620);
 const transportProblem=/ConnectError|Timeout|NETWORK|TRANSPORT|UNAVAILABLE/i.test(geminiErr+' '+keyStatus);$('geminiDetail').textContent=live?('Conexión Gemini verificada'+(s.gemini_model?' · modelo '+s.gemini_model:'')+'.'):(keyRecognized?('✓ Clave autenticada y guardada. '+(transportProblem?'Conexión con Gemini temporalmente no disponible.':'Gemini no permite generar ahora.')+' CEO reintentará automáticamente; no necesitas crear otra clave. '+geminiErr):(geminiFailed?('Clave rechazada o no autenticada. '+geminiErr):('No se pudo verificar Gemini en este momento. CEO conserva la clave cifrada y reintentará.')));
 $('progress').textContent=(s.metrics?.progress??0)+'%';$('running').textContent=s.metrics?.running??0;$('done').textContent=s.metrics?.completed??0;$('pending').textContent=s.metrics?.pending??0;const bp=s.metrics?.batch_progress??0;const cr=s.metrics?.control_running??0;const cp=s.metrics?.control_pending??0;const cc=s.metrics?.control_completed??0;const last=s.metrics?.last_productive_progress_at||'todavía sin avance productivo registrado';$('progressDetail').textContent='Lote conocido: '+bp+'% · control interno: '+cr+' ejecutando, '+cp+' pendiente(s), '+cc+' completada(s) · último avance real: '+last;const dp=s.device_fabric?.plan?.changes||[];const nt=s.device_fabric?.notification_target||{};$('deviceDetail').textContent='Reparto por dispositivo activo. Potencia '+(s.power_percent??30)+'% · cambios de asignación en este balance: '+dp.length+' · notificaciones de decisión fijadas al móvil'+(nt.device_id?' ('+nt.device_id+')':' cuando esté conectado')+'.';
@@ -125,14 +126,14 @@ if(s.active&&real==='CORRIGIENDO'){$('actionBanner').className='banner warnb';$(
 else if(working){$('actionBanner').className='banner okb';$('actionBanner').textContent='✓ CEO está ejecutando trabajo productivo. Estado real: '+real+'.'}
 else if(s.active&&s.paused){$('actionBanner').className='banner warnb';$('actionBanner').textContent='Proyecto PAUSADO; no está ejecutando tareas.'}
 else if(s.work_complete_certified&&s.completion_phase==='work_complete_pending_certification'){$('actionBanner').className='banner infob';$('actionBanner').textContent='✓ Trabajo del objetivo completado con evidencia determinista. Solo queda la certificación de resistencia en Windows; CEO no gastará llamadas IA ni creará nuevas auditorías mientras espera.'}
-else if(!live){$('actionBanner').className='banner warnb';$('actionBanner').textContent='Gemini no está activo. CEO no está trabajando.'}
+else if(!live){$('actionBanner').className='banner warnb';$('actionBanner').textContent='La IA web no está disponible. Comprueba Chrome/Edge y la sesión de ChatGPT.'}
 else if(s.active&&real==='NECESITA DECISIÓN'){$('actionBanner').className='banner errb';$('actionBanner').textContent='✗ Hay una tarea humana en NEEDS_REVIEW. Si es una auditoría interna de continuidad, CEO debe recuperarla solo; no requiere tu decisión. En DEV15 esas auditorías son atómicas y no deben quedar aquí.'}
 else if(s.active&&real==='BLOQUEADO'){const bs=s.autonomy_stalled?.blockers||[];const blocked=(s.queue||[]).filter(t=>['blocked','failed','needs_review'].includes(t.status)).slice(0,3).map(t=>t.title+' ['+t.status+']');const why=(bs.length?bs:blocked);const explicit=s.operator_block_reason||s.metadata?.operator_block_reason||'';$('actionBanner').className='banner errb';$('actionBanner').textContent='✗ CEO está BLOQUEADO. Causa: '+(why.length?why.join(' · '):(explicit||'bloqueo sin causa estructurada; requiere diagnóstico'))}
 else if(s.goal_audit_rejection||s.goal_audit_invalidated){$('actionBanner').className='banner warnb';$('actionBanner').textContent='⚠ Cierre rechazado por evidencia insuficiente. CEO debe continuar hasta reunir prueba independiente.'}
 else if(s.active&&real==='COMPLETADO'){$('actionBanner').className='banner okb';$('actionBanner').textContent='✓ Objetivo completado con evidencia independiente y auditoría estricta.'}
 else if(s.field_endurance_required&&!s.field_endurance_certified){$('actionBanner').className='banner infob';$('actionBanner').textContent='ℹ Certificación de resistencia pendiente. El trabajo productivo puede continuar; cuando todo el trabajo quede probado, CEO esperará esta certificación sin consumir proveedor IA.'}
 else if(s.active){$('actionBanner').className='banner warnb';$('actionBanner').textContent='⚠ CEO no tiene trabajo ejecutándose ahora: '+real+'. El watchdog debe replanificar si el objetivo sigue incompleto.'}
-else{$('actionBanner').className='banner okb';$('actionBanner').textContent='✓ Gemini activo. Ya puedes iniciar un proyecto real.'}
+else{$('actionBanner').className='banner okb';$('actionBanner').textContent='✓ CEO puede trabajar mediante IA web en Chrome sin depender de API.'}
 const wd=s.watchdog?.status?(' · watchdog '+s.watchdog.status):'';const gen=s.goal_continuity_generation?(' · ciclos de continuidad '+s.goal_continuity_generation):'';const sup=(s.metrics?.superseded??0)?(' · supersedidas '+s.metrics.superseded):'';const dup=s.continuity_duplicate_spawn_drops?(' · follow-ups duplicados descartados '+s.continuity_duplicate_spawn_drops):'';
 const stall=s.autonomy_stalled?(' · bloqueo '+esc(JSON.stringify(s.autonomy_stalled).slice(0,700))):'';$('diag').textContent=(s.message||'Servidor local activo.')+wd+gen+sup+dup+(s.scheduler_error?' · '+s.scheduler_error:'')+stall;
 }
@@ -176,6 +177,7 @@ class CEOEngine:
         from ceo_core.planning import BaselineTaskPlanner
         from ceo_core.project_catalog import ProjectCatalog
         from ceo_core.providers.gemini_interactions import GeminiInteractionsTransport
+        from ceo_core.providers.chatgpt_web import ChatGPTWebTransport
         from ceo_core.real_work_queue import RealWorkQueue
         from ceo_core.progress_tracker import StableProgressTracker
         from ceo_core.device_fabric import AdaptiveDeviceFabric
@@ -211,7 +213,12 @@ class CEOEngine:
         self.AIWorkerProvider = AIWorkerProvider
         self.GoalLockLocalProviderV1 = GoalLockLocalProviderV1
         self.GeminiInteractionsTransport = GeminiInteractionsTransport
+        self.ChatGPTWebTransport = ChatGPTWebTransport
         self.data_dir = user_data_root()
+        self.browser_transport = ChatGPTWebTransport()
+        self.browser_provider_ready, self.browser_provider_detail = self.browser_transport.host_ready()
+        self.no_api_required = True
+        self.primary_ai_surface = "chatgpt-web"
         self.projects = ProjectCatalog(self.data_dir / "projects")
         self.progress_tracker = StableProgressTracker()
         self.device_fabric = AdaptiveDeviceFabric()
@@ -229,11 +236,15 @@ class CEOEngine:
         self._pending_gemini_key = (gemini_key or "").strip() or None
         startup_trust = _load_windows_dpapi_gemini_trust(self._pending_gemini_key) if self._pending_gemini_key else {}
         self.gemini_key = self._pending_gemini_key if startup_trust else None
-        self.execution_enabled = False
+        self.execution_enabled = bool(self.browser_provider_ready)
         self.provider_mode = (
-            "gemini-authenticated-waiting"
-            if startup_trust
-            else ("gemini-key-pending-validation" if self._pending_gemini_key else "plan-only (sin Gemini)")
+            "chatgpt-web-ready"
+            if self.browser_provider_ready
+            else (
+                "gemini-authenticated-waiting"
+                if startup_trust
+                else ("gemini-key-pending-validation" if self._pending_gemini_key else "browser-unavailable")
+            )
         )
         self.gemini_model = str(startup_trust.get("model") or "") or None
         self.gemini_validation_error = None
@@ -286,7 +297,7 @@ class CEOEngine:
             except Exception as exc:
                 self.gemini_validation_error = f"{type(exc).__name__}: {exc}"[:900]
                 if self.gemini_key_recognized:
-                    self.provider_mode = "gemini-authenticated-waiting"
+                    self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
                     self.gemini_key_status = self.gemini_key_status or "TRANSPORT_UNAVAILABLE"
                 else:
                     self.provider_mode = "gemini-validation-deferred"
@@ -332,9 +343,22 @@ class CEOEngine:
     def _router(self):
         local_goal_lock = self.GoalLockLocalProviderV1()
         providers = [local_goal_lock]
-        if self.execution_enabled and self.gemini_key:
+
+        # Browser-first execution is the default. CEO must remain useful with zero
+        # API keys configured. The persistent Chrome profile is the normal AI surface.
+        self.browser_provider_ready, self.browser_provider_detail = self.browser_transport.host_ready()
+        if self.browser_provider_ready:
+            providers.insert(0, self.AIWorkerProvider(self.browser_transport))
+
+        # APIs are strictly optional and OFF by default.
+        allow_optional_api = str(os.environ.get("CEO_ALLOW_OPTIONAL_API", "")).strip().lower() in {"1","true","yes","on"}
+        if allow_optional_api and self.gemini_key:
             transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or "auto")
             providers.insert(0, self.AIWorkerProvider(transport))
+
+        self.execution_enabled = bool(self.browser_provider_ready or (allow_optional_api and self.gemini_key))
+        if self.browser_provider_ready:
+            self.provider_mode = "chatgpt-web-ready"
         return self.MultiProviderRouter(providers)
 
     def _ensure_project_workspace(self, state):
@@ -377,7 +401,7 @@ class CEOEngine:
                         self.gemini_key = self._pending_gemini_key
                         self.gemini_key_recognized = True
                         self.gemini_key_status = self.gemini_key_status or "TRUSTED_PREVIOUSLY_VERIFIED"
-                        self.provider_mode = "gemini-authenticated-waiting"
+                        self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
                         self.gemini_model = str(migrated_trust.get("model") or "") or self.gemini_model
                 self.state = state
                 from ceo_core.scheduler import _apply_reliability_epoch_migration
@@ -614,9 +638,9 @@ class CEOEngine:
                 if self.gemini_key == key:
                     self.gemini_key = None
                 self.gemini_key_recognized = False
-                self.execution_enabled = False
+                self.execution_enabled = bool(self.browser_provider_ready)
                 self.gemini_key_status = status
-                self.provider_mode = "gemini-validation-failed"
+                self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-validation-failed"
                 raise RuntimeError(f"Google rechazó la clave Gemini: {detail}")
 
             recognized = bool(authenticated is True or models_visible > 0 or prior_trust)
@@ -650,9 +674,9 @@ class CEOEngine:
             self.gemini_key_recognized = True
             self.gemini_key_status = status
             self.gemini_validation_error = f"{status}: {detail}"[:900]
-            self.execution_enabled = False
+            self.execution_enabled = bool(self.browser_provider_ready)
             self.gemini_model = str(probe.get("model") or "") or None
-            self.provider_mode = "gemini-authenticated-waiting"
+            self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
             self._next_provider_revalidation_ts = (
                 time.time() + float(self._provider_revalidation_interval_seconds)
             )
@@ -705,7 +729,7 @@ class CEOEngine:
         self.gemini_key_status = "LIVE_VERIFIED"
         self.execution_enabled = True
         self.gemini_model = str(probe.get("model") or "") or None
-        self.provider_mode = "gemini-live-verified"
+        self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-live-verified"
         self._next_provider_revalidation_ts = 0.0
 
         state = self._state_obj()
@@ -761,7 +785,7 @@ class CEOEngine:
             # revalidation never erases a previously-good runtime credential.
             self.gemini_validation_error = f"{type(exc).__name__}: {exc}"[:900]
             if self.gemini_key_recognized:
-                self.provider_mode = "gemini-authenticated-waiting"
+                self.provider_mode = "chatgpt-web-ready" if self.browser_provider_ready else "gemini-authenticated-waiting"
                 self.gemini_key_status = self.gemini_key_status or "TRANSPORT_UNAVAILABLE"
             else:
                 self.provider_mode = "gemini-validation-deferred"
@@ -834,6 +858,10 @@ class CEOEngine:
                 "active": False,
                 "execution_enabled": self.execution_enabled,
                 "provider_mode": self.provider_mode,
+                "no_api_required": True,
+                "primary_ai_surface": self.primary_ai_surface,
+                "browser_provider_ready": self.browser_provider_ready,
+                "browser_provider_detail": self.browser_provider_detail,
                 "gemini_model": self.gemini_model,
                 "gemini_validation_error": self.gemini_validation_error,
                 "gemini_key_recognized": self.gemini_key_recognized,
@@ -900,6 +928,10 @@ class CEOEngine:
             "goal": state.goal,
             "execution_enabled": self.execution_enabled,
             "provider_mode": self.provider_mode,
+            "no_api_required": True,
+            "primary_ai_surface": self.primary_ai_surface,
+            "browser_provider_ready": self.browser_provider_ready,
+            "browser_provider_detail": self.browser_provider_detail,
             "gemini_model": self.gemini_model,
             "gemini_validation_error": self.gemini_validation_error,
             "gemini_key_recognized": self.gemini_key_recognized,
