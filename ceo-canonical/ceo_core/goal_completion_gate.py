@@ -127,6 +127,26 @@ class GoalCompletionGate:
                 break
         return selected
 
+    @staticmethod
+    def _bounded_single_deliverable(state: ProjectState) -> bool:
+        """Return True only for a genuinely bounded one-output objective.
+
+        A single report produced by a broad research/migration project must not
+        inherit the lightweight completion policy merely because it ends in one
+        file. Explicit compact decomposition or an intake contract that says the
+        job itself is a single deliverable is required.
+        """
+        if len(state.goal_deliverables) != 1:
+            return False
+        profile = dict(state.metadata.get("decomposition_profile") or {})
+        if profile.get("mode") == "compact" or profile.get("bounded_single_output") is True:
+            return True
+        intake = dict(state.metadata.get("real_work_intake_v1") or {})
+        kind = str(intake.get("kind") or intake.get("profile") or "").strip().lower()
+        if kind in {"single_deliverable", "single_file", "bounded_single_deliverable"}:
+            return True
+        return False
+
     def evaluate(self, state: ProjectState, *, evidence_refs: list[str] | None = None) -> GoalAuditVerdict:
         refs: list[str] = []
         for raw in evidence_refs or []:
@@ -144,10 +164,19 @@ class GoalCompletionGate:
         grounded_refs = [t.id for t in valid_tasks if self._grounded(t)]
 
         strict = bool(state.metadata.get("strict_goal_completion_gate", state.metadata.get("real_work_intake_v1") is not None))
-        min_refs = int(state.metadata.get("min_goal_audit_evidence_refs", 3 if strict else 1))
-        min_grounded = int(state.metadata.get("min_goal_audit_grounded_refs", 2 if strict else 0))
+        bounded_single = bool(strict and self._bounded_single_deliverable(state))
+
+        # Completion evidence is proportional to the objective. For one bounded
+        # file, a concrete artifact plus an independent verification are stronger
+        # evidence than repeatedly asking a language model to audit the same work.
+        # Broad/multi-output real work keeps the stricter three-ref/continuity gate.
+        default_refs = 2 if bounded_single else (3 if strict else 1)
+        default_grounded = 2 if bounded_single else (2 if strict else 0)
+        default_generations = 0 if bounded_single else (3 if strict else 1)
+        min_refs = int(state.metadata.get("min_goal_audit_evidence_refs", default_refs))
+        min_grounded = int(state.metadata.get("min_goal_audit_grounded_refs", default_grounded))
         generation = int(state.metadata.get("goal_continuity_generation", 0))
-        required_generation = int(state.metadata.get("min_goal_continuity_generations", 3 if strict else 1))
+        required_generation = int(state.metadata.get("min_goal_continuity_generations", default_generations))
         gaps: list[str] = []
 
         if generation < required_generation:
