@@ -471,7 +471,7 @@ def patch_scheduler() -> None:
                     (
                         f"Create the missing deliverable {target} in the CEO workspace. "
                         "Your substantive response must be the complete intended file content and your CEO_RESULT must use "
-                        f"write_files=[{{\"path\":\"{target}\",\"content\":\"...complete content...\"}}]. "
+                        "Set write_files to one entry whose path is the target filename and whose content is the complete file content. "
                         "Do not merely describe the file. Use the locked project goal to include every requested field."
                     ),
                     ["reasoning"], "general",
