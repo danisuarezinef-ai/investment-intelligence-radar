@@ -33,6 +33,7 @@ BROWSER_FILES=[
     "run_b20_code_gate.ps1",
     "run_b20_code_gate.py",
     "finalize_browser_field.py",
+    "run_browser_restart_gate.ps1",
     "run_b29_b30_full_field_gate.ps1",
     "real_code_candidate.py",
     "run_b38_real_ceo_candidate.py",
