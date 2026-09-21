@@ -1,0 +1,24 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.86-rc1-provider-session-integrity.zip",
+    "sha256": "aaf22d20b568070d67fbef00d44d105f106a54790347f19c7467e42f96e82202",
+    "size_bytes": 1149665
+  },
+  "authenticated_outage_is_provider_wait": true,
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.85-rc1-closure-convergence",
+  "candidate": "1.5.86-rc1-provider-session-integrity",
+  "failed_candidate_preserves_working_session": true,
+  "field_validation_pending": true,
+  "last_validation_wins": true,
+  "operator_install_confirmation_required": true,
+  "probe_generation_budget_bounded": true,
+  "production_ready": false,
+  "release_sequence": 310,
+  "security_passed": true,
+  "single_file_activator_verified": false,
+  "tests_passed": true,
+  "truthful_provider_wait_ui": true,
+  "windows_stage_preflight_passed": false
+}

@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.86-rc1-provider-session-integrity.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.85-rc1-closure-convergence",
+  "notes": "DEV310 Provider Session Integrity: provider validation is last-write-wins; stale startup/revalidation probes cannot overwrite a newer manual key; invalid candidate keys cannot disable a currently working credential; authenticated quota/model outages enter autonomous provider-wait instead of being presented as invalid credentials; Gemini probe generation is bounded to two models with one generation attempt each; UI reflects waiting truthfully.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-21T10:30:00Z",
+  "release_id": "dev310-1.5.86-rc1-provider-session-integrity",
+  "release_sequence": 310,
+  "release_status": "release",
+  "sha256": "aaf22d20b568070d67fbef00d44d105f106a54790347f19c7467e42f96e82202",
+  "signature_alg": "ed25519",
+  "size_bytes": 1149665,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.86-rc1-provider-session-integrity.zip",
+  "version": "1.5.86-rc1-provider-session-integrity"
+}
