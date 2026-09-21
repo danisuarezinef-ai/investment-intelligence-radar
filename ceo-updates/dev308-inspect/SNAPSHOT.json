@@ -8,9 +8,17 @@
       "sha256": "5a674de0c6ef2f1dc677ac88f0bf1902a59afd10c55520ee3273af5c3fa5c1ca",
       "size": 2672
     },
+    "ceo_stdlib_work_mode.py": {
+      "sha256": "265202a7f709887e6a5da6c243cf5894e79144b3d3ebee0c6e0da53e2f10eec3",
+      "size": 131578
+    },
     "completion.py": {
       "sha256": "affc863a7d4fb17778cd862e03a3cb61a3c332cefb42c0f7a9d67d110f1010a1",
       "size": 8935
+    },
+    "context.py": {
+      "sha256": "eccc91cfc7d773ced8fa80c76dc5490d7e17acd6dd0d3a95bad94cbd1d0fff34",
+      "size": 5424
     },
     "conversation_controller.py": {
       "sha256": "f167172943ac4a7517dfc3ee5426c3584221f78a00fe6812aca4e1c34881477c",
