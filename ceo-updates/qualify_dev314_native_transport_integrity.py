@@ -92,7 +92,7 @@ def test_inherited_dev311_dev312_dev313_completion():
     assert cert.is_file()
     cert_text = cert.read_text(encoding="utf-8")
     assert "DeterministicCompletionCertifierV1" in cert_text
-    assert "provider-independent completion/certification bridge" in cert_text
+    assert "Provider-independent completion/certification bridge" in cert_text
     assert "work_complete_pending_certification" in loop
     return {
         "dev311_update_shell": True,
