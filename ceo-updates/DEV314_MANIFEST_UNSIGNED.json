@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.90-rc1-capability-scoped-provider.zip",
+  "channel": "development",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.86-rc1-provider-session-integrity",
+  "notes": "DEV314 development candidate: external AI availability is capability-scoped instead of a global CEO switch. Local scheduler and deterministic work continue during Gemini outages; AI-only tasks wait without recovery-budget consumption. Manual pause remains authoritative. Includes DEV311-DEV313 hardening.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-21T14:30:00Z",
+  "release_id": "dev314-1.5.90-rc1-capability-scoped-provider",
+  "release_sequence": 314,
+  "release_status": "development",
+  "sha256": "447d4f717e1f84e561cec24f3448ec673f9c2f1a3ac59207a8ac0915286c3c3c",
+  "signature_alg": "ed25519",
+  "size_bytes": 1155609,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.90-rc1-capability-scoped-provider.zip",
+  "version": "1.5.90-rc1-capability-scoped-provider"
+}

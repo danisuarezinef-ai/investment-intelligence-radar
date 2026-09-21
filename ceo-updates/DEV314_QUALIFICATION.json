@@ -1,0 +1,23 @@
+{
+  "artifact": {
+    "entries": 524,
+    "name": "CEO_1.5.90-rc1-capability-scoped-provider.zip",
+    "sha256": "447d4f717e1f84e561cec24f3448ec673f9c2f1a3ac59207a8ac0915286c3c3c",
+    "size_bytes": 1155609
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.89-rc1-deterministic-completion",
+  "candidate": "1.5.90-rc1-capability-scoped-provider",
+  "core_independent_of_external_ai": true,
+  "dev313_deterministic_completion_inherited": true,
+  "field_validation_pending": true,
+  "installation_deferred_by_operator": true,
+  "local_work_continues_during_provider_outage": true,
+  "manual_pause_authoritative": true,
+  "production_ready": false,
+  "provider_wait_no_recovery_churn": true,
+  "release_sequence": 314,
+  "security_passed": true,
+  "tests_passed": true,
+  "unsupported_ai_tasks_wait_without_recovery_budget": true
+}
