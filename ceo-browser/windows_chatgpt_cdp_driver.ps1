@@ -658,19 +658,11 @@ try {
     }
     $typed=[pscustomobject]@{typed_chars=[int]$actualTyped.Length}
 
-    # B10 — submit through a real browser interaction. Confirm delivery from
-    # multiple independent UI signals before proceeding.
-    $sendExpr = @"
+    # B10 — submit through trusted Chrome input. Never rely on DOM .click().
+    # Prefer a dynamically located visible send button and dispatch a real CDP mouse
+    # click to its current center. Fall back to a real CDP Enter key event.
+    $sendProbeExpr = @"
 (() => {
- const findMarked=(root)=>{
-   try{const e=root.querySelector($inputSelJson);if(e)return e;}catch(e){}
-   let all=[];try{all=[...root.querySelectorAll("*")]}catch(e){}
-   for(const el of all){if(el.shadowRoot){const x=findMarked(el.shadowRoot);if(x)return x}}
-   return null;
- };
- const input=findMarked(document);
- if(!input) return {ok:false,stage:"input_missing"};
- input.focus();
  const roots=[document];
  for(let i=0;i<roots.length;i++){
    const root=roots[i];
@@ -687,20 +679,35 @@ try {
    for(const root of roots){
      let b=null;try{b=root.querySelector(s)}catch(e){}
      if(b){
-       diagnostics.push({selector:s,disabled:!!b.disabled,ariaDisabled:b.getAttribute("aria-disabled")||"",visible:visible(b)});
-       if(visible(b)){b.click();return {ok:true,method:"button-click",selector:s,diagnostics:diagnostics}}
+       const r=b.getBoundingClientRect();
+       const item={selector:s,disabled:!!b.disabled,ariaDisabled:b.getAttribute("aria-disabled")||"",visible:visible(b),x:r.left+r.width/2,y:r.top+r.height/2};
+       diagnostics.push(item);
+       if(item.visible) return {found:true,selector:s,x:item.x,y:item.y,diagnostics:diagnostics};
      }
    }
  }
- return {ok:true,method:"cdp-enter",selector:"",diagnostics:diagnostics};
+ return {found:false,selector:"",x:0,y:0,diagnostics:diagnostics};
 })()
 "@
-    $sent = Eval-JS $ws $sendExpr
-    if(-not $sent.ok) { throw ("Could not send prompt: " + ($sent | ConvertTo-Json -Compress)) }
-    $sendMethod=[string]$sent.method
-    if($sendMethod -eq "cdp-enter"){
+
+    function Send-CdpEnter {
       Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
       Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+    }
+
+    function Send-CdpMouseClick([double]$x,[double]$y) {
+      Send-CDP $ws "Input.dispatchMouseEvent" @{type="mouseMoved";x=$x;y=$y} | Out-Null
+      Send-CDP $ws "Input.dispatchMouseEvent" @{type="mousePressed";x=$x;y=$y;button="left";clickCount=1} | Out-Null
+      Send-CDP $ws "Input.dispatchMouseEvent" @{type="mouseReleased";x=$x;y=$y;button="left";clickCount=1} | Out-Null
+    }
+
+    $sendTarget=Eval-JS $ws $sendProbeExpr
+    if($sendTarget.found){
+      Send-CdpMouseClick ([double]$sendTarget.x) ([double]$sendTarget.y)
+      $sendMethod="cdp-mouse-click"
+    }else{
+      Send-CdpEnter
+      $sendMethod="cdp-enter"
     }
 
     $submissionVerified=$false
@@ -749,8 +756,8 @@ try {
     $latestUsers=[int]$evidence1.users
     $latestResponses=[int]$evidence1.responses
 
-    # Safe one-time alternate: only if nothing whatsoever indicates submission and
-    # the full prompt still remains in the composer. This avoids blind double-send.
+    # One safe alternate action only when no signal indicates submission and the
+    # original prompt remains exactly intact.
     $alternateMethod=""
     if(-not $submissionVerified){
       $composerNormalized=[regex]::Replace([string]$latestComposer,"\r\n?","\n")
@@ -761,15 +768,15 @@ try {
         -not $busySeen
       )
       if($safeToRetry){
-        if($sendMethod -eq "button-click"){
+        if($sendMethod -eq "cdp-mouse-click"){
           $alternateMethod="cdp-enter"
-          Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
-          Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Enter";code="Enter";windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+          Send-CdpEnter
         }else{
           Start-Sleep -Milliseconds 700
-          $sent2=Eval-JS $ws $sendExpr
-          if($sent2.ok -and [string]$sent2.method -eq "button-click"){
-            $alternateMethod="button-click"
+          $sendTarget2=Eval-JS $ws $sendProbeExpr
+          if($sendTarget2.found){
+            $alternateMethod="cdp-mouse-click"
+            Send-CdpMouseClick ([double]$sendTarget2.x) ([double]$sendTarget2.y)
           }
         }
         if($alternateMethod){
@@ -786,7 +793,7 @@ try {
 
     if(-not $submissionVerified){
       $diag=[ordered]@{
-        primary_send=$sent
+        send_target=$sendTarget
         final_send_method=$sendMethod
         composer_chars=[string]$latestComposer.Length
         prompt_chars=[int]$Prompt.Length
@@ -803,7 +810,7 @@ try {
         send_method=$sendMethod
         typed_chars=[int]$typed.typed_chars
         submission_diagnostics=$diag
-        detail=("B10 saw no submission evidence after safe primary/alternate actions. " + ($diag | ConvertTo-Json -Compress -Depth 6))
+        detail=("B10 saw no submission evidence after trusted Chrome input. " + ($diag | ConvertTo-Json -Compress -Depth 8))
       }
       exit 7
     }
