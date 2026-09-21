@@ -216,6 +216,8 @@ class CEOEngine:
         self.data_dir = user_data_root()
         self.browser_transport = ChatGPTWebTransport()
         self.browser_provider_ready, self.browser_provider_detail = self.browser_transport.host_ready()
+        self.browser_control_verified = False
+        self.browser_control_probe = {}
         self.no_api_required = True
         self.primary_ai_surface = "chatgpt-web"
         self.projects = ProjectCatalog(self.data_dir / "projects")
@@ -876,6 +878,8 @@ class CEOEngine:
                 "primary_ai_surface": self.primary_ai_surface,
                 "browser_provider_ready": self.browser_provider_ready,
                 "browser_provider_detail": self.browser_provider_detail,
+                "browser_control_verified": self.browser_control_verified,
+                "browser_control_probe": dict(self.browser_control_probe or {}),
                 "gemini_model": self.gemini_model,
                 "gemini_validation_error": self.gemini_validation_error,
                 "gemini_key_recognized": self.gemini_key_recognized,
@@ -946,6 +950,8 @@ class CEOEngine:
             "primary_ai_surface": self.primary_ai_surface,
             "browser_provider_ready": self.browser_provider_ready,
             "browser_provider_detail": self.browser_provider_detail,
+            "browser_control_verified": self.browser_control_verified,
+            "browser_control_probe": dict(self.browser_control_probe or {}),
             "gemini_model": self.gemini_model,
             "gemini_validation_error": self.gemini_validation_error,
             "gemini_key_recognized": self.gemini_key_recognized,
@@ -1993,6 +1999,36 @@ def main() -> int:
         print("[OK] Modo IA web gratuito: no se solicita ni se necesita ninguna API key.")
     try:
         engine = CEOEngine(key or None)
+
+        # B03: Chrome/Edge is the primary execution surface. Locate it, launch it
+        # with CEO's persistent profile, and prove CDP control before field work.
+        try:
+            browser_control_probe = engine.call(engine.browser_transport.probe_control(), timeout=45)
+        except Exception as browser_exc:
+            browser_control_probe = {
+                "ok": False,
+                "status": "BROWSER_CONTROL_FAILED",
+                "detail": f"{type(browser_exc).__name__}: {browser_exc}"[:900],
+            }
+        engine.browser_control_probe = dict(browser_control_probe or {})
+        engine.browser_control_verified = bool(
+            isinstance(browser_control_probe, dict)
+            and browser_control_probe.get("ok") is True
+            and browser_control_probe.get("status") == "BROWSER_CONTROL_READY"
+        )
+        engine.browser_provider_ready = bool(engine.browser_control_verified)
+        engine.browser_provider_detail = (
+            "Chrome/Edge localizado, abierto y controlado mediante CDP."
+            if engine.browser_control_verified
+            else str((browser_control_probe or {}).get("detail") or "No se pudo demostrar control del navegador.")
+        )
+        allow_optional_api_runtime = str(os.environ.get("CEO_ALLOW_OPTIONAL_API", "")).strip().lower() in {"1","true","yes","on"}
+        engine.execution_enabled = bool(
+            engine.browser_control_verified or (allow_optional_api_runtime and engine.gemini_key)
+        )
+        if engine.browser_control_verified:
+            engine.provider_mode = "chatgpt-web-control-verified"
+
         Handler.engine = engine
         port = free_port()
         url = f"http://127.0.0.1:{port}"
@@ -2015,6 +2051,8 @@ def main() -> int:
             "status": "PASS", "url": url, "port": port, "server": "stdlib-http.server",
             "browser": "pending", "execution_enabled": engine.execution_enabled,
             "provider_mode": engine.provider_mode, "key_source": key_source or "none",
+            "browser_control_verified": engine.browser_control_verified,
+            "browser_control_probe": engine.browser_control_probe,
             "results_dir": str(RESULTS), "startup_health": startup_health, "shell_integration": shell_integration,
             "provider_validation_started": provider_validation_started,
             "provider_validation_started": provider_validation_started,
