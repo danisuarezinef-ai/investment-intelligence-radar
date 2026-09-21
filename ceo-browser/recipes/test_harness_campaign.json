@@ -1,0 +1,36 @@
+{
+  "provider": "test-harness-campaign",
+  "url": "http://127.0.0.1:8765/?seed=1&conversation=transition",
+  "conversation_url_regex": "/c/[^/?#]+",
+  "input_selectors": [
+    "#prompt-textarea",
+    "textarea",
+    "[contenteditable='true'][role='textbox']"
+  ],
+  "input_semantic_hints": [
+    "prompt",
+    "message",
+    "ask"
+  ],
+  "send_selectors": [
+    "button[data-testid='send-button']"
+  ],
+  "response_selectors": [
+    "[data-message-author-role='assistant']"
+  ],
+  "busy_selectors": [
+    "button[data-testid='stop-button']"
+  ],
+  "logged_in_selectors": [
+    "button[data-testid='profile-button']"
+  ],
+  "login_required_selectors": [
+    "a[data-testid='login-button']"
+  ],
+  "constraints": {
+    "test_only": true
+  },
+  "user_message_selectors": [
+    "[data-message-author-role='user']"
+  ]
+}
