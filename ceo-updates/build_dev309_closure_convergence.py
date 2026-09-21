@@ -240,12 +240,12 @@ def patch_scheduler() -> None:
 
     header = s[:1200]
     if "import pathlib\n" not in header or "import re\n" not in header:
-        anchor = "import asyncio\n"
+        anchor = "from __future__ import annotations\n"
         if s.count(anchor) != 1:
-            raise RuntimeError(f"scheduler import anchor={s.count(anchor)}")
-        additions = "import asyncio\n"
+            raise RuntimeError(f"scheduler future-import anchor={s.count(anchor)}")
+        additions = anchor
         if "import pathlib\n" not in header:
-            additions += "import pathlib\n"
+            additions += "\nimport pathlib\n"
         if "import re\n" not in header:
             additions += "import re\n"
         s = s.replace(anchor, additions, 1)
