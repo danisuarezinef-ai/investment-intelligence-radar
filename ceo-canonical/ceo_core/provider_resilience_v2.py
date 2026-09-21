@@ -33,7 +33,12 @@ class ProviderResilienceV2:
             return ProviderRecoveryDecision("authentication", False, 0, False, False, True)
         if "404" in text and "model" in text:
             return ProviderRecoveryDecision("model_unavailable", True, 1, True, False, False)
-        if any(x in text for x in ("timeout", "timed out", "connection reset", "temporarily unavailable", "503", "502")):
+        if any(x in text for x in (
+            "timeout", "timed out", "connecterror", "connect error",
+            "connection reset", "connection refused", "network is unreachable",
+            "name or service not known", "temporary failure in name resolution",
+            "temporarily unavailable", "tls", "ssl", "503", "502",
+        )):
             return ProviderRecoveryDecision("transient", attempt < 5, backoff, False, attempt >= 3, False)
         if any(x in text for x in ("billing", "payment", "purchase", "credit")):
             return ProviderRecoveryDecision("billing_gate", False, 0, False, False, True)
