@@ -633,6 +633,22 @@ def _promote_provider_artifact_to_deliverable(workspace_root: str, target: str, 
         raise RuntimeError(f"scheduler closure target metadata anchor={s.count(metadata_anchor)}")
     s = s.replace(metadata_anchor, metadata_new, 1)
 
+    role_anchor = '''                    "task_role": ("productive" if index == 1 else "verification" if index == 2 else "control"),
+                    "productive_recovery_work": index == 1,
+'''
+    role_new = '''                    "task_role": (
+                        ("productive" if index == 0 else "verification")
+                        if missing_deliverables
+                        else ("productive" if index == 1 else "verification" if index == 2 else "control")
+                    ),
+                    "productive_recovery_work": (
+                        index == 0 if missing_deliverables else index == 1
+                    ),
+'''
+    if s.count(role_anchor) != 1:
+        raise RuntimeError(f"scheduler targeted closure role anchor={s.count(role_anchor)}")
+    s = s.replace(role_anchor, role_new, 1)
+
     p.write_text(s, encoding="utf-8")
 
 
@@ -684,6 +700,70 @@ def patch_import_pathlib() -> None:
     if "import pathlib\n" not in header or "import re\n" not in header:
         raise RuntimeError("DEV309 scheduler module imports missing from header")
 
+def patch_work_mode_workspace() -> None:
+    p = ROOT / "scripts" / "ceo_stdlib_work_mode.py"
+    s = p.read_text(encoding="utf-8")
+
+    init_anchor = '''    async def _initialize(self):
+        active = self.projects.active_project_id()
+'''
+    init_new = '''    def _ensure_project_workspace(self, state):
+        """Guarantee one durable workspace for every real-work project."""
+        row = dict(state.metadata.get("workspace_v2") or {})
+        configured = str(row.get("root") or "").strip()
+        if configured:
+            root = Path(configured).expanduser().resolve()
+            managed = bool(row.get("managed", False))
+        else:
+            root = (self.data_dir / "workspaces" / state.id).resolve()
+            managed = True
+        root.mkdir(parents=True, exist_ok=True)
+        row.update({
+            "root": str(root),
+            "project_id": state.id,
+            "managed": managed,
+            "available": True,
+            "schema_version": 1,
+        })
+        state.metadata["workspace_v2"] = row
+        return root
+
+    async def _initialize(self):
+        active = self.projects.active_project_id()
+'''
+    if s.count(init_anchor) != 1:
+        raise RuntimeError(f"work-mode workspace helper anchor={s.count(init_anchor)}")
+    s = s.replace(init_anchor, init_new, 1)
+
+    resume_anchor = '''            if state is not None:
+                state = store.prepare_for_resume(state)
+                self.state = state
+                from ceo_core.scheduler import _apply_reliability_epoch_migration
+'''
+    resume_new = '''            if state is not None:
+                state = store.prepare_for_resume(state)
+                self._ensure_project_workspace(state)
+                self.state = state
+                from ceo_core.scheduler import _apply_reliability_epoch_migration
+'''
+    if s.count(resume_anchor) != 1:
+        raise RuntimeError(f"work-mode resume workspace anchor={s.count(resume_anchor)}")
+    s = s.replace(resume_anchor, resume_new, 1)
+
+    start_anchor = '''        state.project_name = str(body.get("name") or goal_text[:80]).strip()
+        state.power_percent = max(1, min(100, int(body.get("power_percent") or 30)))
+'''
+    start_new = '''        state.project_name = str(body.get("name") or goal_text[:80]).strip()
+        state.power_percent = max(1, min(100, int(body.get("power_percent") or 30)))
+        self._ensure_project_workspace(state)
+'''
+    if s.count(start_anchor) != 1:
+        raise RuntimeError(f"work-mode start workspace anchor={s.count(start_anchor)}")
+    s = s.replace(start_anchor, start_new, 1)
+
+    p.write_text(s, encoding="utf-8")
+
+
 def update_version_and_contract() -> None:
     for rel in ("scripts/ceo_stdlib_work_mode.py", "scripts/install_windows_bootstrap.py"):
         p = ROOT / rel
@@ -719,6 +799,7 @@ def main() -> None:
     patch_scheduler()
     patch_import_pathlib()
     patch_autonomous_loop()
+    patch_work_mode_workspace()
     update_version_and_contract()
 
     print(json.dumps({
@@ -737,6 +818,8 @@ def main() -> None:
             "bounded_single_artifact_completion_profile",
             "goal_continuity_generation_cap",
             "field_migration_from_173_audit_loop",
+            "managed_workspace_for_every_real_project",
+            "targeted_closure_task_roles_fixed",
         ],
     }, indent=2))
 
