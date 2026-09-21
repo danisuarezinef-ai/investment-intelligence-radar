@@ -61,9 +61,9 @@ jobs:
         shell: pwsh
         run: |
           Push-Location ceo-browser
-          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py real_code_candidate.py first_trial_safety.py first_trial_orchestrator.py build_first_trial_lab.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py run_b38_real_ceo_candidate.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py test_harness_server.py
+          python -m py_compile browser_ai_worker.py browser_provider_pool.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py real_code_candidate.py first_trial_safety.py first_trial_orchestrator.py build_first_trial_lab.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py run_b38_real_ceo_candidate.py test_browser_ai_worker.py test_browser_provider_pool.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py test_harness_server.py
           if ($LASTEXITCODE -ne 0) { throw "compile failed" }
-          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py
+          python -m unittest -v test_browser_ai_worker.py test_browser_provider_pool.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
           Pop-Location
 
@@ -78,7 +78,7 @@ jobs:
           work=Path("ceo-updates/dev313-inspect-routing/ceo_stdlib_work_mode.py").read_text(encoding="utf-8")
           routing=Path("ceo-updates/dev313-inspect-routing/routing.py").read_text(encoding="utf-8")
           provider=Path("ceo-updates/dev313-inspect-routing/providers/chatgpt_web.py").read_text(encoding="utf-8")
-          assert 'primary_ai_surface = "chatgpt-web"' in work
+          assert 'primary_ai_surface = "browser-provider-pool"' in work
           assert 'self.no_api_required = True' in work
           assert 'CEO_ALLOW_OPTIONAL_API' in work
           assert 'providers.insert(0, self.AIWorkerProvider(self.browser_transport))' in work
@@ -100,10 +100,38 @@ jobs:
           assert 'No se detecto automaticamente una Gemini API key valida.' not in work
           assert 'CEO_BROWSER_PROFILE.json' in provider
           assert 'async def probe_session' in provider
+          assert '"browser-provider-pool-ready"' in work
           print("CEO_BROWSER_FIRST_SOURCE_PASS")
           '@ | Set-Content -Encoding UTF8 browser_first_source.py
           python browser_first_source.py
           if ($LASTEXITCODE -ne 0) { throw "browser-first source contract failed" }
+
+      - name: Multi-provider browser pool contract
+        shell: pwsh
+        run: |
+          @'
+          import json
+          from pathlib import Path
+          root=Path("ceo-browser")
+          reg=json.loads((root/"provider_registry.json").read_text(encoding="utf-8"))
+          expected=["chatgpt-web","claude-web","gemini-web","perplexity-web","grok-web"]
+          assert reg["default_order"][:5] == expected
+          assert reg["policy"]["paid_api_required"] is False
+          assert reg["policy"]["provider_fallback_allowed"] is True
+          for name in expected:
+              cfg=reg["providers"][name]
+              assert cfg["api_required"] is False
+              assert (root/cfg["recipe"]).is_file()
+          loop=(root/"programming_browser_loop.py").read_text(encoding="utf-8")
+          assert "class PowerShellWebAITransport" in loop
+          assert "PowerShellChatGPTWebTransport = PowerShellWebAITransport" in loop
+          driver=(root/"windows_chatgpt_cdp_driver.ps1").read_text(encoding="utf-8")
+          assert "Wait-DevToolsDown" in driver
+          assert "Prune-UnrelatedRestoredTargets" in driver
+          print("MULTI_PROVIDER_BROWSER_POOL_PASS")
+          '@ | Set-Content -Encoding UTF8 multiprovider_check.py
+          python multiprovider_check.py
+          if($LASTEXITCODE -ne 0){throw "multi-provider browser pool contract failed"}
 
       - name: PowerShell syntax check
         shell: pwsh
