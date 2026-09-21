@@ -81,7 +81,7 @@ class ProgrammingLoopTests(unittest.TestCase):
                 relevant_files=["calc.py", "test_calc.py"],
                 test_command=["python", "-m", "unittest", "-q"],
             )
-            self.assertTrue(result.success)
+            self.assertTrue(result.success, result)
             self.assertEqual(result.status, "CANDIDATE_VERIFIED")
             self.assertEqual(len(result.attempts), 2)
             self.assertFalse(result.attempts[0].tests_passed)
