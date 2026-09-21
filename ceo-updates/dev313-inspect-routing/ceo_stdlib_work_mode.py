@@ -176,7 +176,6 @@ class CEOEngine:
         from ceo_core.graph import TaskGraph
         from ceo_core.planning import BaselineTaskPlanner
         from ceo_core.project_catalog import ProjectCatalog
-        from ceo_core.providers.gemini_interactions import GeminiInteractionsTransport
         from ceo_core.providers.chatgpt_web import ChatGPTWebTransport
         from ceo_core.real_work_queue import RealWorkQueue
         from ceo_core.progress_tracker import StableProgressTracker
@@ -212,7 +211,7 @@ class CEOEngine:
         self.ContinuousScheduler = ContinuousScheduler
         self.AIWorkerProvider = AIWorkerProvider
         self.GoalLockLocalProviderV1 = GoalLockLocalProviderV1
-        self.GeminiInteractionsTransport = GeminiInteractionsTransport
+        self.GeminiInteractionsTransport = None
         self.ChatGPTWebTransport = ChatGPTWebTransport
         self.data_dir = user_data_root()
         self.browser_transport = ChatGPTWebTransport()
@@ -332,6 +331,13 @@ class CEOEngine:
         threading.Thread(target=_runner, name="ceo-provider-revalidation", daemon=True).start()
         return True
 
+    def _gemini_transport_class(self):
+        """Load API-specific code only when optional API mode is explicitly requested."""
+        if self.GeminiInteractionsTransport is None:
+            from ceo_core.providers.gemini_interactions import GeminiInteractionsTransport
+            self.GeminiInteractionsTransport = GeminiInteractionsTransport
+        return self.GeminiInteractionsTransport
+
     def _run_loop(self):
         asyncio.set_event_loop(self.loop)
         self.loop.run_forever()
@@ -353,7 +359,7 @@ class CEOEngine:
         # APIs are strictly optional and OFF by default.
         allow_optional_api = str(os.environ.get("CEO_ALLOW_OPTIONAL_API", "")).strip().lower() in {"1","true","yes","on"}
         if allow_optional_api and self.gemini_key:
-            transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or "auto")
+            transport = self._gemini_transport_class()(api_key=self.gemini_key, model=self.gemini_model or "auto")
             providers.insert(0, self.AIWorkerProvider(transport))
 
         self.execution_enabled = bool(self.browser_provider_ready or (allow_optional_api and self.gemini_key))
@@ -619,7 +625,7 @@ class CEOEngine:
         if not key:
             raise ValueError("No se reconoció una API key válida. Revisa que hayas pegado la clave completa.")
 
-        transport = self.GeminiInteractionsTransport(api_key=key, model="auto")
+        transport = self._gemini_transport_class()(api_key=key, model="auto")
         probe = await transport.probe_live()
 
         # Last-validation-wins. A slower startup/old-key probe is read-only once a
