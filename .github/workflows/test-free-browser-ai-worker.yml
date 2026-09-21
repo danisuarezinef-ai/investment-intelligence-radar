@@ -61,9 +61,9 @@ jobs:
         shell: pwsh
         run: |
           Push-Location ceo-browser
-          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py real_code_candidate.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py run_b38_real_ceo_candidate.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_harness_server.py
+          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py real_code_candidate.py first_trial_safety.py first_trial_orchestrator.py build_first_trial_lab.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py run_b38_real_ceo_candidate.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py test_harness_server.py
           if ($LASTEXITCODE -ne 0) { throw "compile failed" }
-          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py
+          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
           Pop-Location
 
@@ -562,6 +562,113 @@ jobs:
           $candidate=Get-Content -Raw -Encoding UTF8 "ceo-browser\real_code_candidate.py"
           if($candidate -match 'git\([^\r\n]*"push"' -or $candidate -match 'git\([^\r\n]*"merge"'){throw "B31-B38 candidate code contains forbidden promotion action"}
           Write-Host "B38_CANDIDATE_RUNNER_READY_PASS"
+
+      - name: Gate 0 new PowerShell runner syntax
+        shell: pwsh
+        run: |
+          $files=@(
+            "ceo-browser\run_browser_restart_gate.ps1",
+            "ceo-browser\run_first_trial_gate.ps1",
+            "ceo-browser\recover_first_trial.ps1"
+          )
+          foreach($file in $files){
+            $tokens=$null
+            $errors=$null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+            if($errors.Count -gt 0){
+              $errors | ForEach-Object { Write-Host $_.Message }
+              throw "PowerShell parse failed: $file"
+            }
+          }
+          Write-Host "FIRST_TRIAL_POWERSHELL_SYNTAX_PASS"
+
+      - name: Gate 0 preflight only - no ChatGPT traffic
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-first-trial-profile"
+          $evidence=Join-Path $env:RUNNER_TEMP "ceo-first-trial-evidence"
+          Push-Location ceo-browser
+          python first_trial_orchestrator.py --profile-dir $profile --evidence-dir $evidence --preferred-port 19427 --preflight-only
+          if($LASTEXITCODE -ne 0){throw "Gate 0 preflight failed"}
+          $row=Get-Content -Raw -Encoding UTF8 (Join-Path $evidence "PRIMERA_PRUEBA_CEO_RESULTADO.json") | ConvertFrom-Json
+          if($row.stage -ne "PREFLIGHT_GO"){throw "Gate 0 preflight did not reach GO"}
+          if($row.b38_automatically_started -ne $false){throw "B38 auto-start boundary violated"}
+          if($row.verification_levels.CI_VERIFIED -ne $true){throw "CI verification level missing"}
+          if($row.verification_levels.WINDOWS_PHYSICAL_VERIFIED -ne $false){throw "preflight must not claim physical verification"}
+          Pop-Location
+          Write-Host "FIRST_TRIAL_PREFLIGHT_ONLY_PASS"
+
+      - name: Gate 0 recovery is profile scoped
+        shell: pwsh
+        run: |
+          $recovery=Get-Content -Raw -Encoding UTF8 "ceo-browser\recover_first_trial.ps1"
+          if($recovery -notmatch "Get-CimInstance Win32_Process"){throw "recovery process inventory missing"}
+          if($recovery -notmatch "ProfileDir"){throw "recovery profile scope missing"}
+          if($recovery -notmatch "CommandLine.ToLower\(\).Contains"){throw "recovery command-line ownership test missing"}
+          if($recovery -match "Get-Process\s+(chrome|msedge).*Stop-Process"){throw "recovery contains broad browser kill"}
+          Write-Host "FIRST_TRIAL_RECOVERY_SCOPE_PASS"
+
+      - name: Gate 0 restart physical runner contract
+        shell: pwsh
+        run: |
+          $restart=Get-Content -Raw -Encoding UTF8 "ceo-browser\run_browser_restart_gate.ps1"
+          if($restart -notmatch "CloseBrowserAfter"){throw "restart gate does not close browser"}
+          if($restart -match 'ConversationUrl.*NoLaunch'){throw "restart gate forbids browser relaunch"}
+          if($restart -notmatch "BROWSER_RESTART_SAME_CONVERSATION_PASS"){throw "restart evidence status missing"}
+          if($restart -notmatch "api_calls=0"){throw "restart zero-API evidence missing"}
+          Write-Host "FIRST_TRIAL_RESTART_RUNNER_READY_PASS"
+
+      - name: Gate 0 40-point contract boundaries
+        shell: pwsh
+        run: |
+          $contract=Get-Content -Raw -Encoding UTF8 "ceo-browser\FIRST_TRIAL_40_GATE_CONTRACT.json" | ConvertFrom-Json
+          if($contract.items.Count -ne 40){throw "first-trial contract must contain exactly 40 checks"}
+          if($contract.invariant.b38_auto_start -ne $false){throw "B38 separation weakened"}
+          if($contract.invariant.openai_api -ne $false){throw "API boundary weakened"}
+          if($contract.invariant.stable_update -ne $false){throw "stable update boundary weakened"}
+          if($contract.invariant.automatic_merge -ne $false){throw "merge boundary weakened"}
+          if($contract.invariant.automatic_purchase -ne $false){throw "purchase boundary weakened"}
+          $orchestrator=Get-Content -Raw -Encoding UTF8 "ceo-browser\first_trial_orchestrator.py"
+          if($orchestrator -match "run_b38_real_ceo_candidate"){throw "orchestrator must not start B38"}
+          if($orchestrator -notmatch "run_browser_restart_gate"){throw "restart gate missing from orchestrator"}
+          if($orchestrator -notmatch "run_b29_b30_full_field_gate"){throw "B29-B30 missing from orchestrator"}
+          Write-Host "FIRST_TRIAL_40_CONTRACT_PASS"
+
+      - name: Build and inspect portable first-trial LAB
+        shell: pwsh
+        run: |
+          python ceo-browser\build_first_trial_lab.py
+          if($LASTEXITCODE -ne 0){throw "first-trial LAB build failed"}
+          @'
+          import json, zipfile
+          from pathlib import Path
+          zpath=Path("ceo-browser/CEO_FIRST_TRIAL_LAB.zip")
+          qpath=Path("ceo-browser/CEO_FIRST_TRIAL_LAB_QUALIFICATION.json")
+          assert zpath.is_file() and qpath.is_file()
+          q=json.loads(qpath.read_text(encoding="utf-8"))
+          assert q["installable_update"] is False
+          assert q["stable_channel_modified"] is False
+          assert q["current_json_modified"] is False
+          assert q["field_verified"] is False
+          assert q["b38_automatic"] is False
+          assert q["no_api_required"] is True
+          with zipfile.ZipFile(zpath) as z:
+              names=set(z.namelist())
+              required={
+                  "EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd",
+                  "RECUPERAR_PRUEBA_CEO.cmd",
+                  "EJECUTAR_B38_CANDIDATE.cmd",
+                  "CEO_FIRST_TRIAL_LAB.json",
+                  "CEO_FIRST_TRIAL_MANIFEST.json",
+                  "ceo_core/browser_ai/run_browser_restart_gate.ps1",
+                  "ceo_core/browser_ai/first_trial_orchestrator.py",
+              }
+              assert not (required-names), sorted(required-names)
+              assert "current.json" not in {Path(x).name for x in names}
+          print("FIRST_TRIAL_PORTABLE_LAB_PASS")
+          '@ | Set-Content -Encoding UTF8 first_trial_lab_check.py
+          python first_trial_lab_check.py
+          if($LASTEXITCODE -ne 0){throw "first-trial LAB qualification failed"}
 
       - name: Exercise CEO AITransport through Chrome with zero API keys
         shell: pwsh
