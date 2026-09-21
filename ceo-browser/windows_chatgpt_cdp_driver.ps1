@@ -381,12 +381,33 @@ function Get-ComposerSnapshot([System.Net.WebSockets.ClientWebSocket]$ws,[string
    return null;
  };
  const e=findMarked(document);
- if(!e) return {found:false,value:"",textContent:"",innerText:"",html:""};
+ if(!e) return {found:false,value:"",textContent:"",innerText:"",logicalText:"",html:""};
+ const logical=(root)=>{
+   let out="";
+   const blocks=new Set(["DIV","P","LI","PRE","BLOCKQUOTE"]);
+   const walk=(n,isRoot=false)=>{
+     if(n.nodeType===Node.TEXT_NODE){out+=String(n.nodeValue||"");return;}
+     if(n.nodeType!==Node.ELEMENT_NODE)return;
+     const tag=String(n.tagName||"").toUpperCase();
+     if(tag==="BR"){out+="\n";return;}
+     const block=!isRoot && blocks.has(tag);
+     if(block && out && !out.endsWith("\n"))out+="\n";
+     const before=out.length;
+     for(const child of n.childNodes)walk(child,false);
+     if(block){
+       if(out.length===before){out+="\n";}
+       else if(!out.endsWith("\n"))out+="\n";
+     }
+   };
+   walk(root,true);
+   return out.replace(/\n+$/,"");
+ };
  return {
    found:true,
    value:(e.tagName==="TEXTAREA" || e.tagName==="INPUT") ? String(e.value||"") : "",
    textContent:String(e.textContent||""),
    innerText:String(e.innerText||""),
+   logicalText:logical(e),
    html:String(e.innerHTML||"").slice(0,4000)
  };
 })()
@@ -398,6 +419,7 @@ function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$se
   $snap=Get-ComposerSnapshot $ws $selector
   if(-not $snap -or -not $snap.found){return ""}
   if([string]$snap.value){return [string]$snap.value}
+  if([string]$snap.logicalText){return [string]$snap.logicalText}
   if([string]$snap.textContent){return [string]$snap.textContent}
   return [string]$snap.innerText
 }
@@ -677,10 +699,11 @@ try {
       value=Normalize-ComposerText ([string]$typedSnapshot.value)
       textContent=Normalize-ComposerText ([string]$typedSnapshot.textContent)
       innerText=Normalize-ComposerText ([string]$typedSnapshot.innerText)
+      logicalText=Normalize-ComposerText ([string]$typedSnapshot.logicalText)
     }
     $matchedRepresentation=""
     $actualNormalized=""
-    foreach($name in @("value","textContent","innerText")){
+    foreach($name in @("value","logicalText","textContent","innerText")){
       $candidate=[string]$variants[$name]
       if($candidate -eq $expectedNormalized){
         $matchedRepresentation=$name
@@ -690,7 +713,7 @@ try {
     }
     if(-not $matchedRepresentation) {
       $variantDiag=[ordered]@{}
-      foreach($name in @("value","textContent","innerText")){
+      foreach($name in @("value","logicalText","textContent","innerText")){
         $candidate=[string]$variants[$name]
         $variantDiag[$name]=[ordered]@{
           chars=[int]$candidate.Length
