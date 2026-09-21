@@ -333,16 +333,23 @@ class MVPFieldRunner:
                     body = response.read(32768)
                     ctype = str(response.headers.get("Content-Type") or "")
                 title = ""
+                snippet = ""
                 if "html" in ctype.lower():
                     text = body.decode("utf-8", "replace")
                     m = re.search(r"<title[^>]*>(.*?)</title>", text, flags=re.I | re.S)
                     if m:
                         title = html.unescape(re.sub(r"\s+", " ", m.group(1))).strip()[:240]
+                    visible = re.sub(r"<script[\\s\\S]*?</script>", " ", text, flags=re.I)
+                    visible = re.sub(r"<style[\\s\\S]*?</style>", " ", visible, flags=re.I)
+                    visible = re.sub(r"<[^>]+>", " ", visible)
+                    visible = html.unescape(re.sub(r"\\s+", " ", visible)).strip()
+                    snippet = visible[:1600]
                 return {
                     "url": url,
                     "reachable": 200 <= status < 400,
                     "status": status,
                     "title": title,
+                    "snippet": snippet,
                     "reason": "ok" if 200 <= status < 400 else "http_status",
                 }
             except Exception as exc:
@@ -378,7 +385,7 @@ Devuelve exclusivamente JSON válido con esta forma:
 
 Requisitos:
 - exactamente una investigación focalizada, sin planes ni auditorías;
-- al menos {self.spec.min_sources} fuentes diferentes, fiables e identificables;
+- aporta al menos 7 fuentes candidatas diferentes, fiables e identificables, para que el informe pueda conservar 5 aunque alguna falle al comprobarse;
 - cada fuente debe incluir URL pública completa;
 - distingue beneficios razonablemente respaldados de limitaciones/incertidumbres;
 - no inventes estudios, URLs ni comprobaciones;
@@ -492,7 +499,7 @@ que no estén en la investigación original.
             and deterministic.get("source_count_ok")
         )
         reachable = sum(1 for row in sources if row.get("reachable"))
-        source_probe_pass = reachable >= min(self.spec.min_sources, max(3, self.spec.min_sources - 1))
+        source_probe_pass = reachable >= self.spec.min_sources
         verifier_pass = bool(provider_json.get("pass")) if isinstance(provider_json, dict) else False
         combined = {
             "pass": bool(deterministic_pass and source_probe_pass and verifier_pass),
