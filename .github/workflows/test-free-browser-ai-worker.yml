@@ -61,9 +61,9 @@ jobs:
         shell: pwsh
         run: |
           Push-Location ceo-browser
-          python -m py_compile browser_ai_worker.py programming_browser_loop.py test_browser_ai_worker.py test_programming_browser_loop.py test_harness_server.py
+          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_harness_server.py
           if ($LASTEXITCODE -ne 0) { throw "compile failed" }
-          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py
+          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
           Pop-Location
 
@@ -332,6 +332,103 @@ jobs:
           if($runner -notmatch "B14_REAL_CHATGPT_TWO_TURN_PASS"){throw "B14 evidence status missing"}
           if($runner -notmatch "api_calls=0"){throw "B14 zero-API evidence missing"}
           Write-Host "B14_PHYSICAL_RUNNER_READY_PASS"
+
+      - name: B15-B17 structured artifact and safe persistence contract
+        shell: pwsh
+        run: |
+          Push-Location ceo-browser
+          @'
+          from pathlib import Path
+          from browser_ai_worker import BrowserResultProtocol, BrowserTask, PromptSizer
+          from simple_browser_task import SafeArtifactStore
+          import tempfile
+
+          parsed=BrowserResultProtocol.parse("<CEO_ARTIFACT>abc</CEO_ARTIFACT><CEO_DONE>true</CEO_DONE>")
+          assert parsed["artifact"]=="abc"
+          assert parsed["done"] is True
+
+          task=BrowserTask(
+              task_id="b15",
+              objective="Create artifact.",
+              acceptance=("Return structured artifact",),
+              expected_artifact="result.txt",
+          )
+          prompt=PromptSizer().classify(task).prompt
+          assert "<CEO_ARTIFACT>" in prompt
+
+          with tempfile.TemporaryDirectory() as td:
+              store=SafeArtifactStore(td)
+              p,digest=store.write("nested/result.txt","abc")
+              assert p.is_file() and p.read_text(encoding="utf-8")=="abc"
+              assert len(digest)==64
+              try:
+                  store.write("../escape.txt","bad")
+              except ValueError:
+                  pass
+              else:
+                  raise AssertionError("path escape not blocked")
+          print("B15_B17_ARTIFACT_CONTRACT_PASS")
+          '@ | Set-Content -Encoding UTF8 b15_b17_check.py
+          python b15_b17_check.py
+          if ($LASTEXITCODE -ne 0) { throw "B15-B17 contract failed" }
+          Pop-Location
+
+      - name: B18 first real artifact runner contract
+        shell: pwsh
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\run_b15_b18_physical_gate.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "B18 PowerShell runner parse failed"}
+          if(-not (Test-Path "ceo-browser\EJECUTAR_B15_B18.cmd")){throw "B18 launcher missing"}
+          $contract=Get-Content -Raw -Encoding UTF8 "ceo-browser\B15_B20_CONTRACT.json" | ConvertFrom-Json
+          if($contract.B18.physical_verification -ne $false){throw "B18 must remain physical-pending"}
+          if($contract.B17.api_calls -ne 0){throw "B17 API boundary violated"}
+          $runner=Get-Content -Raw -Encoding UTF8 "ceo-browser\run_b15_b18_physical_task.py"
+          if($runner -notmatch "B18_REAL_BROWSER_ARTIFACT_PASS"){throw "B18 PASS evidence missing"}
+          if($runner -notmatch "CEO_BROWSER_ARTIFACT_OK"){throw "B18 deterministic artifact token missing"}
+          Write-Host "B18_PHYSICAL_RUNNER_READY_PASS"
+
+      - name: B19 build isolated failing sandbox
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "b19-sandbox"
+          python ceo-browser\build_b19_code_sandbox.py --root $root
+          if($LASTEXITCODE -ne 0){throw "B19 sandbox build failed"}
+          Push-Location $root
+          python -m unittest -q
+          $code=$LASTEXITCODE
+          if($code -eq 0){throw "B19 intentional baseline bug unexpectedly passed"}
+          $count=[int](git rev-list --count HEAD)
+          if($count -ne 1){throw "B19 baseline commit count must be exactly one"}
+          $remotes=(git remote)
+          if($remotes){throw "B19 sandbox must have no remotes"}
+          $marker=Get-Content -Raw -Encoding UTF8 "CEO_B19_SANDBOX.json" | ConvertFrom-Json
+          if(-not $marker.sandbox -or $marker.production){throw "B19 marker invalid"}
+          Pop-Location
+          $global:LASTEXITCODE=0
+          Write-Host "B19_ISOLATED_SANDBOX_PASS"
+
+      - name: B20 coding gate contract and bounded fake correction
+        shell: pwsh
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\run_b20_code_gate.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "B20 PowerShell runner parse failed"}
+          if(-not (Test-Path "ceo-browser\EJECUTAR_B20_CODE_GATE.cmd")){throw "B20 launcher missing"}
+          $contract=Get-Content -Raw -Encoding UTF8 "ceo-browser\B15_B20_CONTRACT.json" | ConvertFrom-Json
+          if($contract.B20.max_browser_turns -gt 3){throw "B20 browser turn bound widened"}
+          if(-not $contract.B20.no_commit_push_merge){throw "B20 no-promotion boundary missing"}
+          if($contract.B20.physical_verification -ne $false){throw "B20 must remain physical-pending"}
+          $runner=Get-Content -Raw -Encoding UTF8 "ceo-browser\run_b20_code_gate.py"
+          if($runner -notmatch "B20_REAL_CHATGPT_CODE_GATE_PASS"){throw "B20 PASS evidence missing"}
+          if($runner -match 'git_output\(root,\s*"commit"' -or $runner -match 'git_output\(root,\s*"push"' -or $runner -match 'git_output\(root,\s*"merge"'){throw "B20 runner contains forbidden promotion action"}
+          Push-Location ceo-browser
+          python -m unittest -v test_programming_browser_loop.py
+          if($LASTEXITCODE -ne 0){throw "B20 bounded correction simulation failed"}
+          Pop-Location
+          Write-Host "B20_CODE_GATE_READY_PASS"
 
       - name: Exercise CEO AITransport through Chrome with zero API keys
         shell: pwsh
