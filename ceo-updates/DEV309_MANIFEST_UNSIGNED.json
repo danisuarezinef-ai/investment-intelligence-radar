@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.85-rc1-closure-convergence.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.84-rc1-executable-route-integrity",
+  "notes": "DEV309 Closure Convergence: explicit file deliverables are locked from goal text; AI workers can request guarded workspace-local writes that CEO materializes, hashes and registers; completion audits receive concrete evidence task IDs and use deterministic valid evidence selection; single-artifact goals use bounded completion thresholds; continuity generation is capped and historical #173 loops migrate into a fresh bounded closure epoch.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-21T09:10:00Z",
+  "release_id": "dev309-1.5.85-rc1-closure-convergence",
+  "release_sequence": 309,
+  "release_status": "release",
+  "sha256": "59a3bbfb633da370b5decf0908376aa30f7dee0f5b512aad0c5dac910ac8bbe2",
+  "signature_alg": "ed25519",
+  "size_bytes": 1148831,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.85-rc1-closure-convergence.zip",
+  "version": "1.5.85-rc1-closure-convergence"
+}

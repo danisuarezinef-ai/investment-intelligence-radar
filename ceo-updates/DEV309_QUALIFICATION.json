@@ -1,0 +1,26 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.85-rc1-closure-convergence.zip",
+    "sha256": "59a3bbfb633da370b5decf0908376aa30f7dee0f5b512aad0c5dac910ac8bbe2",
+    "size_bytes": 1148831
+  },
+  "artifact_registration_and_hash_evidence": true,
+  "audit_evidence_candidates_with_real_task_ids": true,
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.84-rc1-executable-route-integrity",
+  "candidate": "1.5.85-rc1-closure-convergence",
+  "deterministic_auto_evidence_refs": true,
+  "explicit_file_deliverable_inference": true,
+  "field_173_loop_migration": true,
+  "field_validation_pending": true,
+  "goal_continuity_generation_cap": true,
+  "guarded_workspace_write_protocol": true,
+  "operator_install_confirmation_required": true,
+  "production_ready": false,
+  "release_sequence": 309,
+  "security_passed": true,
+  "tests_passed": true,
+  "windows_build_and_focused_tests_passed": true,
+  "windows_stage_preflight_passed": false
+}
