@@ -65,7 +65,7 @@ function Connect-CDP([string]$wsUrl) {
   $uri = New-Object System.Uri($wsUrl)
   $cts = New-Object Threading.CancellationTokenSource
   $cts.CancelAfter(15000)
-  $ws.ConnectAsync($uri,$cts.Token).GetAwaiter().GetResult()
+  $ws.ConnectAsync($uri,$cts.Token).GetAwaiter().GetResult() | Out-Null
   return $ws
 }
 
@@ -109,7 +109,7 @@ function Send-CDP([System.Net.WebSockets.ClientWebSocket]$ws,[string]$method,[ha
   $seg = New-Object 'System.ArraySegment[byte]' -ArgumentList @(,$bytes)
   $cts = New-Object Threading.CancellationTokenSource
   $cts.CancelAfter(15000)
-  $ws.SendAsync($seg,[System.Net.WebSockets.WebSocketMessageType]::Text,$true,$cts.Token).GetAwaiter().GetResult()
+  $ws.SendAsync($seg,[System.Net.WebSockets.WebSocketMessageType]::Text,$true,$cts.Token).GetAwaiter().GetResult() | Out-Null
   $reply = Receive-CDP $ws $id 15000
   if($reply.error) { throw ("CDP {0} failed: {1}" -f $method,($reply.error | ConvertTo-Json -Compress)) }
   return $reply.result
