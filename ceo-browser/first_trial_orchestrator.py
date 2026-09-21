@@ -92,6 +92,9 @@ def main() -> int:
     evidence=Path(args.evidence_dir).expanduser().resolve()
     evidence.mkdir(parents=True,exist_ok=True)
 
+    build=load_build_identity(base)
+    print(f"[BUILD] {build.get('build_id','UNKNOWN')}  source={build.get('source_sha','')}",flush=True)
+
     reset_ok,reset_detail=reset_owned_browser(base=base,profile_dir=profile)
     if not reset_ok:
         failure={
@@ -157,7 +160,6 @@ def main() -> int:
         return 0
 
     # Functional campaign: one browser session, one provider, one isolated trial directory.
-    build=load_build_identity(base)
     trial_dir=(evidence/"trials"/report.trial_id).resolve()
     trial_dir.mkdir(parents=True,exist_ok=False)
     canonical_state=(evidence/"BROWSER_FIELD_STATE.json").resolve()
@@ -186,17 +188,32 @@ def main() -> int:
         "--port",str(report.selected_cdp_port),
         "--timeout",str(args.timeout),
     ]
-    proc=subprocess.run(
+    proc=subprocess.Popen(
         cmd,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
-        timeout=max(1200,args.timeout*12),
+        bufsize=1,
         creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0),
     )
-    output=bounded_text(((proc.stdout or "")+"\n"+(proc.stderr or "")).strip())
+    lines=[]
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        clean=line.rstrip("\r\n")
+        print(clean,flush=True)
+        lines.append(clean)
+        if sum(len(x)+1 for x in lines)>256*1024:
+            lines=lines[-2000:]
+    try:
+        returncode=proc.wait(timeout=max(1200,args.timeout*12))
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        returncode=124
+        lines.append("FIELD_CAMPAIGN_TIMEOUT")
+    output=bounded_text("\n".join(lines))
     (trial_dir/"FIRST_TRIAL_FIELD_GATE.log").write_text(output,encoding="utf-8")
     consolidated["evidence"]["field_gate_log"]=str(trial_dir/"FIRST_TRIAL_FIELD_GATE.log")
-    consolidated["field_gate_status"]="PASS" if proc.returncode==0 else "FAIL"
+    consolidated["field_gate_status"]="PASS" if returncode==0 else "FAIL"
 
     field_path=evidence/"BROWSER_FIELD_STATE.json"
     field=read_json(field_path) if field_path.is_file() else {}
@@ -225,6 +242,7 @@ def main() -> int:
     consolidated["verification_levels"]={
         "CI_VERIFIED":True,
         "WINDOWS_PHYSICAL_VERIFIED":physical_ok,
+        "REAL_WEB_AI_VERIFIED":physical_ok,
         "REAL_CHATGPT_VERIFIED":physical_ok,
     }
     consolidated["stage"]="FIELD_VERIFIED_READY_FOR_B38" if criteria["first_autodevelopment_launch_allowed"] else "FIELD_GATE_FAILED"
