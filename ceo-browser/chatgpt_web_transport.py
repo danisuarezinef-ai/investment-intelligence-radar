@@ -34,7 +34,10 @@ class ChatGPTWebTransport(AITransport):
         package_root = Path(root).resolve() if root else Path(__file__).resolve().parents[1]
         self.root = package_root
         self.driver = package_root / "browser_ai" / "windows_chatgpt_cdp_driver.ps1"
-        self.recipe = package_root / "browser_ai" / "recipes" / "chatgpt_web.json"
+        recipe_override = str(os.environ.get("CEO_BROWSER_RECIPE_PATH") or "").strip()
+        self.recipe = Path(recipe_override).expanduser().resolve() if recipe_override else (
+            package_root / "browser_ai" / "recipes" / "chatgpt_web.json"
+        )
         local = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
         self.profile_dir = Path(profile_dir).resolve() if profile_dir else local / "CEO de IAs" / "browser-profile"
         self.timeout_seconds = max(30, int(timeout_seconds))
