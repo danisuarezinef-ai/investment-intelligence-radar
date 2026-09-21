@@ -102,23 +102,14 @@ def main() -> int:
         print(json.dumps(consolidated,ensure_ascii=False))
         return 0
 
-    restart_gate=base/"run_browser_restart_gate.ps1"
-    restart_code,restart_output=run_powershell(
-        restart_gate,profile_dir=profile,port=report.selected_cdp_port,timeout=args.timeout
-    )
-    (evidence/"FIRST_TRIAL_BROWSER_RESTART.log").write_text(bounded_text(restart_output),encoding="utf-8")
-    consolidated["evidence"]["restart_gate_log"]=str(evidence/"FIRST_TRIAL_BROWSER_RESTART.log")
-    consolidated["restart_gate_status"]="PASS" if restart_code==0 else "WARN"
+    # Restart resilience is intentionally NOT part of the first functional campaign.
+    # It has its own diagnostic gate and must be repaired before stable release, but
+    # reopening Chrome between turns is unnecessary for B14/B18/B20 and caused avoidable
+    # field noise. Keep one browser session alive for the whole functional sequence.
+    consolidated["restart_gate_status"]="SKIPPED_ADVISORY"
     consolidated["restart_gate_required_for_first_functional_trial"]=False
-    if restart_code!=0:
-        consolidated["restart_degraded"]=True
-        consolidated["restart_failure_detail"]=bounded_text(restart_output[-12000:] if restart_output else "restart gate returned no detail")
-        print("")
-        print("=== RESTART GATE: WARN (no bloqueante) ===")
-        print(consolidated["restart_failure_detail"])
-        print("=== CONTINUANDO CON B29-B30 ===")
-    else:
-        consolidated["restart_degraded"]=False
+    consolidated["restart_degraded"]=True
+    consolidated["restart_failure_detail"]="Not executed in the functional campaign; run separately after B29-B30."
 
     gate=base/"run_b29_b30_full_field_gate.ps1"
     code,output=run_powershell(
@@ -132,7 +123,6 @@ def main() -> int:
     field=read_json(field_path) if field_path.is_file() else {}
     evidence_fingerprints={}
     for name in (
-        "BROWSER_RESTART_GATE.json",
         "B09_B14_PHYSICAL_GATE.json",
         "B15_B18_PHYSICAL_GATE.json",
         "B19_B20_CODE_GATE.json",
