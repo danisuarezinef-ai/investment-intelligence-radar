@@ -18,6 +18,7 @@ from .internal_release_policy import InternalReleasePolicy, internal_release_pol
 from .release_signing_authority import ReleaseSigningAuthority
 from .runtime import user_data_root
 from .update_channel import official_channel
+from .release_firewall import ReleaseQualificationFirewall
 
 
 @dataclass(slots=True)
@@ -205,7 +206,24 @@ class InternalReleasePublisher:
             return False
         return True
 
-    def publish(self, *, package_path: str | Path, version: str, release_sequence: int, release_id: str, notes: str, min_app_version: str, repository: str | None = None, branch: str | None = None) -> InternalReleasePublishResult:
+    def publish(
+        self,
+        *,
+        package_path: str | Path,
+        version: str,
+        release_sequence: int,
+        release_id: str,
+        notes: str,
+        min_app_version: str,
+        qualification: dict[str, Any] | None = None,
+        repository: str | None = None,
+        branch: str | None = None,
+    ) -> InternalReleasePublishResult:
+        # Publication is fail-closed at the final mutation boundary. No caller,
+        # activator or bridge can turn a local candidate into a stable release
+        # without the full production qualification record.
+        ReleaseQualificationFirewall.require_stable(qualification)
+
         package=Path(package_path).resolve()
         if not package.is_file(): raise FileNotFoundError(package)
         if int(release_sequence)<=0: raise ValueError("release_sequence must be > 0")
