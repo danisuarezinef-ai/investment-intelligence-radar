@@ -159,7 +159,7 @@ def test_missing_deliverable_blocks_certificate():
     row = DeterministicCompletionCertifierV1().apply(state, GoalCompletionGate())
     assert row["work_complete"] is False, row
     assert any(str(x).startswith("deliverable_unproven:") for x in row["non_certification_gaps"]), row
-    assert state.metadata["goal_audit_passed"] is not True
+    assert state.metadata.get("goal_audit_passed", False) is not True
     return {"blocked": True, "gaps": row["non_certification_gaps"]}
 
 
