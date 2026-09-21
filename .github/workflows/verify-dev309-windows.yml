@@ -109,28 +109,18 @@ jobs:
           python smoke309.py
           if ($LASTEXITCODE -ne 0) { throw "DEV309 Windows closure semantics smoke failed" }
 
-      - name: Record Windows qualification
+      - name: Verify recorded qualification
         shell: pwsh
         run: |
           @'
           import json, pathlib
-          p=pathlib.Path('ceo-updates/DEV309_QUALIFICATION.json')
-          q=json.loads(p.read_text(encoding='utf-8'))
-          q['windows_stage_preflight_passed']=True
-          q['windows_exact_closure_qualification_passed']=True
-          q['windows_closure_semantics_smoke_passed']=True
-          q['field_validation_pending']=True
-          q['production_ready']=False
-          q['production_ready_reason']=(
-              'Awaiting operator-approved installation on the real Windows host and '
-              'bounded continuation of the existing Goal continuity audit #173 project.'
-          )
-          p.write_text(json.dumps(q,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-          '@ | Set-Content -Encoding UTF8 record309.py
-          python record309.py
-
-          git config user.name "CEO Reliability Engineering"
-          git config user.email "ceo-reliability@local.invalid"
-          git add ceo-updates/DEV309_QUALIFICATION.json
-          git commit -m "Record DEV309 Windows preflight qualification"
-          git push origin HEAD:ceo-update-channel
+          q=json.loads(pathlib.Path('ceo-updates/DEV309_QUALIFICATION.json').read_text(encoding='utf-8'))
+          assert q.get('windows_stage_preflight_passed') is True,q
+          assert q.get('windows_exact_closure_qualification_passed') is True,q
+          assert q.get('windows_closure_semantics_smoke_passed') is True,q
+          assert q.get('autonomy_bootstrap_gates_1_6_repassed') is True,q
+          assert q.get('production_ready') is False,q
+          print('DEV309_WINDOWS_QUALIFICATION_RECORDED_PASS')
+          '@ | Set-Content -Encoding UTF8 record309_check.py
+          python record309_check.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV309 qualification record check failed" }
