@@ -98,6 +98,52 @@ class DurableStateTests(unittest.TestCase):
         self.assertEqual(p.decision(attempts=1,status="LOGIN_REQUIRED"),"WAIT_HUMAN")
         self.assertEqual(classify_browser_failure("LOGIN_REQUIRED"),"HUMAN_ACTION")
 
+
+    def test_interrupted_running_task_does_not_resend(self):
+        with tempfile.TemporaryDirectory() as td:
+            ledger=BrowserTaskLedger(Path(td)/"ledger")
+            record=BrowserTaskRecord(
+                task_id="t1",idempotency_key="k",objective_sha256=__import__("browser_task_state").sha256_text("make\n\na.txt"),
+                status="RUNNING",
+            )
+            record.checkpoints.append({
+                "turn_index":1,
+                "conversation_url":"https://chatgpt.test/c/ambiguous",
+                "prompt_sha256":"x",
+                "response_sha256":"",
+                "status":"TURN_DISPATCHING",
+                "created_at":1,
+            })
+            record.conversation_url="https://chatgpt.test/c/ambiguous"
+            ledger.save(record)
+            browser=SequenceBrowser([{"response":"should not be used"}])
+            runner=DurableArtifactRunner(
+                transport=browser,
+                store=SafeArtifactStore(Path(td)/"artifacts"),
+                ledger=ledger,
+            )
+            result=runner.run(task_id="t1",idempotency_key="k",objective="make",acceptance=[],artifact_name="a.txt")
+            self.assertFalse(result.success)
+            self.assertEqual(result.status,"WAITING_REVIEW")
+            self.assertEqual(browser.calls,0)
+
+    def test_unfinished_idempotency_key_blocks_second_task(self):
+        with tempfile.TemporaryDirectory() as td:
+            ledger=BrowserTaskLedger(Path(td)/"ledger")
+            ledger.save(BrowserTaskRecord(
+                task_id="original",idempotency_key="same",objective_sha256="x",status="WAITING_HUMAN"
+            ))
+            browser=SequenceBrowser([{"response":"should not be used"}])
+            runner=DurableArtifactRunner(
+                transport=browser,
+                store=SafeArtifactStore(Path(td)/"artifacts"),
+                ledger=ledger,
+            )
+            result=runner.run(task_id="new",idempotency_key="same",objective="make",acceptance=[],artifact_name="a.txt")
+            self.assertFalse(result.success)
+            self.assertEqual(result.status,"WAITING_HUMAN")
+            self.assertEqual(browser.calls,0)
+
     def test_sandbox_restore_is_marker_and_remote_guarded(self):
         with tempfile.TemporaryDirectory() as td:
             root=build_sandbox(Path(td)/"repo")
