@@ -2,6 +2,7 @@
   "provider": "chatgpt-web",
   "url": "https://chatgpt.com/",
   "session_policy": "persistent_user_login",
+  "conversation_url_regex": "/c/[^/?#]+",
   "input_selectors": [
     "#prompt-textarea",
     "textarea[data-testid='prompt-textarea']",
