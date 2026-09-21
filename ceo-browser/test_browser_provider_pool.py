@@ -47,10 +47,9 @@ class ProviderPoolTests(unittest.TestCase):
             (spec.profile_dir/"CEO_BROWSER_SESSION.json").write_text(json.dumps({
                 "ok":True,"status":"SESSION_READY"
             }),encoding="utf-8")
-            chosen=reg.first_with_existing_session(["gemini-web","chatgpt-web"])
-            # first_with_existing_session uses default local root, so exercise ordered with explicit
-            ordered=reg.ordered(["gemini-web"],local_root=td)
-            self.assertEqual(ordered[0].name,"gemini-web")
+            chosen=reg.first_with_existing_session(["gemini-web","chatgpt-web"],local_root=td)
+            self.assertIsNotNone(chosen)
+            self.assertEqual(chosen.name,"gemini-web")
 
 
 if __name__=="__main__":
