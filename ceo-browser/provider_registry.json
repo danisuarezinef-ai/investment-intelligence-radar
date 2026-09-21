@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "strategy": "browser-first-multi-provider",
+  "default_order": [
+    "chatgpt-web",
+    "claude-web",
+    "gemini-web",
+    "perplexity-web",
+    "grok-web"
+  ],
+  "providers": {
+    "chatgpt-web": {
+      "recipe": "recipes/chatgpt_web.json",
+      "profile": "browser-profile",
+      "port_offset": 0,
+      "physical_verified": false,
+      "api_required": false
+    },
+    "claude-web": {
+      "recipe": "recipes/claude_web.json",
+      "profile": "browser-profiles/claude",
+      "port_offset": 1,
+      "physical_verified": false,
+      "api_required": false
+    },
+    "gemini-web": {
+      "recipe": "recipes/gemini_web.json",
+      "profile": "browser-profiles/gemini",
+      "port_offset": 2,
+      "physical_verified": false,
+      "api_required": false
+    },
+    "perplexity-web": {
+      "recipe": "recipes/perplexity_web.json",
+      "profile": "browser-profiles/perplexity",
+      "port_offset": 3,
+      "physical_verified": false,
+      "api_required": false
+    },
+    "grok-web": {
+      "recipe": "recipes/grok_web.json",
+      "profile": "browser-profiles/grok",
+      "port_offset": 4,
+      "physical_verified": false,
+      "api_required": false
+    }
+  },
+  "policy": {
+    "paid_api_required": false,
+    "manual_login_allowed": true,
+    "captcha_2fa_bypass": false,
+    "purchases_allowed": false,
+    "automatic_subscription_change": false,
+    "provider_fallback_allowed": true,
+    "preserve_conversation_per_provider": true
+  }
+}
