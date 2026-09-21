@@ -54,20 +54,70 @@ if(variant==='normal'){
 }
 composer.appendChild(input);
 
-document.getElementById('send').addEventListener('click', () => {
+const send=document.getElementById('send');
+
+function clearComposer(){
+  if(input.tagName==='TEXTAREA' || input.tagName==='INPUT'){
+    input.value='';
+  }else{
+    input.textContent='';
+  }
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+}
+
+function submitPrompt(){
   const prompt=input.innerText || input.textContent || input.value || '';
+  if(!prompt.trim()) return;
+  clearComposer();
+
+  if(params.get('conversation')==='transition' && !location.pathname.startsWith('/c/')){
+    history.pushState({},'', '/c/ceo-b09-b14');
+  }
+
   const stop=document.createElement('button');
   stop.dataset.testid='stop-button';
   stop.textContent='Stop';
   document.body.appendChild(stop);
-  setTimeout(() => {
-    const msg=document.createElement('div');
-    msg.setAttribute('data-message-author-role','assistant');
-    msg.textContent='HARNESS_RESPONSE: '+prompt+' <CEO_DONE>true</CEO_DONE>';
+
+  const msg=document.createElement('div');
+  msg.setAttribute('data-message-author-role','assistant');
+
+  if(params.get('stream')==='1'){
     document.getElementById('messages').appendChild(msg);
-    stop.remove();
-  }, 300);
-});
+    const chunks=[
+      'HARNESS_RESPONSE: ',
+      prompt,
+      ' <CEO_DONE>true</CEO_DONE>',
+      ' COMPLETE_TAIL'
+    ];
+    let i=0;
+    const timer=setInterval(() => {
+      msg.textContent += chunks[i++];
+      if(i>=chunks.length){
+        clearInterval(timer);
+        stop.remove();
+      }
+    },250);
+  }else{
+    setTimeout(() => {
+      msg.textContent='HARNESS_RESPONSE: '+prompt+' <CEO_DONE>true</CEO_DONE> COMPLETE_TAIL';
+      document.getElementById('messages').appendChild(msg);
+      stop.remove();
+    },300);
+  }
+}
+
+if(variant==='enter'){
+  send.remove();
+  input.addEventListener('keydown',(event)=>{
+    if(event.key==='Enter' && !event.shiftKey){
+      event.preventDefault();
+      submitPrompt();
+    }
+  });
+}else{
+  send.addEventListener('click', submitPrompt);
+}
 </script>
 </body></html>"""
 
