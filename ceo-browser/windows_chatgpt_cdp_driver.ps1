@@ -758,10 +758,22 @@ try {
    for(const root of roots){
      let b=null;try{b=root.querySelector(s)}catch(e){}
      if(b){
-       const r=b.getBoundingClientRect();
-       const item={selector:s,disabled:!!b.disabled,ariaDisabled:b.getAttribute("aria-disabled")||"",visible:visible(b),x:r.left+r.width/2,y:r.top+r.height/2};
+       let r=b.getBoundingClientRect();
+       let cssVisible=visible(b);
+       let inViewport=cssVisible && r.bottom>0 && r.right>0 && r.top<innerHeight && r.left<innerWidth;
+       if(cssVisible && !inViewport){
+         try{b.scrollIntoView({block:"center",inline:"center",behavior:"instant"});}catch(e){try{b.scrollIntoView({block:"center",inline:"center"});}catch(_e){}}
+         r=b.getBoundingClientRect();
+         inViewport=r.bottom>0 && r.right>0 && r.top<innerHeight && r.left<innerWidth;
+       }
+       const item={
+         selector:s,disabled:!!b.disabled,ariaDisabled:b.getAttribute("aria-disabled")||"",
+         visible:cssVisible,inViewport:inViewport,
+         viewportWidth:innerWidth,viewportHeight:innerHeight,
+         x:r.left+r.width/2,y:r.top+r.height/2
+       };
        diagnostics.push(item);
-       if(item.visible) return {found:true,selector:s,x:item.x,y:item.y,diagnostics:diagnostics};
+       if(item.visible && item.inViewport) return {found:true,selector:s,x:item.x,y:item.y,diagnostics:diagnostics};
      }
    }
  }
