@@ -86,6 +86,7 @@ function submitPrompt(){
 
   const msg=document.createElement('div');
   msg.setAttribute('data-message-author-role','assistant');
+  msg.style.whiteSpace='pre-wrap';
 
   let campaignResponse='';
   if(prompt.includes('EXPECTED ARTIFACT: B18_PRIMER_ARTEFACTO.txt')){
