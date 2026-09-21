@@ -18,6 +18,9 @@ PATCH_WRONG = """<CEO_PATCH>diff --git a/calc.py b/calc.py
 </CEO_PATCH>
 <CEO_DONE>false</CEO_DONE>"""
 
+PATCH_INVALID = """<CEO_PATCH>this is not a valid diff</CEO_PATCH>
+<CEO_DONE>false</CEO_DONE>"""
+
 PATCH_FIXED = """<CEO_PATCH>diff --git a/calc.py b/calc.py
 --- a/calc.py
 +++ b/calc.py
@@ -90,6 +93,25 @@ class ProgrammingLoopTests(unittest.TestCase):
             self.assertEqual(browser.urls[1], "https://chatgpt.test/c/session-1")
             self.assertIn("return a + b", (root / "calc.py").read_text(encoding="utf-8"))
             self.assertIn("+    return a + b", result.final_diff)
+
+
+    def test_invalid_patch_is_rejected_then_corrected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=self.make_repo(td)
+            browser=FakeBrowser([PATCH_INVALID, PATCH_FIXED.replace("-    return a * b","-    return a - b")])
+            loop=FreeWebCodingLoop(
+                transport=browser,
+                sandbox=PatchSandbox(root),
+                max_turns=3,
+            )
+            result=loop.run(
+                objective="Corrige add.",
+                relevant_files=["calc.py","test_calc.py"],
+                test_command=["python","-m","unittest","-q"],
+            )
+            self.assertTrue(result.success,result)
+            self.assertFalse(result.attempts[0].patch_applied)
+            self.assertTrue(result.attempts[1].tests_passed)
 
     def test_browser_failure_does_not_spawn_recovery_loop(self):
         class BrokenBrowser:
