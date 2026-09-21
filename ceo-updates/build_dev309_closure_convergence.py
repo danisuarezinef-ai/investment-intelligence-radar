@@ -127,11 +127,10 @@ def patch_ai_worker() -> None:
         raise RuntimeError(f"AI prompt operating-rule anchor={s.count(rule_anchor)}")
     s = s.replace(rule_anchor, rule_insert, 1)
 
-    footer_anchor = '                    "\\\"confidence\\\":0.0,\\\"requires_user\\\":false}</CEO_RESULT>\\n"\n'
+    footer_anchor = '                    "\\"confidence\\":0.0,\\"requires_user\\":false}</CEO_RESULT>\\n"\n'
     footer_new = (
-        '                    "\\\"confidence\\\":0.0,\\\"requires_user\\\":false,\\\"evidence_refs\\\":[],"
-'
-        '                    "\\\"write_files\\\":[{\\\"path\\\":\\\"relative/file.md\\\",\\\"content\\\":\\\"complete file content\\\"}]}</CEO_RESULT>\\n"\n'
+        '                    "\\"confidence\\":0.0,\\"requires_user\\":false,\\"evidence_refs\\":[],"\n'
+        '                    "\\"write_files\\":[{\\"path\\":\\"relative/file.md\\",\\"content\\":\\"complete file content\\"}]}</CEO_RESULT>\\n"\n'
         '                    "- Use write_files=[] when no file should be written.\\n"\n'
     )
     if s.count(footer_anchor) != 1:
