@@ -238,8 +238,17 @@ def patch_scheduler() -> None:
     p = ROOT / "ceo_core" / "scheduler.py"
     s = p.read_text(encoding="utf-8")
 
-    if "import re\n" not in s:
-        s = s.replace("import statistics\n", "import statistics\nimport re\n", 1)
+    header = s[:1200]
+    if "import pathlib\\n" not in header or "import re\\n" not in header:
+        anchor = "import asyncio\\n"
+        if s.count(anchor) != 1:
+            raise RuntimeError(f"scheduler import anchor={s.count(anchor)}")
+        additions = "import asyncio\\n"
+        if "import pathlib\\n" not in header:
+            additions += "import pathlib\\n"
+        if "import re\\n" not in header:
+            additions += "import re\\n"
+        s = s.replace(anchor, additions, 1)
 
     old_import = "from .self_hosting_tools import ArtifactExchangeLayer, ProviderContextRecovery, WorkerSessionManager\n"
     new_import = "from .self_hosting_tools import ArtifactExchangeLayer, FilesystemOperations, ProviderContextRecovery, WorkerSessionManager\n"
@@ -550,12 +559,12 @@ def patch_autonomous_loop() -> None:
 
 
 def patch_import_pathlib() -> None:
+    # Imports are inserted deterministically at module header by patch_scheduler.
     p = ROOT / "ceo_core" / "scheduler.py"
     s = p.read_text(encoding="utf-8")
-    if "import pathlib\n" not in s:
-        s = s.replace("import re\n", "import re\nimport pathlib\n", 1)
-    p.write_text(s, encoding="utf-8")
-
+    header = s[:1200]
+    if "import pathlib\\n" not in header or "import re\\n" not in header:
+        raise RuntimeError("DEV309 scheduler module imports missing from header")
 
 def update_version_and_contract() -> None:
     for rel in ("scripts/ceo_stdlib_work_mode.py", "scripts/install_windows_bootstrap.py"):
