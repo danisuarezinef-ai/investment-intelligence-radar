@@ -139,6 +139,35 @@ function Prune-UnrelatedRestoredTargets([int]$port,[string]$wantedUrl,[int]$sett
   return $closed
 }
 
+function Clear-RestoredTabState([string]$profileDir,[string]$wantedUrl) {
+  # Keep cookies/authentication, but remove only tab/session-restore state so old
+  # harness/error tabs never flash on screen when the exclusive CEO browser starts.
+  try { $wanted=[Uri]$wantedUrl } catch { return 0 }
+  if($wanted.Host -in @("127.0.0.1","localhost")) { return 0 }
+  $removed=0
+  $default=Join-Path $profileDir "Default"
+  $paths=@(
+    (Join-Path $default "Sessions"),
+    (Join-Path $default "Last Session"),
+    (Join-Path $default "Last Tabs"),
+    (Join-Path $profileDir "Last Session"),
+    (Join-Path $profileDir "Last Tabs")
+  )
+  foreach($p in $paths){
+    if(Test-Path $p){
+      try {
+        if((Get-Item $p).PSIsContainer){
+          Get-ChildItem -Force $p -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+        } else {
+          Remove-Item -Force $p -ErrorAction SilentlyContinue
+        }
+        $removed += 1
+      } catch {}
+    }
+  }
+  return $removed
+}
+
 function Connect-CDP([string]$wsUrl) {
   $ws = New-Object System.Net.WebSockets.ClientWebSocket
   $uri = New-Object System.Uri($wsUrl)
@@ -463,6 +492,7 @@ New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
 $chrome = Find-Chrome
 $existing = Get-DevToolsVersion $Port
 if(-not $NoLaunch -and -not $existing) {
+  [void](Clear-RestoredTabState $ProfileDir $targetUrl)
   $args = @(
     "--remote-debugging-port=$Port",
     "--remote-allow-origins=*",
@@ -578,8 +608,10 @@ try {
     $inputSelJson = To-JsString $inputSelector
     $sendSel = Selectors-Js @($recipe.send_selectors)
 
-    # B09 — type first, then verify the composer contains the intended prompt.
-    $typeExpr = @"
+    # B09 — focus the real composer and type through Chrome's input pipeline.
+    # Do not set DOM value/textContent directly: frameworks may display that text
+    # without updating the application state, leaving the real Send action disabled.
+    $focusExpr = @"
 (() => {
  const findMarked=(root)=>{
    try{const e=root.querySelector($inputSelJson);if(e)return e;}catch(e){}
@@ -588,40 +620,40 @@ try {
    return null;
  };
  const input=findMarked(document);
- if(!input) return {ok:false,stage:"input_missing",value:""};
- const prompt=$promptJson;
+ if(!input) return {ok:false,stage:"input_missing"};
  input.focus();
- if(input.tagName==="TEXTAREA" || input.tagName==="INPUT"){
-   const proto=Object.getPrototypeOf(input);
-   const desc=Object.getOwnPropertyDescriptor(proto,"value");
-   if(desc && desc.set){desc.set.call(input,prompt)}else{input.value=prompt}
- }else{
-   input.textContent="";
-   const range=document.createRange(); range.selectNodeContents(input); range.collapse(false);
-   const selection=window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
-   document.execCommand("insertText",false,prompt);
-   if(String(input.textContent||"")!==prompt){input.textContent=prompt}
- }
- input.dispatchEvent(new InputEvent("input",{bubbles:true,inputType:"insertText",data:null}));
- input.dispatchEvent(new Event("change",{bubbles:true}));
- const value=(input.tagName==="TEXTAREA" || input.tagName==="INPUT") ? String(input.value||"") : String(input.textContent||"");
- return {ok:true,stage:"typed",value:value,typed_chars:value.length};
+ return {ok:true,tag:(input.tagName||"").toLowerCase()};
 })()
 "@
-    $typed = Eval-JS $ws $typeExpr
+    $focused=Eval-JS $ws $focusExpr
+    if(-not $focused.ok){ throw "B09 could not focus prompt input" }
+
+    # Clear any existing composer content with a real Ctrl+A / Backspace chord.
+    Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="a";code="KeyA";modifiers=2;windowsVirtualKeyCode=65;nativeVirtualKeyCode=65} | Out-Null
+    Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="a";code="KeyA";modifiers=2;windowsVirtualKeyCode=65;nativeVirtualKeyCode=65} | Out-Null
+    Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Backspace";code="Backspace";windowsVirtualKeyCode=8;nativeVirtualKeyCode=8} | Out-Null
+    Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Backspace";code="Backspace";windowsVirtualKeyCode=8;nativeVirtualKeyCode=8} | Out-Null
+
+    # Input.insertText is handled by Chrome as genuine text input and reaches the
+    # site's editor/framework state (unlike direct DOM assignment).
+    Send-CDP $ws "Input.insertText" @{text=[string]$Prompt} | Out-Null
+    Start-Sleep -Milliseconds 250
+
+    $actualTyped=Get-ComposerText $ws $inputSelector
     $expectedNormalized = [regex]::Replace([string]$Prompt,"\r\n?","\n")
-    $actualNormalized = [regex]::Replace([string]$typed.value,"\r\n?","\n")
-    if(-not $typed.ok -or $actualNormalized -ne $expectedNormalized) {
+    $actualNormalized = [regex]::Replace([string]$actualTyped,"\r\n?","\n")
+    if($actualNormalized -ne $expectedNormalized) {
       Write-JsonResult @{
         ok=$false
         status="PROMPT_INPUT_MISMATCH"
         provider=[string]$recipe.provider
         expected_chars=$Prompt.Length
-        typed_chars=if($typed){[int]$typed.typed_chars}else{0}
-        detail="B09 typed prompt did not match the intended prompt before submission."
+        typed_chars=[string]$actualTyped.Length
+        detail="B09 browser-level typed prompt did not match the intended prompt before submission."
       }
       exit 6
     }
+    $typed=[pscustomobject]@{typed_chars=[int]$actualTyped.Length}
 
     # B10 — submit through a real visible send control when possible.
     # If the UI exposes no send button, fall back to CDP keyboard events instead
