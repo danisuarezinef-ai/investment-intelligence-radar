@@ -13,15 +13,17 @@ from typing import Any
 TERMINAL_STATUSES = {"COMPLETED", "FAILED", "CANCELLED", "CORRUPT"}
 RESUMABLE_STATUSES = {"PENDING", "RUNNING", "WAITING_RETRY", "WAITING_HUMAN"}
 
-TRANSIENT_BROWSER_STATUSES = {
-    "ERROR",
+SAFE_RETRY_BROWSER_STATUSES = {
     "BROWSER_CONTROL_FAILED",
     "BROWSER_CONTROL_BAD_JSON",
     "BROWSER_CONTROL_BAD_RESULT",
     "SESSION_NOT_READY",
     "INPUT_NOT_FOUND",
     "PROMPT_NOT_SUBMITTED",
+}
+AMBIGUOUS_BROWSER_STATUSES = {
     "RESPONSE_TIMEOUT",
+    "ERROR",
 }
 HUMAN_ACTION_STATUSES = {
     "LOGIN_REQUIRED",
@@ -164,15 +166,19 @@ def classify_browser_failure(status: str, detail: str = "") -> str:
         return "HUMAN_ACTION"
     if value in PERMANENT_BROWSER_STATUSES:
         return "PERMANENT"
-    if value in TRANSIENT_BROWSER_STATUSES:
-        return "TRANSIENT"
-    if any(x in combined for x in ["TIMEOUT", "SOCKET", "CHROME DEVTOOLS", "CONNECTION", "TARGET CLOSED"]):
-        return "TRANSIENT"
+    if value in AMBIGUOUS_BROWSER_STATUSES:
+        return "AMBIGUOUS"
+    if value in SAFE_RETRY_BROWSER_STATUSES:
+        return "SAFE_RETRY"
+    if any(x in combined for x in ["CHROME DEVTOOLS DID NOT BECOME AVAILABLE", "NO DEBUGGABLE PAGE TARGET", "CONNECTION REFUSED"]):
+        return "SAFE_RETRY"
+    if any(x in combined for x in ["RESPONSE TIMEOUT", "CDP RECEIVE TIMEOUT", "SOCKET CLOSED", "TARGET CLOSED"]):
+        return "AMBIGUOUS"
     return "PERMANENT"
 
 
 class BoundedRecoveryPolicy:
-    """At most one automatic retry, and never for login/CAPTCHA/2FA."""
+    """At most one safe automatic retry; ambiguous post-send failures never auto-repeat."""
 
     def __init__(self, max_retries: int = 1) -> None:
         self.max_retries = max(0, min(1, int(max_retries)))
@@ -181,7 +187,9 @@ class BoundedRecoveryPolicy:
         kind = classify_browser_failure(status, detail)
         if kind == "HUMAN_ACTION":
             return "WAIT_HUMAN"
-        if kind == "TRANSIENT" and int(attempts) <= self.max_retries:
+        if kind == "AMBIGUOUS":
+            return "WAIT_REVIEW"
+        if kind == "SAFE_RETRY" and int(attempts) <= self.max_retries:
             return "RETRY_ONCE"
         return "STOP"
 
