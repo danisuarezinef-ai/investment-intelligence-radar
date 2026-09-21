@@ -1,6 +1,7 @@
 param(
   [Parameter(Mandatory=$true)][string]$RecipePath,
-  [Parameter(Mandatory=$true)][string]$Prompt,
+  [string]$Prompt = "",
+  [string]$PromptFile = "",
   [string]$ConversationUrl = "",
   [string]$ProfileDir = "",
   [int]$Port = 9227,
@@ -174,6 +175,11 @@ function Current-Responses([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]
 
 $recipe = Get-Content -Raw -Encoding UTF8 $RecipePath | ConvertFrom-Json
 if(-not $recipe.url) { throw "Recipe URL missing" }
+if($PromptFile) {
+  if(-not (Test-Path $PromptFile)) { throw "Prompt file not found" }
+  $Prompt = Get-Content -Raw -Encoding UTF8 $PromptFile
+}
+if(-not $Prompt) { throw "Prompt required" }
 $targetUrl = [string]$recipe.url
 if($ConversationUrl) { $targetUrl = $ConversationUrl }
 
