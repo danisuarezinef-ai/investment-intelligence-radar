@@ -393,18 +393,12 @@ function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$se
 }
 
 function Insert-PromptThroughChrome([System.Net.WebSockets.ClientWebSocket]$ws,[string]$value) {
+  # Equivalent to pasting the complete prompt through Chrome's trusted text-input
+  # pipeline. This preserves multiline content without mutating DOM state directly.
   $normalized=[regex]::Replace([string]$value,"\r\n?","\n")
-  $lines=$normalized.Split([char]10)
-  for($i=0;$i -lt $lines.Count;$i++){
-    if($lines[$i].Length -gt 0){
-      Send-CDP $ws "Input.insertText" @{text=[string]$lines[$i]} | Out-Null
-    }
-    if($i -lt ($lines.Count-1)){
-      Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Enter";code="Enter";modifiers=8;windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
-      Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Enter";code="Enter";modifiers=8;windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
-    }
-  }
+  Send-CDP $ws "Input.insertText" @{text=$normalized} | Out-Null
 }
+
 
 function Normalize-ComposerText([string]$value) {
   $s=[regex]::Replace([string]$value,"\\r\\n?","\\n")
@@ -661,8 +655,8 @@ try {
     Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Backspace";code="Backspace";windowsVirtualKeyCode=8;nativeVirtualKeyCode=8} | Out-Null
     Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Backspace";code="Backspace";windowsVirtualKeyCode=8;nativeVirtualKeyCode=8} | Out-Null
 
-    # Type through Chrome's input pipeline. Multiline prompts use real Shift+Enter
-    # between lines so contenteditable editors keep the same logical text.
+    # Paste the complete prompt through Chrome's trusted input pipeline.
+    # This preserves multiline prompts and updates the site's editor state.
     Insert-PromptThroughChrome $ws ([string]$Prompt)
     Start-Sleep -Milliseconds 650
 
