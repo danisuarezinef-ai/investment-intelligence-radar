@@ -41,6 +41,23 @@ def run_powershell(script: Path, *, profile_dir: Path, port: int, timeout: int) 
     return proc.returncode,bounded_text(output)
 
 
+def load_build_identity(base: Path) -> dict:
+    candidates = [
+        (base / ".." / ".." / "CEO_FIRST_TRIAL_LAB.json").resolve(),
+        (base / "CEO_FIRST_TRIAL_LAB.json").resolve(),
+    ]
+    for path in candidates:
+        if path.is_file():
+            try:
+                row=json.loads(path.read_text(encoding="utf-8-sig"))
+                if isinstance(row,dict):
+                    return row
+            except Exception:
+                pass
+    return {"build_id":"SOURCE_TREE","source_sha":"","artifact_kind":"source-tree"}
+
+
+
 def reset_owned_browser(*, base: Path, profile_dir: Path) -> tuple[bool, str]:
     """Close only Chrome/Edge processes using CEO's exclusive profile."""
     if os.name != "nt":
@@ -139,22 +156,47 @@ def main() -> int:
         print(json.dumps(consolidated,ensure_ascii=False))
         return 0
 
-    # Restart resilience is intentionally NOT part of the first functional campaign.
-    # It has its own diagnostic gate and must be repaired before stable release, but
-    # reopening Chrome between turns is unnecessary for B14/B18/B20 and caused avoidable
-    # field noise. Keep one browser session alive for the whole functional sequence.
-    consolidated["restart_gate_status"]="SKIPPED_ADVISORY"
+    # Functional campaign: one browser session, one provider, one isolated trial directory.
+    build=load_build_identity(base)
+    trial_dir=(evidence/"trials"/report.trial_id).resolve()
+    trial_dir.mkdir(parents=True,exist_ok=False)
+    canonical_state=(evidence/"BROWSER_FIELD_STATE.json").resolve()
+    atomic_json(evidence/"CURRENT_TRIAL.json",{
+        "trial_id":report.trial_id,
+        "build_id":build.get("build_id",""),
+        "source_sha":build.get("source_sha",""),
+        "evidence_dir":str(trial_dir),
+        "status":"RUNNING",
+    })
+    consolidated["build_id"]=build.get("build_id","")
+    consolidated["source_sha"]=build.get("source_sha","")
+    consolidated["trial_evidence_dir"]=str(trial_dir)
+    consolidated["restart_gate_status"]="SKIPPED_SEPARATE_RESILIENCE_TEST"
     consolidated["restart_gate_required_for_first_functional_trial"]=False
-    consolidated["restart_degraded"]=True
-    consolidated["restart_failure_detail"]="Not executed in the functional campaign; run separately after B29-B30."
 
-    gate=base/"run_b29_b30_full_field_gate.ps1"
-    code,output=run_powershell(
-        gate,profile_dir=profile,port=report.selected_cdp_port,timeout=args.timeout
+    runner=base/"run_field_campaign.py"
+    cmd=[
+        sys.executable,
+        str(runner),
+        "--provider","chatgpt-web",
+        "--profile-dir",str(profile),
+        "--evidence-dir",str(trial_dir),
+        "--canonical-out",str(canonical_state),
+        "--trial-id",report.trial_id,
+        "--port",str(report.selected_cdp_port),
+        "--timeout",str(args.timeout),
+    ]
+    proc=subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=max(1200,args.timeout*12),
+        creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0),
     )
-    (evidence/"FIRST_TRIAL_FIELD_GATE.log").write_text(bounded_text(output),encoding="utf-8")
-    consolidated["evidence"]["field_gate_log"]=str(evidence/"FIRST_TRIAL_FIELD_GATE.log")
-    consolidated["field_gate_status"]="PASS" if code==0 else "FAIL"
+    output=bounded_text(((proc.stdout or "")+"\n"+(proc.stderr or "")).strip())
+    (trial_dir/"FIRST_TRIAL_FIELD_GATE.log").write_text(output,encoding="utf-8")
+    consolidated["evidence"]["field_gate_log"]=str(trial_dir/"FIRST_TRIAL_FIELD_GATE.log")
+    consolidated["field_gate_status"]="PASS" if proc.returncode==0 else "FAIL"
 
     field_path=evidence/"BROWSER_FIELD_STATE.json"
     field=read_json(field_path) if field_path.is_file() else {}
@@ -164,8 +206,9 @@ def main() -> int:
         "B15_B18_PHYSICAL_GATE.json",
         "B19_B20_CODE_GATE.json",
         "BROWSER_FIELD_STATE.json",
+        "FIELD_CAMPAIGN_RESULT.json",
     ):
-        p=evidence/name
+        p=trial_dir/name
         if p.is_file():
             import hashlib
             evidence_fingerprints[name]={
@@ -184,25 +227,25 @@ def main() -> int:
         "WINDOWS_PHYSICAL_VERIFIED":physical_ok,
         "REAL_CHATGPT_VERIFIED":physical_ok,
     }
-    consolidated["stage"]=(
-        "FIELD_VERIFIED_RESTART_DEGRADED_READY_FOR_B38"
-        if criteria["first_autodevelopment_launch_allowed"] and consolidated.get("restart_degraded")
-        else ("FIELD_VERIFIED_READY_FOR_B38" if criteria["first_autodevelopment_launch_allowed"] else "FIELD_GATE_FAILED")
-    )
+    consolidated["stage"]="FIELD_VERIFIED_READY_FOR_B38" if criteria["first_autodevelopment_launch_allowed"] else "FIELD_GATE_FAILED"
     if not criteria["first_autodevelopment_launch_allowed"]:
         consolidated["failure_reason"]=bounded_text(
             "B29-B30 did not produce a valid field state. B38 remains blocked."
         )
     consolidated["b38_automatically_started"]=False
     consolidated["next_action"]=(
-        (
-            "Run EJECUTAR_B38_CANDIDATE.cmd manually. Browser restart resilience remains degraded and must be repaired separately."
-            if consolidated.get("restart_degraded")
-            else "Run EJECUTAR_B38_CANDIDATE.cmd manually as the separate first autodevelopment test."
-        )
+        "Run EJECUTAR_B38_CANDIDATE.cmd manually as the separate first autodevelopment test."
         if criteria["first_autodevelopment_launch_allowed"]
-        else "Inspect field-gate evidence and correct the failed physical condition."
+        else "Inspect only this trial's FIELD_CAMPAIGN_RESULT.json; previous trials are isolated."
     )
+    atomic_json(evidence/"CURRENT_TRIAL.json",{
+        "trial_id":report.trial_id,
+        "build_id":consolidated.get("build_id",""),
+        "source_sha":consolidated.get("source_sha",""),
+        "evidence_dir":str(trial_dir),
+        "status":consolidated["stage"],
+        "field_verified":bool(consolidated["BROWSER_FIELD_VERIFIED"]),
+    })
     atomic_json(evidence/"PRIMERA_PRUEBA_CEO_RESULTADO.json",consolidated)
     print(json.dumps(consolidated,ensure_ascii=False))
     return 0 if criteria["first_autodevelopment_launch_allowed"] else 3
