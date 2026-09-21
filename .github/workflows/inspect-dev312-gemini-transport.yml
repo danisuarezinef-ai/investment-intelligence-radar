@@ -1,0 +1,36 @@
+name: Inspect exact DEV312 Gemini transport
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/inspect-dev312-gemini-transport.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Extract exact transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev312-exact ceo-updates/dev313-inspect
+          mkdir -p /tmp/dev312-exact ceo-updates/dev313-inspect
+          unzip -q ceo-updates/CEO_1.5.88-rc1-provider-trust-integrity.zip -d /tmp/dev312-exact
+          cp /tmp/dev312-exact/ceo_core/providers/gemini_interactions.py ceo-updates/dev313-inspect/gemini_interactions.py
+          cp /tmp/dev312-exact/scripts/ceo_stdlib_work_mode.py ceo-updates/dev313-inspect/ceo_stdlib_work_mode.py
+          cp /tmp/dev312-exact/scripts/launch_current.py ceo-updates/dev313-inspect/launch_current.py
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/dev313-inspect
+          git commit -m "Snapshot exact DEV312 Gemini transport for DEV313"
+          git push origin HEAD:ceo-update-channel
