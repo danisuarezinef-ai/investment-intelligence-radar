@@ -250,7 +250,7 @@ jobs:
         shell: pwsh
         run: |
           $profile=Join-Path $env:RUNNER_TEMP "ceo-browser-profile"
-          $url="\${{ steps.first.outputs.conversation_url }}"
+          $url="${{ steps.first.outputs.conversation_url }}"
           $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","SEGUNDO_TURNO","-ConversationUrl",$url,"-ProfileDir",$profile,"-Port","9227","-TimeoutSeconds","30","-NoLaunch")
           $raw=& powershell.exe @args
           Write-Host $raw
