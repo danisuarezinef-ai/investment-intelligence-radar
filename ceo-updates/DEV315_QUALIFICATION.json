@@ -1,0 +1,25 @@
+{
+  "artifact": {
+    "entries": 525,
+    "name": "CEO_1.5.91-rc1-field-endurance-certification.zip",
+    "sha256": "a868d34ee725f377ee81b2aea3e008084e5d2f9c9c5c58b2745e40c87e7aeca1",
+    "size_bytes": 1158520
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.90-rc1-capability-scoped-provider",
+  "candidate": "1.5.91-rc1-field-endurance-certification",
+  "dev314_inherited": true,
+  "field_validation_pending": true,
+  "hash_bound_field_certificate": true,
+  "installation_deferred_by_operator": true,
+  "production_ready": false,
+  "provider_assertion_cannot_certify": true,
+  "provider_free_completion_promotion": true,
+  "real_active_time_only": true,
+  "recovery_storm_blocks_certification": true,
+  "release_sequence": 315,
+  "scheduler_crash_blocks_certification": true,
+  "security_passed": true,
+  "sleep_offline_time_excluded": true,
+  "tests_passed": true
+}
