@@ -18,8 +18,11 @@
   "release_sequence": 312,
   "restart_trust_restore": true,
   "security_passed": true,
-  "single_file_activator_verified": false,
+  "single_file_activator_verified": true,
   "tests_passed": true,
   "transport_failure_preserves_authenticated_state": true,
-  "windows_stage_preflight_passed": false
+  "windows_stage_preflight_passed": true,
+  "windows_packaged_provider_trust_regression_passed": true,
+  "legacy_1586_trust_migration_verified": true,
+  "production_ready_reason": "Awaiting operator-approved installation on the real Windows host and confirmation that the existing authenticated Gemini key survives restart-time transport failures without being relabeled invalid."
 }
