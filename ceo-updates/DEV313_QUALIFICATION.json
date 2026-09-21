@@ -1,21 +1,27 @@
 {
+  "api_key_not_in_process_arguments": true,
   "artifact": {
-    "entries": 524,
-    "name": "CEO_1.5.89-rc1-deterministic-completion.zip",
-    "sha256": "4d84cb952691cd12b684549a7f74228f536019f03a131dafa708603fb6945e49",
-    "size_bytes": 1154931
+    "entries": 523,
+    "name": "CEO_1.5.89-rc1-native-transport-integrity.zip",
+    "sha256": "df7a8ca16fe45e5d21e07245b7fde98148b0453c5350161ee642817ff1c95fd3",
+    "size_bytes": 1153642
   },
   "autonomy_bootstrap_gates_1_6_repassed": true,
   "base": "1.5.88-rc1-provider-trust-integrity",
-  "candidate": "1.5.89-rc1-deterministic-completion",
-  "evidence_hash_bound_certificate": true,
-  "field_endurance_non_bypassable": true,
+  "candidate": "1.5.89-rc1-native-transport-integrity",
+  "dev311_update_shell_inherited": true,
+  "dev312_provider_trust_inherited": true,
+  "direct_min_base": "1.5.86-rc1-provider-session-integrity",
   "field_validation_pending": true,
-  "installation_deferred_by_operator": true,
-  "pending_certification_no_ai_churn": true,
+  "httpx_ipv4_primary": true,
+  "native_route_reached_google_without_real_key": true,
+  "operator_install_confirmation_required": true,
   "production_ready": false,
-  "provider_independent_completion": true,
+  "provider_outage_local_intake_allowed": true,
   "release_sequence": 313,
   "security_passed": true,
-  "tests_passed": true
+  "single_file_activator_verified": false,
+  "tests_passed": true,
+  "windows_native_fallback": true,
+  "windows_stage_preflight_passed": false
 }
