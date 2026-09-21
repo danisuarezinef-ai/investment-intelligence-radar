@@ -1,0 +1,37 @@
+name: Run CEO runtime lifecycle 300-pass audit
+
+on:
+  push:
+    branches: [ceo-deep-stabilization-audit]
+    paths:
+      - 'audit/ceo_300_runtime_lifecycle_audit.py'
+      - '.github/workflows/run-ceo-runtime-lifecycle-audit.yml'
+      - 'ceo-canonical/**'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-deep-stabilization-audit
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install canonical source
+        run: python -m pip install -q -e ./ceo-canonical
+      - name: Run runtime lifecycle 300
+        run: python audit/ceo_300_runtime_lifecycle_audit.py
+      - name: Commit result
+        shell: bash
+        run: |
+          git config user.name "CEO Stabilization Audit"
+          git config user.email "ceo-stabilization@local.invalid"
+          git add audit/CEO_300_RUNTIME_LIFECYCLE_AUDIT.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Record runtime lifecycle 300-pass audit"
+          git push origin HEAD:ceo-deep-stabilization-audit
