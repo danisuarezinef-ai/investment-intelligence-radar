@@ -1,0 +1,144 @@
+name: Build DEV315 Field Endurance Certification
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/build-dev315-field-endurance-certification.yml'
+      - 'ceo-updates/build_dev315_field_endurance_certification.py'
+      - 'ceo-updates/qualify_dev315_field_endurance_certification.py'
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-package:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build DEV315
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-dev315"
+          $env:CEO_DEV315_BUILD_ROOT=$root
+          python ceo-updates\build_dev315_field_endurance_certification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV315 build failed" }
+          python -m pip install --disable-pip-version-check -q -e $root
+          if ($LASTEXITCODE -ne 0) { throw "DEV315 install failed" }
+          "CEO_DEV315_BUILD_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_GATE_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_NO_BROWSER=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "LOCALAPPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-dev315-localappdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "APPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-dev315-appdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_GATE_ARTIFACTS=$(Join-Path $env:RUNNER_TEMP 'ceo-dev315-artifacts')" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Compile and focused endurance qualification
+        shell: pwsh
+        run: |
+          Push-Location $env:CEO_DEV315_BUILD_ROOT
+          python -m compileall -q .
+          if ($LASTEXITCODE -ne 0) { throw "compile failed" }
+          Pop-Location
+          python ceo-updates\qualify_dev315_field_endurance_certification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV315 focused qualification failed" }
+
+      - name: Inherited safety regression
+        shell: pwsh
+        run: |
+          Push-Location $env:CEO_DEV315_BUILD_ROOT
+          python scripts\dev292_recovery_failclosed_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV292 failed" }
+          python scripts\dev294_internal_update_pipeline_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV294 failed" }
+          python scripts\dev295_update_confirm_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV295 failed" }
+          python scripts\security_audit.py
+          if ($LASTEXITCODE -ne 0) { throw "security audit failed" }
+          Pop-Location
+
+      - name: Re-run identical ABG 1-6
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:CEO_GATE_ARTIFACTS | Out-Null
+          python ceo-updates\autonomy_bootstrap_gate_v1.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG1 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v2.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG2 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v3.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG3 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v4.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG4 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v5.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG5 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v6.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG6 failed" }
+
+      - name: Package DEV315 development candidate
+        shell: pwsh
+        run: |
+          @'
+          import hashlib,json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ["CEO_DEV315_BUILD_ROOT"])
+          outdir=pathlib.Path("ceo-updates")
+          version="1.5.91-rc1-field-endurance-certification"
+          artifact=f"CEO_{version}.zip"
+          out=outdir/artifact
+          out.unlink(missing_ok=True)
+          contract=json.loads((root/"CEO_UPDATE_PACKAGE.json").read_text(encoding="utf-8"))
+          assert contract["app_version"]==version
+          required=sorted(contract["required_paths"])
+          fixed=(2026,9,21,15,0,0)
+          with zipfile.ZipFile(out,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for rel in required:
+                  p=root/rel
+                  assert p.is_file(),rel
+                  info=zipfile.ZipInfo(rel,date_time=fixed);info.create_system=0;info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0
+                  z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          data=out.read_bytes();sha=hashlib.sha256(data).hexdigest();size=len(data)
+          manifest={
+            "artifact_name":artifact,"channel":"development","data_schema_version":1,
+            "health_path":"/api/health","launcher":"ABRIR_CEO.cmd","manifest_version":2,
+            "max_app_version":"","min_app_version":"1.5.86-rc1-provider-session-integrity",
+            "notes":"DEV315 development candidate: physical endurance certification accumulates only real active process time, ignores sleep/offline gaps, refuses certification after scheduler crash/recovery storm, never accepts provider assertions, and promotes deterministic completion provider-free when endurance is genuinely satisfied. Includes DEV311-DEV314 hardening.",
+            "package_contract_version":1,"published_at":"2026-09-21T15:00:00Z",
+            "release_id":"dev315-1.5.91-rc1-field-endurance-certification","release_sequence":315,
+            "release_status":"development","sha256":sha,"signature_alg":"ed25519","size_bytes":size,
+            "url":"https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/"+artifact,
+            "version":version
+          }
+          qualification={
+            "candidate":version,"base":"1.5.90-rc1-capability-scoped-provider","release_sequence":315,
+            "tests_passed":True,"security_passed":True,
+            "real_active_time_only":True,"sleep_offline_time_excluded":True,
+            "scheduler_crash_blocks_certification":True,"recovery_storm_blocks_certification":True,
+            "provider_assertion_cannot_certify":True,"hash_bound_field_certificate":True,
+            "provider_free_completion_promotion":True,"dev314_inherited":True,
+            "autonomy_bootstrap_gates_1_6_repassed":True,
+            "installation_deferred_by_operator":True,"field_validation_pending":True,"production_ready":False,
+            "artifact":{"name":artifact,"sha256":sha,"size_bytes":size,"entries":len(required)}
+          }
+          (outdir/"DEV315_MANIFEST_UNSIGNED.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+          (outdir/"DEV315_QUALIFICATION.json").write_text(json.dumps(qualification,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+          print(json.dumps(qualification,indent=2))
+          '@ | Set-Content -Encoding UTF8 package315.py
+          python package315.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV315 package failed" }
+
+      - name: Commit DEV315 development candidate
+        shell: pwsh
+        run: |
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/CEO_1.5.91-rc1-field-endurance-certification.zip ceo-updates/DEV315_MANIFEST_UNSIGNED.json ceo-updates/DEV315_QUALIFICATION.json
+          git commit -m "Stage DEV315 field endurance development candidate"
+          git push origin HEAD:ceo-update-channel
