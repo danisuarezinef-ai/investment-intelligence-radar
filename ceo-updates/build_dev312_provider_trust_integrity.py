@@ -106,11 +106,13 @@ def _forget_windows_dpapi_gemini_trust() -> bool:
 
     # Forgetting a key must forget its trust marker too.
     forget_anchor = '''def _forget_windows_dpapi_gemini_key() -> bool:
-    path = _gemini_secret_path()
+    try:
+        path = _gemini_secret_path()
 '''
     forget_new = '''def _forget_windows_dpapi_gemini_key() -> bool:
     _forget_windows_dpapi_gemini_trust()
-    path = _gemini_secret_path()
+    try:
+        path = _gemini_secret_path()
 '''
     if s.count(forget_anchor) != 1:
         raise RuntimeError(f"forget trust anchor={s.count(forget_anchor)}")
