@@ -175,31 +175,44 @@ def _forget_windows_dpapi_gemini_trust() -> bool:
 '''
     recognized_new = '''            authenticated = probe.get("authenticated")
             prior_trust = _load_windows_dpapi_gemini_trust(key)
-            recognized = bool(authenticated is True or models_visible > 0 or prior_trust)
             hard_rejected = status_upper in {
 '''
     if s.count(recognized_anchor) != 1:
         raise RuntimeError(f"prior trust recognize anchor={s.count(recognized_anchor)}")
     s = s.replace(recognized_anchor, recognized_new, 1)
 
-    # Explicit credential rejection is authoritative and revokes trust; transport
-    # errors never do.
-    reject_anchor = '''                if hard_rejected:
+    # Explicit credential rejection is authoritative and must be evaluated before
+    # prior trust. Transport errors can reuse trust; a 401/UNAUTHENTICATED cannot.
+    hard_reject_anchor = '''            }
+
+            if not recognized:
+'''
+    hard_reject_new = '''            }
+
+            if hard_rejected:
+                _forget_windows_dpapi_gemini_trust()
+                if self.gemini_key == key:
+                    self.gemini_key = None
+                self.gemini_key_recognized = False
+                self.execution_enabled = False
+                self.gemini_key_status = status
+                self.provider_mode = "gemini-validation-failed"
+                raise RuntimeError(f"Google rechazó la clave Gemini: {detail}")
+
+            recognized = bool(authenticated is True or models_visible > 0 or prior_trust)
+
+            if not recognized:
+'''
+    if s.count(hard_reject_anchor) != 1:
+        raise RuntimeError(f"hard reject precedence anchor={s.count(hard_reject_anchor)}")
+    s = s.replace(hard_reject_anchor, hard_reject_new, 1)
+
+    stale_inner_reject = '''                if hard_rejected:
                     raise RuntimeError(f"Google rechazó la clave Gemini: {detail}")
 '''
-    reject_new = '''                if hard_rejected:
-                    _forget_windows_dpapi_gemini_trust()
-                    if self.gemini_key == key:
-                        self.gemini_key = None
-                    self.gemini_key_recognized = False
-                    self.execution_enabled = False
-                    self.gemini_key_status = status
-                    self.provider_mode = "gemini-validation-failed"
-                    raise RuntimeError(f"Google rechazó la clave Gemini: {detail}")
-'''
-    if s.count(reject_anchor) != 1:
-        raise RuntimeError(f"hard reject anchor={s.count(reject_anchor)}")
-    s = s.replace(reject_anchor, reject_new, 1)
+    if s.count(stale_inner_reject) != 1:
+        raise RuntimeError(f"stale inner reject anchor={s.count(stale_inner_reject)}")
+    s = s.replace(stale_inner_reject, "", 1)
 
     # Any authenticated probe result refreshes encrypted trust.
     waiting_save_anchor = '''            saved = _save_windows_dpapi_gemini_key(key)
