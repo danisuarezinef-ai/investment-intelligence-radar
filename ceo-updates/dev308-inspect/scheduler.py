@@ -88,7 +88,7 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
-RELIABILITY_EPOCH = "dev307-autonomy-runtime-integrity-v1"
+RELIABILITY_EPOCH = "dev308-executable-route-integrity-v1"
 
 
 def _apply_reliability_epoch_migration(state: ProjectState) -> dict:
@@ -175,6 +175,30 @@ def _apply_reliability_epoch_migration(state: ProjectState) -> dict:
     })
     state.metadata.pop("control_plane_circuit_open", None)
     state.metadata.pop("productive_stall_escape_required", None)
+
+    # DEV308: rebase the separate recovery-churn fuse and remove only stale
+    # operator/suppression state when concrete productive execution is already
+    # available. Protected task-level blocks remain untouched.
+    churn = state.metadata.setdefault("recovery_churn_fuse_v2", {})
+    churn.update({
+        "open": False,
+        "attempts_without_progress": 0,
+        "retired": 0,
+        "reason": "reliability epoch migrated",
+    })
+    executable_productive = [
+        task for task in state.leaf_tasks
+        if is_productive(task, state)
+        and task.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING}
+    ]
+    if executable_productive:
+        state.metadata.pop("suppress_new_internal_recovery", None)
+        state.metadata.pop("autonomy_stalled", None)
+        state.metadata.pop("operator_block_reason", None)
+        state.metadata["operator_productivity_state"] = (
+            "TRABAJANDO" if any(t.status == TaskStatus.RUNNING for t in executable_productive)
+            else "PLANIFICANDO"
+        )
 
     # DEV307 field migration: release only fail-closed tasks whose evidence
     # proves they were blocked by the 1.5.82 orphan-worker bookkeeping defect.
@@ -1694,16 +1718,8 @@ class ContinuousScheduler:
         if open_decisions or human_review:
             return "NECESITA DECISIÓN"
 
-        truth_state = str(self.state.metadata.get("operator_productivity_state") or "").upper()
-        if truth_state in {"ATASCADO", "BLOQUEADO"}:
-            return "BLOQUEADO"
-        if truth_state == "REPLANIFICANDO":
-            return "CORRIGIENDO"
-
-        # Active execution is authoritative. A durable autonomy_stalled marker can
-        # legitimately survive from a prior watchdog cycle until the next save; it
-        # must never override a currently running worker. Likewise a blocked branch
-        # does not mean the whole CEO is blocked while another branch is executing.
+        # Active execution and genuinely executable queued work are authoritative.
+        # A stale watchdog/operator marker must never override them.
         active = [self.state.tasks.get(tid) for tid in self._active]
         active = [t for t in active if t is not None]
         if active:
@@ -1713,9 +1729,17 @@ class ContinuousScheduler:
                 return "CORRIGIENDO"
             return "TRABAJANDO"
 
-        # If executable work is queued, CEO is planning/dispatching rather than
-        # globally blocked, even if another leaf is blocked.
-        if any(t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.WAITING} for t in leaves):
+        if any(t.status in {TaskStatus.READY, TaskStatus.RETRY} for t in leaves):
+            return "PLANIFICANDO"
+
+        truth_state = str(self.state.metadata.get("operator_productivity_state") or "").upper()
+        if truth_state in {"ATASCADO", "BLOQUEADO"}:
+            return "BLOQUEADO"
+        if truth_state == "REPLANIFICANDO":
+            return "CORRIGIENDO"
+
+        # WAITING is soft pending work, not proof of a hard global block.
+        if any(t.status == TaskStatus.WAITING for t in leaves):
             return "PLANIFICANDO"
 
         if self.state.metadata.get("autonomy_stalled") or any(t.status == TaskStatus.BLOCKED for t in leaves):

@@ -32,5 +32,8 @@ class RecoveryChurnFuseV2:
             state.metadata['productive_stall_escape_required']=True
         elif not stalled:
             state.metadata.pop('productive_stall_escape_required',None)
+            # A closed fuse must also release the suppression it owns. Leaving this
+            # marker behind can poison a later healthy planning cycle.
+            state.metadata.pop('suppress_new_internal_recovery',None)
         row=RecoveryChurnFuseReport(open_state,int(attempts_without_progress),retired,'recovery budget exhausted without useful output' if open_state else 'within recovery budget')
         state.metadata[self.KEY]=row.to_dict();return row

@@ -52,9 +52,9 @@ class ProductiveTruthV2:
         )
         recoveries_total = int(state.metadata.get("worker_recoveries", 0) or 0)
         meta = state.metadata.setdefault(self.KEY, {})
-        if meta.get("epoch") != "dev307-autonomy-runtime-integrity-v1":
+        if meta.get("epoch") != "dev308-executable-route-integrity-v1":
             meta.update({
-                "epoch": "dev307-autonomy-runtime-integrity-v1",
+                "epoch": "dev308-executable-route-integrity-v1",
                 "productive_watermark": completed,
                 "recoveries_at_watermark": recoveries_total,
                 "historical_recoveries_before_epoch": recoveries_total,
@@ -84,11 +84,11 @@ class ProductiveTruthV2:
             status, reason = "complete", "objective completed"
         elif provider_wait.get("active") and not running:
             pass
-        elif completed == 0 and recoveries >= self.recovery_trip and internal_active and not running:
+        elif completed == 0 and recoveries >= self.recovery_trip and internal_active and not running and ready == 0:
             stalled = True
             status = "stalled"
             reason = f"{recoveries} recoveries without any productive completion"
-        elif useful_rate <= 0 and recoveries >= self.recovery_trip and internal_active and not running:
+        elif useful_rate <= 0 and recoveries >= self.recovery_trip and internal_active and not running and ready == 0:
             stalled = True
             status = "stalled"
             reason = "control/recovery activity without useful output"

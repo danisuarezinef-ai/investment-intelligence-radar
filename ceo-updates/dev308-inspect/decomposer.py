@@ -36,6 +36,10 @@ class TaskDecomposer:
             "multiple", "several", " all ", "systematic", "review ", "repository",
             "implement", "refactor", "deploy", "integrate", "across ", "pipeline",
             "database", "architecture", "migration", "benchmark", "experiment",
+            "investiga", "compar", "audita", "sistemát", "sistemat", "repositorio",
+            "implementa", "refactoriza", "despliega", "integra", "base de datos",
+            "arquitectura", "migración", "migracion", "experimento", "múltiples",
+            "multiples", "varios archivos", "todos los archivos",
         )
         simple_output_terms = (
             ".md", ".txt", ".json", ".csv", ".html",
@@ -46,13 +50,17 @@ class TaskDecomposer:
         complex_score = sum(1 for token in complex_terms if token in low)
         simple_score = sum(1 for token in simple_output_terms if token in low)
 
-        # Conservative compact mode: it is used only for bounded, single-output
-        # requests. Ambiguous/complex goals keep the full six-phase decomposition.
+        # DEV308: verbosity is not complexity. A detailed specification for one
+        # explicit output file remains a bounded single-deliverable goal.
+        file_hits = sum(low.count(ext) for ext in (".md", ".txt", ".json", ".csv", ".html"))
+        single_explicit_file = file_hits == 1
         compact = (
-            len(text) <= 260
-            and complex_score == 0
-            and conjunctions <= 2
+            complex_score == 0
             and simple_score >= 1
+            and (
+                (single_explicit_file and len(text) <= 1200)
+                or (len(text) <= 260 and conjunctions <= 2)
+            )
         )
         return {
             "mode": "compact" if compact else "full",
@@ -60,6 +68,8 @@ class TaskDecomposer:
             "complex_score": complex_score,
             "simple_output_score": simple_score,
             "conjunctions": conjunctions,
+            "single_explicit_file": single_explicit_file,
+            "file_hits": file_hits,
         }
 
     def plan(self, goal: str) -> ProjectState:

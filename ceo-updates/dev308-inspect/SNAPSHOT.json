@@ -8,50 +8,74 @@
       "sha256": "5a674de0c6ef2f1dc677ac88f0bf1902a59afd10c55520ee3273af5c3fa5c1ca",
       "size": 2672
     },
+    "completion.py": {
+      "sha256": "affc863a7d4fb17778cd862e03a3cb61a3c332cefb42c0f7a9d67d110f1010a1",
+      "size": 8935
+    },
+    "conversation_controller.py": {
+      "sha256": "f167172943ac4a7517dfc3ee5426c3584221f78a00fe6812aca4e1c34881477c",
+      "size": 14375
+    },
     "decomposer.py": {
-      "sha256": "ae82d344e1df140ccb138418d4bf0bca75080c702e0eb77b22e80c9122302656",
-      "size": 7098
+      "sha256": "a22b3e564e5c63afb16fc7bb0d7d0213cc28d1c8ffb1a1216692ff6deaab35b9",
+      "size": 7735
+    },
+    "deliverable_evidence_engine_v1.py": {
+      "sha256": "a5aba998adea2cdd7f40426530463848550ab7e59c1c74b8c6c29be81db43a26",
+      "size": 1950
     },
     "failure_cause_router_v1.py": {
       "sha256": "84dd3bf6cc5fff66b39c1a4cde71187184504290084dcb77d15ef29e135edd51",
       "size": 2574
     },
+    "goal_completion_gate.py": {
+      "sha256": "ce00829975ef6e78f3e60fb23ba81e3b4754f744b0157536db4d5c58147f4ed6",
+      "size": 8341
+    },
     "graph.py": {
       "sha256": "0cf91e9527ee0db177a808b84a8f79e489f0578f0d723bca607b6e2bae2357fa",
       "size": 7065
+    },
+    "models.py": {
+      "sha256": "2a1e29d0970b49eb5954010e18127b278b2b70f2ade77d497ca7ea62065cd09b",
+      "size": 4190
     },
     "productive_fallback_orchestrator_v1.py": {
       "sha256": "06eb87e7616838d4927b05682aeebc3429801031ade29fe491be26cb2ed836a8",
       "size": 2508
     },
     "productive_truth_v2.py": {
-      "sha256": "8a36b878fddfb1a3c76c5f9fb8cb741bb5ba5c21f6fc2d68200ab6877e6a0089",
-      "size": 4555
+      "sha256": "8b0746af545935a6a52b1c58da3acad37f27deebe1340f31ca9df84aeecda89f",
+      "size": 4585
     },
     "queue_consistency_rebuilder_v1.py": {
       "sha256": "78677febb0e19c0ca84d61cc40336af3c0558e1e1f16bb37a69df6fd7b10b5b3",
       "size": 2734
     },
     "recovery_churn_fuse_v2.py": {
-      "sha256": "53ef3c37337a48257123ec0b039eb59e486eec60476bfaaa60d8afc01110b30e",
-      "size": 1903
+      "sha256": "95649c5bf2965531311778e04aafdbe1f50943d13c9e3876932821003729df1b",
+      "size": 2167
     },
     "replanning.py": {
       "sha256": "869cbf0159cd1ad39cc487e9f055196123c40a3fdac43deccccdbfec7a1ff82d",
       "size": 8700
     },
+    "result_protocol.py": {
+      "sha256": "365379757da6ad697555b7174de4af0124d5297754206d890d6b31961ada9ade",
+      "size": 1422
+    },
     "scheduler.py": {
-      "sha256": "18149799187481a1b0f70a54e168591d6164598e412bc1360079954a867c68dd",
-      "size": 118854
+      "sha256": "6af5d707cd5b310669022395d5fce47faa2f561abcb713374811a5da806c420b",
+      "size": 119757
     },
     "scheduler_reconciler_v1.py": {
       "sha256": "7360c9260fda0c2794340a95c75db89e350213810027dd989f7f3ebe99257754",
       "size": 5557
     },
     "useful_output_watchdog_v2.py": {
-      "sha256": "ccea0424b6528a74964120012073e5b29d15fec878096bf3c974673ff0760760",
-      "size": 3748
+      "sha256": "06afee868497bdda62dda49847a9999d6373203ee229ea1bafb4e86193ed9700",
+      "size": 4967
     }
   },
-  "source_artifact": "CEO_1.5.83-rc1-autonomy-runtime-integrity.zip"
+  "source_artifact": "CEO_1.5.84-rc1-executable-route-integrity.zip"
 }

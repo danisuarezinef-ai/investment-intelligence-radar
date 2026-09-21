@@ -17,6 +17,29 @@ class UsefulOutputWatchdogV2:
     def tick(self,state:ProjectState)->UsefulOutputWatchdogReport:
         truth=self.truth.assess(state)
         provider_wait=dict(state.metadata.get('provider_wait_v1') or {})
+
+        # DEV308 executable-route invariant: queued/running productive work is
+        # itself an executable route. Recovery history must never convert it into
+        # a global BLOQUEADO state merely because no worker is active at this exact
+        # scheduler tick.
+        if truth.productive_running or truth.productive_ready:
+            fuse=self.fuse.apply(
+                state,
+                attempts_without_progress=truth.worker_recoveries,
+                stalled=False,
+            )
+            state.metadata.pop('autonomy_stalled',None)
+            state.metadata.pop('operator_block_reason',None)
+            state.metadata.pop('productive_stall_escape_required',None)
+            state.metadata.pop('suppress_new_internal_recovery',None)
+            operator='TRABAJANDO' if truth.productive_running else 'PLANIFICANDO'
+            state.metadata['operator_productivity_state']=operator
+            out=UsefulOutputWatchdogReport(
+                operator,False,truth.worker_recoveries,fuse.open,'executable_route',0
+            )
+            state.metadata[self.KEY]=out.to_dict()
+            return out
+
         # Provider backoff is not a broken route. Give it precedence over any stale
         # fuse/operator state left by a previous cycle and do not invoke fallback.
         if provider_wait.get('active') and truth.status=='waiting_provider':
