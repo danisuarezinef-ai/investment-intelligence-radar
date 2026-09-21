@@ -667,7 +667,16 @@ try {
     # drift on continuation turns.
     $pageUrl = Wait-StablePageUrl $ws ([Math]::Min(10,$TimeoutSeconds))
     $conversationStable=[bool]$pageUrl
+    $shouldLockConversation=$false
     if($ConversationUrl){
+      $conversationRegex=[string]$recipe.conversation_url_regex
+      if($conversationRegex){
+        try{$shouldLockConversation=($ConversationUrl -match $conversationRegex)}catch{$shouldLockConversation=$false}
+      }else{
+        $shouldLockConversation=($ConversationUrl -match "/c/")
+      }
+    }
+    if($shouldLockConversation){
       $wantedConversation=Normalize-ConversationUrl $ConversationUrl
       $actualConversation=Normalize-ConversationUrl $pageUrl
       if($wantedConversation -ne $actualConversation){
