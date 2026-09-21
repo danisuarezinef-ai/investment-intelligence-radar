@@ -1,0 +1,35 @@
+name: Snapshot DEV313 provider resilience
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/snapshot-dev313-provider-resilience.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Extract resilience files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev313-resilience
+          mkdir -p /tmp/dev313-resilience ceo-updates/dev313-inspect-routing
+          unzip -q ceo-updates/CEO_1.5.89-rc1-deterministic-completion.zip -d /tmp/dev313-resilience
+          cp /tmp/dev313-resilience/ceo_core/provider_resilience_v2.py ceo-updates/dev313-inspect-routing/provider_resilience_v2.py
+          cp /tmp/dev313-resilience/ceo_core/graph.py ceo-updates/dev313-inspect-routing/graph.py
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/dev313-inspect-routing
+          git commit -m "Snapshot DEV313 provider resilience runtime"
+          git push origin HEAD:ceo-update-channel
