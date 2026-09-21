@@ -370,7 +370,7 @@ function Current-Responses([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]
 }
 
 
-function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$selector) {
+function Get-ComposerSnapshot([System.Net.WebSockets.ClientWebSocket]$ws,[string]$selector) {
   $sel=To-JsString $selector
   $expr=@"
 (() => {
@@ -381,16 +381,27 @@ function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$se
    return null;
  };
  const e=findMarked(document);
- if(!e) return "";
- if(e.tagName==="TEXTAREA" || e.tagName==="INPUT") return String(e.value||"");
- if(e.getAttribute("contenteditable")==="true" || e.getAttribute("role")==="textbox"){
-   return String(e.innerText||e.textContent||"");
- }
- return String(e.textContent||"");
+ if(!e) return {found:false,value:"",textContent:"",innerText:"",html:""};
+ return {
+   found:true,
+   value:(e.tagName==="TEXTAREA" || e.tagName==="INPUT") ? String(e.value||"") : "",
+   textContent:String(e.textContent||""),
+   innerText:String(e.innerText||""),
+   html:String(e.innerHTML||"").slice(0,4000)
+ };
 })()
 "@
-  return [string](Eval-JS $ws $expr)
+  return Eval-JS $ws $expr
 }
+
+function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$selector) {
+  $snap=Get-ComposerSnapshot $ws $selector
+  if(-not $snap -or -not $snap.found){return ""}
+  if([string]$snap.value){return [string]$snap.value}
+  if([string]$snap.textContent){return [string]$snap.textContent}
+  return [string]$snap.innerText
+}
+
 
 function Insert-PromptThroughChrome([System.Net.WebSockets.ClientWebSocket]$ws,[string]$value) {
   # Equivalent to pasting the complete prompt through Chrome's trusted text-input
@@ -660,25 +671,48 @@ try {
     Insert-PromptThroughChrome $ws ([string]$Prompt)
     Start-Sleep -Milliseconds 650
 
-    $actualTyped=Get-ComposerText $ws $inputSelector
+    $typedSnapshot=Get-ComposerSnapshot $ws $inputSelector
     $expectedNormalized = Normalize-ComposerText ([string]$Prompt)
-    $actualNormalized = Normalize-ComposerText ([string]$actualTyped)
-    if($actualNormalized -ne $expectedNormalized) {
+    $variants=[ordered]@{
+      value=Normalize-ComposerText ([string]$typedSnapshot.value)
+      textContent=Normalize-ComposerText ([string]$typedSnapshot.textContent)
+      innerText=Normalize-ComposerText ([string]$typedSnapshot.innerText)
+    }
+    $matchedRepresentation=""
+    $actualNormalized=""
+    foreach($name in @("value","textContent","innerText")){
+      $candidate=[string]$variants[$name]
+      if($candidate -eq $expectedNormalized){
+        $matchedRepresentation=$name
+        $actualNormalized=$candidate
+        break
+      }
+    }
+    if(-not $matchedRepresentation) {
+      $variantDiag=[ordered]@{}
+      foreach($name in @("value","textContent","innerText")){
+        $candidate=[string]$variants[$name]
+        $variantDiag[$name]=[ordered]@{
+          chars=[int]$candidate.Length
+          newlines=[int](([regex]::Matches($candidate,"\n")).Count)
+        }
+      }
       Write-JsonResult @{
         ok=$false
         status="PROMPT_INPUT_MISMATCH"
         provider=[string]$recipe.provider
         expected_chars=$Prompt.Length
-        typed_chars=[string]$actualTyped.Length
         expected_normalized_chars=[int]$expectedNormalized.Length
-        actual_normalized_chars=[int]$actualNormalized.Length
         expected_newlines=[int](([regex]::Matches($expectedNormalized,"\n")).Count)
-        actual_newlines=[int](([regex]::Matches($actualNormalized,"\n")).Count)
-        detail=("B09 browser-level typed prompt differed after normalization; expected_chars=" + $expectedNormalized.Length + ", actual_chars=" + $actualNormalized.Length + ", expected_newlines=" + ([regex]::Matches($expectedNormalized,"\n")).Count + ", actual_newlines=" + ([regex]::Matches($actualNormalized,"\n")).Count)
+        representations=$variantDiag
+        detail=("B09 no logical composer representation matched the original prompt. " + ($variantDiag | ConvertTo-Json -Compress -Depth 5))
       }
       exit 6
     }
-    $typed=[pscustomobject]@{typed_chars=[int]$actualTyped.Length}
+    $typed=[pscustomobject]@{
+      typed_chars=[int]$expectedNormalized.Length
+      representation=$matchedRepresentation
+    }
 
     # B10 — submit through trusted Chrome input; never use synthetic DOM button activation.
     # Prefer a dynamically located visible send button and dispatch a real CDP mouse
@@ -915,6 +949,7 @@ try {
       response_chars=$captured.Length
       response_index=$responseIndex
       typed_chars=[int]$typed.typed_chars
+      input_representation=[string]$typed.representation
       send_method=$sendMethod
       submission_verified=[bool]$submissionVerified
       generation_started=[bool]$generationStarted
