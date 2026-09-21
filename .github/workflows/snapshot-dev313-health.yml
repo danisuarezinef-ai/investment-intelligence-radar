@@ -1,0 +1,34 @@
+name: Snapshot DEV313 health contract
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/snapshot-dev313-health.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - name: Extract health contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dev313-health
+          mkdir -p /tmp/dev313-health ceo-updates/dev313-inspect-routing
+          unzip -q ceo-updates/CEO_1.5.89-rc1-deterministic-completion.zip -d /tmp/dev313-health
+          cp /tmp/dev313-health/ceo_core/core_health_contract_v2.py ceo-updates/dev313-inspect-routing/core_health_contract_v2.py
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/dev313-inspect-routing/core_health_contract_v2.py
+          git commit -m "Snapshot DEV313 core health contract"
+          git push origin HEAD:ceo-update-channel
