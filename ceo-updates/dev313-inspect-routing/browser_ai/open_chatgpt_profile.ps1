@@ -1,7 +1,11 @@
 param(
   [string]$ProfileDir = "",
   [int]$Port = 9227,
-  [int]$TimeoutSeconds = 300
+  [int]$TimeoutSeconds = 300,
+  [string]$RecipePath = "",
+  [string]$DriverPath = "",
+  [string]$TargetUrl = "",
+  [switch]$CloseBrowserAfter
 )
 $ErrorActionPreference="Stop"
 
@@ -27,24 +31,26 @@ if(-not (Test-Path $marker)){
 }
 
 $baseDir=Split-Path -Parent $MyInvocation.MyCommand.Path
-$driver=Join-Path $baseDir "windows_chatgpt_cdp_driver.ps1"
-$recipe=Join-Path $baseDir "recipes\chatgpt_web.json"
-if(-not (Test-Path $driver)){throw "Browser driver not found: $driver"}
-if(-not (Test-Path $recipe)){throw "ChatGPT recipe not found: $recipe"}
+if(-not $DriverPath){$DriverPath=Join-Path $baseDir "windows_chatgpt_cdp_driver.ps1"}
+if(-not $RecipePath){$RecipePath=Join-Path $baseDir "recipes\chatgpt_web.json"}
+if(-not (Test-Path $DriverPath)){throw "Browser driver not found: $DriverPath"}
+if(-not (Test-Path $RecipePath)){throw "ChatGPT recipe not found: $RecipePath"}
 
 $statusPath=Join-Path $ProfileDir "CEO_BROWSER_SESSION.json"
-Write-Host "CEO abrirá ChatGPT con su perfil exclusivo."
+Write-Host "CEO abrirá la IA web con su perfil exclusivo."
 Write-Host "Si aparece la pantalla de acceso, inicia sesión manualmente. CEO no intenta saltarse CAPTCHA ni 2FA."
 
 $args=@(
-  "-NoProfile","-ExecutionPolicy","Bypass","-File",$driver,
-  "-RecipePath",$recipe,
+  "-NoProfile","-ExecutionPolicy","Bypass","-File",$DriverPath,
+  "-RecipePath",$RecipePath,
   "-ProfileDir",$ProfileDir,
   "-Port",[string]$Port,
   "-TimeoutSeconds",[string]$TimeoutSeconds,
   "-SessionProbeOnly",
   "-AllowManualLogin"
 )
+if($TargetUrl){$args+=@("-ConversationUrl",$TargetUrl)}
+if($CloseBrowserAfter){$args+=@("-CloseBrowserAfter")}
 
 $raw=& powershell.exe @args
 $exit=$LASTEXITCODE
@@ -58,15 +64,16 @@ if($row){
     session_state=[string]$row.session_state
     logged_in_evidence=[bool]$row.logged_in_evidence
     profile_dir=$ProfileDir
-    provider="chatgpt-web"
+    provider=[string]$row.provider
     no_api_required=$true
+    input_strategy=[string]$row.input_strategy
   }
   $out | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 $statusPath
 }
 
 if($exit -ne 0 -or -not $row -or -not $row.ok){
   $detail=if($row){$row.detail}else{"No structured session result returned"}
-  throw "ChatGPT session not ready: $detail"
+  throw "Web AI session not ready: $detail"
 }
 
 Write-Host "[OK] Perfil persistente preparado: $ProfileDir"
