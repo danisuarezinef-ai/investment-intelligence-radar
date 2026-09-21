@@ -33,12 +33,13 @@
     ]
   },
   "B24": {
-    "resumable_states": [
+    "automatic_resume_states": [
       "PENDING",
-      "RUNNING",
-      "WAITING_RETRY",
-      "WAITING_HUMAN"
+      "WAITING_RETRY"
     ],
+    "human_resume_state": "WAITING_HUMAN",
+    "interrupted_running_state": "WAITING_REVIEW",
+    "interrupted_running_auto_resend": false,
     "ambiguous_state": "WAITING_REVIEW"
   },
   "B25": {
