@@ -1,0 +1,12 @@
+{
+  "accepted_at": "2026-09-17T14:56:46Z",
+  "consent_sha256": "a4a4199a19d6db1da029400ceec8afb5baed2d7488c45938f028baad2f665c71",
+  "licenses_materialized": false,
+  "operator_explicit_consent": true,
+  "operator_statement": "User explicitly authorized Android SDK development-toolchain license acceptance for advancing DEV162+.",
+  "production_authority": false,
+  "publication_authority": false,
+  "schema_version": 1,
+  "scope": "android_sdk_development_toolchain_only",
+  "spending_authority": false
+}

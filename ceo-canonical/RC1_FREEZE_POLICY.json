@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0-rc1-local",
+  "active": true,
+  "allowed_change_types": [
+    "blocker_fix",
+    "security_fix",
+    "test_fix",
+    "release_docs"
+  ],
+  "new_features_allowed": false,
+  "blocker_or_security_issue_id_required": true,
+  "windows_install": "DEFERRED_BY_USER",
+  "windows_restart": "DEFERRED_BY_USER",
+  "live_provider": "NOT_VERIFIED",
+  "production_verified": false
+}

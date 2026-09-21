@@ -1,0 +1,234 @@
+{
+  "candidate": "0.8.0-rc5-update-engine",
+  "files": [
+    {
+      "path": "ANDROID_SDK_PACKAGES.json",
+      "sha256": "76c7d75b2e98189c8de4388ba0e1470adcf164cfdabca380ca84ff2cc9efe079",
+      "size": 288
+    },
+    {
+      "path": "ANDROID_TOOLCHAIN_ACQUISITION.json",
+      "sha256": "ffd068052eb870525fe4c9e28ff71dca97b2b3a446909007307d95078d5dec7f",
+      "size": 935
+    },
+    {
+      "path": "REPOSITORY_POLICY.json",
+      "sha256": "73ba2f4c14ae5384ae9221e60baddb2ccf58e8ca7287538f591ddfcdcf8c3bf9",
+      "size": 432
+    },
+    {
+      "path": "TOOLCHAIN.lock.json",
+      "sha256": "3f5a3fa7893ab2a080ea61565f114e94d25c2d3f3006522d2e9ddab5ceadae63",
+      "size": 440
+    },
+    {
+      "path": "app/build.gradle.kts",
+      "sha256": "5c6e92d8f8c09f7a55a79477aaea1be93e3b2aa15427a4772ab41fd1f13846b3",
+      "size": 2549
+    },
+    {
+      "path": "app/proguard-rules.pro",
+      "sha256": "91b1369a93aadbf12fa3ef3f524ebc5e11d8cb7b78f37a992e60e0586753290c",
+      "size": 139
+    },
+    {
+      "path": "app/src/androidTest/java/ai/ceo/android/AndroidStateSmokeTest.kt",
+      "sha256": "c0de686bcbfb3c448b337c4e0f4224493484cbc9f9a25a93fe088408400d7cd1",
+      "size": 1716
+    },
+    {
+      "path": "app/src/androidTest/java/ai/ceo/android/InstallSmokeTest.kt",
+      "sha256": "65f36e67239e00bec1272ac1a969853bf49f95f3ebcd51350cd8cc7f715f5129",
+      "size": 620
+    },
+    {
+      "path": "app/src/debug/AndroidManifest.xml",
+      "sha256": "d663dfa08ce7efa6e6219b1680984530478f347e9ce3c8f4f5334bc24c3cd164",
+      "size": 706
+    },
+    {
+      "path": "app/src/debug/java/ai/ceo/android/FieldProbeWorker.kt",
+      "sha256": "100dc98130c58394cc70ffea94cbf3274a3ee1fd610c2b5b4fcc31c72aa7ac2d",
+      "size": 858
+    },
+    {
+      "path": "app/src/debug/java/ai/ceo/android/GoldenParityReceiver.kt",
+      "sha256": "c74076322ab00cb4ec48454a06605e9e7274c28591570f304f41cb6f3e03a65e",
+      "size": 6098
+    },
+    {
+      "path": "app/src/debug/java/ai/ceo/android/ReleaseGateReceiver.kt",
+      "sha256": "e1c07177eb5fac6b300b2b9c2f95e5b977d6814b44f587a206a3203a395d104a",
+      "size": 10568
+    },
+    {
+      "path": "app/src/debug/res/raw/golden_readonly_fixture.txt",
+      "sha256": "08a6e69cea485c0d5fec7f33dd472709c14aa5217d8fa845b9f71647eb71dca0",
+      "size": 122
+    },
+    {
+      "path": "app/src/main/AndroidManifest.xml",
+      "sha256": "43521882fa8a2682c40004f23edbbe5cea78ccb35e8944154e9ce656f56ffc60",
+      "size": 1816
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/AndroidCoreBridge.kt",
+      "sha256": "e9b5c4474b9c9263e162dadd6a507fd7913a5bb54878859415dd06210cc8742f",
+      "size": 4346
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/AppPreferences.kt",
+      "sha256": "ffe41322ac678c82fc0f0e6fdb18cee2dde51c1b65f7c06a8d463cc457f9f72b",
+      "size": 1009
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/BootReceiver.kt",
+      "sha256": "d06840c4ed30a620c288879192b39db0296bde09ab120318d5a27d36cf6fca15",
+      "size": 419
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/CEOApplication.kt",
+      "sha256": "d6b606fbba10837e990cf6ecfa22de747259b2ce552b1b159e5626581d8bc8b8",
+      "size": 687
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/CEOBackgroundScheduler.kt",
+      "sha256": "bda5def114a215b0444325860037d0798ec2624fd8dd911198e90217b2bc1c54",
+      "size": 1823
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/MainActivity.kt",
+      "sha256": "43271017d0f13a9fcb7a73b44f1eea8fceb81eae1d2dab794986f1ab575c2d9a",
+      "size": 14219
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/NotificationHelper.kt",
+      "sha256": "3d3d09d8c2495d04ccf7f98cf35337d4b2b7dfc47550f65f24d3555b0fe27ffb",
+      "size": 1985
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/PostUpdateHealthCheck.kt",
+      "sha256": "ea03ce1bdb7bc1c81402119ea3a72e77ac83026628eabc974023d9784f947173",
+      "size": 1843
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/SchedulerWatchdog.kt",
+      "sha256": "52b9d530c6d833a01a945f46be1fb44a81d5b65eb48c692c682b3118c4270ea9",
+      "size": 1398
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/SchedulerWorker.kt",
+      "sha256": "f94fda06a201615bd199fdc5327874f3ec66d25fb35be203b822a650ff243c18",
+      "size": 2505
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/SecureVault.kt",
+      "sha256": "3d9690b9017bdf70a6631c475010e7de914d3dc00db7d5e057d7a8161b1ca99a",
+      "size": 3863
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/StartupGuard.kt",
+      "sha256": "a91e0dcb7ebe0f21ee514556f9175aed83c7dbf6ecaff7b5eb7a86536e600229",
+      "size": 1548
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdateConfig.kt",
+      "sha256": "a41e2fe73b308896c149af515bbee943a77a9efed28b0cf487c4cbefa74a1845",
+      "size": 404
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdateDownloader.kt",
+      "sha256": "d01b26e0f9ad573c1c592876ba98e24f74d2a6689b8a7d54607b00d4fbd68b13",
+      "size": 3423
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdateInstaller.kt",
+      "sha256": "5bf6f4e0248c856f34d6a027dd288c8b04ce2f951c0db579f68d26fca9493ad5",
+      "size": 1124
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdateManager.kt",
+      "sha256": "405b389ed8071529606f1057715237645bdf1e47dff13f4a760bbb52af77a4d9",
+      "size": 3455
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdateManifest.kt",
+      "sha256": "57980a656a3b458c05d7e22c91c37e147f802724c78b09b6477ec1cf21a633d6",
+      "size": 5049
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdatePolicy.kt",
+      "sha256": "b05b83ac4697dfd16ddcba8c040e5cbf687a9881b8626ae72344840a5aaa50dc",
+      "size": 1415
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdatePreflight.kt",
+      "sha256": "c601de3aa4cdec1b1d09412e75af756a8852f9c79ec05f962ad7bc499f2d909c",
+      "size": 1475
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdateSnapshotManager.kt",
+      "sha256": "5bdaff565087fed4f88cfff01eaaa7e45454ee7e67dffe0ec85a41999dc2dee9",
+      "size": 1941
+    },
+    {
+      "path": "app/src/main/java/ai/ceo/android/UpdateVerifier.kt",
+      "sha256": "1783429b21c5127f0e45d08dc0743b9409feb6a6d844cbbe9385d643ac80bec3",
+      "size": 3061
+    },
+    {
+      "path": "app/src/main/python/ceo_android_bridge.py",
+      "sha256": "2d61f87b03260a99d0a8b99a4807e5fb70874c5a680b9cc855a5f254942f6e8f",
+      "size": 12915
+    },
+    {
+      "path": "app/src/main/python/ceo_shared/__init__.py",
+      "sha256": "982d5b4372240edb5dd2b9acfdf9c03f954d9fefad0d7954fb86bfde9f2ba67d",
+      "size": 50
+    },
+    {
+      "path": "app/src/main/python/ceo_shared/runtime.py",
+      "sha256": "7eb908fd2fb9816cd2f24ad0be173c389baae0259ba741b5a00b7e81014c2231",
+      "size": 45825
+    },
+    {
+      "path": "app/src/main/python/ceo_shared/worker.py",
+      "sha256": "ec0907be7b5da549b847029e28b0dcd6951f01d5c5382c49d76af1abba320cbc",
+      "size": 7542
+    },
+    {
+      "path": "app/src/main/res/values/styles.xml",
+      "sha256": "2c32b8d5ceeb36a478ec42e1bd2abf1638a74a4b148cca7b5a57e2bb9fc795a4",
+      "size": 276
+    },
+    {
+      "path": "app/src/main/res/xml/update_file_paths.xml",
+      "sha256": "a22dd9eaa1ee9a957ba7f32d90b4358a716026de8f95671810b4ca3c929a11c6",
+      "size": 169
+    },
+    {
+      "path": "build.gradle.kts",
+      "sha256": "73c758c20d3ca8af36e122b27defe63610524e40843b06d91c5f618e13adbd05",
+      "size": 206
+    },
+    {
+      "path": "gradle.properties",
+      "sha256": "1b0d06c4540bd61cab45f373e963c74fa139d08167d7786012d2496666a0b258",
+      "size": 133
+    },
+    {
+      "path": "gradle/wrapper/gradle-wrapper.properties",
+      "sha256": "519280ee807cb83ee0f7be30bb3aa51b71d0e14905cb3ecc285a4243b2ce4ac8",
+      "size": 339
+    },
+    {
+      "path": "settings.gradle.kts",
+      "sha256": "45ad91bfe5763f8f101af4af64c0297e3f9fd0cf295a569385c05a401c830ba4",
+      "size": 328
+    }
+  ],
+  "minimal_source_sha256": "7a2d49df88caea5f67b2401d4b06892b769f814f7a78e097a7aaeaab0d500606",
+  "production_verified": false,
+  "schema": 2,
+  "version_code": 10
+}

@@ -1,0 +1,21 @@
+{
+  "checks": {
+    "api35_36": true,
+    "doze": true,
+    "exact_serial": true,
+    "exit_history": true,
+    "explicit_reboot": true,
+    "files_present": true,
+    "force_stop": true,
+    "prior_gate": true,
+    "release_untouched": true,
+    "standby": true,
+    "storage_bounded": true
+  },
+  "missing": [],
+  "production_verified": false,
+  "runtime_api35_executed": false,
+  "runtime_api36_executed": false,
+  "schema": 1,
+  "status": "RUNTIME_HARDENING_HARNESS_READY"
+}

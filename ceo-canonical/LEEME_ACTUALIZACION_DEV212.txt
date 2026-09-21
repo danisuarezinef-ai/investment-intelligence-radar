@@ -1,0 +1,10 @@
+CEO de IAs - DEV212 continuity loop breaker
+Version: 1.4.89-rc1-continuity-loop-breaker
+
+Objetivo unico:
+- impedir que cognitive early abort convierta tareas internas de continuidad/control/verificacion en falsas revisiones humanas;
+- conservar gates humanos reales para acciones protegidas;
+- evitar inundacion de eventos por el mismo early abort interno.
+
+La actualizacion es side-by-side y usa el puntero atomico instalado con DEV211.
+Requiere cerrar CEO y escribir ACTUALIZAR.

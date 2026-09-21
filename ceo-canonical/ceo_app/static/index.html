@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CEO de IAs</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#171717;background:#f4f4f1}
+    *{box-sizing:border-box} body{margin:0} main{max-width:1100px;margin:0 auto;padding:34px 22px 70px}
+    .top{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:24px}.brand{font-weight:800;font-size:14px;letter-spacing:.16em}.status{font-size:13px;opacity:.65}
+    .card{background:#fff;border:1px solid #deded8;border-radius:22px;padding:22px;margin:14px 0;box-shadow:0 10px 40px rgba(0,0,0,.035)}
+    h1{font-size:clamp(28px,5vw,54px);line-height:1.02;margin:8px 0 10px;max-width:850px} h2{font-size:16px;margin:0}.row{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .definition{font-size:14px;opacity:.64;flex:1}.info{width:28px;height:28px;border-radius:50%;border:1px solid #ccc;background:#fff;cursor:pointer}.controls{margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    input[type=range]{width:min(560px,70vw)} button.action{border:0;background:#171717;color:#fff;padding:11px 18px;border-radius:12px;cursor:pointer}button.secondary{background:#efefeb;color:#171717}.switch{border:1px solid #d6d6d0;border-radius:999px;padding:6px 12px;background:#efefeb;cursor:pointer;font-weight:700}.switch.on{background:#171717;color:#fff}
+    textarea,input[type=text],input[type=password],input[type=datetime-local],input[type=number]{width:100%;border:1px solid #d8d8d3;border-radius:14px;padding:12px;font:inherit;background:#fff} textarea{min-height:105px;resize:vertical}.compact-textarea{min-height:72px}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:12px;opacity:.6}.activity-list{display:grid;gap:8px;margin-top:12px}.activity-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.timeline{max-height:260px;overflow:auto}.timeline-row{padding:8px 0;border-bottom:1px solid #ecece7}.timeline-row:last-child{border-bottom:0}.pillbar{display:flex;gap:8px;flex-wrap:wrap}.pillbar button.selected{background:#171717;color:#fff}.continuity-box{margin-top:10px;padding:12px;border-radius:12px;background:#f7f7f4}.activity-item{background:#f7f7f4;border-radius:12px;padding:10px 12px}.project-row{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee}.project-row:last-child{border-bottom:0}.metric{font-size:28px;font-weight:750}.metrics{display:grid;grid-template-columns:repeat(5,minmax(100px,1fr));gap:14px;margin-top:16px}.mini{background:#f7f7f4;border-radius:14px;padding:14px}.mini span{font-size:12px;opacity:.6;display:block}.tree{margin-top:14px}.node{border-left:1px solid #deded8;margin-left:9px;padding:6px 0 6px 16px}.node>summary{cursor:pointer;list-style:none}.badge{font-size:11px;padding:3px 7px;border-radius:20px;background:#efefeb;margin-left:6px}.complete{background:#e6f4e8}.running{background:#e9f0ff}.blocked{background:#f2eee5}.ready{background:#eef7ee}.retry{background:#fff1d6}.needs_review{background:#ffe8df}
+    .hidden{display:none}.details{margin-top:10px;padding:12px;background:#f7f7f4;border-radius:12px;font-size:13px;line-height:1.5}.eta{font-weight:700}.decision{border:1px solid #e3e3dd;border-radius:14px;padding:14px;margin:10px 0}.decision button{margin:8px 6px 0 0;border:0;border-radius:10px;padding:8px 12px;cursor:pointer}.provider{display:inline-block;margin:5px 6px 0 0;padding:5px 9px;border-radius:999px;background:#f0f0ec;font-size:12px}.small{font-size:12px;opacity:.62}.director-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px}.director{background:#f7f7f4;border-radius:14px;padding:12px}.map-wrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;max-height:320px;overflow:auto}.map-node{padding:7px 10px;border-radius:999px;background:#efefeb;font-size:12px;border:1px solid #deded8}.map-node.running{outline:2px solid #9ab3ef}.map-node.critical{font-weight:750;border-color:#777}.map-node.failed,.map-node.needs_review{background:#ffe8df}
+    @media(max-width:820px){.metrics{grid-template-columns:1fr 1fr}.top{align-items:start;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="top"><div class="brand">CEO DE IAs</div><div class="status"><strong id="statusText">Sin proyecto activo</strong><div class="small" id="statusDetail">En espera de un objetivo.</div></div></div>
+
+  <section class="card">
+    <div class="row"><h2>Goal Engine</h2><div class="definition">Define el objetivo que CEO debe completar de forma autónoma.</div><button class="info" onclick="toggleInfo('goalInfo')">i</button></div>
+    <div id="goalInfo" class="details hidden">Bloquea el objetivo principal y lo mantiene como referencia para planificación, ejecución, verificación y criterio de finalización. Flujo: Objetivo → Plan → Ejecución → Verificación → Corrección → Siguiente tarea → Completado.</div>
+    <h1 id="goalTitle">¿Qué quieres que consiga CEO?</h1>
+    <textarea id="goalInput" placeholder="Describe el objetivo con suficiente claridad..."></textarea>
+    <div class="field" style="margin-top:10px"><label>Nombre del proyecto</label><input id="projectName" type="text" placeholder="Opcional; si lo dejas vacío se usará el objetivo"></div>
+    <div class="controls"><button class="action" onclick="startProject()">Empezar proyecto</button><button class="action secondary" onclick="toggleInfo('goalAdvanced')">Afinar objetivo</button><button class="action secondary" onclick="pauseToggle()" id="pauseBtn">Pausar</button><button class="action secondary" onclick="absenceToggle()" id="absenceBtn">Me voy</button></div>
+    <div id="goalAdvanced" class="details hidden">
+      <div class="field-grid">
+        <div class="field"><label>Definición de éxito</label><textarea class="compact-textarea" id="successDefinition" placeholder="¿Qué resultado final debe existir?"></textarea></div>
+        <div class="field"><label>Entregables (uno por línea)</label><textarea class="compact-textarea" id="deliverables" placeholder="Informe final&#10;Aplicación funcional"></textarea></div>
+        <div class="field"><label>Criterios de finalización (uno por línea)</label><textarea class="compact-textarea" id="completionCriteria" placeholder="Qué debe ser cierto para poder cerrar el proyecto"></textarea></div>
+        <div class="field"><label>Restricciones (una por línea)</label><textarea class="compact-textarea" id="constraints" placeholder="Límites que CEO no puede saltarse"></textarea></div>
+        <div class="field"><label>Acciones prohibidas (una por línea)</label><textarea class="compact-textarea" id="forbiddenActions" placeholder="Ej.: publicar, comprar, borrar"></textarea></div>
+        <div class="field"><label>Fecha límite</label><input id="deadline" type="datetime-local"></div>
+        <div class="field"><label>Presupuesto máximo de APIs</label><input id="budgetLimit" type="number" min="0" step="0.01" placeholder="Sin límite"></div>
+        <div class="field"><label>Urgencia</label><input id="urgency" type="range" min="1" max="100" value="50" oninput="$('urgencyLabel').textContent=this.value+' %'"><strong id="urgencyLabel">50 %</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Proyectos</h2><div class="definition">Crea, pausa, archiva y elimina proyectos sin perder el control del estado.</div><button class="action secondary" onclick="reviewCleanup()">Revisar limpieza</button><button class="info" onclick="toggleInfo('projectsInfo')">i</button></div>
+    <div id="projectsInfo" class="details hidden">Cada proyecto usa su propia base SQLite y puede reanudarse tras cerrar CEO o reiniciar Windows.</div>
+    <div id="cleanupCandidates" class="details hidden"></div><div id="projects" style="margin-top:12px"><span class="small">Cargando proyectos…</span></div>
+    <div id="continuity" class="continuity-box small">Continuidad: todavía no hay un proyecto activo.</div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Potencia CEO</h2><div class="definition">Aumenta o reduce el trabajo concurrente que CEO puede mantener activo.</div><button class="info" onclick="toggleInfo('powerInfo')">i</button></div>
+    <div id="powerInfo" class="details hidden">La barra controla concurrencia utilizando CPU y RAM detectadas y aplica límites de seguridad. Las estimaciones de tiempo se recalculan con tiempos reales de las tareas.</div>
+    <div class="controls"><input id="power" type="range" min="1" max="100" value="30" oninput="previewPower()" onchange="savePower()"><strong id="powerLabel">30 %</strong><button class="action secondary resourcePreset" data-preset="low" onclick="setPreset('low')">Bajo</button><button class="action secondary resourcePreset" data-preset="normal" onclick="setPreset('normal')">Normal</button><button class="action secondary resourcePreset" data-preset="high" onclick="setPreset('high')">Alto</button><button class="action secondary resourcePreset" data-preset="maximum" onclick="setPreset('maximum')">Máximo</button></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Autonomía</h2><div class="definition">Permite que CEO continúe conversaciones, genere nuevas tareas y decida sin pedir constantemente “sigue”.</div><button class="info" onclick="toggleInfo('autonomyInfo')">i</button></div>
+    <div id="autonomyInfo" class="details hidden">Las decisiones verdaderamente relevantes pueden llegar al Conversation Controller. Las no críticas pueden auto-resolverse tras su temporizador.</div>
+    <div class="controls"><button id="autonomyToggle" class="switch on" onclick="toggleAutonomy()">ON</button><div class="pillbar"><button class="action secondary autonomyPreset" data-level="supervised" onclick="setAutonomyProfile('supervised')">Supervisada</button><button class="action secondary autonomyPreset" data-level="balanced" onclick="setAutonomyProfile('balanced')">Equilibrada</button><button class="action secondary autonomyPreset" data-level="high" onclick="setAutonomyProfile('high')">Alta</button><button class="action secondary autonomyPreset" data-level="full" onclick="setAutonomyProfile('full')">Máxima</button></div></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Notificaciones</h2><div class="definition">Avisa de decisiones, fallos importantes y finalización del proyecto.</div><button class="info" onclick="toggleInfo('notificationInfo')">i</button></div>
+    <div id="notificationInfo" class="details hidden">El MVP mantiene una cola de notificaciones y puede utilizar las notificaciones del navegador si das permiso. El push sincronizado a móvil se añadirá sobre este mismo canal.</div>
+    <div class="controls"><button id="notificationToggle" class="switch on" onclick="toggleNotifications()">ON</button><span id="notificationPermission" class="small"></span></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Modo operativo</h2><div class="definition">Define hasta dónde puede avanzar CEO sin interrumpirte.</div><button class="info" onclick="toggleInfo('modeInfo')">i</button></div>
+    <div id="modeInfo" class="details hidden">Normal mantiene el equilibrio habitual. Mientras no estoy continúa dentro de límites seguros. Termínalo maximiza autonomía reversible. Sólo planifica no ejecuta acciones. Auditor inspecciona sin modificar el proyecto. Ningún modo autoriza por sí solo acciones irreversibles.</div>
+    <div class="controls"><div class="pillbar"><button class="action secondary operatingMode" data-mode="normal" onclick="setOperatingMode('normal')">Normal</button><button class="action secondary operatingMode" data-mode="while_away" onclick="setOperatingMode('while_away')">Mientras no estoy</button><button class="action secondary operatingMode" data-mode="finish_it" onclick="setOperatingMode('finish_it')">Termínalo</button><button class="action secondary operatingMode" data-mode="plan_only" onclick="setOperatingMode('plan_only')">Sólo planifica</button><button class="action secondary operatingMode" data-mode="auditor" onclick="setOperatingMode('auditor')">Auditor</button></div><strong id="modeStatus">Normal</strong></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Verificación</h2><div class="definition">Regula cuánto trabajo independiente dedica CEO a comprobar resultados.</div><button class="info" onclick="toggleInfo('verifyInfo')">i</button></div>
+    <div id="verifyInfo" class="details hidden">A valores altos CEO crea workers verificadores independientes y exige mayor evidencia antes de cerrar ramas.</div>
+    <div class="controls"><input id="verification" type="range" min="0" max="100" value="50" oninput="$('verificationLabel').textContent=this.value+' %'" onchange="saveWorkSettings()"><strong id="verificationLabel">50 %</strong></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Profundidad</h2><div class="definition">Controla cuánto puede descomponer y profundizar CEO antes de considerar suficiente una respuesta.</div><button class="info" onclick="toggleInfo('depthInfo')">i</button></div>
+    <div id="depthInfo" class="details hidden">No cambia el objetivo; cambia el esfuerzo permitido para resolverlo y el tamaño potencial del árbol de tareas.</div>
+    <div class="controls"><input id="depth" type="range" min="0" max="100" value="60" oninput="$('depthLabel').textContent=this.value+' %'" onchange="saveWorkSettings()"><strong id="depthLabel">60 %</strong></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Exploración</h2><div class="definition">Permite buscar alternativas, ideas y ramas nuevas cuando puedan mejorar el resultado.</div><button class="info" onclick="toggleInfo('exploreInfo')">i</button></div>
+    <div id="exploreInfo" class="details hidden">A valores bajos CEO se ciñe al plan; a valores altos dedica más capacidad a alternativas y descubrimientos.</div>
+    <div class="controls"><input id="exploration" type="range" min="0" max="100" value="35" oninput="$('explorationLabel').textContent=this.value+' %'" onchange="saveWorkSettings()"><strong id="explorationLabel">35 %</strong></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Continuous Scheduler</h2><div class="definition">Mantiene trabajo útil activo continuamente, prioriza dependencias y estima cuánto falta.</div><button class="info" onclick="toggleInfo('schedulerInfo')">i</button></div>
+    <div id="schedulerInfo" class="details hidden">Al terminar un worker entra inmediatamente el siguiente trabajo listo. Prioridad, tareas bloqueantes, CPU/RAM y rendimiento observado influyen en la ejecución y la ETA.</div>
+    <div class="metrics">
+      <div class="mini"><span>Progreso</span><div class="metric" id="progress">0 %</div></div>
+      <div class="mini"><span>Workers</span><div class="metric" id="workers">0</div></div>
+      <div class="mini"><span>Completadas</span><div class="metric" id="completed">0</div></div>
+      <div class="mini"><span>ETA</span><div class="metric eta" id="eta">—</div></div>
+      <div class="mini"><span>Intervenciones evitadas</span><div class="metric" id="avoided">0</div></div>
+    </div>
+    <div id="scenarios" style="margin-top:12px;font-size:13px;opacity:.65">Escenarios de potencia aparecerán durante la ejecución.</div>
+    <div id="resources" class="small" style="margin-top:8px"></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Mission Control</h2><div class="definition">Resume salud, confianza autónoma, estrategia, evidencia y seguridad sin mostrar ruido técnico.</div><button class="info" onclick="toggleInfo('missionInfo')">i</button></div>
+    <div id="missionInfo" class="details hidden">Mission Control cruza el grafo del proyecto, fallos, presupuesto, plazo, verificaciones y evidencia. La confianza de autonomía no sustituye los límites duros: una acción irreversible sigue necesitando autorización.</div>
+    <div class="metrics">
+      <div class="mini"><span>Salud</span><div class="metric" id="healthScore">—</div></div>
+      <div class="mini"><span>Autonomía</span><div class="metric" id="autonomyConfidence">—</div></div>
+      <div class="mini"><span>Estrategia</span><div class="metric" style="font-size:18px" id="strategy">—</div></div>
+      <div class="mini"><span>Evidencias</span><div class="metric" id="evidenceCount">0</div></div>
+      <div class="mini"><span>Verificación</span><div class="metric" id="verificationState">—</div></div>
+      <div class="mini"><span>Calibración</span><div class="metric" id="calibrationState">—</div></div>
+      <div class="mini"><span>SOPs</span><div class="metric" id="sopCount">0</div></div>
+    </div>
+    <div id="securityState" class="small" style="margin-top:10px">Seguridad: —</div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Actividad autónoma</h2><div class="definition">Qué está haciendo CEO ahora, qué viene después y si existe un bloqueo real.</div><button class="info" onclick="toggleInfo('activityInfo')">i</button></div>
+    <div id="activityInfo" class="details hidden">La vista resume el trabajo activo sin mostrar ruido técnico. Los proveedores y etapas se registran antes de iniciar cada llamada para facilitar la recuperación y el diagnóstico.</div>
+    <div id="activityWhy" class="small" style="margin-top:10px"></div>
+    <div class="activity-grid">
+      <div><div class="small"><b>Ahora / después</b></div><div id="activity" class="activity-list"><span class="small">Sin actividad todavía.</span></div></div>
+      <div><div class="small"><b>Historial reciente</b></div><div id="activityTimeline" class="timeline small">Sin eventos todavía.</div></div>
+    </div>
+    <div id="activityAttention" class="small" style="margin-top:10px"></div>
+    <div id="budget" class="small" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Project Director</h2><div class="definition">Resume cómo CEO reparte un proyecto grande entre directores, equipos y workers.</div><button class="info" onclick="toggleInfo('directorInfo')">i</button></div>
+    <div id="directorInfo" class="details hidden">La jerarquía se crea dinámicamente para que el CEO central no tenga que supervisar directamente miles de workers. Aquí solo se muestran las áreas principales.</div>
+    <div id="directors" class="director-grid"><em class="small">La estructura aparecerá durante la ejecución.</em></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Task Decomposer</h2><div class="definition">Índice desplegable desde las grandes fases hasta cada conversación individual.</div><button class="info" onclick="toggleInfo('treeInfo')">i</button></div>
+    <div id="treeInfo" class="details hidden">Con un proveedor IA activo el planner genera el árbol dinámicamente, maximiza el paralelismo seguro y crea dependencias solo cuando son necesarias.</div>
+    <div class="tree" id="tree"><em>El árbol aparecerá al iniciar un objetivo.</em></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Mapa del proyecto</h2><div class="definition">Vista opcional del trabajo activo, camino crítico y ramas con problemas.</div><button class="info" onclick="toggleMap()">i</button></div>
+    <div id="mapInfo" class="details hidden">No pretende mostrar cada detalle a la vez. Prioriza fases, camino crítico, tareas activas y excepciones. El Task Decomposer sigue siendo la vista principal.</div>
+    <div id="projectMap" class="map-wrap hidden"></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Excepciones</h2><div class="definition">Muestra problemas, bloqueos y revisiones; oculta el ruido de las operaciones normales.</div><button class="info" onclick="toggleInfo('exceptionInfo')">i</button></div>
+    <div id="exceptionInfo" class="details hidden">CEO prioriza aquí únicamente aquello que puede afectar al proyecto. Miles de tareas correctas permanecen resumidas.</div>
+    <div id="exceptions" style="margin-top:12px" class="small">Sin excepciones.</div>
+  </section>
+
+  <section class="card hidden" id="taskDetailCard">
+    <div class="row"><h2>Detalle de tarea</h2><div class="definition">Resultado, conversación, dependencias y procedencia de una unidad concreta.</div><button class="info" onclick="$('taskDetailCard').classList.add('hidden')">×</button></div>
+    <div id="taskDetail" class="details" style="display:block"></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Conversation Controller</h2><div class="definition">Muestra únicamente decisiones que realmente merecen tu atención.</div><button class="info" onclick="toggleInfo('decisionInfo')">i</button></div>
+    <div id="decisionInfo" class="details hidden">Cada worker devuelve un control estructurado: completar, continuar, corregir, profundizar, crear tareas, revisar, escalar o reintentar. Las decisiones pueden auto-resolverse por temporizador.</div>
+    <div id="decisions" style="margin-top:14px;opacity:.65">Sin decisiones pendientes.</div>
+  </section>
+
+  <section class="card">
+    <div class="row"><h2>Workers disponibles</h2><div class="definition">Proveedores IA y superficies de ejecución que CEO puede utilizar en este equipo.</div><button class="info" onclick="toggleInfo('providerInfo')">i</button></div>
+    <div id="providerInfo" class="details hidden">API, navegador y futuros modelos locales comparten el mismo contrato. CEO puede repartir tareas entre ellos sin cambiar el Scheduler.</div>
+    <div id="providers" style="margin-top:12px"></div>
+    <div class="controls"><button class="action secondary" onclick="toggleInfo('apiConfig')">Configurar APIs</button></div>
+    <div id="apiConfig" class="details hidden">
+      <div class="field-grid"><div class="field"><label>OpenAI API key</label><input id="openaiKey" type="password" autocomplete="off" placeholder="Se guarda en Windows Credential Manager"><button class="action secondary" onclick="saveCredential('openai','openaiKey')">Guardar OpenAI</button></div><div class="field"><label>Gemini API key</label><input id="geminiKey" type="password" autocomplete="off" placeholder="Se guarda en Windows Credential Manager"><button class="action secondary" onclick="saveCredential('gemini','geminiKey')">Guardar Gemini</button></div></div>
+      <div id="credentialStatus" class="small" style="margin-top:10px"></div>
+    </div>
+  </section>
+</main>
+<script>
+let active=false, paused=false, autonomy=true, notifications=true, seenNotifications=new Set();
+const $=id=>document.getElementById(id);
+function toggleInfo(id){$(id).classList.toggle('hidden')}
+function previewPower(){$('powerLabel').textContent=$('power').value+' %'}
+async function startProject(){const goal=$('goalInput').value.trim();if(goal.length<3)return;const lines=id=>($(id)?.value||'').split('\n').map(x=>x.trim()).filter(Boolean);const deadline=$('deadline')?.value||null;const budget=$('budgetLimit')?.value;const body={name:$('projectName')?.value.trim()||null,goal,success_definition:$('successDefinition')?.value.trim()||null,deliverables:lines('deliverables'),completion_criteria:lines('completionCriteria'),constraints:lines('constraints'),forbidden_actions:lines('forbiddenActions'),deadline:deadline||null,urgency:+($('urgency')?.value||50),budget_limit:budget===''?null:+budget,power_percent:+$('power').value};const r=await fetch('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});render(await r.json());await refreshProjects()}
+async function savePower(){previewPower(); if(!active)return; const r=await fetch('/api/power',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({power_percent:+$('power').value})}); render(await r.json())}
+async function pauseToggle(){if(!active)return; const r=await fetch(paused?'/api/resume':'/api/pause',{method:'POST'}); render(await r.json())}
+async function toggleAutonomy(){if(!active){autonomy=!autonomy;renderToggles();return} const r=await fetch('/api/autonomy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!autonomy})});render(await r.json())}
+async function setAutonomyProfile(level){if(!active)return;const r=await fetch('/api/autonomy-profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({level})});render(await r.json())}
+async function toggleNotifications(){if('Notification'in window&&Notification.permission==='default')try{await Notification.requestPermission()}catch(e){}; if(!active){notifications=!notifications;renderToggles();return} const r=await fetch('/api/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!notifications})});render(await r.json())}
+function renderToggles(){for(const [id,on] of [['autonomyToggle',autonomy],['notificationToggle',notifications]]){const e=$(id);e.textContent=on?'ON':'OFF';e.classList.toggle('on',on)} $('notificationPermission').textContent=('Notification'in window)?'Permiso navegador: '+Notification.permission:'Notificaciones del navegador no disponibles'}
+function fmtETA(sec){if(sec==null)return '—'; if(sec<60)return Math.ceil(sec)+' s'; const m=Math.ceil(sec/60); if(m<60)return m+' min'; const h=Math.floor(m/60), mm=m%60; return h+' h '+mm+' min'}
+function nodeHTML(n){const kids=(n.children||[]).map(nodeHTML).join('');const meta=[n.provider?` · ${escapeHtml(n.provider)}`:'',n.conversation_turns?` · ${n.conversation_turns} turnos`:'',n.verified?' · ✓ verificado':''].join(''); return `<details class="node" ${n.children?.length?'':'open'}><summary>${escapeHtml(n.title)} <span class="badge ${n.status}">${n.status}</span><span class="small"> P${n.priority}${meta}</span> <button class="info" style="width:22px;height:22px" onclick="event.preventDefault();event.stopPropagation();showTask('${n.id}')">i</button></summary>${n.description?`<div style="font-size:12px;opacity:.55;margin:5px 0">${escapeHtml(n.description)}</div>`:''}${kids}</details>`}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+async function resolveDecision(id,selected){const r=await fetch('/api/decision/'+encodeURIComponent(id),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selected})});render(await r.json())}
+function decisionsHTML(ds){if(!ds.length)return 'Sin decisiones pendientes.';return ds.map(d=>`<div class="decision"><strong>${escapeHtml(d.title)}</strong><div class="small">${escapeHtml(d.description)} · CEO recomienda: ${escapeHtml(d.recommendation||'—')} · ${d.timeout_seconds}s</div>${(d.options||[]).map(o=>`<button onclick="resolveDecision(decodeURIComponent('${encodeURIComponent(d.id)}'),JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(o))}')))">${escapeHtml(o)}</button>`).join('')}</div>`).join('')}
+function handleNotifications(ns){if(!notifications||!('Notification'in window)||Notification.permission!=='granted')return;for(const n of ns||[]){if(seenNotifications.has(n.id))continue;seenNotifications.add(n.id);try{new Notification(n.title,{body:n.body})}catch(e){}}}
+function directorsHTML(tree){const rows=Object.values(tree||{}).filter(x=>x.level===1).slice(0,24);if(!rows.length)return '<em class="small">Sin directores todavía.</em>';return rows.map(x=>`<div class="director"><strong>${escapeHtml(x.title)}</strong><div class="small">${x.workload} tareas · ${x.progress}% · ${x.blocked} bloqueadas</div></div>`).join('')}
+async function toggleMap(){toggleInfo('mapInfo');const el=$('projectMap');el.classList.toggle('hidden');if(el.classList.contains('hidden'))return;try{const r=await fetch('/api/project-map');const m=await r.json();el.innerHTML=(m.nodes||[]).slice(0,160).map(n=>`<span class="map-node ${n.status} ${n.critical?'critical':''}" title="${escapeHtml(n.status)}">${escapeHtml(n.title)}</span>`).join('')+(m.truncated?'<span class="small">…vista resumida</span>':'')}catch(e){el.textContent='Mapa no disponible.'}}
+
+async function setOperatingMode(mode){if(!active)return;const r=await fetch('/api/operating-mode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode})});if(r.ok)render(await r.json())}
+async function saveWorkSettings(){if(!active)return;const body={verification_percent:+$('verification').value,depth_percent:+$('depth').value,exploration_percent:+$('exploration').value};const r=await fetch('/api/work-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});render(await r.json())}
+async function absenceToggle(){if(!active)return;if(!window._absence){const r=await fetch('/api/absence/enter',{method:'POST'});render(await r.json())}else{const r=await fetch('/api/absence/leave',{method:'POST'});const x=await r.json();render(x.state);alert(`CEO al regreso: ${x.return_report.completed} completadas · ${x.return_report.remaining} pendientes · ${x.return_report.problems} problemas`)}}
+async function showTask(id){const r=await fetch('/api/task/'+encodeURIComponent(id));if(!r.ok)return;const t=await r.json();$('taskDetailCard').classList.remove('hidden');$('taskDetail').innerHTML=`<strong>${escapeHtml(t.title)}</strong><br><span class="small">Estado: ${escapeHtml(t.status)} · Proveedor: ${escapeHtml(t.provider_name||'—')} · Turnos: ${t.conversation_turns||0}</span><hr><b>Resultado</b><br>${escapeHtml(t.result||'Sin resultado todavía').replace(/\n/g,'<br>')}<hr><b>Dependencias</b>: ${(t.dependencies||[]).map(escapeHtml).join(', ')||'ninguna'}<br><b>Conversación</b>: ${escapeHtml(t.conversation_id||'—')}`;window.scrollTo({top:$('taskDetailCard').offsetTop-20,behavior:'smooth'})}
+async function setPreset(preset){if(!active)return;const r=await fetch('/api/resource-preset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({preset})});render(await r.json())}
+async function refreshProjects(){try{const r=await fetch('/api/projects?include_archived=true');const rows=await r.json();$('projects').innerHTML=rows.length?rows.map(p=>`<div class="project-row"><div><strong>${escapeHtml(p.name||p.goal||'Proyecto')}</strong><div class="small">${p.progress??0}%${p.completed_at?' · completado':''}${p.paused?' · pausado':''}${p.archived?' · archivado':''}${p.active?' · activo':''}${p.needs_attention?` · ${p.needs_attention} incidencias`:''}${p.next_action?`<br>Siguiente: ${escapeHtml(p.next_action)}`:''}</div></div><div class="pillbar">${p.active?'':`<button class="action secondary" onclick="activateProject('${p.id}')">Abrir</button>`}${p.paused?`<button class="action secondary" onclick="resumeProject('${p.id}')">Reanudar</button>`:`<button class="action secondary" onclick="pauseProject('${p.id}')">Pausar</button>`}<button class="action secondary" onclick="duplicateProject('${p.id}')">Duplicar</button>${p.archived?`<button class="action secondary" onclick="unarchiveProject('${p.id}')">Desarchivar</button>`:`<button class="action secondary" onclick="archiveProject('${p.id}')">Archivar</button>`}<button class="action secondary" onclick="deleteProject('${p.id}','${escapeHtml((p.name||p.goal||'Proyecto').replace(/'/g,'&#39;'))}')">Eliminar</button></div></div>`).join(''):'<span class="small">No hay proyectos guardados.</span>'}catch(e){}}
+async function activateProject(id){const r=await fetch('/api/projects/'+encodeURIComponent(id)+'/activate',{method:'POST'});if(r.ok)render(await r.json());await refreshProjects()}
+async function pauseProject(id){await fetch('/api/projects/'+encodeURIComponent(id)+'/pause',{method:'POST'});await refresh();await refreshProjects()}
+async function resumeProject(id){const r=await fetch('/api/projects/'+encodeURIComponent(id)+'/resume',{method:'POST'});if(r.ok)render(await r.json());await refreshProjects()}
+async function duplicateProject(id){const name=prompt('Nombre de la copia (opcional):','');const r=await fetch('/api/projects/'+encodeURIComponent(id)+'/duplicate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name||null})});if(r.ok)await refreshProjects()}
+async function archiveProject(id){await fetch('/api/projects/'+encodeURIComponent(id)+'/archive',{method:'POST'});await refresh();await refreshProjects()}
+async function unarchiveProject(id){await fetch('/api/projects/'+encodeURIComponent(id)+'/unarchive',{method:'POST'});await refreshProjects()}
+async function deleteProject(id,name){if(!confirm('Eliminar permanentemente el proyecto “'+name+'”? Esta acción no se puede deshacer.'))return;const r=await fetch('/api/projects/'+encodeURIComponent(id)+'/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:id})});if(!r.ok){const x=await r.json().catch(()=>({detail:'Error'}));alert(x.detail||'No se pudo eliminar');return;}await refresh();await refreshProjects()}
+async function reviewCleanup(){const el=$('cleanupCandidates');try{const r=await fetch('/api/projects/cleanup-candidates');const x=await r.json();const rows=x.candidates||[];el.classList.remove('hidden');el.innerHTML=rows.length?'<strong>Sugerencias de limpieza (sin acciones automáticas)</strong><br>'+rows.map(c=>escapeHtml(c.name||c.project_id)+' · '+escapeHtml((c.reasons||[]).join(', '))).join('<br>'):'No se han detectado candidatos claros para limpieza.'}catch(e){el.classList.remove('hidden');el.textContent='No se pudo revisar la limpieza.'}}
+async function saveCredential(provider,inputId){const key=$(inputId).value.trim();if(!key)return;const r=await fetch('/api/provider-credentials/'+provider,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key})});$(inputId).value='';await refreshCredentialStatus();const ps=await fetch('/api/providers');$('providers').innerHTML=(await ps.json()).map(p=>`<span class="provider">${escapeHtml(p.provider)} · ${p.available?'disponible':'no disponible'}</span>`).join('')}
+async function refreshCredentialStatus(){try{const r=await fetch('/api/provider-credentials');const rows=await r.json();$('credentialStatus').textContent=rows.map(x=>x.provider+': '+(x.configured?'configurada':'sin configurar')).join(' · ')}catch(e){}}
+function activityHTML(a){const activeRows=(a.active||[]).map(x=>`<div class="activity-item"><strong>${escapeHtml(x.title)}</strong><div class="small">${escapeHtml(x.provider||'—')} · ${escapeHtml(x.stage||'running')} · intento ${x.attempt||0}</div></div>`).join('');const nextRows=(a.next||[]).slice(0,5).map(x=>`<div class="activity-item"><strong>Después: ${escapeHtml(x.title)}</strong><div class="small">Prioridad ${x.priority||0} · ${escapeHtml(x.why||'plan')}</div></div>`).join('');return activeRows+nextRows||`<div class="activity-item"><strong>${a.stalled?'Bloqueo detectado':'Sin workers activos'}</strong><div class="small">CEO está esperando trabajo ejecutable o reevaluando el plan.</div></div>`}
+function timelineHTML(a){const rows=(a.timeline||[]).slice(0,12);return rows.length?rows.map(x=>`<div class="timeline-row"><strong>${escapeHtml(x.title||x.kind)}</strong><br>${escapeHtml(x.detail||x.kind)}${x.provider?' · '+escapeHtml(x.provider):''}<br><span style="opacity:.55">${escapeHtml(x.ts||'')}</span></div>`).join(''):'Sin eventos todavía.'}
+function render(s){if(!s.active){active=false;$('providers').innerHTML=(s.provider_names||[]).map(p=>`<span class="provider">${escapeHtml(p)}</span>`).join('');renderToggles();return} active=true;paused=s.paused;autonomy=s.autonomy_enabled;notifications=s.notifications_enabled;window._absence=!!s.absence_mode;$('goalTitle').textContent=s.goal;$('goalInput').value=s.goal;$('projectName').value=s.project_name||'';$('power').value=s.power_percent;previewPower();const ws=s.work_settings||{};$('verification').value=ws.verification_percent??50;$('verificationLabel').textContent=$('verification').value+' %';$('depth').value=ws.depth_percent??60;$('depthLabel').textContent=$('depth').value+' %';$('exploration').value=ws.exploration_percent??35;$('explorationLabel').textContent=$('exploration').value+' %';$('absenceBtn').textContent=window._absence?'He vuelto':'Me voy';$('progress').textContent=s.metrics.progress+' %';$('workers').textContent=s.metrics.active_workers+' / '+s.metrics.target_workers;$('completed').textContent=s.metrics.completed;$('eta').textContent=fmtETA(s.metrics.eta_seconds);$('avoided').textContent=s.metrics.human_interventions_avoided||0;const ps=s.metrics.power_scenarios||{};$('scenarios').textContent=Object.entries(ps).map(([p,v])=>p+' % → '+fmtETA(v.eta_seconds)+' ('+v.workers+' workers)').join('   ·   ');const r=s.metrics.resources||{};$('resources').textContent=`CPU ${Math.round(r.cpu_percent||0)} % · RAM ${Math.round(r.ram_percent||0)} % · capacidad estimada ${r.hardware_worker_capacity||0} workers`;const act=s.metrics.activity||{};$('activity').innerHTML=activityHTML(act);$('activityWhy').textContent=act.why||'';$('activityTimeline').innerHTML=timelineHTML(act);$('activityAttention').textContent=(act.needs_attention||[]).length?'Necesita atención: '+(act.needs_attention||[]).map(x=>x.title+' ('+x.status+')').join(' · '):'Sin incidencias que requieran atención.';const c=s.continuity||{};$('continuity').textContent='Continuidad: '+(c.status||'—')+' · '+(c.next?.[0]?.title?'siguiente '+c.next[0].title:'sin siguiente tarea registrada')+' · reanudaciones '+(c.resume_count||0);const pi=s.production_intelligence||{};const h=pi.health||{};const ac=pi.autonomy_confidence||{};$('healthScore').textContent=h.score==null?'—':Math.round(h.score*100)+' %';$('autonomyConfidence').textContent=ac.score==null?'—':Math.round(ac.score*100)+' %';$('strategy').textContent=pi.recommended_strategy||'—';$('evidenceCount').textContent=pi.evidence_records||0;const vv=pi.verification||{};$('verificationState').textContent=(vv.failed||0)?'FALLO':(vv.pending||0)?'PEND.':'OK';const cal=pi.confidence_calibration||{};$('calibrationState').textContent=cal.samples?Math.round((1-(cal.expected_calibration_error||0))*100)+' %':'—';$('sopCount').textContent=pi.sop_candidates||0;const sec=pi.security||{};$('securityState').textContent='Seguridad: '+(sec.critical_unmitigated?.length?'RIESGO '+sec.critical_unmitigated.join(', '):'sin amenazas críticas sin mitigar');const mode=pi.operating_mode||'normal';$('modeStatus').textContent=mode;document.querySelectorAll('.operatingMode').forEach(b=>b.classList.toggle('selected',b.dataset.mode===mode));document.querySelectorAll('.autonomyPreset').forEach(b=>b.classList.toggle('selected',b.dataset.level===(s.operator_controls?.autonomy?.key||'balanced')));document.querySelectorAll('.resourcePreset').forEach(b=>b.classList.toggle('selected',b.dataset.preset===(s.operator_controls?.resource?.key||'custom')));const b=s.metrics.budget||{};$('budget').textContent=b.limit==null?`Coste API registrado: ${b.spent||0} · reservado ${b.reserved||0} · sin presupuesto máximo`:`Coste API: gastado ${b.spent||0} · reservado ${b.reserved||0} · comprometido ${b.committed||0} / ${b.limit} · restante ${b.remaining??0}`;$('tree').innerHTML=s.tree.map(nodeHTML).join('');$('directors').innerHTML=directorsHTML((s.metrics||{}).director_tree||{});const opStatus=s.metrics?.operational_status||(s.completed_at?'COMPLETADO':(paused?'PAUSADO':'TRABAJANDO'));$('statusText').textContent=opStatus;$('statusDetail').textContent=act.why||'CEO mantiene el objetivo y decide el siguiente paso.';$('pauseBtn').textContent=paused?'Reanudar':'Pausar';$('decisions').innerHTML=decisionsHTML(s.decisions||[]);$('exceptions').innerHTML=(s.exceptions||[]).length?(s.exceptions||[]).map(e=>`<div>⚠ ${escapeHtml(e.title)} · ${escapeHtml(e.status)}</div>`).join(''):'Sin excepciones.';$('providers').innerHTML=(s.provider_names||[]).map(p=>`<span class="provider">${escapeHtml(p)}</span>`).join('');renderToggles();handleNotifications(s.notifications||[])}
+async function refresh(){try{const r=await fetch('/api/state');render(await r.json())}catch(e){}}
+setInterval(refresh,800);refresh();refreshProjects();refreshCredentialStatus();renderToggles();
+</script>
+</body>
+</html>

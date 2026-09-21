@@ -1,0 +1,15 @@
+{
+  "algorithm": "ed25519",
+  "channel": {
+    "bootstrap_transport": "temporary-github-branch",
+    "intended_repository": "danisuarezinef-ai/investment-intelligence-radar",
+    "manifest_url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/manifest.json",
+    "name": "stable",
+    "product_id": "ceo-de-ias"
+  },
+  "keys": {
+    "ceo-rc1-2026-09": "5w2MvS9sPj9Ag7cKfn75Gef4X921siiOsTSN92/SW2k="
+  },
+  "note": "Public verification key only. Private release key is not stored in the source tree.",
+  "schema_version": 1
+}

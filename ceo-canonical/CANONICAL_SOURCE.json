@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "source_of_truth": true,
+  "field_base": "1.5.86-rc1-provider-session-integrity",
+  "source_artifact": "ceo-updates/CEO_1.5.86-rc1-provider-session-integrity.zip",
+  "release_publication_disabled": true,
+  "purpose": "Deep stabilization audit. Do not publish directly."
+}
