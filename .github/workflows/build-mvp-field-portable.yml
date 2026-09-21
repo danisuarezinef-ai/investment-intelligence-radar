@@ -1,0 +1,270 @@
+name: Build exact MVP_FIELD portable bundle
+
+on:
+  push:
+    branches: [mvp-field-first-real-goal]
+    paths:
+      - 'ceo-updates/mvp_field/**'
+      - '.github/workflows/build-mvp-field-portable.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-exact-portable:
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: mvp-field-first-real-goal
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build isolated portable bundle
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP "ceo-mvp-field-build"
+          $env:CEO_MVP_FIELD_BUILD_ROOT = $root
+          python ceo-updates\mvp_field\build_mvp_field_bundle.py
+          if ($LASTEXITCODE -ne 0) { throw "MVP_FIELD build failed" }
+          "CEO_MVP_FIELD_BUILD_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Extract exact bundle and install its frozen runtime
+        shell: pwsh
+        run: |
+          $extract = Join-Path $env:RUNNER_TEMP "ceo-mvp-field-exact"
+          Remove-Item -Recurse -Force $extract -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $extract | Out-Null
+          Expand-Archive ceo-updates\mvp_field\CEO_MVP_FIELD_FIRST_REAL_GOAL.zip $extract
+          python -m pip install --disable-pip-version-check -q -e $extract
+          if ($LASTEXITCODE -ne 0) { throw "Exact bundle install failed" }
+          "CEO_MVP_FIELD_EXACT=$extract" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Exact-bundle happy path with fake provider
+        shell: pwsh
+        run: |
+          @'
+          import asyncio
+          import importlib.util
+          import json
+          import os
+          import pathlib
+          import tempfile
+
+          root = pathlib.Path(os.environ["CEO_MVP_FIELD_EXACT"])
+          mod_path = root / "ceo_core" / "mvp_field_first_real_goal.py"
+          spec = importlib.util.spec_from_file_location("mvp_exact", mod_path)
+          mod = importlib.util.module_from_spec(spec)
+          assert spec and spec.loader
+          spec.loader.exec_module(mod)
+
+          def report():
+              sentence = (
+                  "La intensidad moderada permite sostener un esfuerzo aeróbico controlado, "
+                  "pero la interpretación de la zona depende del método de medición y de la persona. "
+              )
+              body = (sentence * 70)
+              return (
+                  "## Qué es el entrenamiento en Zona 2\n\n" + body[:4500] +
+                  "\n\n## Beneficios\n\n" + body[:4300] +
+                  "\n\n## Limitaciones\n\n" + body[:4200] +
+                  "\n\n## Conclusión\n\n" + body[:1800] +
+                  "\n\n## Fuentes\n\n" +
+                  "\n".join(
+                      f"- Fuente {i}, Organización {i}, 2025, https://example{i}.org/source"
+                      for i in range(1, 6)
+                  )
+              )
+
+          # Build a report with exact word budget by trimming body, then retaining
+          # headings/sources. This exercises the exact packaged runner, not source-tree code.
+          def valid_report():
+              intro = (
+                  "La zona dos describe un esfuerzo aeróbico moderado que puede sostenerse durante "
+                  "periodos prolongados. Su identificación depende del método empleado y de la respuesta "
+                  "individual, por lo que no debe confundirse una cifra genérica con una prescripción exacta. "
+              )
+              sections = {
+                  "## Qué es el entrenamiento en Zona 2": intro * 7,
+                  "## Beneficios": (
+                      "El trabajo sostenido puede aumentar el volumen de ejercicio tolerable y favorecer "
+                      "adaptaciones aeróbicas periféricas cuando forma parte de un programa equilibrado. "
+                  ) * 8,
+                  "## Limitaciones": (
+                      "Las fronteras entre zonas varían según pruebas, dispositivos y modelos fisiológicos. "
+                      "No sustituye por sí solo al trabajo de intensidad alta, fuerza o especificidad deportiva. "
+                  ) * 8,
+                  "## Conclusión": (
+                      "Es una herramienta útil para acumular trabajo aeróbico con fatiga relativamente controlada, "
+                      "pero su valor depende del objetivo, la dosis total y una definición individual coherente. "
+                  ) * 5,
+              }
+              text = ""
+              for h,b in sections.items():
+                  text += h + "\n\n" + b + "\n\n"
+              text += "## Fuentes\n\n" + "\n".join(
+                  f"- Fuente {i}, Organización {i}, 2025, https://example{i}.org/source"
+                  for i in range(1, 6)
+              )
+              words = mod.MVPFieldRunner._word_count(text)
+              filler = " evidencia aeróbica contexto individual adaptación carga entrenamiento"
+              while words < 720:
+                  sections["## Conclusión"] += filler
+                  text = ""
+                  for h,b in sections.items():
+                      text += h + "\n\n" + b + "\n\n"
+                  text += "## Fuentes\n\n" + "\n".join(
+                      f"- Fuente {i}, Organización {i}, 2025, https://example{i}.org/source"
+                      for i in range(1, 6)
+                  )
+                  words = mod.MVPFieldRunner._word_count(text)
+              assert 700 <= words <= 1000, words
+              return text
+
+          research = json.dumps({
+              "notes": "Notas suficientes",
+              "sources": [
+                  {"title":f"Fuente {i}","publisher":f"Organización {i}","year":"2025",
+                   "url":f"https://example{i}.org/source","relevance":"relevante"}
+                  for i in range(1,6)
+              ]
+          }, ensure_ascii=False)
+          verifier = json.dumps({
+              "pass": True, "reasons": [],
+              "checks": {
+                  "answers_goal": True, "benefits_balanced": True,
+                  "limitations_present": True, "sources_identifiable": True,
+                  "sources_plausibly_relevant": True, "no_obvious_fabrication": True
+              }
+          })
+
+          queue = [research, valid_report(), verifier]
+          class P:
+              name = "gemini-interactions"
+              async def generate(self, prompt, *, max_output_tokens):
+                  assert queue, "provider called more than expected"
+                  return queue.pop(0)
+          async def probe(url):
+              return {"url":url,"reachable":True,"status":200,"title":"test","reason":"ok"}
+
+          async def main():
+              with tempfile.TemporaryDirectory() as td:
+                  runner = mod.MVPFieldRunner(
+                      provider_factory=lambda: P(),
+                      results_root=td,
+                      source_probe=probe,
+                  )
+                  result = await runner.run()
+                  assert result["delivery_pass"] is True, result
+                  assert result["status"] == "complete", result
+                  assert pathlib.Path(td, "FIELD_MVP_01.md").is_file()
+                  assert len(result["steps"]) == 4, result["steps"]
+                  assert not queue, queue
+                  print("EXACT_MVP_FIELD_HAPPY_PATH_PASS")
+          asyncio.run(main())
+          '@ | Set-Content -Encoding UTF8 exact_happy.py
+          python exact_happy.py
+          if ($LASTEXITCODE -ne 0) { throw "Exact bundle happy path failed" }
+
+      - name: Exact-bundle one-retry fail-fast gate
+        shell: pwsh
+        run: |
+          @'
+          import asyncio, importlib.util, os, pathlib, tempfile
+          root=pathlib.Path(os.environ["CEO_MVP_FIELD_EXACT"])
+          p=root/"ceo_core"/"mvp_field_first_real_goal.py"
+          spec=importlib.util.spec_from_file_location("mvp_exact_retry",p)
+          mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+          calls={"n":0}
+          class P:
+              name="gemini-interactions"
+              async def generate(self,prompt,*,max_output_tokens):
+                  calls["n"]+=1
+                  raise RuntimeError("synthetic provider outage")
+          async def main():
+              with tempfile.TemporaryDirectory() as td:
+                  r=mod.MVPFieldRunner(provider_factory=lambda:P(),results_root=td)
+                  out=await r.run()
+                  assert out["delivery_pass"] is False,out
+                  assert calls["n"]==2,calls
+                  assert len(out["steps"])==4,out["steps"]
+                  print("EXACT_MVP_FIELD_ONE_RETRY_PASS")
+          asyncio.run(main())
+          '@ | Set-Content -Encoding UTF8 exact_retry.py
+          python exact_retry.py
+          if ($LASTEXITCODE -ne 0) { throw "One-retry gate failed" }
+
+      - name: Start exact minimal UI with no credential
+        shell: pwsh
+        run: |
+          $isolated = Join-Path $env:RUNNER_TEMP "mvp-field-empty-localapp"
+          New-Item -ItemType Directory -Force -Path $isolated | Out-Null
+          $env:LOCALAPPDATA=$isolated
+          $env:CEO_NO_BROWSER="1"
+          Start-Process python -ArgumentList "$env:CEO_MVP_FIELD_EXACT\scripts\mvp_field_first_real_goal.py" -WindowStyle Hidden
+          Start-Sleep -Seconds 3
+          $found=$false
+          foreach($p in 8791..8796){
+            try{
+              $s=Invoke-RestMethod -Uri ("http://127.0.0.1:"+$p+"/state") -TimeoutSec 2
+              if($s.mode -eq "MVP_FIELD"){
+                if($s.delivery_pass -ne $null){throw "delivery_pass must be null before execution"}
+                if($s.status -ne "blocked"){throw "missing credential must be a simple blocked state"}
+                if($s.stage -ne "missing_stored_key"){throw "unexpected stage"}
+                $found=$true
+                Write-Host ("MVP_FIELD UI healthy on "+$p)
+                break
+              }
+            }catch{}
+          }
+          if(-not $found){throw "Minimal MVP_FIELD UI did not start"}
+
+      - name: Prove exact executor excludes frozen layers
+        shell: pwsh
+        run: |
+          @'
+          import ast, os, pathlib, zipfile
+          root=pathlib.Path(os.environ["CEO_MVP_FIELD_EXACT"])
+          p=root/"ceo_core"/"mvp_field_first_real_goal.py"
+          s=p.read_text(encoding="utf-8")
+          forbidden=[
+            "ContinuousScheduler","MultiProviderRouter","WorkerRecoverySupervisor",
+            "RecoveryStormGuard","ContinuityManager","IntegrityEngineeringCore",
+            "InternalReleaseCoordinator","InAppUpdater","AutonomousProjectLoop",
+            "MissionSupervisor","GoalCompletionGate"
+          ]
+          hits=[x for x in forbidden if x in s]
+          assert not hits,hits
+          assert s.count("for attempt in (1, 2):")==1
+          assert "max_attempts_per_model=1" in s
+          assert "max_models=1" in s
+          assert "delivery_pass" in s
+          ast.parse(s)
+
+          z=pathlib.Path("ceo-updates/mvp_field/CEO_MVP_FIELD_FIRST_REAL_GOAL.zip")
+          with zipfile.ZipFile(z) as f:
+              assert f.testzip() is None
+              names=f.namelist()
+              assert "MVP_FIELD_PRIMER_OBJETIVO.vbs" in names
+              assert "ABRIR_MVP_FIELD.cmd" in names
+              assert "scripts/mvp_field_first_real_goal.py" in names
+              assert "ceo_core/mvp_field_first_real_goal.py" in names
+          print("EXACT_MVP_FIELD_FROZEN_COMPLEXITY_PASS")
+          '@ | Set-Content -Encoding UTF8 exact_static.py
+          python exact_static.py
+          if ($LASTEXITCODE -ne 0) { throw "Exact frozen-complexity gate failed" }
+
+      - name: Commit portable artifact only to isolated branch
+        shell: pwsh
+        run: |
+          git config user.name "CEO MVP Field"
+          git config user.email "ceo-mvp-field@local.invalid"
+          git pull --rebase origin mvp-field-first-real-goal
+          git add ceo-updates/mvp_field/CEO_MVP_FIELD_FIRST_REAL_GOAL.zip ceo-updates/mvp_field/MVP_FIELD_QUALIFICATION.json
+          git commit -m "Stage isolated MVP_FIELD portable field bundle"
+          git push origin HEAD:mvp-field-first-real-goal
