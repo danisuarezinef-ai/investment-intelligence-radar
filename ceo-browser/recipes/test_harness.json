@@ -1,0 +1,11 @@
+{
+  "provider": "test-harness",
+  "url": "http://127.0.0.1:8765/",
+  "input_selectors": ["#prompt-textarea"],
+  "send_selectors": ["button[data-testid='send-button']"],
+  "response_selectors": ["[data-message-author-role='assistant']"],
+  "busy_selectors": ["button[data-testid='stop-button']"],
+  "constraints": {
+    "test_only": true
+  }
+}
