@@ -24,6 +24,10 @@
       "sha256": "eccc91cfc7d773ced8fa80c76dc5490d7e17acd6dd0d3a95bad94cbd1d0fff34",
       "size": 5424
     },
+    "contracts.py": {
+      "sha256": "6ae977e11ab44f03ba5b9c5a51319253baef86ebe866be33af03b8d1a5047c68",
+      "size": 5368
+    },
     "conversation_controller.py": {
       "sha256": "f167172943ac4a7517dfc3ee5426c3584221f78a00fe6812aca4e1c34881477c",
       "size": 14375
@@ -91,6 +95,10 @@
     "scheduler_reconciler_v1.py": {
       "sha256": "7360c9260fda0c2794340a95c75db89e350213810027dd989f7f3ebe99257754",
       "size": 5557
+    },
+    "self_hosting_runtime.py": {
+      "sha256": "c58f99d44e011288c9c5ecb869355bd737e6d35cbc52c9a1c9b9b5d122622a97",
+      "size": 16392
     },
     "self_hosting_tools.py": {
       "sha256": "991ff20cc8f50524368f805026861a120e9666028229fd7c59dd0287d7b719c1",
