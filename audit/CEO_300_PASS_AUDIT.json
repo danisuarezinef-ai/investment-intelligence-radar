@@ -1,0 +1,2962 @@
+{
+  "all_results": [
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=0,mode=0",
+      "ok": true,
+      "pass": 1
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=1,mode=1",
+      "ok": true,
+      "pass": 2
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=2,mode=2",
+      "ok": true,
+      "pass": 3
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=3,mode=3",
+      "ok": true,
+      "pass": 4
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 5
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=5,mode=0",
+      "ok": true,
+      "pass": 6
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=6,mode=1",
+      "ok": true,
+      "pass": 7
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=7,mode=2",
+      "ok": true,
+      "pass": 8
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=8,mode=3",
+      "ok": true,
+      "pass": 9
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 10
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=0,mode=0",
+      "ok": true,
+      "pass": 11
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=1,mode=1",
+      "ok": true,
+      "pass": 12
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=2,mode=2",
+      "ok": true,
+      "pass": 13
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=3,mode=3",
+      "ok": true,
+      "pass": 14
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 15
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=5,mode=0",
+      "ok": true,
+      "pass": 16
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=6,mode=1",
+      "ok": true,
+      "pass": 17
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=7,mode=2",
+      "ok": true,
+      "pass": 18
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=8,mode=3",
+      "ok": true,
+      "pass": 19
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 20
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=0,mode=0",
+      "ok": true,
+      "pass": 21
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=1,mode=1",
+      "ok": true,
+      "pass": 22
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=2,mode=2",
+      "ok": true,
+      "pass": 23
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=3,mode=3",
+      "ok": true,
+      "pass": 24
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 25
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=5,mode=0",
+      "ok": true,
+      "pass": 26
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=6,mode=1",
+      "ok": true,
+      "pass": 27
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=7,mode=2",
+      "ok": true,
+      "pass": 28
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=8,mode=3",
+      "ok": true,
+      "pass": 29
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 30
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=0,mode=0",
+      "ok": true,
+      "pass": 31
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=1,mode=1",
+      "ok": true,
+      "pass": 32
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=2,mode=2",
+      "ok": true,
+      "pass": 33
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=3,mode=3",
+      "ok": true,
+      "pass": 34
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 35
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=5,mode=0",
+      "ok": true,
+      "pass": 36
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=6,mode=1",
+      "ok": true,
+      "pass": 37
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=7,mode=2",
+      "ok": true,
+      "pass": 38
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=8,mode=3",
+      "ok": true,
+      "pass": 39
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 40
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=0,mode=0",
+      "ok": true,
+      "pass": 41
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=1,mode=1",
+      "ok": true,
+      "pass": 42
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=2,mode=2",
+      "ok": true,
+      "pass": 43
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=3,mode=3",
+      "ok": true,
+      "pass": 44
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 45
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=5,mode=0",
+      "ok": true,
+      "pass": 46
+    },
+    {
+      "detail": "{'truth': {'status': 'planning', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 1, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'PLANIFICANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=6,mode=1",
+      "ok": true,
+      "pass": 47
+    },
+    {
+      "detail": "{'truth': {'status': 'working', 'productive_completed': 0, 'productive_running': 1, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'TRABAJANDO', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'executable_route', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=7,mode=2",
+      "ok": true,
+      "pass": 48
+    },
+    {
+      "detail": "{'truth': {'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: transient'}, 'wd': {'status': 'ESPERANDO PROVEEDOR', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'provider_wait', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=8,mode=3",
+      "ok": true,
+      "pass": 49
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 50
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 49, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=49",
+      "ok": true,
+      "pass": 51
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 105, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=105",
+      "ok": true,
+      "pass": 52
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 161, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=161",
+      "ok": true,
+      "pass": 53
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 217, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=217",
+      "ok": true,
+      "pass": 54
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 273, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=273",
+      "ok": true,
+      "pass": 55
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 329, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=329",
+      "ok": true,
+      "pass": 56
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 385, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=385",
+      "ok": true,
+      "pass": 57
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 441, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=441",
+      "ok": true,
+      "pass": 58
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 497, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=497",
+      "ok": true,
+      "pass": 59
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 553, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=553",
+      "ok": true,
+      "pass": 60
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 610, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=610",
+      "ok": true,
+      "pass": 61
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 666, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=666",
+      "ok": true,
+      "pass": 62
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 722, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=722",
+      "ok": true,
+      "pass": 63
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 778, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=778",
+      "ok": true,
+      "pass": 64
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 834, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=834",
+      "ok": true,
+      "pass": 65
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 890, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=890",
+      "ok": true,
+      "pass": 66
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 946, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=946",
+      "ok": true,
+      "pass": 67
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 1002, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1002",
+      "ok": true,
+      "pass": 68
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 1058, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1058",
+      "ok": true,
+      "pass": 69
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 1114, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1114",
+      "ok": true,
+      "pass": 70
+    },
+    {
+      "detail": "{'mode': 'compact', 'characters': 1170, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1170",
+      "ok": true,
+      "pass": 71
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1226, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1226",
+      "ok": false,
+      "pass": 72
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1282, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1282",
+      "ok": false,
+      "pass": 73
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1338, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1338",
+      "ok": false,
+      "pass": 74
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1394, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1394",
+      "ok": false,
+      "pass": 75
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1450, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1450",
+      "ok": false,
+      "pass": 76
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1506, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1506",
+      "ok": false,
+      "pass": 77
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1562, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1562",
+      "ok": false,
+      "pass": 78
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1618, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1618",
+      "ok": false,
+      "pass": 79
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1674, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1674",
+      "ok": false,
+      "pass": 80
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1730, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1730",
+      "ok": false,
+      "pass": 81
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1786, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1786",
+      "ok": false,
+      "pass": 82
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1842, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1842",
+      "ok": false,
+      "pass": 83
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1898, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1898",
+      "ok": false,
+      "pass": 84
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1954, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1954",
+      "ok": false,
+      "pass": 85
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2010, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2010",
+      "ok": false,
+      "pass": 86
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2066, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2066",
+      "ok": false,
+      "pass": 87
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2122, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2122",
+      "ok": false,
+      "pass": 88
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2178, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2178",
+      "ok": false,
+      "pass": 89
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2234, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2234",
+      "ok": false,
+      "pass": 90
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2290, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2290",
+      "ok": false,
+      "pass": 91
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2346, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2346",
+      "ok": false,
+      "pass": 92
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2402, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2402",
+      "ok": false,
+      "pass": 93
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2458, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2458",
+      "ok": false,
+      "pass": 94
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2514, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2514",
+      "ok": false,
+      "pass": 95
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2570, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2570",
+      "ok": false,
+      "pass": 96
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2626, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2626",
+      "ok": false,
+      "pass": 97
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2682, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2682",
+      "ok": false,
+      "pass": 98
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2738, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2738",
+      "ok": false,
+      "pass": 99
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2794, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2794",
+      "ok": false,
+      "pass": 100
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['43d05776794d47eda3b486c935c381fa', '4501f8680e4f4f64bf6769fd12dc0dce'], 'grounded_refs': ['43d05776794d47eda3b486c935c381fa', '4501f8680e4f4f64bf6769fd12dc0dce'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-0",
+      "ok": false,
+      "pass": 101
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['c8fd78f3c54f41f9be32d6ae04f15563', 'ccca04dc0b99409b94792312724146ed'], 'grounded_refs': ['c8fd78f3c54f41f9be32d6ae04f15563', 'ccca04dc0b99409b94792312724146ed'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-1",
+      "ok": false,
+      "pass": 102
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['393c219dedfa45a0bebd64fe836cc945', 'b9a83bdd518d43a4b93788dcee5570ca'], 'grounded_refs': ['393c219dedfa45a0bebd64fe836cc945', 'b9a83bdd518d43a4b93788dcee5570ca'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-2",
+      "ok": false,
+      "pass": 103
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['893853e018ba4e84a6abfee4231b4ea8', 'b8e0cfb8b52c461a80a1dd26b0d79e13'], 'grounded_refs': ['893853e018ba4e84a6abfee4231b4ea8', 'b8e0cfb8b52c461a80a1dd26b0d79e13'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-3",
+      "ok": false,
+      "pass": 104
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['5f51f1ac64ef4adeba5fc41c875c2162', 'a3439c4448dc46cb9983eef8e3e8756c'], 'grounded_refs': ['5f51f1ac64ef4adeba5fc41c875c2162', 'a3439c4448dc46cb9983eef8e3e8756c'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-4",
+      "ok": false,
+      "pass": 105
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['67a057b1a7364b6b94f1f3f3e4f88614', 'aae6ad26f5c84d6eb29ac3da0ac08518'], 'grounded_refs': ['67a057b1a7364b6b94f1f3f3e4f88614', 'aae6ad26f5c84d6eb29ac3da0ac08518'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-5",
+      "ok": false,
+      "pass": 106
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['889800829edd46e8bff0f94db73811d7', '5634d26927b24e9a93b7e529aabee3bd'], 'grounded_refs': ['889800829edd46e8bff0f94db73811d7', '5634d26927b24e9a93b7e529aabee3bd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-6",
+      "ok": false,
+      "pass": 107
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['34032fc68ff6470499ae0e56d635aff6', '5fe917cdc6e940588a31d5684a9bbf83'], 'grounded_refs': ['34032fc68ff6470499ae0e56d635aff6', '5fe917cdc6e940588a31d5684a9bbf83'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-7",
+      "ok": false,
+      "pass": 108
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f936695330724ec09977da06a27c8a60', '8799448480034e8ca47b769caefa07d9'], 'grounded_refs': ['f936695330724ec09977da06a27c8a60', '8799448480034e8ca47b769caefa07d9'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-8",
+      "ok": false,
+      "pass": 109
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ab51445b164045fe946e79a609226837', 'ba820849e65e4a028f666a5b9dd2170f'], 'grounded_refs': ['ab51445b164045fe946e79a609226837', 'ba820849e65e4a028f666a5b9dd2170f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-9",
+      "ok": false,
+      "pass": 110
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ada8c3ebb057439f8d3f88e03967afb6', 'cd2d6acc5c5c440bb6fc0db9a739fe00'], 'grounded_refs': ['ada8c3ebb057439f8d3f88e03967afb6', 'cd2d6acc5c5c440bb6fc0db9a739fe00'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-10",
+      "ok": false,
+      "pass": 111
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['50a68369fe5342f38e3b22fd01cbd187', 'd099c142e0b449fd83421143f16bd564'], 'grounded_refs': ['50a68369fe5342f38e3b22fd01cbd187', 'd099c142e0b449fd83421143f16bd564'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-11",
+      "ok": false,
+      "pass": 112
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['8bc74cae9c30409aa9948deeba0a5498', '733f1e470bfe4b22b9882627263ba202'], 'grounded_refs': ['8bc74cae9c30409aa9948deeba0a5498', '733f1e470bfe4b22b9882627263ba202'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-12",
+      "ok": false,
+      "pass": 113
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['e63fb51208544cc38eaf5ad482fbbfdd', '0363034409dd4b31998af79134a42da1'], 'grounded_refs': ['e63fb51208544cc38eaf5ad482fbbfdd', '0363034409dd4b31998af79134a42da1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-13",
+      "ok": false,
+      "pass": 114
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['67aff3e56fa5495a84549e2cb5ad6bac', '119b0fef874343bc98cbfe79c17e7512'], 'grounded_refs': ['67aff3e56fa5495a84549e2cb5ad6bac', '119b0fef874343bc98cbfe79c17e7512'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-14",
+      "ok": false,
+      "pass": 115
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['2047c16e8616463d835aeb9fc09e99f8', 'd2a2506e6bc2444abaae0a20abd4d60c'], 'grounded_refs': ['2047c16e8616463d835aeb9fc09e99f8', 'd2a2506e6bc2444abaae0a20abd4d60c'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-15",
+      "ok": false,
+      "pass": 116
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f4dfcdf04e74420887af8f7ac1fcce7b', '3caefd540e6749c689a24f778e7f858f'], 'grounded_refs': ['f4dfcdf04e74420887af8f7ac1fcce7b', '3caefd540e6749c689a24f778e7f858f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-16",
+      "ok": false,
+      "pass": 117
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f6486aff332a4bdea6063660049fd297', '645c6940e626411f80ff0731d0ac54e1'], 'grounded_refs': ['f6486aff332a4bdea6063660049fd297', '645c6940e626411f80ff0731d0ac54e1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-17",
+      "ok": false,
+      "pass": 118
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['cb7973c8cdab43898144bb1cc10436a1', '462a707d20764062b7da68f88b4d5b4f'], 'grounded_refs': ['cb7973c8cdab43898144bb1cc10436a1', '462a707d20764062b7da68f88b4d5b4f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-18",
+      "ok": false,
+      "pass": 119
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['1bdc5a0c56c04af69e07eb43dd7db09c', '89138320c30b48b691f7fc4d733fd745'], 'grounded_refs': ['1bdc5a0c56c04af69e07eb43dd7db09c', '89138320c30b48b691f7fc4d733fd745'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-19",
+      "ok": false,
+      "pass": 120
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['dc3489633e2c418499aa7c02d3a14f4f', 'dae40907b61c45ada62fa4835ff7be89'], 'grounded_refs': ['dc3489633e2c418499aa7c02d3a14f4f', 'dae40907b61c45ada62fa4835ff7be89'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-20",
+      "ok": false,
+      "pass": 121
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['bac6334191584c3fb13943c5ca7f90e4', 'a3c1d408a71d45d39c34e98c1ad536e1'], 'grounded_refs': ['bac6334191584c3fb13943c5ca7f90e4', 'a3c1d408a71d45d39c34e98c1ad536e1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-21",
+      "ok": false,
+      "pass": 122
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['165abee1a20444b9b7b9d3f39f4a24fc', '5854c72636dd4b6a9fad26f711a1282b'], 'grounded_refs': ['165abee1a20444b9b7b9d3f39f4a24fc', '5854c72636dd4b6a9fad26f711a1282b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-22",
+      "ok": false,
+      "pass": 123
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['af8583709a5240e2a88ed4cea695577c', '63ac1b918a2a4eea9ba67c2e6635b51d'], 'grounded_refs': ['af8583709a5240e2a88ed4cea695577c', '63ac1b918a2a4eea9ba67c2e6635b51d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-23",
+      "ok": false,
+      "pass": 124
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f02057e8c1b1411bb1d2dd05de3944eb', '60bf92f0389b450da92c296befc3c30a'], 'grounded_refs': ['f02057e8c1b1411bb1d2dd05de3944eb', '60bf92f0389b450da92c296befc3c30a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-24",
+      "ok": false,
+      "pass": 125
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['745a790e11154c7985f5b2c3675ad13d', 'ebd8b6d2df6d4a89b2e77b4b088ff8e1'], 'grounded_refs': ['745a790e11154c7985f5b2c3675ad13d', 'ebd8b6d2df6d4a89b2e77b4b088ff8e1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-25",
+      "ok": false,
+      "pass": 126
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['99b8ef498328483d974c8c76323a5522', '449505f684a447e6a7a389c8be7b4876'], 'grounded_refs': ['99b8ef498328483d974c8c76323a5522', '449505f684a447e6a7a389c8be7b4876'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-26",
+      "ok": false,
+      "pass": 127
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['eacbdf8757214d3ca1d7d35c60b11cc9', '54bfb7077fbf4fe1b6ce4dbb303df746'], 'grounded_refs': ['eacbdf8757214d3ca1d7d35c60b11cc9', '54bfb7077fbf4fe1b6ce4dbb303df746'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-27",
+      "ok": false,
+      "pass": 128
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['61502252045347ec9c9b17d5cd5cdb45', 'e3f4512b81584f0da51d408eeff1c751'], 'grounded_refs': ['61502252045347ec9c9b17d5cd5cdb45', 'e3f4512b81584f0da51d408eeff1c751'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-28",
+      "ok": false,
+      "pass": 129
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['bd3e1bb1abad4f97a3caac3521c61666', 'fc54d71ef00a47d99524580fd19b2051'], 'grounded_refs': ['bd3e1bb1abad4f97a3caac3521c61666', 'fc54d71ef00a47d99524580fd19b2051'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-29",
+      "ok": false,
+      "pass": 130
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ee09b3a1d6d54b219e299f334f1273a5', '97625e24108f45d68078a3de518d4d11'], 'grounded_refs': ['ee09b3a1d6d54b219e299f334f1273a5', '97625e24108f45d68078a3de518d4d11'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-30",
+      "ok": false,
+      "pass": 131
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['eacd516237964fd38369708565aa259d', '9fce650141b34e9db846faeab469f736'], 'grounded_refs': ['eacd516237964fd38369708565aa259d', '9fce650141b34e9db846faeab469f736'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-31",
+      "ok": false,
+      "pass": 132
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['9bac988750eb4fefac3c49b6b03c6669', '66ae6ef46b85481594926d4c26398542'], 'grounded_refs': ['9bac988750eb4fefac3c49b6b03c6669', '66ae6ef46b85481594926d4c26398542'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-32",
+      "ok": false,
+      "pass": 133
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['844072f577fd40a0a223543895c73d0f', 'e2e907fe62bd447790c1a8acddd413ce'], 'grounded_refs': ['844072f577fd40a0a223543895c73d0f', 'e2e907fe62bd447790c1a8acddd413ce'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-33",
+      "ok": false,
+      "pass": 134
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f10d4be122e74fc5972ec62fcb19ff78', '3de0cc7a1c32447791a9e0e2c6b4bf71'], 'grounded_refs': ['f10d4be122e74fc5972ec62fcb19ff78', '3de0cc7a1c32447791a9e0e2c6b4bf71'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-34",
+      "ok": false,
+      "pass": 135
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ea8d3d0e462643ba89585e1e9fd178bd', 'edde086454144d86b561c34c53a39bd7'], 'grounded_refs': ['ea8d3d0e462643ba89585e1e9fd178bd', 'edde086454144d86b561c34c53a39bd7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-35",
+      "ok": false,
+      "pass": 136
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['1026eff43fc1467986a7116d60197bf3', 'c3cbe4a105304887848ee0ca8f6cb223'], 'grounded_refs': ['1026eff43fc1467986a7116d60197bf3', 'c3cbe4a105304887848ee0ca8f6cb223'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-36",
+      "ok": false,
+      "pass": 137
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['567c0142cf9b43b492e71f49a993eb2b', '58331002ce3b40d5b5ae2e08f20b1ef3'], 'grounded_refs': ['567c0142cf9b43b492e71f49a993eb2b', '58331002ce3b40d5b5ae2e08f20b1ef3'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-37",
+      "ok": false,
+      "pass": 138
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['143eb22cfd2645b98eb7287ba37a0702', '73b65b7c79754bc88520330dec69f1c3'], 'grounded_refs': ['143eb22cfd2645b98eb7287ba37a0702', '73b65b7c79754bc88520330dec69f1c3'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-38",
+      "ok": false,
+      "pass": 139
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['46eb0882a38340c0875274c1f0225381', '5f1ae44165a840f5bc42c72c0f580eb0'], 'grounded_refs': ['46eb0882a38340c0875274c1f0225381', '5f1ae44165a840f5bc42c72c0f580eb0'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-39",
+      "ok": false,
+      "pass": 140
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['5d93df2fc9c349cb887d7fa1d3c5b11f', '89fb95fca0d1442ebe576d81dd79f584'], 'grounded_refs': ['5d93df2fc9c349cb887d7fa1d3c5b11f', '89fb95fca0d1442ebe576d81dd79f584'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-40",
+      "ok": false,
+      "pass": 141
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['370970c1e490451d8c5bc7421cf76147', 'ee5fb3c061a6441d8ffd410000861c69'], 'grounded_refs': ['370970c1e490451d8c5bc7421cf76147', 'ee5fb3c061a6441d8ffd410000861c69'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-41",
+      "ok": false,
+      "pass": 142
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['d2c477aa97c541b8acc2a48f3428c3c7', '2b0b03906c5f41329d749e69c4f2fb1d'], 'grounded_refs': ['d2c477aa97c541b8acc2a48f3428c3c7', '2b0b03906c5f41329d749e69c4f2fb1d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-42",
+      "ok": false,
+      "pass": 143
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['d8cd9b6de519453eb552c9bee8ae1b6d', 'e526ad061c154e11a97dbb9d3e4122bd'], 'grounded_refs': ['d8cd9b6de519453eb552c9bee8ae1b6d', 'e526ad061c154e11a97dbb9d3e4122bd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-43",
+      "ok": false,
+      "pass": 144
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['b08dcb55cbf9468abb56a28c7008ce04', '1a50b6520228460b81c244372c3692d3'], 'grounded_refs': ['b08dcb55cbf9468abb56a28c7008ce04', '1a50b6520228460b81c244372c3692d3'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-44",
+      "ok": false,
+      "pass": 145
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['319a9068641244bbb7e0c87e6920a32c', '2838c9518b9f4b6189d5cb89d08f68cf'], 'grounded_refs': ['319a9068641244bbb7e0c87e6920a32c', '2838c9518b9f4b6189d5cb89d08f68cf'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-45",
+      "ok": false,
+      "pass": 146
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['9b35d024c30644e99b70b44087262072', 'bc67017435e7487f929c435a9539badb'], 'grounded_refs': ['9b35d024c30644e99b70b44087262072', 'bc67017435e7487f929c435a9539badb'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-46",
+      "ok": false,
+      "pass": 147
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['2067869f80984780927a7af64b1935ec', '236f377e59bc45b4a2a41d2eabb104bd'], 'grounded_refs': ['2067869f80984780927a7af64b1935ec', '236f377e59bc45b4a2a41d2eabb104bd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-47",
+      "ok": false,
+      "pass": 148
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['e92cd3db39bd46448d6fb542ac52fb6c', '71543ee5e6554353bd2fab112bd608d8'], 'grounded_refs': ['e92cd3db39bd46448d6fb542ac52fb6c', '71543ee5e6554353bd2fab112bd608d8'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-48",
+      "ok": false,
+      "pass": 149
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['c716f7d6c7b44451b2a2d3d9cb958ee8', 'babc6f5c75a1491e9a38c11c4579b64a'], 'grounded_refs': ['c716f7d6c7b44451b2a2d3d9cb958ee8', 'babc6f5c75a1491e9a38c11c4579b64a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-49",
+      "ok": false,
+      "pass": 150
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-0",
+      "ok": true,
+      "pass": 151
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-1",
+      "ok": true,
+      "pass": 152
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-2",
+      "ok": true,
+      "pass": 153
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-3",
+      "ok": true,
+      "pass": 154
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-4",
+      "ok": true,
+      "pass": 155
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-5",
+      "ok": true,
+      "pass": 156
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-6",
+      "ok": true,
+      "pass": 157
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-7",
+      "ok": true,
+      "pass": 158
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-8",
+      "ok": true,
+      "pass": 159
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-9",
+      "ok": true,
+      "pass": 160
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-10",
+      "ok": true,
+      "pass": 161
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-11",
+      "ok": true,
+      "pass": 162
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-12",
+      "ok": true,
+      "pass": 163
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-13",
+      "ok": true,
+      "pass": 164
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-14",
+      "ok": true,
+      "pass": 165
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-15",
+      "ok": true,
+      "pass": 166
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-16",
+      "ok": true,
+      "pass": 167
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-17",
+      "ok": true,
+      "pass": 168
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-18",
+      "ok": true,
+      "pass": 169
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-19",
+      "ok": true,
+      "pass": 170
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-20",
+      "ok": true,
+      "pass": 171
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-21",
+      "ok": true,
+      "pass": 172
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-22",
+      "ok": true,
+      "pass": 173
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-23",
+      "ok": true,
+      "pass": 174
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-24",
+      "ok": true,
+      "pass": 175
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-25",
+      "ok": true,
+      "pass": 176
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-26",
+      "ok": true,
+      "pass": 177
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-27",
+      "ok": true,
+      "pass": 178
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-28",
+      "ok": true,
+      "pass": 179
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-29",
+      "ok": true,
+      "pass": 180
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-30",
+      "ok": true,
+      "pass": 181
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-31",
+      "ok": true,
+      "pass": 182
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-32",
+      "ok": true,
+      "pass": 183
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-33",
+      "ok": true,
+      "pass": 184
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-34",
+      "ok": true,
+      "pass": 185
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-35",
+      "ok": true,
+      "pass": 186
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-36",
+      "ok": true,
+      "pass": 187
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-37",
+      "ok": true,
+      "pass": 188
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-38",
+      "ok": true,
+      "pass": 189
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-39",
+      "ok": true,
+      "pass": 190
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-40",
+      "ok": true,
+      "pass": 191
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-41",
+      "ok": true,
+      "pass": 192
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-42",
+      "ok": true,
+      "pass": 193
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-43",
+      "ok": true,
+      "pass": 194
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-44",
+      "ok": true,
+      "pass": 195
+    },
+    {
+      "detail": "provider wait state exists",
+      "family": "provider",
+      "name": "provider-capability-45",
+      "ok": true,
+      "pass": 196
+    },
+    {
+      "detail": "suspicious_scheduler_gate=False",
+      "family": "provider",
+      "name": "provider-capability-46",
+      "ok": true,
+      "pass": 197
+    },
+    {
+      "detail": "project intake route present",
+      "family": "provider",
+      "name": "provider-capability-47",
+      "ok": true,
+      "pass": 198
+    },
+    {
+      "detail": "authenticated waiting semantics present",
+      "family": "provider",
+      "name": "provider-capability-48",
+      "ok": true,
+      "pass": 199
+    },
+    {
+      "detail": "{'status': 'waiting_provider', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 0, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'provider temporarily unavailable: network'}",
+      "family": "provider",
+      "name": "provider-capability-49",
+      "ok": true,
+      "pass": 200
+    },
+    {
+      "detail": "{'manifest': 'DEV219_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV219_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 201
+    },
+    {
+      "detail": "{'manifest': 'DEV293_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV293_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 202
+    },
+    {
+      "detail": "{'manifest': 'DEV295_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV295_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 203
+    },
+    {
+      "detail": "{'manifest': 'DEV301_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV301_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 204
+    },
+    {
+      "detail": "{'manifest': 'DEV302_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV302_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 205
+    },
+    {
+      "detail": "{'manifest': 'DEV303_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV303_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 206
+    },
+    {
+      "detail": "{'manifest': 'DEV304_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV304_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 207
+    },
+    {
+      "detail": "{'manifest': 'DEV305_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV305_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 208
+    },
+    {
+      "detail": "{'manifest': 'DEV306_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV306_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 209
+    },
+    {
+      "detail": "{'manifest': 'DEV307_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV307_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 210
+    },
+    {
+      "detail": "{'manifest': 'DEV308_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV308_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 211
+    },
+    {
+      "detail": "{'manifest': 'DEV309_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV309_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 212
+    },
+    {
+      "detail": "{'manifest': 'DEV310_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV310_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 213
+    },
+    {
+      "detail": "{'manifest': 'DEV311_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV311_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 214
+    },
+    {
+      "detail": "{'manifest': 'DEV312_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV312_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 215
+    },
+    {
+      "detail": "{'manifest': 'DEV313_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV313_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 216
+    },
+    {
+      "detail": "{'manifest': 'DEV314_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV314_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 217
+    },
+    {
+      "detail": "{'manifest': 'DEV315_MANIFEST_UNSIGNED.json', 'stable': False, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV315_MANIFEST_UNSIGNED.json",
+      "ok": true,
+      "pass": 218
+    },
+    {
+      "detail": "{'manifest': 'DEV316_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV316_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 219
+    },
+    {
+      "detail": "{'manifest': 'DEV75_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV75_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 220
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 221
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 222
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 223
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 224
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 225
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 226
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 227
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 228
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 229
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 230
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 231
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 232
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 233
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 234
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 235
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 236
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 237
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 238
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 239
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 240
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 241
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 242
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 243
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 244
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 245
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 246
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 247
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 248
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-version-bytes",
+      "ok": true,
+      "pass": 249
+    },
+    {
+      "detail": "{}",
+      "family": "release",
+      "name": "unique-release-sequence",
+      "ok": true,
+      "pass": 250
+    },
+    {
+      "detail": "critical paths exist",
+      "family": "launcher_updater",
+      "name": "critical-0",
+      "ok": true,
+      "pass": 251
+    },
+    {
+      "detail": "critical paths in contract",
+      "family": "launcher_updater",
+      "name": "critical-1",
+      "ok": true,
+      "pass": 252
+    },
+    {
+      "detail": "launcher invokes recovery",
+      "family": "launcher_updater",
+      "name": "critical-2",
+      "ok": true,
+      "pass": 253
+    },
+    {
+      "detail": "rollback state exists",
+      "family": "launcher_updater",
+      "name": "critical-3",
+      "ok": true,
+      "pass": 254
+    },
+    {
+      "detail": "human confirmation concept exists",
+      "family": "launcher_updater",
+      "name": "critical-4",
+      "ok": true,
+      "pass": 255
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-5",
+      "ok": false,
+      "pass": 256
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-6",
+      "ok": false,
+      "pass": 257
+    },
+    {
+      "detail": "atomic pointer/write primitive present",
+      "family": "launcher_updater",
+      "name": "critical-7",
+      "ok": true,
+      "pass": 258
+    },
+    {
+      "detail": "launcher has health concept",
+      "family": "launcher_updater",
+      "name": "critical-8",
+      "ok": true,
+      "pass": 259
+    },
+    {
+      "detail": "dead pointer fallback present",
+      "family": "launcher_updater",
+      "name": "critical-9",
+      "ok": true,
+      "pass": 260
+    },
+    {
+      "detail": "critical paths exist",
+      "family": "launcher_updater",
+      "name": "critical-10",
+      "ok": true,
+      "pass": 261
+    },
+    {
+      "detail": "critical paths in contract",
+      "family": "launcher_updater",
+      "name": "critical-11",
+      "ok": true,
+      "pass": 262
+    },
+    {
+      "detail": "launcher invokes recovery",
+      "family": "launcher_updater",
+      "name": "critical-12",
+      "ok": true,
+      "pass": 263
+    },
+    {
+      "detail": "rollback state exists",
+      "family": "launcher_updater",
+      "name": "critical-13",
+      "ok": true,
+      "pass": 264
+    },
+    {
+      "detail": "human confirmation concept exists",
+      "family": "launcher_updater",
+      "name": "critical-14",
+      "ok": true,
+      "pass": 265
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-15",
+      "ok": false,
+      "pass": 266
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-16",
+      "ok": false,
+      "pass": 267
+    },
+    {
+      "detail": "atomic pointer/write primitive present",
+      "family": "launcher_updater",
+      "name": "critical-17",
+      "ok": true,
+      "pass": 268
+    },
+    {
+      "detail": "launcher has health concept",
+      "family": "launcher_updater",
+      "name": "critical-18",
+      "ok": true,
+      "pass": 269
+    },
+    {
+      "detail": "dead pointer fallback present",
+      "family": "launcher_updater",
+      "name": "critical-19",
+      "ok": true,
+      "pass": 270
+    },
+    {
+      "detail": "critical paths exist",
+      "family": "launcher_updater",
+      "name": "critical-20",
+      "ok": true,
+      "pass": 271
+    },
+    {
+      "detail": "critical paths in contract",
+      "family": "launcher_updater",
+      "name": "critical-21",
+      "ok": true,
+      "pass": 272
+    },
+    {
+      "detail": "launcher invokes recovery",
+      "family": "launcher_updater",
+      "name": "critical-22",
+      "ok": true,
+      "pass": 273
+    },
+    {
+      "detail": "rollback state exists",
+      "family": "launcher_updater",
+      "name": "critical-23",
+      "ok": true,
+      "pass": 274
+    },
+    {
+      "detail": "human confirmation concept exists",
+      "family": "launcher_updater",
+      "name": "critical-24",
+      "ok": true,
+      "pass": 275
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-25",
+      "ok": false,
+      "pass": 276
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-26",
+      "ok": false,
+      "pass": 277
+    },
+    {
+      "detail": "atomic pointer/write primitive present",
+      "family": "launcher_updater",
+      "name": "critical-27",
+      "ok": true,
+      "pass": 278
+    },
+    {
+      "detail": "launcher has health concept",
+      "family": "launcher_updater",
+      "name": "critical-28",
+      "ok": true,
+      "pass": 279
+    },
+    {
+      "detail": "dead pointer fallback present",
+      "family": "launcher_updater",
+      "name": "critical-29",
+      "ok": true,
+      "pass": 280
+    },
+    {
+      "detail": "critical paths exist",
+      "family": "launcher_updater",
+      "name": "critical-30",
+      "ok": true,
+      "pass": 281
+    },
+    {
+      "detail": "critical paths in contract",
+      "family": "launcher_updater",
+      "name": "critical-31",
+      "ok": true,
+      "pass": 282
+    },
+    {
+      "detail": "launcher invokes recovery",
+      "family": "launcher_updater",
+      "name": "critical-32",
+      "ok": true,
+      "pass": 283
+    },
+    {
+      "detail": "rollback state exists",
+      "family": "launcher_updater",
+      "name": "critical-33",
+      "ok": true,
+      "pass": 284
+    },
+    {
+      "detail": "human confirmation concept exists",
+      "family": "launcher_updater",
+      "name": "critical-34",
+      "ok": true,
+      "pass": 285
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-35",
+      "ok": false,
+      "pass": 286
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-36",
+      "ok": false,
+      "pass": 287
+    },
+    {
+      "detail": "atomic pointer/write primitive present",
+      "family": "launcher_updater",
+      "name": "critical-37",
+      "ok": true,
+      "pass": 288
+    },
+    {
+      "detail": "launcher has health concept",
+      "family": "launcher_updater",
+      "name": "critical-38",
+      "ok": true,
+      "pass": 289
+    },
+    {
+      "detail": "dead pointer fallback present",
+      "family": "launcher_updater",
+      "name": "critical-39",
+      "ok": true,
+      "pass": 290
+    },
+    {
+      "detail": "critical paths exist",
+      "family": "launcher_updater",
+      "name": "critical-40",
+      "ok": true,
+      "pass": 291
+    },
+    {
+      "detail": "critical paths in contract",
+      "family": "launcher_updater",
+      "name": "critical-41",
+      "ok": true,
+      "pass": 292
+    },
+    {
+      "detail": "launcher invokes recovery",
+      "family": "launcher_updater",
+      "name": "critical-42",
+      "ok": true,
+      "pass": 293
+    },
+    {
+      "detail": "rollback state exists",
+      "family": "launcher_updater",
+      "name": "critical-43",
+      "ok": true,
+      "pass": 294
+    },
+    {
+      "detail": "human confirmation concept exists",
+      "family": "launcher_updater",
+      "name": "critical-44",
+      "ok": true,
+      "pass": 295
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-45",
+      "ok": false,
+      "pass": 296
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-46",
+      "ok": false,
+      "pass": 297
+    },
+    {
+      "detail": "atomic pointer/write primitive present",
+      "family": "launcher_updater",
+      "name": "critical-47",
+      "ok": true,
+      "pass": 298
+    },
+    {
+      "detail": "launcher has health concept",
+      "family": "launcher_updater",
+      "name": "critical-48",
+      "ok": true,
+      "pass": 299
+    },
+    {
+      "detail": "dead pointer fallback present",
+      "family": "launcher_updater",
+      "name": "critical-49",
+      "ok": true,
+      "pass": 300
+    }
+  ],
+  "failed": 118,
+  "failures": [
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 5
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 10
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 15
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 20
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 25
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 30
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 35
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 40
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=4,mode=4",
+      "ok": false,
+      "pass": 45
+    },
+    {
+      "detail": "{'truth': {'status': 'idle', 'productive_completed': 0, 'productive_running': 0, 'productive_ready': 0, 'internal_active': 1, 'worker_recoveries': 0, 'useful_output_rate': 0.0, 'stalled': False, 'reason': 'healthy'}, 'wd': {'status': 'IDLE', 'stalled': False, 'recoveries_without_progress': 0, 'fuse_open': False, 'fallback_action': 'none', 'repaired_units': 0}}",
+      "family": "scheduler",
+      "name": "recovery=9,mode=4",
+      "ok": false,
+      "pass": 50
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1226, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1226",
+      "ok": false,
+      "pass": 72
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1282, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1282",
+      "ok": false,
+      "pass": 73
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1338, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1338",
+      "ok": false,
+      "pass": 74
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1394, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1394",
+      "ok": false,
+      "pass": 75
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1450, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1450",
+      "ok": false,
+      "pass": 76
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1506, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1506",
+      "ok": false,
+      "pass": 77
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1562, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1562",
+      "ok": false,
+      "pass": 78
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1618, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1618",
+      "ok": false,
+      "pass": 79
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1674, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1674",
+      "ok": false,
+      "pass": 80
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1730, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1730",
+      "ok": false,
+      "pass": 81
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1786, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1786",
+      "ok": false,
+      "pass": 82
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1842, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1842",
+      "ok": false,
+      "pass": 83
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1898, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1898",
+      "ok": false,
+      "pass": 84
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 1954, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=1954",
+      "ok": false,
+      "pass": 85
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2010, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2010",
+      "ok": false,
+      "pass": 86
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2066, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2066",
+      "ok": false,
+      "pass": 87
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2122, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2122",
+      "ok": false,
+      "pass": 88
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2178, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2178",
+      "ok": false,
+      "pass": 89
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2234, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2234",
+      "ok": false,
+      "pass": 90
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2290, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2290",
+      "ok": false,
+      "pass": 91
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2346, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2346",
+      "ok": false,
+      "pass": 92
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2402, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2402",
+      "ok": false,
+      "pass": 93
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2458, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2458",
+      "ok": false,
+      "pass": 94
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2514, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2514",
+      "ok": false,
+      "pass": 95
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2570, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2570",
+      "ok": false,
+      "pass": 96
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2626, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2626",
+      "ok": false,
+      "pass": 97
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2682, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2682",
+      "ok": false,
+      "pass": 98
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2738, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2738",
+      "ok": false,
+      "pass": 99
+    },
+    {
+      "detail": "{'mode': 'full', 'characters': 2794, 'complex_score': 0, 'simple_output_score': 1, 'conjunctions': 0, 'single_explicit_file': True, 'file_hits': 1}",
+      "family": "decomposition",
+      "name": "simple-file-len=2794",
+      "ok": false,
+      "pass": 100
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['43d05776794d47eda3b486c935c381fa', '4501f8680e4f4f64bf6769fd12dc0dce'], 'grounded_refs': ['43d05776794d47eda3b486c935c381fa', '4501f8680e4f4f64bf6769fd12dc0dce'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-0",
+      "ok": false,
+      "pass": 101
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['c8fd78f3c54f41f9be32d6ae04f15563', 'ccca04dc0b99409b94792312724146ed'], 'grounded_refs': ['c8fd78f3c54f41f9be32d6ae04f15563', 'ccca04dc0b99409b94792312724146ed'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-1",
+      "ok": false,
+      "pass": 102
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['393c219dedfa45a0bebd64fe836cc945', 'b9a83bdd518d43a4b93788dcee5570ca'], 'grounded_refs': ['393c219dedfa45a0bebd64fe836cc945', 'b9a83bdd518d43a4b93788dcee5570ca'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-2",
+      "ok": false,
+      "pass": 103
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['893853e018ba4e84a6abfee4231b4ea8', 'b8e0cfb8b52c461a80a1dd26b0d79e13'], 'grounded_refs': ['893853e018ba4e84a6abfee4231b4ea8', 'b8e0cfb8b52c461a80a1dd26b0d79e13'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-3",
+      "ok": false,
+      "pass": 104
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['5f51f1ac64ef4adeba5fc41c875c2162', 'a3439c4448dc46cb9983eef8e3e8756c'], 'grounded_refs': ['5f51f1ac64ef4adeba5fc41c875c2162', 'a3439c4448dc46cb9983eef8e3e8756c'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-4",
+      "ok": false,
+      "pass": 105
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['67a057b1a7364b6b94f1f3f3e4f88614', 'aae6ad26f5c84d6eb29ac3da0ac08518'], 'grounded_refs': ['67a057b1a7364b6b94f1f3f3e4f88614', 'aae6ad26f5c84d6eb29ac3da0ac08518'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-5",
+      "ok": false,
+      "pass": 106
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['889800829edd46e8bff0f94db73811d7', '5634d26927b24e9a93b7e529aabee3bd'], 'grounded_refs': ['889800829edd46e8bff0f94db73811d7', '5634d26927b24e9a93b7e529aabee3bd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-6",
+      "ok": false,
+      "pass": 107
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['34032fc68ff6470499ae0e56d635aff6', '5fe917cdc6e940588a31d5684a9bbf83'], 'grounded_refs': ['34032fc68ff6470499ae0e56d635aff6', '5fe917cdc6e940588a31d5684a9bbf83'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-7",
+      "ok": false,
+      "pass": 108
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f936695330724ec09977da06a27c8a60', '8799448480034e8ca47b769caefa07d9'], 'grounded_refs': ['f936695330724ec09977da06a27c8a60', '8799448480034e8ca47b769caefa07d9'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-8",
+      "ok": false,
+      "pass": 109
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ab51445b164045fe946e79a609226837', 'ba820849e65e4a028f666a5b9dd2170f'], 'grounded_refs': ['ab51445b164045fe946e79a609226837', 'ba820849e65e4a028f666a5b9dd2170f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-9",
+      "ok": false,
+      "pass": 110
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ada8c3ebb057439f8d3f88e03967afb6', 'cd2d6acc5c5c440bb6fc0db9a739fe00'], 'grounded_refs': ['ada8c3ebb057439f8d3f88e03967afb6', 'cd2d6acc5c5c440bb6fc0db9a739fe00'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-10",
+      "ok": false,
+      "pass": 111
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['50a68369fe5342f38e3b22fd01cbd187', 'd099c142e0b449fd83421143f16bd564'], 'grounded_refs': ['50a68369fe5342f38e3b22fd01cbd187', 'd099c142e0b449fd83421143f16bd564'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-11",
+      "ok": false,
+      "pass": 112
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['8bc74cae9c30409aa9948deeba0a5498', '733f1e470bfe4b22b9882627263ba202'], 'grounded_refs': ['8bc74cae9c30409aa9948deeba0a5498', '733f1e470bfe4b22b9882627263ba202'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-12",
+      "ok": false,
+      "pass": 113
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['e63fb51208544cc38eaf5ad482fbbfdd', '0363034409dd4b31998af79134a42da1'], 'grounded_refs': ['e63fb51208544cc38eaf5ad482fbbfdd', '0363034409dd4b31998af79134a42da1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-13",
+      "ok": false,
+      "pass": 114
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['67aff3e56fa5495a84549e2cb5ad6bac', '119b0fef874343bc98cbfe79c17e7512'], 'grounded_refs': ['67aff3e56fa5495a84549e2cb5ad6bac', '119b0fef874343bc98cbfe79c17e7512'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-14",
+      "ok": false,
+      "pass": 115
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['2047c16e8616463d835aeb9fc09e99f8', 'd2a2506e6bc2444abaae0a20abd4d60c'], 'grounded_refs': ['2047c16e8616463d835aeb9fc09e99f8', 'd2a2506e6bc2444abaae0a20abd4d60c'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-15",
+      "ok": false,
+      "pass": 116
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f4dfcdf04e74420887af8f7ac1fcce7b', '3caefd540e6749c689a24f778e7f858f'], 'grounded_refs': ['f4dfcdf04e74420887af8f7ac1fcce7b', '3caefd540e6749c689a24f778e7f858f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-16",
+      "ok": false,
+      "pass": 117
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f6486aff332a4bdea6063660049fd297', '645c6940e626411f80ff0731d0ac54e1'], 'grounded_refs': ['f6486aff332a4bdea6063660049fd297', '645c6940e626411f80ff0731d0ac54e1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-17",
+      "ok": false,
+      "pass": 118
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['cb7973c8cdab43898144bb1cc10436a1', '462a707d20764062b7da68f88b4d5b4f'], 'grounded_refs': ['cb7973c8cdab43898144bb1cc10436a1', '462a707d20764062b7da68f88b4d5b4f'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-18",
+      "ok": false,
+      "pass": 119
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['1bdc5a0c56c04af69e07eb43dd7db09c', '89138320c30b48b691f7fc4d733fd745'], 'grounded_refs': ['1bdc5a0c56c04af69e07eb43dd7db09c', '89138320c30b48b691f7fc4d733fd745'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-19",
+      "ok": false,
+      "pass": 120
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['dc3489633e2c418499aa7c02d3a14f4f', 'dae40907b61c45ada62fa4835ff7be89'], 'grounded_refs': ['dc3489633e2c418499aa7c02d3a14f4f', 'dae40907b61c45ada62fa4835ff7be89'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-20",
+      "ok": false,
+      "pass": 121
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['bac6334191584c3fb13943c5ca7f90e4', 'a3c1d408a71d45d39c34e98c1ad536e1'], 'grounded_refs': ['bac6334191584c3fb13943c5ca7f90e4', 'a3c1d408a71d45d39c34e98c1ad536e1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-21",
+      "ok": false,
+      "pass": 122
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['165abee1a20444b9b7b9d3f39f4a24fc', '5854c72636dd4b6a9fad26f711a1282b'], 'grounded_refs': ['165abee1a20444b9b7b9d3f39f4a24fc', '5854c72636dd4b6a9fad26f711a1282b'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-22",
+      "ok": false,
+      "pass": 123
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['af8583709a5240e2a88ed4cea695577c', '63ac1b918a2a4eea9ba67c2e6635b51d'], 'grounded_refs': ['af8583709a5240e2a88ed4cea695577c', '63ac1b918a2a4eea9ba67c2e6635b51d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-23",
+      "ok": false,
+      "pass": 124
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f02057e8c1b1411bb1d2dd05de3944eb', '60bf92f0389b450da92c296befc3c30a'], 'grounded_refs': ['f02057e8c1b1411bb1d2dd05de3944eb', '60bf92f0389b450da92c296befc3c30a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-24",
+      "ok": false,
+      "pass": 125
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['745a790e11154c7985f5b2c3675ad13d', 'ebd8b6d2df6d4a89b2e77b4b088ff8e1'], 'grounded_refs': ['745a790e11154c7985f5b2c3675ad13d', 'ebd8b6d2df6d4a89b2e77b4b088ff8e1'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-25",
+      "ok": false,
+      "pass": 126
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['99b8ef498328483d974c8c76323a5522', '449505f684a447e6a7a389c8be7b4876'], 'grounded_refs': ['99b8ef498328483d974c8c76323a5522', '449505f684a447e6a7a389c8be7b4876'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-26",
+      "ok": false,
+      "pass": 127
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['eacbdf8757214d3ca1d7d35c60b11cc9', '54bfb7077fbf4fe1b6ce4dbb303df746'], 'grounded_refs': ['eacbdf8757214d3ca1d7d35c60b11cc9', '54bfb7077fbf4fe1b6ce4dbb303df746'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-27",
+      "ok": false,
+      "pass": 128
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['61502252045347ec9c9b17d5cd5cdb45', 'e3f4512b81584f0da51d408eeff1c751'], 'grounded_refs': ['61502252045347ec9c9b17d5cd5cdb45', 'e3f4512b81584f0da51d408eeff1c751'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-28",
+      "ok": false,
+      "pass": 129
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['bd3e1bb1abad4f97a3caac3521c61666', 'fc54d71ef00a47d99524580fd19b2051'], 'grounded_refs': ['bd3e1bb1abad4f97a3caac3521c61666', 'fc54d71ef00a47d99524580fd19b2051'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-29",
+      "ok": false,
+      "pass": 130
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ee09b3a1d6d54b219e299f334f1273a5', '97625e24108f45d68078a3de518d4d11'], 'grounded_refs': ['ee09b3a1d6d54b219e299f334f1273a5', '97625e24108f45d68078a3de518d4d11'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-30",
+      "ok": false,
+      "pass": 131
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['eacd516237964fd38369708565aa259d', '9fce650141b34e9db846faeab469f736'], 'grounded_refs': ['eacd516237964fd38369708565aa259d', '9fce650141b34e9db846faeab469f736'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-31",
+      "ok": false,
+      "pass": 132
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['9bac988750eb4fefac3c49b6b03c6669', '66ae6ef46b85481594926d4c26398542'], 'grounded_refs': ['9bac988750eb4fefac3c49b6b03c6669', '66ae6ef46b85481594926d4c26398542'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-32",
+      "ok": false,
+      "pass": 133
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['844072f577fd40a0a223543895c73d0f', 'e2e907fe62bd447790c1a8acddd413ce'], 'grounded_refs': ['844072f577fd40a0a223543895c73d0f', 'e2e907fe62bd447790c1a8acddd413ce'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-33",
+      "ok": false,
+      "pass": 134
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['f10d4be122e74fc5972ec62fcb19ff78', '3de0cc7a1c32447791a9e0e2c6b4bf71'], 'grounded_refs': ['f10d4be122e74fc5972ec62fcb19ff78', '3de0cc7a1c32447791a9e0e2c6b4bf71'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-34",
+      "ok": false,
+      "pass": 135
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['ea8d3d0e462643ba89585e1e9fd178bd', 'edde086454144d86b561c34c53a39bd7'], 'grounded_refs': ['ea8d3d0e462643ba89585e1e9fd178bd', 'edde086454144d86b561c34c53a39bd7'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-35",
+      "ok": false,
+      "pass": 136
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['1026eff43fc1467986a7116d60197bf3', 'c3cbe4a105304887848ee0ca8f6cb223'], 'grounded_refs': ['1026eff43fc1467986a7116d60197bf3', 'c3cbe4a105304887848ee0ca8f6cb223'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-36",
+      "ok": false,
+      "pass": 137
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['567c0142cf9b43b492e71f49a993eb2b', '58331002ce3b40d5b5ae2e08f20b1ef3'], 'grounded_refs': ['567c0142cf9b43b492e71f49a993eb2b', '58331002ce3b40d5b5ae2e08f20b1ef3'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-37",
+      "ok": false,
+      "pass": 138
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['143eb22cfd2645b98eb7287ba37a0702', '73b65b7c79754bc88520330dec69f1c3'], 'grounded_refs': ['143eb22cfd2645b98eb7287ba37a0702', '73b65b7c79754bc88520330dec69f1c3'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-38",
+      "ok": false,
+      "pass": 139
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['46eb0882a38340c0875274c1f0225381', '5f1ae44165a840f5bc42c72c0f580eb0'], 'grounded_refs': ['46eb0882a38340c0875274c1f0225381', '5f1ae44165a840f5bc42c72c0f580eb0'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-39",
+      "ok": false,
+      "pass": 140
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['5d93df2fc9c349cb887d7fa1d3c5b11f', '89fb95fca0d1442ebe576d81dd79f584'], 'grounded_refs': ['5d93df2fc9c349cb887d7fa1d3c5b11f', '89fb95fca0d1442ebe576d81dd79f584'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-40",
+      "ok": false,
+      "pass": 141
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['370970c1e490451d8c5bc7421cf76147', 'ee5fb3c061a6441d8ffd410000861c69'], 'grounded_refs': ['370970c1e490451d8c5bc7421cf76147', 'ee5fb3c061a6441d8ffd410000861c69'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-41",
+      "ok": false,
+      "pass": 142
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['d2c477aa97c541b8acc2a48f3428c3c7', '2b0b03906c5f41329d749e69c4f2fb1d'], 'grounded_refs': ['d2c477aa97c541b8acc2a48f3428c3c7', '2b0b03906c5f41329d749e69c4f2fb1d'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-42",
+      "ok": false,
+      "pass": 143
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['d8cd9b6de519453eb552c9bee8ae1b6d', 'e526ad061c154e11a97dbb9d3e4122bd'], 'grounded_refs': ['d8cd9b6de519453eb552c9bee8ae1b6d', 'e526ad061c154e11a97dbb9d3e4122bd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-43",
+      "ok": false,
+      "pass": 144
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['b08dcb55cbf9468abb56a28c7008ce04', '1a50b6520228460b81c244372c3692d3'], 'grounded_refs': ['b08dcb55cbf9468abb56a28c7008ce04', '1a50b6520228460b81c244372c3692d3'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-44",
+      "ok": false,
+      "pass": 145
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['319a9068641244bbb7e0c87e6920a32c', '2838c9518b9f4b6189d5cb89d08f68cf'], 'grounded_refs': ['319a9068641244bbb7e0c87e6920a32c', '2838c9518b9f4b6189d5cb89d08f68cf'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-45",
+      "ok": false,
+      "pass": 146
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['9b35d024c30644e99b70b44087262072', 'bc67017435e7487f929c435a9539badb'], 'grounded_refs': ['9b35d024c30644e99b70b44087262072', 'bc67017435e7487f929c435a9539badb'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-46",
+      "ok": false,
+      "pass": 147
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['2067869f80984780927a7af64b1935ec', '236f377e59bc45b4a2a41d2eabb104bd'], 'grounded_refs': ['2067869f80984780927a7af64b1935ec', '236f377e59bc45b4a2a41d2eabb104bd'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-47",
+      "ok": false,
+      "pass": 148
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['e92cd3db39bd46448d6fb542ac52fb6c', '71543ee5e6554353bd2fab112bd608d8'], 'grounded_refs': ['e92cd3db39bd46448d6fb542ac52fb6c', '71543ee5e6554353bd2fab112bd608d8'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-48",
+      "ok": false,
+      "pass": 149
+    },
+    {
+      "detail": "{'eligible': False, 'evidence_refs': ['c716f7d6c7b44451b2a2d3d9cb958ee8', 'babc6f5c75a1491e9a38c11c4579b64a'], 'grounded_refs': ['c716f7d6c7b44451b2a2d3d9cb958ee8', 'babc6f5c75a1491e9a38c11c4579b64a'], 'gaps': ['continuity_rounds:0<3', 'valid_evidence_refs:2<3'], 'generation': 0, 'required_generation': 3}",
+      "family": "completion",
+      "name": "single-file-verified-49",
+      "ok": false,
+      "pass": 150
+    },
+    {
+      "detail": "{'manifest': 'DEV219_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV219_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 201
+    },
+    {
+      "detail": "{'manifest': 'DEV293_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV293_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 202
+    },
+    {
+      "detail": "{'manifest': 'DEV295_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV295_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 203
+    },
+    {
+      "detail": "{'manifest': 'DEV301_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV301_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 204
+    },
+    {
+      "detail": "{'manifest': 'DEV302_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV302_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 205
+    },
+    {
+      "detail": "{'manifest': 'DEV303_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV303_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 206
+    },
+    {
+      "detail": "{'manifest': 'DEV304_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV304_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 207
+    },
+    {
+      "detail": "{'manifest': 'DEV305_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV305_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 208
+    },
+    {
+      "detail": "{'manifest': 'DEV306_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV306_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 209
+    },
+    {
+      "detail": "{'manifest': 'DEV307_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV307_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 210
+    },
+    {
+      "detail": "{'manifest': 'DEV308_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV308_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 211
+    },
+    {
+      "detail": "{'manifest': 'DEV309_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV309_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 212
+    },
+    {
+      "detail": "{'manifest': 'DEV310_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV310_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 213
+    },
+    {
+      "detail": "{'manifest': 'DEV311_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV311_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 214
+    },
+    {
+      "detail": "{'manifest': 'DEV312_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV312_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 215
+    },
+    {
+      "detail": "{'manifest': 'DEV313_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV313_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 216
+    },
+    {
+      "detail": "{'manifest': 'DEV314_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV314_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 217
+    },
+    {
+      "detail": "{'manifest': 'DEV316_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': False, 'field_validation_pending': True}",
+      "family": "release",
+      "name": "DEV316_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 219
+    },
+    {
+      "detail": "{'manifest': 'DEV75_MANIFEST_UNSIGNED.json', 'stable': True, 'production_ready': None, 'field_validation_pending': None}",
+      "family": "release",
+      "name": "DEV75_MANIFEST_UNSIGNED.json",
+      "ok": false,
+      "pass": 220
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-5",
+      "ok": false,
+      "pass": 256
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-6",
+      "ok": false,
+      "pass": 257
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-15",
+      "ok": false,
+      "pass": 266
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-16",
+      "ok": false,
+      "pass": 267
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-25",
+      "ok": false,
+      "pass": 276
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-26",
+      "ok": false,
+      "pass": 277
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-35",
+      "ok": false,
+      "pass": 286
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-36",
+      "ok": false,
+      "pass": 287
+    },
+    {
+      "detail": "{'silent_launcher_exceptions': 4}",
+      "family": "launcher_updater",
+      "name": "critical-45",
+      "ok": false,
+      "pass": 296
+    },
+    {
+      "detail": "{'silent_updater_exceptions': 13}",
+      "family": "launcher_updater",
+      "name": "critical-46",
+      "ok": false,
+      "pass": 297
+    }
+  ],
+  "families": {
+    "completion": {
+      "fail": 50,
+      "pass": 0
+    },
+    "decomposition": {
+      "fail": 29,
+      "pass": 21
+    },
+    "launcher_updater": {
+      "fail": 10,
+      "pass": 40
+    },
+    "provider": {
+      "fail": 0,
+      "pass": 50
+    },
+    "release": {
+      "fail": 19,
+      "pass": 31
+    },
+    "scheduler": {
+      "fail": 10,
+      "pass": 40
+    }
+  },
+  "passed": 182,
+  "schema": 1,
+  "total": 300
+}
