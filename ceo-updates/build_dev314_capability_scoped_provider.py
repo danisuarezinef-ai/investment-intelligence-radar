@@ -277,19 +277,37 @@ else if(!live){$('actionBanner').className='banner warnb';$('actionBanner').text
         raise RuntimeError(f"operational provider scope anchor={s.count(op_anchor)}")
     s = s.replace(op_anchor, op_new, 1)
 
-    # Expose the distinction explicitly for UI/remote clients.
-    snap_anchor = '''            "execution_enabled": self.execution_enabled,
+    # Expose the distinction explicitly for UI/remote clients. Patch active and
+    # inactive snapshots separately so inactive state never references scheduler_alive.
+    inactive_snap_anchor = '''                "active": False,
+                "execution_enabled": self.execution_enabled,
+                "provider_mode": self.provider_mode,
+'''
+    inactive_snap_new = '''                "active": False,
+                "execution_enabled": self.execution_enabled,
+                "core_execution_available": bool(self.loop.is_running() and self.thread.is_alive()),
+                "external_ai_available": bool(self.execution_enabled),
+                "provider_mode": self.provider_mode,
+'''
+    if s.count(inactive_snap_anchor) != 1:
+        raise RuntimeError(f"inactive snapshot provider scope anchor={s.count(inactive_snap_anchor)}")
+    s = s.replace(inactive_snap_anchor, inactive_snap_new, 1)
+
+    active_snap_anchor = '''            "active": True,
+            "project_id": state.id,
+            "execution_enabled": self.execution_enabled,
             "provider_mode": self.provider_mode,
 '''
-    snap_new = '''            "execution_enabled": self.execution_enabled,
+    active_snap_new = '''            "active": True,
+            "project_id": state.id,
+            "execution_enabled": self.execution_enabled,
             "core_execution_available": bool(scheduler_alive),
             "external_ai_available": bool(self.execution_enabled),
             "provider_mode": self.provider_mode,
 '''
-    # It occurs in active snapshot once; inactive snapshot has the same prefix too.
-    if s.count(snap_anchor) < 1:
-        raise RuntimeError("snapshot provider scope anchor missing")
-    s = s.replace(snap_anchor, snap_new, 1)
+    if s.count(active_snap_anchor) != 1:
+        raise RuntimeError(f"active snapshot provider scope anchor={s.count(active_snap_anchor)}")
+    s = s.replace(active_snap_anchor, active_snap_new, 1)
 
     p.write_text(s, encoding="utf-8")
 
