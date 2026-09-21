@@ -1968,32 +1968,29 @@ def main() -> int:
     print("No repite 76-85. No instala dependencias web. No modifica Python global.")
     print("La clave Gemini no se guarda en el proyecto; en Windows puede persistirse cifrada con DPAPI.")
     print()
-    key = _normalize_gemini_key(os.environ.get("GEMINI_API_KEY"))
-    key_source = "environment" if key else None
-    key_in_browser = os.getenv("CEO_KEY_IN_BROWSER", "").strip() == "1"
-    if not key and not key_in_browser:
-        key = _load_windows_dpapi_gemini_key()
-        if key:
-            key_source = "windows-dpapi"
-            print("[OK] Gemini API key recuperada de Windows DPAPI.")
-            print("[OK] Se descifra solo en memoria para este usuario de Windows.")
-    if not key and not key_in_browser:
-        key = _read_windows_clipboard_gemini_key()
-        if key:
-            key_source = "windows-clipboard"
-            print("[OK] Gemini API key detectada automaticamente en el portapapeles.")
-            print("[OK] Se usara solo en memoria durante esta sesion; no se imprime ni se guarda.")
-    if not key and not key_in_browser:
-        print("[INFO] No se detecto automaticamente una Gemini API key valida.")
-        print("[INFO] Abriendo un cuadro seguro de pegado como fallback...")
-        key = _gui_gemini_key_prompt()
-        if key:
-            key_source = "gui-paste"
-            print("[OK] Gemini API key recibida por cuadro local seguro.")
-        else:
-            print("[INFO] Se abrira CEO en modo planificacion, sin ejecucion IA real.")
-    elif not key and key_in_browser:
-        print("[INFO] La interfaz se abrira primero. Activa Gemini desde el campo seguro del navegador local.")
+    allow_optional_api = str(os.environ.get("CEO_ALLOW_OPTIONAL_API", "")).strip().lower() in {"1","true","yes","on"}
+    key = None
+    key_source = "disabled"
+    if allow_optional_api:
+        key = _normalize_gemini_key(os.environ.get("GEMINI_API_KEY"))
+        key_source = "environment" if key else None
+        key_in_browser = os.getenv("CEO_KEY_IN_BROWSER", "").strip() == "1"
+        if not key and not key_in_browser:
+            key = _load_windows_dpapi_gemini_key()
+            if key:
+                key_source = "windows-dpapi"
+                print("[OK] Gemini opcional recuperado de Windows DPAPI.")
+        if not key and not key_in_browser:
+            key = _read_windows_clipboard_gemini_key()
+            if key:
+                key_source = "windows-clipboard"
+                print("[OK] Gemini opcional detectado en el portapapeles.")
+        if not key and not key_in_browser:
+            print("[INFO] API opcional habilitada pero sin clave Gemini; CEO seguirá usando IA web.")
+        elif not key and key_in_browser:
+            print("[INFO] API opcional habilitada; puede configurarse más tarde desde la interfaz.")
+    else:
+        print("[OK] Modo IA web gratuito: no se solicita ni se necesita ninguna API key.")
     try:
         engine = CEOEngine(key or None)
         Handler.engine = engine
@@ -2006,7 +2003,7 @@ def main() -> int:
         # DEV233/234: only after core health is externally observable do we allow
         # provider validation to begin. A 404/429/offline provider cannot make the
         # updater misclassify the new CEO process as dead.
-        provider_validation_started = engine.start_provider_validation_background()
+        provider_validation_started = engine.start_provider_validation_background() if allow_optional_api else False
         shell_integration = None
         if os.name == "nt":
             try:
@@ -2035,11 +2032,9 @@ def main() -> int:
         print(f"[OK] Estado: {STATUS_PATH}")
         print(f"[OK] Diagnostico persistente: {DIAGNOSTICS.latest_path}")
         if not engine.execution_enabled:
-            print("[AVISO] Sin Gemini: Goal Engine puede planificar y persistir, pero no ejecutara trabajo IA real.")
-            if engine.provider_mode == "gemini-validation-failed" and engine.gemini_validation_error:
-                safe_err = str(engine.gemini_validation_error).replace(str(key or ""), "<redacted-api-key>")[:700]
-                print(f"[AVISO] Validacion Gemini fallida: {safe_err}")
-                print("[AVISO] La clave DPAPI sigue guardada; puedes reintentar desde la interfaz sin volver a pegarla.")
+            print("[AVISO] Browser AI Worker no disponible: comprueba Chrome/Edge y los recursos de IA web.")
+        else:
+            print("[OK] Ejecucion IA disponible mediante navegador. API requerida: NO.")
         print("Mantén esta ventana abierta. Ctrl+C detiene el servidor.")
         try:
             while server_thread.is_alive():
