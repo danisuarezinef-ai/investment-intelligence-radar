@@ -178,7 +178,7 @@ def test_productive_blocker_blocks_certificate():
     row = DeterministicCompletionCertifierV1().apply(state, GoalCompletionGate())
     assert row["work_complete"] is False, row
     assert "blocked" in row["blocking_productive_task_ids"], row
-    assert state.metadata["goal_audit_passed"] is not True
+    assert state.metadata.get("goal_audit_passed", False) is not True
     return {"blocked": True, "task_ids": row["blocking_productive_task_ids"]}
 
 
