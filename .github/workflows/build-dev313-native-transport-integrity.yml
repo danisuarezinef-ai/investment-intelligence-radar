@@ -1,0 +1,199 @@
+name: Build DEV313 Native Transport Integrity
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/build-dev313-native-transport-integrity.yml'
+      - 'ceo-updates/build_dev313_native_transport_integrity.py'
+      - 'ceo-updates/qualify_dev313_native_transport_integrity.py'
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-package:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build DEV313 candidate
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP "ceo-dev313"
+          $env:CEO_DEV313_BUILD_ROOT = $root
+          python ceo-updates\build_dev313_native_transport_integrity.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV313 build failed" }
+          python -m pip install --disable-pip-version-check -q -e $root
+          if ($LASTEXITCODE -ne 0) { throw "DEV313 install failed" }
+          "CEO_DEV313_BUILD_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_GATE_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_NO_BROWSER=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "LOCALAPPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-dev313-localappdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "APPDATA=$(Join-Path $env:RUNNER_TEMP 'ceo-dev313-appdata')" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CEO_GATE_ARTIFACTS=$(Join-Path $env:RUNNER_TEMP 'ceo-dev313-artifacts')" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Compile and focused native-transport qualification
+        shell: pwsh
+        run: |
+          Push-Location $env:CEO_DEV313_BUILD_ROOT
+          python -m compileall -q .
+          if ($LASTEXITCODE -ne 0) { throw "compile failed" }
+          Pop-Location
+          python ceo-updates\qualify_dev313_native_transport_integrity.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV313 qualification failed" }
+
+      - name: Inherited safety and updater regression
+        shell: pwsh
+        run: |
+          Push-Location $env:CEO_DEV313_BUILD_ROOT
+          python scripts\dev292_recovery_failclosed_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV292 failed" }
+          python scripts\dev294_internal_update_pipeline_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV294 failed" }
+          python scripts\dev295_update_confirm_qualification.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV295 failed" }
+          python scripts\security_audit.py
+          if ($LASTEXITCODE -ne 0) { throw "security audit failed" }
+          Pop-Location
+
+      - name: Re-run identical Autonomy Bootstrap Gates 1-6
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:APPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:CEO_GATE_ARTIFACTS | Out-Null
+          python ceo-updates\autonomy_bootstrap_gate_v1.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG1 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v2.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG2 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v3.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG3 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v4.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG4 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v5.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG5 failed" }
+          python ceo-updates\autonomy_bootstrap_gate_v6.py
+          if ($LASTEXITCODE -ne 0) { throw "ABG6 failed" }
+
+      - name: Package deterministic DEV313
+        shell: pwsh
+        run: |
+          @'
+          import hashlib, json, os, pathlib, zipfile
+          root = pathlib.Path(os.environ["CEO_DEV313_BUILD_ROOT"])
+          outdir = pathlib.Path("ceo-updates")
+          version = "1.5.89-rc1-native-transport-integrity"
+          artifact = f"CEO_{version}.zip"
+          out = outdir / artifact
+          out.unlink(missing_ok=True)
+
+          contract = json.loads((root / "CEO_UPDATE_PACKAGE.json").read_text(encoding="utf-8"))
+          assert contract["app_version"] == version
+          required = sorted(contract["required_paths"])
+          fixed = (2026, 9, 21, 14, 15, 0)
+
+          with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+              for rel in required:
+                  p = root / rel
+                  assert p.is_file(), rel
+                  info = zipfile.ZipInfo(rel, date_time=fixed)
+                  info.create_system = 0
+                  info.compress_type = zipfile.ZIP_DEFLATED
+                  info.external_attr = 0
+                  z.writestr(info, p.read_bytes(), compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+
+          data = out.read_bytes()
+          sha = hashlib.sha256(data).hexdigest()
+          size = len(data)
+
+          manifest = {
+              "artifact_name": artifact,
+              "channel": "stable",
+              "data_schema_version": 1,
+              "health_path": "/api/health",
+              "launcher": "ABRIR_CEO.cmd",
+              "manifest_version": 2,
+              "max_app_version": "",
+              "min_app_version": "1.5.86-rc1-provider-session-integrity",
+              "notes": (
+                  "DEV313 Native Transport Integrity: Windows Gemini transport forces IPv4 for "
+                  "the primary httpx path and automatically falls back to a Windows-native HTTPS "
+                  "request when Python/httpx cannot connect. Sensitive headers are supplied over "
+                  "stdin, not process arguments. Provider outages no longer block local project "
+                  "intake. Includes DEV311 updater/app-window and DEV312 encrypted provider-trust fixes."
+              ),
+              "package_contract_version": 1,
+              "published_at": "2026-09-21T14:15:00Z",
+              "release_id": "dev313-1.5.89-rc1-native-transport-integrity",
+              "release_sequence": 313,
+              "release_status": "release",
+              "sha256": sha,
+              "signature_alg": "ed25519",
+              "size_bytes": size,
+              "url": (
+                  "https://raw.githubusercontent.com/danisuarezinef-ai/"
+                  "investment-intelligence-radar/ceo-update-channel/ceo-updates/" + artifact
+              ),
+              "version": version,
+          }
+
+          qualification = {
+              "candidate": version,
+              "base": "1.5.88-rc1-provider-trust-integrity",
+              "direct_min_base": "1.5.86-rc1-provider-session-integrity",
+              "release_sequence": 313,
+              "tests_passed": True,
+              "security_passed": True,
+              "httpx_ipv4_primary": True,
+              "windows_native_fallback": True,
+              "native_route_reached_google_without_real_key": True,
+              "api_key_not_in_process_arguments": True,
+              "provider_outage_local_intake_allowed": True,
+              "dev311_update_shell_inherited": True,
+              "dev312_provider_trust_inherited": True,
+              "autonomy_bootstrap_gates_1_6_repassed": True,
+              "windows_stage_preflight_passed": False,
+              "single_file_activator_verified": False,
+              "field_validation_pending": True,
+              "production_ready": False,
+              "operator_install_confirmation_required": True,
+              "artifact": {
+                  "name": artifact,
+                  "sha256": sha,
+                  "size_bytes": size,
+                  "entries": len(required),
+              },
+          }
+
+          (outdir / "DEV313_MANIFEST_UNSIGNED.json").write_text(
+              json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          (outdir / "DEV313_QUALIFICATION.json").write_text(
+              json.dumps(qualification, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(qualification, indent=2))
+          '@ | Set-Content -Encoding UTF8 package313.py
+          python package313.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV313 package failed" }
+
+      - name: Commit DEV313 candidate
+        shell: pwsh
+        run: |
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git pull --rebase origin ceo-update-channel
+          git add ceo-updates/CEO_1.5.89-rc1-native-transport-integrity.zip ceo-updates/DEV313_MANIFEST_UNSIGNED.json ceo-updates/DEV313_QUALIFICATION.json
+          git commit -m "Stage DEV313 native transport integrity candidate"
+          git push origin HEAD:ceo-update-channel
