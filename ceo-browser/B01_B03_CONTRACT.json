@@ -4,9 +4,9 @@
   "branch": "free-browser-ai-worker",
   "base_sha": "aaf5467c2b507fdda8394fd979e527a3fe02c2d9",
   "status": {
-    "B01_no_api_required": "implemented_pending_ci",
-    "B02_scope_freeze": "implemented_pending_ci",
-    "B03_browser_primary_surface": "implemented_pending_ci"
+    "B01_no_api_required": "COMPLETE_CI_VERIFIED",
+    "B02_scope_freeze": "COMPLETE_CI_VERIFIED",
+    "B03_browser_primary_surface": "COMPLETE_CI_VERIFIED_PHYSICAL_WINDOWS_PENDING"
   },
   "B01": {
     "no_api_required": true,
@@ -65,5 +65,27 @@
       "real ChatGPT response extraction works"
     ]
   },
-  "next_after_B03": "B04 persistent browser profile/session, then B05 one-time manual login, then first real simple task."
+  "next_after_B03": "B04 persistent browser profile/session, then B05 one-time manual login, then first real simple task.",
+  "verification": {
+    "workflow_run_id": 35646808622,
+    "workflow_conclusion": "success",
+    "B01": [
+      "CEO browser transport executes with zero API keys",
+      "API-specific Gemini transport is lazy-loaded only behind explicit opt-in",
+      "default startup no longer asks for an API key"
+    ],
+    "B02": [
+      "scope-freeze guard compares branch changes against base SHA",
+      "changes outside browser-first allowlist fail CI"
+    ],
+    "B03": [
+      "Windows runner locates Chrome/Edge",
+      "launches/reuses browser with persistent CEO profile",
+      "connects through Chrome DevTools Protocol",
+      "attaches a page target",
+      "evaluates JavaScript through CDP",
+      "two-turn browser harness and zero-API AITransport path pass"
+    ],
+    "physical_windows_user_machine_verified": false
+  }
 }
