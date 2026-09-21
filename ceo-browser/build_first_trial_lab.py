@@ -11,12 +11,15 @@ REPO=Path(__file__).resolve().parents[1]
 BASE=REPO/"ceo-updates"/"CEO_1.5.89-rc1-native-transport-integrity.zip"
 SRC=REPO/"ceo-browser"
 CORE_SRC=REPO/"ceo-updates"/"dev313-inspect-routing"
-OUT=SRC/"CEO_FIRST_TRIAL_LAB.zip"
+SOURCE_SHA=(os.environ.get("GITHUB_SHA") or "local").strip()
+BUILD_ID=(SOURCE_SHA[:8] if SOURCE_SHA and SOURCE_SHA!="local" else "local")
+OUT=SRC/f"CEO_FIRST_TRIAL_LAB_{BUILD_ID}.zip"
 ROOT=Path(os.environ.get("CEO_FIRST_TRIAL_BUILD_ROOT", str(REPO/".tmp-first-trial-lab")))
 
 BROWSER_FILES=[
     "windows_chatgpt_cdp_driver.ps1",
     "open_chatgpt_profile.ps1",
+    "open_web_ai_profile.ps1",
     "provider_registry.json",
     "browser_provider_pool.py",
     "recipes/chatgpt_web.json",
@@ -25,6 +28,7 @@ BROWSER_FILES=[
     "recipes/perplexity_web.json",
     "recipes/grok_web.json",
     "recipes/test_harness.json",
+    "recipes/test_harness_campaign.json",
     "recipes/test_harness_semantic.json",
     "browser_ai_worker.py",
     "programming_browser_loop.py",
@@ -39,6 +43,7 @@ BROWSER_FILES=[
     "run_b20_code_gate.ps1",
     "run_b20_code_gate.py",
     "finalize_browser_field.py",
+    "run_field_campaign.py",
     "run_browser_restart_gate.ps1",
     "run_b29_b30_full_field_gate.ps1",
     "real_code_candidate.py",
@@ -62,12 +67,13 @@ README="""CEO DE IAs — PRIMERA PRUEBA BROWSER LAB
 2. El motor browser es multi-proveedor: ChatGPT, Claude, Gemini, Perplexity y Grok.
 3. Esta primera validación física usa ChatGPT porque conserva la sesión que ya abriste; no es una dependencia arquitectónica.
 4. La campaña funcional NO reinicia Chrome entre turnos; utiliza una única sesión para evitar aperturas/pestañas innecesarias.
-4. Doble clic en EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd.
-5. El lanzador realiza Gate 0 y después B29-B30.
-6. Si el proveedor web requiere login, hazlo manualmente. No se automatiza CAPTCHA/2FA.
-7. Si termina GO, B38 NO se inicia automáticamente.
-8. Solo entonces, y de forma separada, puedes lanzar EJECUTAR_B38_CANDIDATE.cmd.
-9. RECUPERAR_PRUEBA_CEO.cmd cierra solo procesos Chrome/Edge que usen el perfil exclusivo del LAB.
+5. Doble clic en EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd.
+6. El lanzador realiza preflight y después una única campaña B14 -> B18 -> B20 -> B29/B30.
+7. Si el proveedor web requiere login, hazlo manualmente. No se automatiza CAPTCHA/2FA.
+8. Cada intento usa su propio trial_id y nunca reutiliza evidencias de intentos anteriores.
+9. Si termina GO, B38 NO se inicia automáticamente.
+10. Solo entonces, y de forma separada, puedes lanzar EJECUTAR_B38_CANDIDATE.cmd.
+11. RECUPERAR_PRUEBA_CEO.cmd cierra solo procesos Chrome/Edge que usen el perfil exclusivo del LAB.
 
 LIMITES
 - Sin OpenAI API.
@@ -142,8 +148,11 @@ def main()->None:
     (ROOT/"PRIMERA_PRUEBA_README.txt").write_text(README,encoding="utf-8")
 
     marker={
-        "schema_version":1,
+        "schema_version":2,
         "artifact_kind":"ceo-browser-first-trial-lab",
+        "build_id":BUILD_ID,
+        "source_sha":SOURCE_SHA,
+        "campaign_architecture":"single-session-trial-isolated-v2",
         "installable_update":False,
         "stable_channel_modified":False,
         "current_json_modified":False,
@@ -188,6 +197,8 @@ def main()->None:
         "CEO_FIRST_TRIAL_LAB.json",
         "CEO_FIRST_TRIAL_MANIFEST.json",
         "ceo_core/browser_ai/first_trial_orchestrator.py",
+        "ceo_core/browser_ai/run_field_campaign.py",
+        "ceo_core/browser_ai/open_web_ai_profile.ps1",
         "ceo_core/browser_ai/run_b29_b30_full_field_gate.ps1",
         "ceo_core/browser_ai/run_b38_real_ceo_candidate.py",
     }
