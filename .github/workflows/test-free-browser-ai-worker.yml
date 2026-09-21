@@ -233,30 +233,105 @@ jobs:
           if($row.input_strategy -ne "semantic-fallback"){throw "B08 fallback not used: $($row.input_strategy)"}
           if($row.response -notmatch "B08_SEMANTIC_INPUT"){throw "B08 wrong response"}
           Write-Host "B08_SEMANTIC_PROMPT_PASS"
-      - name: Drive Chrome like a browser worker first turn
-        id: first
+      - name: B09 type exact prompt before submit
         shell: pwsh
         run: |
-          $profile=Join-Path $env:RUNNER_TEMP "ceo-browser-profile"
-          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","PRIMER_TURNO","-ProfileDir",$profile,"-Port","9227","-TimeoutSeconds","30")
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b09-profile"
+          $prompt="B09_TYPE_EXACT_áéí"
+          $target="http://127.0.0.1:8765/?seed=1"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt",$prompt,"-ConversationUrl",$target,"-ProfileDir",$profile,"-Port","9246","-TimeoutSeconds","30","-CloseBrowserAfter")
           $raw=& powershell.exe @args
           Write-Host $raw
           $row=$raw | ConvertFrom-Json
-          if(-not $row.ok){throw "browser turn 1 failed: $raw"}
-          if($row.response -notmatch "HARNESS_RESPONSE: PRIMER_TURNO"){throw "wrong response: $($row.response)"}
-          "conversation_url=$($row.conversation_url)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          if(-not $row.ok){throw "B09 failed: $raw"}
+          if([int]$row.typed_chars -ne $prompt.Length){throw "B09 typed length mismatch"}
+          if($row.response -notmatch [regex]::Escape($prompt)){throw "B09 prompt not preserved"}
+          Write-Host "B09_TYPE_VERIFY_PASS"
+          Start-Sleep -Seconds 2
 
-      - name: Continue same browser conversation second turn
+      - name: B10 submit with CDP Enter fallback and acknowledge
         shell: pwsh
         run: |
-          $profile=Join-Path $env:RUNNER_TEMP "ceo-browser-profile"
-          $url="${{ steps.first.outputs.conversation_url }}"
-          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","SEGUNDO_TURNO","-ConversationUrl",$url,"-ProfileDir",$profile,"-Port","9227","-TimeoutSeconds","30","-NoLaunch")
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b10-profile"
+          $target="http://127.0.0.1:8765/?variant=enter&seed=1"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","B10_CDP_ENTER","-ConversationUrl",$target,"-ProfileDir",$profile,"-Port","9247","-TimeoutSeconds","30","-CloseBrowserAfter")
           $raw=& powershell.exe @args
           Write-Host $raw
           $row=$raw | ConvertFrom-Json
-          if(-not $row.ok){throw "browser turn 2 failed: $raw"}
-          if($row.response -notmatch "HARNESS_RESPONSE: SEGUNDO_TURNO"){throw "wrong second response: $($row.response)"}
+          if(-not $row.ok){throw "B10 failed: $raw"}
+          if($row.send_method -ne "cdp-enter"){throw "B10 did not use CDP Enter fallback: $($row.send_method)"}
+          if(-not $row.submission_verified){throw "B10 submission not acknowledged"}
+          if($row.response -notmatch "B10_CDP_ENTER"){throw "B10 wrong response"}
+          Write-Host "B10_SUBMIT_ACK_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B11-B12 detect completion and capture full streamed response
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b11-b12-profile"
+          $target="http://127.0.0.1:8765/?seed=1&stream=1"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","B11_B12_STREAM","-ConversationUrl",$target,"-ProfileDir",$profile,"-Port","9248","-TimeoutSeconds","30","-CloseBrowserAfter")
+          $raw=& powershell.exe @args
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if(-not $row.ok){throw "B11/B12 failed: $raw"}
+          if(-not $row.generation_started){throw "B11 generation start not observed"}
+          if(-not $row.busy_seen){throw "B11 busy signal not observed"}
+          if($row.completion_reason -ne "busy-cleared-and-response-stable"){throw "B11 wrong completion reason: $($row.completion_reason)"}
+          if($row.response -notmatch "B11_B12_STREAM"){throw "B12 prompt content missing"}
+          if($row.response -notmatch "COMPLETE_TAIL"){throw "B12 captured response before final tail"}
+          if([int]$row.response_chars -ne ([string]$row.response).Length){throw "B12 response length mismatch"}
+          Write-Host "B11_B12_COMPLETION_CAPTURE_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B13 first turn settles new chat to conversation URL
+        id: b13first
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b13-profile"
+          $target="http://127.0.0.1:8765/?seed=1&conversation=transition"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","B13_FIRST","-ConversationUrl",$target,"-ProfileDir",$profile,"-Port","9249","-TimeoutSeconds","30")
+          $raw=& powershell.exe @args
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if(-not $row.ok){throw "B13 first turn failed: $raw"}
+          if(-not $row.conversation_stable){throw "B13 conversation URL did not stabilize"}
+          if($row.conversation_url -notmatch "/c/ceo-b09-b14$"){throw "B13 did not settle to expected conversation URL: $($row.conversation_url)"}
+          "conversation_url=$($row.conversation_url)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "B13_FIRST_TURN_PASS"
+
+      - name: B13 second turn stays in exact same conversation
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b13-profile"
+          $url="${{ steps.b13first.outputs.conversation_url }}"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","B13_SECOND","-ConversationUrl",$url,"-ProfileDir",$profile,"-Port","9249","-TimeoutSeconds","30","-NoLaunch","-CloseBrowserAfter")
+          $raw=& powershell.exe @args
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if(-not $row.ok){throw "B13 second turn failed: $raw"}
+          if($row.conversation_url -ne $url){throw "B13 conversation changed: $($row.conversation_url)"}
+          if($row.response -notmatch "B13_SECOND"){throw "B13 wrong second response"}
+          Write-Host "B13_SAME_CONVERSATION_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B14 physical gate runner contract
+        shell: pwsh
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\run_b09_b14_physical_gate.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "B14 runner parse failed"}
+          if(-not (Test-Path "ceo-browser\EJECUTAR_B09_B14.cmd")){throw "B14 one-click launcher missing"}
+          $contract=Get-Content -Raw -Encoding UTF8 "ceo-browser\B09_B14_CONTRACT.json" | ConvertFrom-Json
+          if($contract.B14.turns -ne 2){throw "B14 must require two turns"}
+          if(-not $contract.B14.same_conversation_required){throw "B14 same conversation requirement missing"}
+          if($contract.B14.api_calls_required -ne 0){throw "B14 API boundary violated"}
+          if($contract.B14.physical_verification -ne $false){throw "B14 must remain pending until real user-machine proof"}
+          $runner=Get-Content -Raw -Encoding UTF8 "ceo-browser\run_b09_b14_physical_gate.ps1"
+          if($runner -notmatch "B14_REAL_CHATGPT_TWO_TURN_PASS"){throw "B14 evidence status missing"}
+          if($runner -notmatch "api_calls=0"){throw "B14 zero-API evidence missing"}
+          Write-Host "B14_PHYSICAL_RUNNER_READY_PASS"
 
       - name: Exercise CEO AITransport through Chrome with zero API keys
         shell: pwsh
