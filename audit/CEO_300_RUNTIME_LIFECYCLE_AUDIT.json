@@ -1,0 +1,2731 @@
+{
+  "all_results": [
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 2, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-1-ConnectError: all ",
+      "ok": true,
+      "pass": 1
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 2, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-1-connect error",
+      "ok": true,
+      "pass": 2
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 2, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-1-TLS handshake fail",
+      "ok": true,
+      "pass": 3
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 2, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-1-SSL certificate tr",
+      "ok": true,
+      "pass": 4
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 2, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-1-timed out",
+      "ok": true,
+      "pass": 5
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 2, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-1-connection refused",
+      "ok": true,
+      "pass": 6
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 2, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-1-503 service unavai",
+      "ok": true,
+      "pass": 7
+    },
+    {
+      "detail": "{'category': 'quota', 'retry': True, 'retry_after_seconds': 300, 'rotate_model': True, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "quota-attempt-1-429 RESOURCE_EXHAU",
+      "ok": true,
+      "pass": 8
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-1-401 UNAUTHENTICATE",
+      "ok": true,
+      "pass": 9
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-1-invalid api key",
+      "ok": true,
+      "pass": 10
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 4, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-2-ConnectError: all ",
+      "ok": true,
+      "pass": 11
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 4, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-2-connect error",
+      "ok": true,
+      "pass": 12
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 4, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-2-TLS handshake fail",
+      "ok": true,
+      "pass": 13
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 4, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-2-SSL certificate tr",
+      "ok": true,
+      "pass": 14
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 4, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-2-timed out",
+      "ok": true,
+      "pass": 15
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 4, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-2-connection refused",
+      "ok": true,
+      "pass": 16
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 4, 'rotate_model': False, 'rotate_provider': False, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-2-503 service unavai",
+      "ok": true,
+      "pass": 17
+    },
+    {
+      "detail": "{'category': 'quota', 'retry': True, 'retry_after_seconds': 300, 'rotate_model': True, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "quota-attempt-2-429 RESOURCE_EXHAU",
+      "ok": true,
+      "pass": 18
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-2-401 UNAUTHENTICATE",
+      "ok": true,
+      "pass": 19
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-2-invalid api key",
+      "ok": true,
+      "pass": 20
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 8, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-3-ConnectError: all ",
+      "ok": true,
+      "pass": 21
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 8, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-3-connect error",
+      "ok": true,
+      "pass": 22
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 8, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-3-TLS handshake fail",
+      "ok": true,
+      "pass": 23
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 8, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-3-SSL certificate tr",
+      "ok": true,
+      "pass": 24
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 8, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-3-timed out",
+      "ok": true,
+      "pass": 25
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 8, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-3-connection refused",
+      "ok": true,
+      "pass": 26
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 8, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-3-503 service unavai",
+      "ok": true,
+      "pass": 27
+    },
+    {
+      "detail": "{'category': 'quota', 'retry': True, 'retry_after_seconds': 300, 'rotate_model': True, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "quota-attempt-3-429 RESOURCE_EXHAU",
+      "ok": true,
+      "pass": 28
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-3-401 UNAUTHENTICATE",
+      "ok": true,
+      "pass": 29
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-3-invalid api key",
+      "ok": true,
+      "pass": 30
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 16, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-4-ConnectError: all ",
+      "ok": true,
+      "pass": 31
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 16, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-4-connect error",
+      "ok": true,
+      "pass": 32
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 16, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-4-TLS handshake fail",
+      "ok": true,
+      "pass": 33
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 16, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-4-SSL certificate tr",
+      "ok": true,
+      "pass": 34
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 16, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-4-timed out",
+      "ok": true,
+      "pass": 35
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 16, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-4-connection refused",
+      "ok": true,
+      "pass": 36
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': True, 'retry_after_seconds': 16, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-4-503 service unavai",
+      "ok": true,
+      "pass": 37
+    },
+    {
+      "detail": "{'category': 'quota', 'retry': True, 'retry_after_seconds': 300, 'rotate_model': True, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "quota-attempt-4-429 RESOURCE_EXHAU",
+      "ok": true,
+      "pass": 38
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-4-401 UNAUTHENTICATE",
+      "ok": true,
+      "pass": 39
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-4-invalid api key",
+      "ok": true,
+      "pass": 40
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': False, 'retry_after_seconds': 32, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-5-ConnectError: all ",
+      "ok": true,
+      "pass": 41
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': False, 'retry_after_seconds': 32, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-5-connect error",
+      "ok": true,
+      "pass": 42
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': False, 'retry_after_seconds': 32, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-5-TLS handshake fail",
+      "ok": true,
+      "pass": 43
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': False, 'retry_after_seconds': 32, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-5-SSL certificate tr",
+      "ok": true,
+      "pass": 44
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': False, 'retry_after_seconds': 32, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-5-timed out",
+      "ok": true,
+      "pass": 45
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': False, 'retry_after_seconds': 32, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-5-connection refused",
+      "ok": true,
+      "pass": 46
+    },
+    {
+      "detail": "{'category': 'transient', 'retry': False, 'retry_after_seconds': 32, 'rotate_model': False, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "transient-attempt-5-503 service unavai",
+      "ok": true,
+      "pass": 47
+    },
+    {
+      "detail": "{'category': 'quota', 'retry': True, 'retry_after_seconds': 300, 'rotate_model': True, 'rotate_provider': True, 'requires_human': False, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "quota-attempt-5-429 RESOURCE_EXHAU",
+      "ok": true,
+      "pass": 48
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-5-401 UNAUTHENTICATE",
+      "ok": true,
+      "pass": 49
+    },
+    {
+      "detail": "{'category': 'authentication', 'retry': False, 'retry_after_seconds': 0, 'rotate_model': False, 'rotate_provider': False, 'requires_human': True, 'spending_allowed': False}",
+      "family": "provider_classification",
+      "name": "authentication-attempt-5-invalid api key",
+      "ok": true,
+      "pass": 50
+    },
+    {
+      "detail": "provider must not gate project creation",
+      "family": "core_provider_isolation",
+      "name": "start-project-without-provider",
+      "ok": true,
+      "pass": 51
+    },
+    {
+      "detail": "UI must permit local project start",
+      "family": "core_provider_isolation",
+      "name": "ui-start-without-provider",
+      "ok": true,
+      "pass": 52
+    },
+    {
+      "detail": "if path == \"/api/resume\":\n                return self.json(self.engine.call(self.engine.pause(False)))\n            ",
+      "family": "core_provider_isolation",
+      "name": "resume-not-provider-gated",
+      "ok": true,
+      "pass": 53
+    },
+    {
+      "detail": "provider outage must not pause whole project",
+      "family": "core_provider_isolation",
+      "name": "activation-not-provider-paused",
+      "ok": true,
+      "pass": 54
+    },
+    {
+      "detail": "local scheduler must start",
+      "family": "core_provider_isolation",
+      "name": "scheduler-start-independent",
+      "ok": true,
+      "pass": 55
+    },
+    {
+      "detail": "provider-specific wait state",
+      "family": "core_provider_isolation",
+      "name": "provider-wait-represented",
+      "ok": true,
+      "pass": 56
+    },
+    {
+      "detail": "def _router(self):\n        local_goal_lock = self.GoalLockLocalProviderV1()\n        providers = [local_goal_lock]\n        if self.execution_enabled and self.gemini_key:\n            transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or \"auto\")\n            providers.insert(0, self.AIWorkerProvider(transport))\n        return self.MultiProviderRouter(providers)\n\n    ",
+      "family": "core_provider_isolation",
+      "name": "local-provider-always-present",
+      "ok": true,
+      "pass": 57
+    },
+    {
+      "detail": "restart scheduler must not require Gemini",
+      "family": "core_provider_isolation",
+      "name": "restart-core-independent",
+      "ok": true,
+      "pass": 58
+    },
+    {
+      "detail": "completion defaults live only in GoalCompletionGate",
+      "family": "core_provider_isolation",
+      "name": "no-duplicate-completion-thresholds",
+      "ok": true,
+      "pass": 59
+    },
+    {
+      "detail": "operator state not tied to provider light",
+      "family": "core_provider_isolation",
+      "name": "ui-core-working-independent",
+      "ok": true,
+      "pass": 60
+    },
+    {
+      "detail": "provider must not gate project creation",
+      "family": "core_provider_isolation",
+      "name": "start-project-without-provider",
+      "ok": true,
+      "pass": 61
+    },
+    {
+      "detail": "UI must permit local project start",
+      "family": "core_provider_isolation",
+      "name": "ui-start-without-provider",
+      "ok": true,
+      "pass": 62
+    },
+    {
+      "detail": "if path == \"/api/resume\":\n                return self.json(self.engine.call(self.engine.pause(False)))\n            ",
+      "family": "core_provider_isolation",
+      "name": "resume-not-provider-gated",
+      "ok": true,
+      "pass": 63
+    },
+    {
+      "detail": "provider outage must not pause whole project",
+      "family": "core_provider_isolation",
+      "name": "activation-not-provider-paused",
+      "ok": true,
+      "pass": 64
+    },
+    {
+      "detail": "local scheduler must start",
+      "family": "core_provider_isolation",
+      "name": "scheduler-start-independent",
+      "ok": true,
+      "pass": 65
+    },
+    {
+      "detail": "provider-specific wait state",
+      "family": "core_provider_isolation",
+      "name": "provider-wait-represented",
+      "ok": true,
+      "pass": 66
+    },
+    {
+      "detail": "def _router(self):\n        local_goal_lock = self.GoalLockLocalProviderV1()\n        providers = [local_goal_lock]\n        if self.execution_enabled and self.gemini_key:\n            transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or \"auto\")\n            providers.insert(0, self.AIWorkerProvider(transport))\n        return self.MultiProviderRouter(providers)\n\n    ",
+      "family": "core_provider_isolation",
+      "name": "local-provider-always-present",
+      "ok": true,
+      "pass": 67
+    },
+    {
+      "detail": "restart scheduler must not require Gemini",
+      "family": "core_provider_isolation",
+      "name": "restart-core-independent",
+      "ok": true,
+      "pass": 68
+    },
+    {
+      "detail": "completion defaults live only in GoalCompletionGate",
+      "family": "core_provider_isolation",
+      "name": "no-duplicate-completion-thresholds",
+      "ok": true,
+      "pass": 69
+    },
+    {
+      "detail": "operator state not tied to provider light",
+      "family": "core_provider_isolation",
+      "name": "ui-core-working-independent",
+      "ok": true,
+      "pass": 70
+    },
+    {
+      "detail": "provider must not gate project creation",
+      "family": "core_provider_isolation",
+      "name": "start-project-without-provider",
+      "ok": true,
+      "pass": 71
+    },
+    {
+      "detail": "UI must permit local project start",
+      "family": "core_provider_isolation",
+      "name": "ui-start-without-provider",
+      "ok": true,
+      "pass": 72
+    },
+    {
+      "detail": "if path == \"/api/resume\":\n                return self.json(self.engine.call(self.engine.pause(False)))\n            ",
+      "family": "core_provider_isolation",
+      "name": "resume-not-provider-gated",
+      "ok": true,
+      "pass": 73
+    },
+    {
+      "detail": "provider outage must not pause whole project",
+      "family": "core_provider_isolation",
+      "name": "activation-not-provider-paused",
+      "ok": true,
+      "pass": 74
+    },
+    {
+      "detail": "local scheduler must start",
+      "family": "core_provider_isolation",
+      "name": "scheduler-start-independent",
+      "ok": true,
+      "pass": 75
+    },
+    {
+      "detail": "provider-specific wait state",
+      "family": "core_provider_isolation",
+      "name": "provider-wait-represented",
+      "ok": true,
+      "pass": 76
+    },
+    {
+      "detail": "def _router(self):\n        local_goal_lock = self.GoalLockLocalProviderV1()\n        providers = [local_goal_lock]\n        if self.execution_enabled and self.gemini_key:\n            transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or \"auto\")\n            providers.insert(0, self.AIWorkerProvider(transport))\n        return self.MultiProviderRouter(providers)\n\n    ",
+      "family": "core_provider_isolation",
+      "name": "local-provider-always-present",
+      "ok": true,
+      "pass": 77
+    },
+    {
+      "detail": "restart scheduler must not require Gemini",
+      "family": "core_provider_isolation",
+      "name": "restart-core-independent",
+      "ok": true,
+      "pass": 78
+    },
+    {
+      "detail": "completion defaults live only in GoalCompletionGate",
+      "family": "core_provider_isolation",
+      "name": "no-duplicate-completion-thresholds",
+      "ok": true,
+      "pass": 79
+    },
+    {
+      "detail": "operator state not tied to provider light",
+      "family": "core_provider_isolation",
+      "name": "ui-core-working-independent",
+      "ok": true,
+      "pass": 80
+    },
+    {
+      "detail": "provider must not gate project creation",
+      "family": "core_provider_isolation",
+      "name": "start-project-without-provider",
+      "ok": true,
+      "pass": 81
+    },
+    {
+      "detail": "UI must permit local project start",
+      "family": "core_provider_isolation",
+      "name": "ui-start-without-provider",
+      "ok": true,
+      "pass": 82
+    },
+    {
+      "detail": "if path == \"/api/resume\":\n                return self.json(self.engine.call(self.engine.pause(False)))\n            ",
+      "family": "core_provider_isolation",
+      "name": "resume-not-provider-gated",
+      "ok": true,
+      "pass": 83
+    },
+    {
+      "detail": "provider outage must not pause whole project",
+      "family": "core_provider_isolation",
+      "name": "activation-not-provider-paused",
+      "ok": true,
+      "pass": 84
+    },
+    {
+      "detail": "local scheduler must start",
+      "family": "core_provider_isolation",
+      "name": "scheduler-start-independent",
+      "ok": true,
+      "pass": 85
+    },
+    {
+      "detail": "provider-specific wait state",
+      "family": "core_provider_isolation",
+      "name": "provider-wait-represented",
+      "ok": true,
+      "pass": 86
+    },
+    {
+      "detail": "def _router(self):\n        local_goal_lock = self.GoalLockLocalProviderV1()\n        providers = [local_goal_lock]\n        if self.execution_enabled and self.gemini_key:\n            transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or \"auto\")\n            providers.insert(0, self.AIWorkerProvider(transport))\n        return self.MultiProviderRouter(providers)\n\n    ",
+      "family": "core_provider_isolation",
+      "name": "local-provider-always-present",
+      "ok": true,
+      "pass": 87
+    },
+    {
+      "detail": "restart scheduler must not require Gemini",
+      "family": "core_provider_isolation",
+      "name": "restart-core-independent",
+      "ok": true,
+      "pass": 88
+    },
+    {
+      "detail": "completion defaults live only in GoalCompletionGate",
+      "family": "core_provider_isolation",
+      "name": "no-duplicate-completion-thresholds",
+      "ok": true,
+      "pass": 89
+    },
+    {
+      "detail": "operator state not tied to provider light",
+      "family": "core_provider_isolation",
+      "name": "ui-core-working-independent",
+      "ok": true,
+      "pass": 90
+    },
+    {
+      "detail": "provider must not gate project creation",
+      "family": "core_provider_isolation",
+      "name": "start-project-without-provider",
+      "ok": true,
+      "pass": 91
+    },
+    {
+      "detail": "UI must permit local project start",
+      "family": "core_provider_isolation",
+      "name": "ui-start-without-provider",
+      "ok": true,
+      "pass": 92
+    },
+    {
+      "detail": "if path == \"/api/resume\":\n                return self.json(self.engine.call(self.engine.pause(False)))\n            ",
+      "family": "core_provider_isolation",
+      "name": "resume-not-provider-gated",
+      "ok": true,
+      "pass": 93
+    },
+    {
+      "detail": "provider outage must not pause whole project",
+      "family": "core_provider_isolation",
+      "name": "activation-not-provider-paused",
+      "ok": true,
+      "pass": 94
+    },
+    {
+      "detail": "local scheduler must start",
+      "family": "core_provider_isolation",
+      "name": "scheduler-start-independent",
+      "ok": true,
+      "pass": 95
+    },
+    {
+      "detail": "provider-specific wait state",
+      "family": "core_provider_isolation",
+      "name": "provider-wait-represented",
+      "ok": true,
+      "pass": 96
+    },
+    {
+      "detail": "def _router(self):\n        local_goal_lock = self.GoalLockLocalProviderV1()\n        providers = [local_goal_lock]\n        if self.execution_enabled and self.gemini_key:\n            transport = self.GeminiInteractionsTransport(api_key=self.gemini_key, model=self.gemini_model or \"auto\")\n            providers.insert(0, self.AIWorkerProvider(transport))\n        return self.MultiProviderRouter(providers)\n\n    ",
+      "family": "core_provider_isolation",
+      "name": "local-provider-always-present",
+      "ok": true,
+      "pass": 97
+    },
+    {
+      "detail": "restart scheduler must not require Gemini",
+      "family": "core_provider_isolation",
+      "name": "restart-core-independent",
+      "ok": true,
+      "pass": 98
+    },
+    {
+      "detail": "completion defaults live only in GoalCompletionGate",
+      "family": "core_provider_isolation",
+      "name": "no-duplicate-completion-thresholds",
+      "ok": true,
+      "pass": 99
+    },
+    {
+      "detail": "operator state not tied to provider light",
+      "family": "core_provider_isolation",
+      "name": "ui-core-working-independent",
+      "ok": true,
+      "pass": 100
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 101
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 102
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 103
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 104
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 105
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 106
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 107
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 108
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 109
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "validation-epoch",
+      "ok": true,
+      "pass": 110
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 111
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 112
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 113
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 114
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 115
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 116
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 117
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 118
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 119
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "validation-epoch",
+      "ok": true,
+      "pass": 120
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 121
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 122
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 123
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 124
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 125
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 126
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 127
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 128
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 129
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "validation-epoch",
+      "ok": true,
+      "pass": 130
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 131
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 132
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 133
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 134
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 135
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 136
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 137
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 138
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 139
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "validation-epoch",
+      "ok": true,
+      "pass": 140
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 141
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 142
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 143
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 144
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 145
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 146
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 147
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 148
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 149
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "validation-epoch",
+      "ok": true,
+      "pass": 150
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "corrupt-pointer-failsoft",
+      "ok": true,
+      "pass": 151
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "publisher-firewall",
+      "ok": true,
+      "pass": 152
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "coordinator-firewall",
+      "ok": true,
+      "pass": 153
+    },
+    {
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
+      "family": "update_lifecycle",
+      "name": "local-ci-cannot-stable",
+      "ok": true,
+      "pass": 154
+    },
+    {
+      "detail": "{'allowed': True, 'channel': 'stable', 'release_status': 'release', 'problems': (), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'windows_stage_preflight_passed': True, 'windows_install_passed': True, 'windows_restart_reopen_passed': True, 'windows_rollback_passed': True, 'provider_persistence_passed': True, 'field_validation_passed': True, 'production_ready': True, 'field_validation_pending': False}}",
+      "family": "update_lifecycle",
+      "name": "complete-evidence-can-pass",
+      "ok": true,
+      "pass": 155
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "human-install-confirmation",
+      "ok": true,
+      "pass": 156
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "rollback-paths-exist",
+      "ok": true,
+      "pass": 157
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-recovers-interrupted-update",
+      "ok": true,
+      "pass": 158
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-no-silent-broad-pass",
+      "ok": true,
+      "pass": 159
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "updater-no-silent-broad-pass",
+      "ok": true,
+      "pass": 160
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "corrupt-pointer-failsoft",
+      "ok": true,
+      "pass": 161
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "publisher-firewall",
+      "ok": true,
+      "pass": 162
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "coordinator-firewall",
+      "ok": true,
+      "pass": 163
+    },
+    {
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
+      "family": "update_lifecycle",
+      "name": "local-ci-cannot-stable",
+      "ok": true,
+      "pass": 164
+    },
+    {
+      "detail": "{'allowed': True, 'channel': 'stable', 'release_status': 'release', 'problems': (), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'windows_stage_preflight_passed': True, 'windows_install_passed': True, 'windows_restart_reopen_passed': True, 'windows_rollback_passed': True, 'provider_persistence_passed': True, 'field_validation_passed': True, 'production_ready': True, 'field_validation_pending': False}}",
+      "family": "update_lifecycle",
+      "name": "complete-evidence-can-pass",
+      "ok": true,
+      "pass": 165
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "human-install-confirmation",
+      "ok": true,
+      "pass": 166
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "rollback-paths-exist",
+      "ok": true,
+      "pass": 167
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-recovers-interrupted-update",
+      "ok": true,
+      "pass": 168
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-no-silent-broad-pass",
+      "ok": true,
+      "pass": 169
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "updater-no-silent-broad-pass",
+      "ok": true,
+      "pass": 170
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "corrupt-pointer-failsoft",
+      "ok": true,
+      "pass": 171
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "publisher-firewall",
+      "ok": true,
+      "pass": 172
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "coordinator-firewall",
+      "ok": true,
+      "pass": 173
+    },
+    {
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
+      "family": "update_lifecycle",
+      "name": "local-ci-cannot-stable",
+      "ok": true,
+      "pass": 174
+    },
+    {
+      "detail": "{'allowed': True, 'channel': 'stable', 'release_status': 'release', 'problems': (), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'windows_stage_preflight_passed': True, 'windows_install_passed': True, 'windows_restart_reopen_passed': True, 'windows_rollback_passed': True, 'provider_persistence_passed': True, 'field_validation_passed': True, 'production_ready': True, 'field_validation_pending': False}}",
+      "family": "update_lifecycle",
+      "name": "complete-evidence-can-pass",
+      "ok": true,
+      "pass": 175
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "human-install-confirmation",
+      "ok": true,
+      "pass": 176
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "rollback-paths-exist",
+      "ok": true,
+      "pass": 177
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-recovers-interrupted-update",
+      "ok": true,
+      "pass": 178
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-no-silent-broad-pass",
+      "ok": true,
+      "pass": 179
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "updater-no-silent-broad-pass",
+      "ok": true,
+      "pass": 180
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "corrupt-pointer-failsoft",
+      "ok": true,
+      "pass": 181
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "publisher-firewall",
+      "ok": true,
+      "pass": 182
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "coordinator-firewall",
+      "ok": true,
+      "pass": 183
+    },
+    {
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
+      "family": "update_lifecycle",
+      "name": "local-ci-cannot-stable",
+      "ok": true,
+      "pass": 184
+    },
+    {
+      "detail": "{'allowed': True, 'channel': 'stable', 'release_status': 'release', 'problems': (), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'windows_stage_preflight_passed': True, 'windows_install_passed': True, 'windows_restart_reopen_passed': True, 'windows_rollback_passed': True, 'provider_persistence_passed': True, 'field_validation_passed': True, 'production_ready': True, 'field_validation_pending': False}}",
+      "family": "update_lifecycle",
+      "name": "complete-evidence-can-pass",
+      "ok": true,
+      "pass": 185
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "human-install-confirmation",
+      "ok": true,
+      "pass": 186
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "rollback-paths-exist",
+      "ok": true,
+      "pass": 187
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-recovers-interrupted-update",
+      "ok": true,
+      "pass": 188
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-no-silent-broad-pass",
+      "ok": true,
+      "pass": 189
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "updater-no-silent-broad-pass",
+      "ok": true,
+      "pass": 190
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "corrupt-pointer-failsoft",
+      "ok": true,
+      "pass": 191
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "publisher-firewall",
+      "ok": true,
+      "pass": 192
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "coordinator-firewall",
+      "ok": true,
+      "pass": 193
+    },
+    {
+      "detail": "{'allowed': False, 'channel': 'stable', 'release_status': 'release', 'problems': ('production_ready!=true', 'field_validation_pending!=false', 'windows_stage_preflight_passed!=true', 'windows_install_passed!=true', 'windows_restart_reopen_passed!=true', 'windows_rollback_passed!=true', 'provider_persistence_passed!=true', 'field_validation_passed!=true'), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'production_ready': False, 'field_validation_pending': True}}",
+      "family": "update_lifecycle",
+      "name": "local-ci-cannot-stable",
+      "ok": true,
+      "pass": 194
+    },
+    {
+      "detail": "{'allowed': True, 'channel': 'stable', 'release_status': 'release', 'problems': (), 'qualification': {'tests_passed': True, 'security_passed': True, 'clean_extract_passed': True, 'package_contract_passed': True, 'windows_stage_preflight_passed': True, 'windows_install_passed': True, 'windows_restart_reopen_passed': True, 'windows_rollback_passed': True, 'provider_persistence_passed': True, 'field_validation_passed': True, 'production_ready': True, 'field_validation_pending': False}}",
+      "family": "update_lifecycle",
+      "name": "complete-evidence-can-pass",
+      "ok": true,
+      "pass": 195
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "human-install-confirmation",
+      "ok": true,
+      "pass": 196
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "rollback-paths-exist",
+      "ok": true,
+      "pass": 197
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-recovers-interrupted-update",
+      "ok": true,
+      "pass": 198
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "launcher-no-silent-broad-pass",
+      "ok": true,
+      "pass": 199
+    },
+    {
+      "detail": "",
+      "family": "update_lifecycle",
+      "name": "updater-no-silent-broad-pass",
+      "ok": true,
+      "pass": 200
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 201
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 202
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 203
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 204
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 205
+    },
+    {
+      "detail": "[]",
+      "family": "windows_package_boundary",
+      "name": "essential-runtime-present",
+      "ok": true,
+      "pass": 206
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "canonical-not-publishable",
+      "ok": true,
+      "pass": 207
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 208
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 209
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "provider-runtime-present",
+      "ok": true,
+      "pass": 210
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 211
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 212
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 213
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 214
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 215
+    },
+    {
+      "detail": "[]",
+      "family": "windows_package_boundary",
+      "name": "essential-runtime-present",
+      "ok": true,
+      "pass": 216
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "canonical-not-publishable",
+      "ok": true,
+      "pass": 217
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 218
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 219
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "provider-runtime-present",
+      "ok": true,
+      "pass": 220
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 221
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 222
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 223
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 224
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 225
+    },
+    {
+      "detail": "[]",
+      "family": "windows_package_boundary",
+      "name": "essential-runtime-present",
+      "ok": true,
+      "pass": 226
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "canonical-not-publishable",
+      "ok": true,
+      "pass": 227
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 228
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 229
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "provider-runtime-present",
+      "ok": true,
+      "pass": 230
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 231
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 232
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 233
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 234
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 235
+    },
+    {
+      "detail": "[]",
+      "family": "windows_package_boundary",
+      "name": "essential-runtime-present",
+      "ok": true,
+      "pass": 236
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "canonical-not-publishable",
+      "ok": true,
+      "pass": 237
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 238
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 239
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "provider-runtime-present",
+      "ok": true,
+      "pass": 240
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 241
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 242
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 243
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 244
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 245
+    },
+    {
+      "detail": "[]",
+      "family": "windows_package_boundary",
+      "name": "essential-runtime-present",
+      "ok": true,
+      "pass": 246
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "canonical-not-publishable",
+      "ok": true,
+      "pass": 247
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 248
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 249
+    },
+    {
+      "detail": "",
+      "family": "windows_package_boundary",
+      "name": "provider-runtime-present",
+      "ok": true,
+      "pass": 250
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "startup-failure-file",
+      "ok": true,
+      "pass": 251
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "workmode-failure-file",
+      "ok": true,
+      "pass": 252
+    },
+    {
+      "detail": "if path == \"/api/health\":\n                from ceo_core.core_health_contract_v2 import build_core_health_v2\n                pointer = self.engine.updater.current_pointer() or {}\n                storage_ready = bool(self.engine.projects.root.exists())\n                core_ready = bool(self.engine.loop.is_running() and self.engine.thread.is_alive())\n                frontend_ready = bool(HTML and \"Goal Engine\" in HTML and \"/api/state\" in HTML)\n                payload = build_core_health_v2(\n                    version=APP_VERSION,\n                    activation_id=pointer.get(\"activation_id\"),\n                    storage_ready=storage_ready,\n                    runtime_ready=core_ready,\n                    frontend_ready=frontend_ready,\n                    provider_mode=self.engine.provider_mode,\n                    execution_enabled=self.engine.execution_enabled,\n                    provider_error=self.engine.gemini_validation_error,\n                    provider_validation_in_progress=se",
+      "family": "startup_restart",
+      "name": "health-not-provider-gated",
+      "ok": true,
+      "pass": 253
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "core-health-contract",
+      "ok": true,
+      "pass": 254
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 255
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "bundled-fallback",
+      "ok": true,
+      "pass": 256
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "launcher-status-written",
+      "ok": true,
+      "pass": 257
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-revalidation-bounded",
+      "ok": true,
+      "pass": 258
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "shutdown-does-not-require-provider",
+      "ok": true,
+      "pass": 259
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "server-loop-independent",
+      "ok": true,
+      "pass": 260
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "startup-failure-file",
+      "ok": true,
+      "pass": 261
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "workmode-failure-file",
+      "ok": true,
+      "pass": 262
+    },
+    {
+      "detail": "if path == \"/api/health\":\n                from ceo_core.core_health_contract_v2 import build_core_health_v2\n                pointer = self.engine.updater.current_pointer() or {}\n                storage_ready = bool(self.engine.projects.root.exists())\n                core_ready = bool(self.engine.loop.is_running() and self.engine.thread.is_alive())\n                frontend_ready = bool(HTML and \"Goal Engine\" in HTML and \"/api/state\" in HTML)\n                payload = build_core_health_v2(\n                    version=APP_VERSION,\n                    activation_id=pointer.get(\"activation_id\"),\n                    storage_ready=storage_ready,\n                    runtime_ready=core_ready,\n                    frontend_ready=frontend_ready,\n                    provider_mode=self.engine.provider_mode,\n                    execution_enabled=self.engine.execution_enabled,\n                    provider_error=self.engine.gemini_validation_error,\n                    provider_validation_in_progress=se",
+      "family": "startup_restart",
+      "name": "health-not-provider-gated",
+      "ok": true,
+      "pass": 263
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "core-health-contract",
+      "ok": true,
+      "pass": 264
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 265
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "bundled-fallback",
+      "ok": true,
+      "pass": 266
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "launcher-status-written",
+      "ok": true,
+      "pass": 267
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-revalidation-bounded",
+      "ok": true,
+      "pass": 268
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "shutdown-does-not-require-provider",
+      "ok": true,
+      "pass": 269
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "server-loop-independent",
+      "ok": true,
+      "pass": 270
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "startup-failure-file",
+      "ok": true,
+      "pass": 271
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "workmode-failure-file",
+      "ok": true,
+      "pass": 272
+    },
+    {
+      "detail": "if path == \"/api/health\":\n                from ceo_core.core_health_contract_v2 import build_core_health_v2\n                pointer = self.engine.updater.current_pointer() or {}\n                storage_ready = bool(self.engine.projects.root.exists())\n                core_ready = bool(self.engine.loop.is_running() and self.engine.thread.is_alive())\n                frontend_ready = bool(HTML and \"Goal Engine\" in HTML and \"/api/state\" in HTML)\n                payload = build_core_health_v2(\n                    version=APP_VERSION,\n                    activation_id=pointer.get(\"activation_id\"),\n                    storage_ready=storage_ready,\n                    runtime_ready=core_ready,\n                    frontend_ready=frontend_ready,\n                    provider_mode=self.engine.provider_mode,\n                    execution_enabled=self.engine.execution_enabled,\n                    provider_error=self.engine.gemini_validation_error,\n                    provider_validation_in_progress=se",
+      "family": "startup_restart",
+      "name": "health-not-provider-gated",
+      "ok": true,
+      "pass": 273
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "core-health-contract",
+      "ok": true,
+      "pass": 274
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 275
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "bundled-fallback",
+      "ok": true,
+      "pass": 276
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "launcher-status-written",
+      "ok": true,
+      "pass": 277
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-revalidation-bounded",
+      "ok": true,
+      "pass": 278
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "shutdown-does-not-require-provider",
+      "ok": true,
+      "pass": 279
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "server-loop-independent",
+      "ok": true,
+      "pass": 280
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "startup-failure-file",
+      "ok": true,
+      "pass": 281
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "workmode-failure-file",
+      "ok": true,
+      "pass": 282
+    },
+    {
+      "detail": "if path == \"/api/health\":\n                from ceo_core.core_health_contract_v2 import build_core_health_v2\n                pointer = self.engine.updater.current_pointer() or {}\n                storage_ready = bool(self.engine.projects.root.exists())\n                core_ready = bool(self.engine.loop.is_running() and self.engine.thread.is_alive())\n                frontend_ready = bool(HTML and \"Goal Engine\" in HTML and \"/api/state\" in HTML)\n                payload = build_core_health_v2(\n                    version=APP_VERSION,\n                    activation_id=pointer.get(\"activation_id\"),\n                    storage_ready=storage_ready,\n                    runtime_ready=core_ready,\n                    frontend_ready=frontend_ready,\n                    provider_mode=self.engine.provider_mode,\n                    execution_enabled=self.engine.execution_enabled,\n                    provider_error=self.engine.gemini_validation_error,\n                    provider_validation_in_progress=se",
+      "family": "startup_restart",
+      "name": "health-not-provider-gated",
+      "ok": true,
+      "pass": 283
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "core-health-contract",
+      "ok": true,
+      "pass": 284
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 285
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "bundled-fallback",
+      "ok": true,
+      "pass": 286
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "launcher-status-written",
+      "ok": true,
+      "pass": 287
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-revalidation-bounded",
+      "ok": true,
+      "pass": 288
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "shutdown-does-not-require-provider",
+      "ok": true,
+      "pass": 289
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "server-loop-independent",
+      "ok": true,
+      "pass": 290
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "startup-failure-file",
+      "ok": true,
+      "pass": 291
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "workmode-failure-file",
+      "ok": true,
+      "pass": 292
+    },
+    {
+      "detail": "if path == \"/api/health\":\n                from ceo_core.core_health_contract_v2 import build_core_health_v2\n                pointer = self.engine.updater.current_pointer() or {}\n                storage_ready = bool(self.engine.projects.root.exists())\n                core_ready = bool(self.engine.loop.is_running() and self.engine.thread.is_alive())\n                frontend_ready = bool(HTML and \"Goal Engine\" in HTML and \"/api/state\" in HTML)\n                payload = build_core_health_v2(\n                    version=APP_VERSION,\n                    activation_id=pointer.get(\"activation_id\"),\n                    storage_ready=storage_ready,\n                    runtime_ready=core_ready,\n                    frontend_ready=frontend_ready,\n                    provider_mode=self.engine.provider_mode,\n                    execution_enabled=self.engine.execution_enabled,\n                    provider_error=self.engine.gemini_validation_error,\n                    provider_validation_in_progress=se",
+      "family": "startup_restart",
+      "name": "health-not-provider-gated",
+      "ok": true,
+      "pass": 293
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "core-health-contract",
+      "ok": true,
+      "pass": 294
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 295
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "bundled-fallback",
+      "ok": true,
+      "pass": 296
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "launcher-status-written",
+      "ok": true,
+      "pass": 297
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-revalidation-bounded",
+      "ok": true,
+      "pass": 298
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "shutdown-does-not-require-provider",
+      "ok": true,
+      "pass": 299
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "server-loop-independent",
+      "ok": true,
+      "pass": 300
+    }
+  ],
+  "failed": 85,
+  "failures": [
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 101
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 102
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 103
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 104
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 105
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 106
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 107
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 108
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 109
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 111
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 112
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 113
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 114
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 115
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 116
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 117
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 118
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 119
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 121
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 122
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 123
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 124
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 125
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 126
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 127
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 128
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 129
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 131
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 132
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 133
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 134
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 135
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 136
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 137
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 138
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 139
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-path",
+      "ok": false,
+      "pass": 141
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-save",
+      "ok": false,
+      "pass": 142
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-load",
+      "ok": false,
+      "pass": 143
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trust-forget",
+      "ok": false,
+      "pass": 144
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "fingerprint",
+      "ok": false,
+      "pass": 145
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "startup-trust",
+      "ok": false,
+      "pass": 146
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "trusted-waiting",
+      "ok": false,
+      "pass": 147
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "transport-keeps-trust",
+      "ok": false,
+      "pass": 148
+    },
+    {
+      "detail": "credential trust must survive restart without plaintext",
+      "family": "provider_session_restart",
+      "name": "hard-reject-revokes",
+      "ok": false,
+      "pass": 149
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 201
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 202
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 203
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 204
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 205
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 208
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 209
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 211
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 212
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 213
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 214
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 215
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 218
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 219
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 221
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 222
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 223
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 224
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 225
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 228
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 229
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 231
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 232
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 233
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 234
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 235
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 238
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 239
+    },
+    {
+      "detail": "{'required_paths': 523}",
+      "family": "windows_package_boundary",
+      "name": "bounded-runtime-file-count",
+      "ok": false,
+      "pass": 241
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'ceo_core/mobile_dev_queue.py', 'ceo_core/mobile_dev_queue_v2.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json', 'schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json', 'schemas/android_dev21/DEV21_A181_A190_GATE.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-dev-in-windows-runtime",
+      "ok": false,
+      "pass": 242
+    },
+    {
+      "detail": "['ceo_core/release_readiness_v10.py', 'ceo_core/release_readiness_v11.py', 'ceo_core/release_readiness_v12.py', 'ceo_core/release_readiness_v13.py', 'ceo_core/release_readiness_v14.py', 'ceo_core/release_readiness_v15.py', 'ceo_core/release_readiness_v16.py', 'ceo_core/release_readiness_v17.py', 'ceo_core/release_readiness_v18.py', 'ceo_core/release_readiness_v19.py', 'ceo_core/release_readiness_v20.py', 'ceo_core/release_readiness_v3.py', 'ceo_core/release_readiness_v4.py', 'ceo_core/release_readiness_v5.py', 'ceo_core/release_readiness_v6.py', 'ceo_core/release_readiness_v7.py', 'ceo_core/release_readiness_v8.py', 'ceo_core/release_readiness_v9.py', 'ceo_core/windows_release_readiness_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-historical-release-readiness-ladder",
+      "ok": false,
+      "pass": 243
+    },
+    {
+      "detail": "['PREPARAR_CAMPANA_WINDOWS_DEV261.cmd', 'PREPARAR_CAMPANA_WINDOWS_DEV271.cmd', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py']",
+      "family": "windows_package_boundary",
+      "name": "no-physical-campaign-tools-in-runtime",
+      "ok": false,
+      "pass": 244
+    },
+    {
+      "detail": "['scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py', 'scripts/dev161_local_qualification.py', 'scripts/dev171_local_qualification.py', 'scripts/dev181_local_qualification.py', 'scripts/dev182_windows_update_qualification.py', 'scripts/dev183_gemini_live_recovery_qualification.py', 'scripts/dev184_project_handoff_qualification.py', 'scripts/dev185_native_gemini_secret_qualification.py', 'scripts/dev186_dpapi_recovery_qualification.py', 'scripts/dev187_gemini_retry_qualification.py', 'scripts/dev188_gemini_key_replacement_qualification.py', 'scripts/dev189_scheduler_recovery_qualification.py', 'scripts/dev201_local_qualification.py', 'scripts/dev211_local_qualification.py', 'scripts/dev211_windows_install_preflight.py', 'scripts/dev212_continuity_loop_qualification.py', 'scripts/dev212_local_qualification.py', 'scripts/dev221_local_qualification.py', 'scripts/dev231_local_qualification.py', 'scripts/dev241_local_qualification.py', 'scripts/dev251_local_qualification.py', 'scripts/dev261_local_qualification.py', 'scripts/dev261_windows_preflight.py', 'scripts/dev271_local_qualification.py', 'scripts/dev271_windows_campaign.py']",
+      "family": "windows_package_boundary",
+      "name": "no-dev-numbered-scripts-in-runtime",
+      "ok": false,
+      "pass": 245
+    },
+    {
+      "detail": "['ceo_core/android_runtime_campaign_v1.py', 'ceo_core/campaign_baseline_snapshot_v2.py', 'ceo_core/campaign_checkpoint_v1.py', 'ceo_core/campaign_checkpoint_v2.py', 'ceo_core/campaign_evidence_chain_v1.py', 'ceo_core/campaign_exactly_once_guard_v1.py', 'ceo_core/campaign_resume_guard_v2.py', 'ceo_core/cross_platform_campaign_bridge_v1.py', 'ceo_core/one_shot_windows_campaign_executor_v1.py', 'ceo_core/physical_campaign_chaos_v2.py', 'ceo_core/physical_campaign_plan.py', 'ceo_core/physical_campaign_plan_v3.py', 'ceo_core/physical_campaign_plan_v4.py', 'ceo_core/physical_campaign_plan_v5.py', 'ceo_core/physical_campaign_plan_v6.py', 'ceo_core/physical_campaign_soak_v1.py', 'ceo_core/physical_campaign_ticket_v1.py', 'ceo_core/provider_fault_campaign_v1.py', 'ceo_core/release_qualification_v2.py', 'ceo_core/restart_continuity_campaign_v3.py', 'ceo_core/terminal_campaign_model_v1.py', 'ceo_core/update_failure_campaign_v2.py', 'ceo_core/windows_campaign_bundle_v1.py', 'ceo_core/windows_campaign_executor_contract_v1.py', 'scripts/dev100_local_qualification.py', 'scripts/dev110_local_qualification.py', 'scripts/dev120_local_qualification.py', 'scripts/dev130_local_qualification.py', 'scripts/dev141_local_qualification.py', 'scripts/dev151_local_qualification.py']",
+      "family": "windows_package_boundary",
+      "name": "no-test-harness-in-runtime",
+      "ok": false,
+      "pass": 248
+    },
+    {
+      "detail": "['ceo_core/android_apk_admission_gate_v1.py', 'ceo_core/android_apk_inspector_v1.py', 'ceo_core/android_artifact_evidence_bundle_v1.py', 'ceo_core/android_artifact_identity_v1.py', 'ceo_core/android_artifact_state_machine_v2.py', 'ceo_core/android_build_readiness_v1.py', 'ceo_core/android_build_receipt_v2.py', 'ceo_core/android_build_receipt_v3.py', 'ceo_core/android_ci_build_capsule_v1.py', 'ceo_core/android_contract_v1.py', 'ceo_core/android_contract_v2.py', 'ceo_core/android_dual_api_gate_v1.py', 'ceo_core/android_dual_api_gate_v2.py', 'ceo_core/android_evidence_import_v1.py', 'ceo_core/android_packaging_contract_v1.py', 'ceo_core/android_reproducibility_evidence_v3.py', 'ceo_core/android_reproducibility_gate_v2.py', 'ceo_core/android_reproducible_build_v1.py', 'ceo_core/android_runner_result_import_v1.py', 'ceo_core/android_runtime_campaign_v1.py', 'ceo_core/android_runtime_dossier_v2.py', 'ceo_core/android_runtime_evidence_v3.py', 'ceo_core/android_runtime_result_import_v1.py', 'ceo_core/android_toolchain_license_gate_v1.py', 'schemas/ANDROID_BUILD_INPUTS_DEV21.json', 'schemas/ANDROID_OPERATOR_CONSENT_DEV162.json']",
+      "family": "windows_package_boundary",
+      "name": "no-android-files-by-name",
+      "ok": false,
+      "pass": 249
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 255
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 265
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 275
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 285
+    },
+    {
+      "detail": "",
+      "family": "startup_restart",
+      "name": "provider-validation-after-health",
+      "ok": false,
+      "pass": 295
+    }
+  ],
+  "families": {
+    "core_provider_isolation": {
+      "fail": 0,
+      "pass": 50
+    },
+    "provider_classification": {
+      "fail": 0,
+      "pass": 50
+    },
+    "provider_session_restart": {
+      "fail": 45,
+      "pass": 5
+    },
+    "startup_restart": {
+      "fail": 5,
+      "pass": 45
+    },
+    "update_lifecycle": {
+      "fail": 0,
+      "pass": 50
+    },
+    "windows_package_boundary": {
+      "fail": 35,
+      "pass": 15
+    }
+  },
+  "passed": 215,
+  "schema": 2,
+  "total": 300
+}
