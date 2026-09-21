@@ -17,8 +17,11 @@
   "production_ready": false,
   "release_sequence": 310,
   "security_passed": true,
-  "single_file_activator_verified": false,
+  "single_file_activator_verified": true,
   "tests_passed": true,
   "truthful_provider_wait_ui": true,
-  "windows_stage_preflight_passed": false
+  "windows_stage_preflight_passed": true,
+  "windows_exact_provider_session_regression_passed": true,
+  "windows_provider_session_semantics_smoke_passed": true,
+  "production_ready_reason": "Awaiting operator-approved installation on the real Windows host and confirmation that the stored Gemini credential remains stable while the existing objective resumes."
 }
