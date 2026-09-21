@@ -15,7 +15,9 @@ def main() -> int:
     ap.add_argument("--release-id", required=True)
     ap.add_argument("--notes", default="")
     ap.add_argument("--min-app-version", required=True)
+    ap.add_argument("--qualification", required=True, help="JSON qualification record")
     ns = ap.parse_args()
+    qualification = json.loads(Path(ns.qualification).read_text(encoding="utf-8"))
     result = InternalReleasePublisher().publish(
         package_path=Path(ns.package),
         version=ns.version,
@@ -23,6 +25,7 @@ def main() -> int:
         release_id=ns.release_id,
         notes=ns.notes,
         min_app_version=ns.min_app_version,
+        qualification=qualification,
     )
     print(json.dumps(result.__dict__ if hasattr(result, "__dict__") else {
         field: getattr(result, field) for field in result.__dataclass_fields__
