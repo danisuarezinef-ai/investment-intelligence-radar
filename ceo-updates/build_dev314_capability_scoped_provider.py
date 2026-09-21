@@ -292,11 +292,15 @@ else if(!live){$('actionBanner').className='banner warnb';$('actionBanner').text
 
     active_snap_anchor = '''            "active": True,
             "project_id": state.id,
+            "project_name": state.project_name or state.goal[:80],
+            "goal": state.goal,
             "execution_enabled": self.execution_enabled,
             "provider_mode": self.provider_mode,
 '''
     active_snap_new = '''            "active": True,
             "project_id": state.id,
+            "project_name": state.project_name or state.goal[:80],
+            "goal": state.goal,
             "execution_enabled": self.execution_enabled,
             "core_execution_available": bool(scheduler_alive),
             "external_ai_available": bool(self.execution_enabled),
