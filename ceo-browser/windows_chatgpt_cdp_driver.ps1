@@ -658,7 +658,7 @@ try {
     }
     $typed=[pscustomobject]@{typed_chars=[int]$actualTyped.Length}
 
-    # B10 — submit through trusted Chrome input. Never rely on DOM .click().
+    # B10 — submit through trusted Chrome input; never use synthetic DOM button activation.
     # Prefer a dynamically located visible send button and dispatch a real CDP mouse
     # click to its current center. Fall back to a real CDP Enter key event.
     $sendProbeExpr = @"
