@@ -1344,7 +1344,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json(self.engine.call(self.engine.pause(True)))
             if path == "/api/resume":
                 if not self.engine.execution_enabled:
-                    return self.json({"error": "Gemini no está validado en esta sesión. Actívalo desde la interfaz antes de reanudar."}, 409)
+                    return self.json({"error": "IA web no disponible. CEO necesita Chrome/Edge; no requiere ninguna API para reanudar."}, 409)
                 return self.json(self.engine.call(self.engine.pause(False)))
             if path == "/api/cancel":
                 body = self.body()
