@@ -31,12 +31,12 @@ def _write_status(payload: dict) -> None:
     row.setdefault("production_verified", False)
     try:
         STATUS.write_text(json.dumps(row, ensure_ascii=False, indent=2), encoding="utf-8")
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[CEO][WARN] No se pudo escribir estado del launcher: {type(exc).__name__}: {exc}", file=sys.stderr)
     try:
         DIAGNOSTICS.record(str(row.get("status") or "UNKNOWN"), component="launcher", **{k: v for k, v in row.items() if k != "status"})
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[CEO][WARN] No se pudo persistir diagnóstico del launcher: {type(exc).__name__}: {exc}", file=sys.stderr)
 
 
 def _safe_pointer() -> tuple[Path, Path] | None:
@@ -58,7 +58,8 @@ def _safe_pointer() -> tuple[Path, Path] | None:
         if not root.is_dir() or not launcher.is_file():
             return None
         return root, launcher
-    except Exception:
+    except Exception as exc:
+        print(f"[CEO][WARN] Puntero de actualización ignorado: {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
 
 
@@ -143,12 +144,12 @@ def main() -> int:
         text = f"{type(exc).__name__}: {exc}\n\n{traceback.format_exc()}"
         try:
             FAILURE.write_text(text, encoding="utf-8")
-        except Exception:
-            pass
+        except Exception as write_exc:
+            print(f"[CEO][WARN] No se pudo escribir {FAILURE}: {type(write_exc).__name__}: {write_exc}", file=sys.stderr)
         try:
             DIAGNOSTICS.exception(exc, component="launcher")
-        except Exception:
-            pass
+        except Exception as diag_exc:
+            print(f"[CEO][WARN] No se pudo persistir diagnóstico de fallo: {type(diag_exc).__name__}: {diag_exc}", file=sys.stderr)
         _write_status({"status": "BLOCKED", "error": str(exc), "failure_file": str(FAILURE)})
         print(f"[BLOCKED] {exc}")
         print(f"[CEO] Diagnóstico: {FAILURE}")
