@@ -1,0 +1,33 @@
+name: Debug DEV309 generated scheduler
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/debug-dev309-generated.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  debug:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP 'dev309-debug'
+          $env:CEO_DEV309_BUILD_ROOT=$root
+          python ceo-updates\build_dev309_closure_convergence.py
+          if($LASTEXITCODE -ne 0){throw 'builder failed'}
+          Copy-Item "$root\ceo_core\scheduler.py" "ceo-updates\DEV309_GENERATED_SCHEDULER_DEBUG.py"
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/DEV309_GENERATED_SCHEDULER_DEBUG.py
+          git commit -m "Capture DEV309 generated scheduler for indentation diagnosis"
+          git push origin HEAD:ceo-update-channel
