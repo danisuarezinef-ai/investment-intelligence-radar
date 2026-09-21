@@ -116,40 +116,42 @@ def patch_ai_worker() -> None:
     p = ROOT / "ceo_core" / "ai_worker.py"
     s = p.read_text(encoding="utf-8")
 
-    old = '''                    "- Return work that another controller can evaluate and integrate.\n"
-                    "- End EVERY turn with exactly one machine-readable control footer:\n"
-                    "<CEO_RESULT>{\"status\":\"complete|continue|correct|deepen|spawn|review|escalate|retry\","
-                    "\"reason\":\"...\",\"next_instruction\":null,\"followups\":[],"
-                    "\"confidence\":0.0,\"requires_user\":false}</CEO_RESULT>\n"
-                    "- Use status=continue/deepen/correct when more turns in THIS SAME chat are needed; do not ask the human to say continue."
-'''
-    new = '''                    "- Return work that another controller can evaluate and integrate.\n"
-                    "- If a requested deliverable is a workspace file, use write_files with a RELATIVE path and complete content. "
-                    "CEO will perform the guarded local write; never claim a file exists merely because you described it.\n"
-                    "- When auditing completion, use evidence_refs only from the explicit goal_audit_evidence_candidates supplied in context.\n"
-                    "- End EVERY turn with exactly one machine-readable control footer:\n"
-                    "<CEO_RESULT>{\"status\":\"complete|continue|correct|deepen|spawn|review|escalate|retry\","
-                    "\"reason\":\"...\",\"next_instruction\":null,\"followups\":[],"
-                    "\"confidence\":0.0,\"requires_user\":false,\"evidence_refs\":[],"
-                    "\"write_files\":[{\"path\":\"relative/file.md\",\"content\":\"complete file content\"}]}</CEO_RESULT>\n"
-                    "- Use write_files=[] when no file should be written.\n"
-                    "- Use status=continue/deepen/correct when more turns in THIS SAME chat are needed; do not ask the human to say continue."
-'''
-    if s.count(old) != 1:
-        raise RuntimeError(f"AI prompt footer anchor={s.count(old)}")
-    s = s.replace(old, new, 1)
+    rule_anchor = '                    "- Return work that another controller can evaluate and integrate.\\n"\n'
+    rule_insert = (
+        rule_anchor
+        + '                    "- If a requested deliverable is a workspace file, use write_files with a RELATIVE path and complete content. "\n'
+        + '                    "CEO will perform the guarded local write; never claim a file exists merely because you described it.\\n"\n'
+        + '                    "- When auditing completion, use evidence_refs only from the explicit goal_audit_evidence_candidates supplied in context.\\n"\n'
+    )
+    if s.count(rule_anchor) != 1:
+        raise RuntimeError(f"AI prompt operating-rule anchor={s.count(rule_anchor)}")
+    s = s.replace(rule_anchor, rule_insert, 1)
 
-    old2 = '''                    "End the turn with one <CEO_RESULT>{...}</CEO_RESULT> control footer. "
-                    "If more work is needed in this chat, set status to continue/deepen/correct and provide next_instruction."
-'''
-    new2 = '''                    "End the turn with one <CEO_RESULT>{...}</CEO_RESULT> control footer using the full schema "
-                    "including evidence_refs and write_files. File writes must use relative workspace paths. "
-                    "If more work is needed in this chat, set status to continue/deepen/correct and provide next_instruction."
-'''
-    if s.count(old2) != 1:
-        raise RuntimeError(f"AI continuation footer anchor={s.count(old2)}")
-    p.write_text(s.replace(old2, new2, 1), encoding="utf-8")
+    footer_anchor = '                    "\\\"confidence\\\":0.0,\\\"requires_user\\\":false}</CEO_RESULT>\\n"\n'
+    footer_new = (
+        '                    "\\\"confidence\\\":0.0,\\\"requires_user\\\":false,\\\"evidence_refs\\\":[],"
+'
+        '                    "\\\"write_files\\\":[{\\\"path\\\":\\\"relative/file.md\\\",\\\"content\\\":\\\"complete file content\\\"}]}</CEO_RESULT>\\n"\n'
+        '                    "- Use write_files=[] when no file should be written.\\n"\n'
+    )
+    if s.count(footer_anchor) != 1:
+        raise RuntimeError(f"AI prompt footer schema anchor={s.count(footer_anchor)}")
+    s = s.replace(footer_anchor, footer_new, 1)
 
+    cont_anchor = (
+        '                    "End the turn with one <CEO_RESULT>{...}</CEO_RESULT> control footer. "\n'
+        '                    "If more work is needed in this chat, set status to continue/deepen/correct and provide next_instruction."\n'
+    )
+    cont_new = (
+        '                    "End the turn with one <CEO_RESULT>{...}</CEO_RESULT> control footer using the full schema "\n'
+        '                    "including evidence_refs and write_files. File writes must use relative workspace paths. "\n'
+        '                    "If more work is needed in this chat, set status to continue/deepen/correct and provide next_instruction."\n'
+    )
+    if s.count(cont_anchor) != 1:
+        raise RuntimeError(f"AI continuation footer anchor={s.count(cont_anchor)}")
+    s = s.replace(cont_anchor, cont_new, 1)
+
+    p.write_text(s, encoding="utf-8")
 
 def patch_self_hosting_contract() -> None:
     p = ROOT / "ceo_core" / "self_hosting_runtime.py"
