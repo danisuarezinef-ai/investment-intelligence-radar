@@ -50,16 +50,24 @@ class TaskDecomposer:
         complex_score = sum(1 for token in complex_terms if token in low)
         simple_score = sum(1 for token in simple_output_terms if token in low)
 
-        # DEV308: verbosity is not complexity. A detailed specification for one
-        # explicit output file remains a bounded single-deliverable goal.
+        # Stabilization invariant: verbosity is not complexity. A detailed
+        # specification for exactly one explicit output file remains a bounded
+        # single-deliverable goal regardless of character count. Actual complexity
+        # terms still force the full decomposition.
         file_hits = sum(low.count(ext) for ext in (".md", ".txt", ".json", ".csv", ".html"))
         single_explicit_file = file_hits == 1
-        compact = (
-            complex_score == 0
+        bounded_single_output = bool(
+            single_explicit_file
             and simple_score >= 1
-            and (
-                (single_explicit_file and len(text) <= 1200)
-                or (len(text) <= 260 and conjunctions <= 2)
+            and complex_score == 0
+        )
+        compact = bool(
+            bounded_single_output
+            or (
+                len(text) <= 260
+                and complex_score == 0
+                and conjunctions <= 2
+                and simple_score >= 1
             )
         )
         return {
@@ -69,6 +77,7 @@ class TaskDecomposer:
             "simple_output_score": simple_score,
             "conjunctions": conjunctions,
             "single_explicit_file": single_explicit_file,
+            "bounded_single_output": bounded_single_output,
             "file_hits": file_hits,
         }
 
