@@ -13,7 +13,7 @@ from ceo_core.goal_engine import GoalEngine
 from ceo_core.models import ProjectState, Task, TaskStatus
 from ceo_core.result_protocol import extract_directive
 from ceo_core.goal_completion_gate import GoalCompletionGate
-from ceo_core.scheduler import RELIABILITY_EPOCH, _apply_reliability_epoch_migration
+from ceo_core.scheduler import RELIABILITY_EPOCH, _apply_reliability_epoch_migration, _promote_provider_artifact_to_deliverable
 from ceo_core.autonomous_loop import AutonomousProjectLoop
 from ceo_core.self_hosting_tools import FilesystemOperations, ArtifactExchangeLayer
 from ceo_core.deliverable_evidence_engine_v1 import DeliverableEvidenceEngineV1
@@ -74,6 +74,34 @@ def test_guarded_workspace_write_and_evidence():
             escaped = True
         assert escaped, "workspace guard allowed escape"
         return {"sha256": row["sha256"], "size_bytes": row["size_bytes"], "artifact_id": reg["artifact_id"]}
+
+
+def test_provider_artifact_promotion():
+    with tempfile.TemporaryDirectory(prefix="dev309-promote-ws-") as ws, tempfile.TemporaryDirectory(prefix="dev309-provider-art-") as out:
+        source = pathlib.Path(out) / "opaque-task-id.md"
+        source.write_text("# Gate\n\nBOOTSTRAP PASS\n", encoding="utf-8")
+        row = _promote_provider_artifact_to_deliverable(
+            ws, "AUTONOMY_GATE_1.md", [str(source)]
+        )
+        target = pathlib.Path(ws) / "AUTONOMY_GATE_1.md"
+        assert row["promoted"] is True, row
+        assert target.is_file()
+        assert "BOOTSTRAP PASS" in target.read_text(encoding="utf-8")
+
+        none = _promote_provider_artifact_to_deliverable(
+            ws, "second.md", [str(pathlib.Path(out) / "missing.md")]
+        )
+        assert none["promoted"] is False, none
+
+        escaped = False
+        try:
+            _promote_provider_artifact_to_deliverable(
+                ws, "../escape.md", [str(source)]
+            )
+        except Exception:
+            escaped = True
+        assert escaped, "promotion allowed workspace escape"
+        return {"promoted": row, "missing_source": none, "escape_blocked": escaped}
 
 
 def test_evidence_candidates_and_auto_selection():
@@ -186,6 +214,8 @@ def source_semantics():
     assert "FilesystemOperations" in scheduler
     assert "goal_audit_evidence_candidates" in scheduler
     assert "workspace_artifact_written" in scheduler
+    assert "_promote_provider_artifact_to_deliverable" in scheduler
+    assert "closure_artifact_promoted" in scheduler
     assert "auto_evidence_refs" in gate
     assert "max_goal_continuity_generations" in loop
     return True
@@ -196,6 +226,7 @@ def main():
         "deliverable_inference": test_goal_deliverable_inference(),
         "protocol": test_protocol_write_files_and_evidence_refs(),
         "workspace": test_guarded_workspace_write_and_evidence(),
+        "provider_artifact_promotion": test_provider_artifact_promotion(),
         "evidence": test_evidence_candidates_and_auto_selection(),
         "field_173": test_field_173_migration(),
         "generation_cap": test_generation_cap_fail_closed(),
