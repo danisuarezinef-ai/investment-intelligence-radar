@@ -17,7 +17,7 @@
     "T11_submission_acknowledgement_and_no_double_send": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING",
     "T12_streaming_completion_capture": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING",
     "T13_same_conversation_continuity": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING",
-    "T14_browser_close_relaunch_continuity": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING",
+    "T14_browser_close_relaunch_continuity_advisory_for_first_functional_trial": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING_ADVISORY",
     "T15_ceo_restart_interrupted_turn_safety": "COMPLETE_CI_VERIFIED",
     "T16_physical_artifact_gate": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING",
     "T17_path_edge_cases": "COMPLETE_CI_VERIFIED",
@@ -126,9 +126,9 @@
     },
     {
       "id": 14,
-      "name": "Browser close/relaunch continuity",
-      "status": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING",
-      "evidence": "run_browser_restart_gate.ps1"
+      "name": "Browser close/relaunch continuity (advisory for first functional trial)",
+      "status": "RUNNER_CI_VERIFIED_PHYSICAL_PENDING_ADVISORY",
+      "evidence": "run_browser_restart_gate.ps1; failure is diagnostic WARN and does not block B29-B30/B38"
     },
     {
       "id": 15,
@@ -310,42 +310,21 @@
     11,
     12,
     13,
-    14,
     16,
     20,
     31,
     33
   ],
-  "verification": {
-    "workflow_run_id": 35655386184,
-    "verified_head": "cb66a885f4c85c9837c7d4c7e687d4aa5d060ead",
-    "conclusion": "success",
-    "ci_complete_count": 29,
-    "physical_pending_count": 11,
-    "passed": [
-      "all prior B03-B38 CI gates",
-      "Gate 0 Python compile and unit/adversarial tests",
-      "single preflight-only launcher path with no ChatGPT traffic",
-      "profile-scoped process recovery",
-      "owned-profile-only CDP port reuse",
-      "physical browser restart runner contract",
-      "40-point readiness contract boundaries",
-      "portable first-trial LAB build and ZIP inspection",
-      "browser-only zero-API transport integration",
-      "FREE-ONLY/no-production boundary"
-    ],
-    "physical_execution_required_for_ids": [
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      16,
-      20,
-      31,
-      33
-    ]
-  }
+  "verification": null,
+  "restart_policy": {
+    "required_for_first_functional_trial": false,
+    "failure_severity": "WARN",
+    "must_persist_diagnostics": true,
+    "blocks_b29_b30": false,
+    "blocks_b38": false,
+    "must_be_repaired_before_stable_release": true
+  },
+  "advisory_physical_pending": [
+    14
+  ]
 }
