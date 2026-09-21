@@ -1,5 +1,9 @@
 {
   "files": {
+    "ai_worker.py": {
+      "sha256": "9e42b1e9a2fced93d1aafa0efca6323e9e04ff70c7b465753d6078a14595b234",
+      "size": 9526
+    },
     "autonomous_loop.py": {
       "sha256": "01dc4e43fd1c700f39776a35b14d339a7822c48ecbd75a375d454a065dea013a",
       "size": 39997
@@ -35,6 +39,10 @@
     "failure_cause_router_v1.py": {
       "sha256": "84dd3bf6cc5fff66b39c1a4cde71187184504290084dcb77d15ef29e135edd51",
       "size": 2574
+    },
+    "gemini_interactions.py": {
+      "sha256": "a6ca910b8d03c61a57f38eb4083f5cc465299f43e9b85fbdcd9bedd9174e92ac",
+      "size": 17778
     },
     "goal_completion_gate.py": {
       "sha256": "ce00829975ef6e78f3e60fb23ba81e3b4754f744b0157536db4d5c58147f4ed6",
@@ -83,6 +91,10 @@
     "scheduler_reconciler_v1.py": {
       "sha256": "7360c9260fda0c2794340a95c75db89e350213810027dd989f7f3ebe99257754",
       "size": 5557
+    },
+    "self_hosting_tools.py": {
+      "sha256": "991ff20cc8f50524368f805026861a120e9666028229fd7c59dd0287d7b719c1",
+      "size": 22793
     },
     "useful_output_watchdog_v2.py": {
       "sha256": "06afee868497bdda62dda49847a9999d6373203ee229ea1bafb4e86193ed9700",
