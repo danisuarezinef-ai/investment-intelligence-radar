@@ -248,13 +248,10 @@ else if(!live){$('actionBanner').className='banner warnb';$('actionBanner').text
         raise RuntimeError(f"provider banner scope anchor={s.count(banner_anchor)}")
     s = s.replace(banner_anchor, banner_new, 1)
 
-    start_js_anchor = """async function startNewProject(){const goal=$('goal').value.trim();const name=$('name').value.trim()||null;const status=$('startStatus');if(!state?.execution_enabled){$('actionBanner').className='banner errb';$('actionBanner').textContent='No iniciado: primero activa y valida Gemini.';if(status)status.textContent='Gemini no está activo.';return}if(goal.length<3){if(status)status.textContent='Escribe un objetivo de al menos 3 caracteres.';return}let slow=setTimeout(()=>{if(status)status.textContent='Cerrando de forma segura el proyecto anterior y preparando el nuevo…';},1800);
-"""
-    start_js_new = """async function startNewProject(){const goal=$('goal').value.trim();const name=$('name').value.trim()||null;const status=$('startStatus');if(goal.length<3){if(status)status.textContent='Escribe un objetivo de al menos 3 caracteres.';return}let slow=setTimeout(()=>{if(status)status.textContent='Cerrando de forma segura el proyecto anterior y preparando el nuevo…';},1800);
-"""
-    if s.count(start_js_anchor) != 1:
-        raise RuntimeError(f"start JS provider guard anchor={s.count(start_js_anchor)}")
-    s = s.replace(start_js_anchor, start_js_new, 1)
+    start_js_guard = """if(!state?.execution_enabled){$('actionBanner').className='banner errb';$('actionBanner').textContent='No iniciado: primero activa y valida Gemini.';if(status)status.textContent='Gemini no está activo.';return}"""
+    if s.count(start_js_guard) != 1:
+        raise RuntimeError(f"start JS provider guard anchor={s.count(start_js_guard)}")
+    s = s.replace(start_js_guard, "", 1)
 
     # Operational status should not let a stale global provider-wait hide active
     # local scheduler work.
