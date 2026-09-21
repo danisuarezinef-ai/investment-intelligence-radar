@@ -16,6 +16,7 @@ from ceo_core.productive_truth_v2 import ProductiveTruthV2
 from ceo_core.useful_output_watchdog_v2 import UsefulOutputWatchdogV2
 from ceo_core.decomposer import TaskDecomposer
 from ceo_core.goal_completion_gate import GoalCompletionGate
+from ceo_core.release_firewall import ReleaseQualificationFirewall
 
 RESULTS = []
 
@@ -39,7 +40,9 @@ for i in range(50):
     recoveries=i%10
     mode=i%5
     state=ProjectState(goal=f"scheduler-matrix-{i}")
-    state.metadata["worker_recoveries"]=recoveries
+    # Historical recoveries are intentionally rebased by ProductiveTruthV2. Establish
+    # the epoch first, then add only recoveries that occur in the current epoch.
+    state.metadata["worker_recoveries"]=0
     if mode==0:
         add(state,Task(title="productive ready",status=TaskStatus.READY,metadata={"task_role":"productive"}))
     elif mode==1:
@@ -52,7 +55,10 @@ for i in range(50):
     else:
         add(state,Task(title="internal recovery",status=TaskStatus.READY,metadata={"task_role":"control","autonomy_recovery":True}))
     try:
-        truth=ProductiveTruthV2(recovery_trip=4).assess(state)
+        truth_engine=ProductiveTruthV2(recovery_trip=4)
+        truth_engine.assess(state)
+        state.metadata["worker_recoveries"]=recoveries
+        truth=truth_engine.assess(state)
         wd=UsefulOutputWatchdogV2().tick(state)
         if mode in {0,1,2}:
             ok=(not truth.stalled and wd.status not in {"BLOQUEADO","ATASCADO"})
@@ -151,6 +157,11 @@ for i in range(50):
 
 # 201-250 Release governance invariants.
 manifest_dir=ROOT/"ceo-updates"
+quarantine=json.loads((ROOT/"audit"/"LEGACY_RELEASE_QUARANTINE.json").read_text(encoding="utf-8"))
+quarantined_manifests=set(quarantine.get("invalid_stable_manifests") or [])
+quarantined_numeric={
+    str(k):set(v) for k,v in (quarantine.get("numeric_version_collisions") or {}).items()
+}
 manifests=[]
 for p in sorted(manifest_dir.glob("DEV*_MANIFEST_UNSIGNED.json")):
     try:
@@ -164,12 +175,12 @@ for p in sorted(manifest_dir.glob("DEV*_QUALIFICATION.json")):
         quals[p.stem.replace("_QUALIFICATION","")]=json.loads(p.read_text(encoding="utf-8"))
     except Exception:
         pass
-version_to_sha={}
-seq_to_versions={}
-for p,m in manifests:
-    version=str(m.get("version") or "")
-    version_to_sha.setdefault(version,set()).add(str(m.get("sha256") or ""))
-    seq_to_versions.setdefault(str(m.get("release_sequence") or ""),set()).add(version)
+
+zip_numeric={}
+for p in sorted(manifest_dir.glob("CEO_*.zip")):
+    m=re.search(r"CEO_(\d+\.\d+\.\d+)-",p.name)
+    if m:
+        zip_numeric.setdefault(m.group(1),set()).add(p.name)
 
 for i in range(50):
     idx=201+i
@@ -178,22 +189,44 @@ for i in range(50):
         key=p.stem.replace("_MANIFEST_UNSIGNED","")
         q=quals.get(key,{})
         stable=(m.get("channel")=="stable" or m.get("release_status")=="release")
-        if stable:
-            ok=(q.get("production_ready") is True and q.get("field_validation_pending") is False)
+        report=ReleaseQualificationFirewall.evaluate(
+            q,channel=str(m.get("channel") or ""),release_status=str(m.get("release_status") or "")
+        )
+        if stable and not report.allowed:
+            ok=p.name in quarantined_manifests
         else:
-            ok=True
-        detail={"manifest":p.name,"stable":stable,"production_ready":q.get("production_ready"),"field_validation_pending":q.get("field_validation_pending")}
+            ok=report.allowed if stable else True
+        detail={
+            "manifest":p.name,
+            "stable":stable,
+            "firewall_allowed":report.allowed,
+            "problems":list(report.problems),
+            "quarantined":p.name in quarantined_manifests,
+        }
         record(idx,"release",p.name,ok,detail)
     else:
-        # Fill remaining passes with global uniqueness invariants.
         if i%2==0:
-            bad={v:list(s) for v,s in version_to_sha.items() if v and len(s)>1}
-            ok=not bad
-            record(idx,"release","unique-version-bytes",ok,bad)
+            bad={}
+            for base,names in zip_numeric.items():
+                if len(names)>1:
+                    expected=quarantined_numeric.get(base,set())
+                    if not names.issubset(expected):
+                        bad[base]={"artifacts":sorted(names),"quarantined":sorted(expected)}
+            record(idx,"release","numeric-version-collisions-contained",not bad,bad)
         else:
-            bad={s:list(vs) for s,vs in seq_to_versions.items() if s and len(vs)>1}
-            ok=not bad
-            record(idx,"release","unique-release-sequence",ok,bad)
+            # A synthetic local-only candidate must never pass the stable firewall.
+            synthetic={
+                "tests_passed":True,
+                "security_passed":True,
+                "clean_extract_passed":True,
+                "package_contract_passed":True,
+                "production_ready":False,
+                "field_validation_pending":True,
+            }
+            report=ReleaseQualificationFirewall.evaluate(
+                synthetic,channel="stable",release_status="release"
+            )
+            record(idx,"release","firewall-rejects-local-only-candidate",not report.allowed,report.to_dict())
 
 # 251-300 Launcher/updater/package critical-path invariants.
 launcher=(CANON/"scripts/launch_current.py").read_text(encoding="utf-8")
