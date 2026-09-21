@@ -1,0 +1,56 @@
+{
+  "phase": "B09-B14",
+  "date": "2026-09-21",
+  "branch": "free-browser-ai-worker",
+  "objective": "Complete one robust two-turn ChatGPT web conversation through Chrome with zero API dependency.",
+  "status": {
+    "B09_type_prompt_and_verify": "IMPLEMENTED_CI_PENDING",
+    "B10_submit_and_acknowledge": "IMPLEMENTED_CI_PENDING",
+    "B11_detect_generation_completion": "IMPLEMENTED_CI_PENDING",
+    "B12_capture_full_latest_response": "IMPLEMENTED_CI_PENDING",
+    "B13_preserve_same_conversation": "IMPLEMENTED_CI_PENDING",
+    "B14_real_chatgpt_two_turn_gate": "RUNNER_READY_PHYSICAL_PENDING"
+  },
+  "B09": {
+    "rule": "Never submit until the browser composer content matches the intended prompt.",
+    "evidence": ["typed_chars", "PROMPT_INPUT_MISMATCH fail-closed"]
+  },
+  "B10": {
+    "preferred_submit": "visible send button click",
+    "fallback_submit": "Chrome DevTools Protocol Input.dispatchKeyEvent Enter",
+    "synthetic_dom_keyboard_fallback": false,
+    "acknowledgement_required": true
+  },
+  "B11": {
+    "signals": ["busy/stop control", "new assistant response", "response stability"],
+    "completion_rule": "assistant response must be stable while busy signal is absent"
+  },
+  "B12": {
+    "capture": "latest full assistant response text",
+    "no_response_truncation_in_driver": true,
+    "metadata": ["response_chars", "response_index", "completion_reason"]
+  },
+  "B13": {
+    "new_chat_url_settle": true,
+    "continuation_url_lock": true,
+    "drift_status": "CONVERSATION_DRIFT"
+  },
+  "B14": {
+    "runner": "run_b09_b14_physical_gate.ps1",
+    "launcher": "EJECUTAR_B09_B14.cmd",
+    "real_provider": "https://chatgpt.com/",
+    "turns": 2,
+    "same_conversation_required": true,
+    "manual_login_allowed_once": true,
+    "captcha_bypass": false,
+    "two_factor_bypass": false,
+    "api_calls_required": 0,
+    "physical_verification": false
+  },
+  "boundaries": {
+    "no_openai_api": true,
+    "no_paid_api": true,
+    "no_radar_changes": true,
+    "no_production_release": true
+  }
+}
