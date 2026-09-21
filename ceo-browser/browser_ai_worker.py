@@ -122,6 +122,7 @@ class BrowserResultProtocol:
     DONE_RE = re.compile(r"<CEO_DONE>\s*(true|false)\s*</CEO_DONE>", re.I)
     NEXT_RE = re.compile(r"<CEO_NEXT>(.*?)</CEO_NEXT>", re.I | re.S)
     PATCH_RE = re.compile(r"<CEO_PATCH>(.*?)</CEO_PATCH>", re.I | re.S)
+    ARTIFACT_RE = re.compile(r"<CEO_ARTIFACT>(.*?)</CEO_ARTIFACT>", re.I | re.S)
 
     @classmethod
     def parse(cls, text: str) -> dict[str, Any]:
@@ -129,11 +130,25 @@ class BrowserResultProtocol:
         done_match = cls.DONE_RE.search(value)
         next_match = cls.NEXT_RE.search(value)
         patch_match = cls.PATCH_RE.search(value)
+        artifact_match = cls.ARTIFACT_RE.search(value)
+
+        def clean_fenced_block(block: str | None) -> str | None:
+            if block is None:
+                return None
+            out = block.strip()
+            if out.startswith("```") and out.endswith("```"):
+                lines = out.splitlines()
+                if len(lines) >= 2:
+                    lines = lines[1:-1]
+                    out = "\n".join(lines).strip()
+            return out
+
         return {
             "text": value,
             "done": (done_match.group(1).lower() == "true") if done_match else None,
             "next_instruction": next_match.group(1).strip() if next_match else None,
-            "patch": patch_match.group(1).strip() if patch_match else None,
+            "patch": clean_fenced_block(patch_match.group(1)) if patch_match else None,
+            "artifact": clean_fenced_block(artifact_match.group(1)) if artifact_match else None,
         }
 
 
