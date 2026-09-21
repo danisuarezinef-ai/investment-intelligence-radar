@@ -77,6 +77,11 @@ def main() -> int:
         "automatic_merge_allowed":False,
         "automatic_purchase_allowed":False,
         "b38_automatically_started":False,
+        "verification_levels":{
+            "CI_VERIFIED":True,
+            "WINDOWS_PHYSICAL_VERIFIED":False,
+            "REAL_CHATGPT_VERIFIED":False,
+        },
         "evidence":{
             "preflight":str(evidence/"FIRST_TRIAL_PREFLIGHT.json"),
             "field_state":str(evidence/"BROWSER_FIELD_STATE.json"),
@@ -106,9 +111,32 @@ def main() -> int:
 
     field_path=evidence/"BROWSER_FIELD_STATE.json"
     field=read_json(field_path) if field_path.is_file() else {}
+    evidence_fingerprints={}
+    for name in (
+        "B09_B14_PHYSICAL_GATE.json",
+        "B15_B18_PHYSICAL_GATE.json",
+        "B19_B20_CODE_GATE.json",
+        "BROWSER_FIELD_STATE.json",
+    ):
+        p=evidence/name
+        if p.is_file():
+            import hashlib
+            evidence_fingerprints[name]={
+                "sha256":hashlib.sha256(p.read_bytes()).hexdigest(),
+                "size_bytes":p.stat().st_size,
+                "mtime_ns":p.stat().st_mtime_ns,
+                "trial_id":report.trial_id,
+            }
+    consolidated["evidence_fingerprints"]=evidence_fingerprints
     criteria=go_criteria(report,field)
     consolidated.update(criteria)
     consolidated["BROWSER_FIELD_VERIFIED"]=bool(field.get("BROWSER_FIELD_VERIFIED") is True)
+    physical_ok=bool(field.get("BROWSER_FIELD_VERIFIED") is True)
+    consolidated["verification_levels"]={
+        "CI_VERIFIED":True,
+        "WINDOWS_PHYSICAL_VERIFIED":physical_ok,
+        "REAL_CHATGPT_VERIFIED":physical_ok,
+    }
     consolidated["stage"]="FIELD_VERIFIED_READY_FOR_B38" if criteria["first_autodevelopment_launch_allowed"] else "FIELD_GATE_FAILED"
     if not criteria["first_autodevelopment_launch_allowed"]:
         consolidated["failure_reason"]=bounded_text(
