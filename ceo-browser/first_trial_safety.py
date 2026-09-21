@@ -105,12 +105,17 @@ def cdp_endpoint_looks_like_ceo(port: int, expected_profile: str | Path | None =
         return False
 
 
-def choose_cdp_port(preferred: int = DEFAULT_CDP_PORT, span: int = PORT_SCAN_SPAN) -> tuple[int, str]:
+def choose_cdp_port(
+    preferred: int = DEFAULT_CDP_PORT,
+    span: int = PORT_SCAN_SPAN,
+    owned_ports: Iterable[int] = (),
+) -> tuple[int, str]:
     preferred = int(preferred)
+    owned = {int(x) for x in owned_ports}
     if is_port_free(preferred):
         return preferred, "preferred-free"
-    if cdp_endpoint_looks_like_ceo(preferred):
-        return preferred, "existing-cdp"
+    if preferred in owned and cdp_endpoint_looks_like_ceo(preferred):
+        return preferred, "existing-owned-cdp"
     for port in range(preferred + 1, preferred + max(1, int(span)) + 1):
         if is_port_free(port):
             return port, "fallback-free"
@@ -305,10 +310,24 @@ def run_preflight(
     browser = find_browser_executable()
     add("browser", bool(browser), browser or "Chrome/Edge not found")
 
+    procs = windows_processes_using_profile(profile)
+    duplicate_browser = [p for p in procs if re.search(r"chrome|msedge", p["name"], re.I)]
+    owned_ports = []
+    for proc in duplicate_browser:
+        m = re.search(r"--remote-debugging-port(?:=|\s+)(\d+)", str(proc.get("command_line") or ""), re.I)
+        if m:
+            owned_ports.append(int(m.group(1)))
+    add(
+        "duplicate-owned-browser",
+        len(duplicate_browser) <= 1,
+        json.dumps(duplicate_browser, ensure_ascii=False),
+        required=True,
+    )
+
     try:
-        port, reason = choose_cdp_port(preferred_port)
+        port, reason = choose_cdp_port(preferred_port, owned_ports=owned_ports)
         report.selected_cdp_port = port
-        add("cdp-port", True, f"{port} ({reason})")
+        add("cdp-port", True, f"{port} ({reason}); owned_ports={owned_ports}")
     except Exception as exc:
         add("cdp-port", False, f"{type(exc).__name__}: {exc}")
 
@@ -318,15 +337,6 @@ def run_preflight(
         add("exclusive-profile", bool(pstat["exclusive_profile"]), json.dumps(pstat, ensure_ascii=False))
     else:
         add("exclusive-profile", True, "Fresh CEO profile; marker will be created by login helper.", required=False)
-
-    procs = windows_processes_using_profile(profile)
-    duplicate_browser = [p for p in procs if re.search(r"chrome|msedge", p["name"], re.I)]
-    add(
-        "duplicate-owned-browser",
-        len(duplicate_browser) <= 1,
-        json.dumps(duplicate_browser, ensure_ascii=False),
-        required=False,
-    )
 
     try:
         stat = shutil.disk_usage(evidence)
