@@ -43,6 +43,14 @@
       "port_offset": 4,
       "physical_verified": false,
       "api_required": false
+    },
+    "test-harness-campaign": {
+      "recipe": "recipes/test_harness_campaign.json",
+      "profile": "browser-profiles/test-harness-campaign",
+      "port_offset": 10,
+      "physical_verified": false,
+      "api_required": false,
+      "test_only": true
     }
   },
   "policy": {
