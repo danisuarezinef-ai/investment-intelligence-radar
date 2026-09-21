@@ -62,19 +62,20 @@ class MultiProviderRouter(WorkerRouter):
         route_scores = {row.provider: row.score for row in route_plan.candidates}
         scored = {p.name: route_scores.get(p.name, self.policy.score(state, p.name, task=task)) for p in candidates}
 
-        # API-first cold start: real API providers are the primary autonomous path. Once
-        # task-specific evidence exists, learned quality/cost/latency scores take over.
+        # Browser-first cold start: CEO must remain fully useful without any API key.
+        # Web providers are the default autonomous surface; APIs may exist later as optional
+        # accelerators but can never be required for execution.
         has_evidence = any(int(self.policy.task_stats(state, p.name, self.policy.task_type(task)).get("runs", 0)) > 0 for p in candidates)
         if not has_evidence and not preferred_kind:
             for p in candidates:
-                if p.kind.value == "api":
-                    scored[p.name] += 0.12
-                elif p.kind.value == "browser":
-                    scored[p.name] -= 0.03
+                if p.kind.value == "browser":
+                    scored[p.name] += 0.15
+                elif p.kind.value == "api":
+                    scored[p.name] -= 0.05
 
         # Feed the same score ordering into champion/challenger selection while preserving
         # the engine's exploration cadence. On a cold start we explicitly prefer the best
-        # API candidate rather than relying on provider-name tie breaking.
+        # browser candidate rather than relying on provider-name tie breaking.
         decision = self.intelligence.choose(state, task, [p.name for p in candidates])
         ranked = sorted(candidates, key=lambda p: (scored[p.name], p.kind.value == "api"), reverse=True)
         champion = ranked[0].name if ranked else decision.champion
@@ -90,7 +91,7 @@ class MultiProviderRouter(WorkerRouter):
                 {"provider": p.name, "kind": p.kind.value, "score": round(scored[p.name], 4)}
                 for p in ranked
             ],
-            "reason": "challenger_exploration" if explore else ("api_first_cold_start" if not has_evidence and self.by_name[selected_name].kind.value == "api" else "learned_utility"),
+            "reason": "challenger_exploration" if explore else ("browser_first_cold_start" if not has_evidence and self.by_name[selected_name].kind.value == "browser" else "learned_utility"),
             "fallback_order": list(route_plan.fallback_order),
             "second_opinion_recommended": bool(route_plan.second_opinion_recommended),
         }
