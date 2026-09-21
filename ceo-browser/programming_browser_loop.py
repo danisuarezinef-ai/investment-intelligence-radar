@@ -36,8 +36,12 @@ class CodingResult:
     failure_reason: str = ""
 
 
-class PowerShellChatGPTWebTransport:
-    """Call ChatGPT through Chrome UI/CDP, never through the OpenAI API."""
+class PowerShellWebAITransport:
+    """Call a web AI through Chrome UI/CDP, never through a paid API.
+
+    The provider is defined entirely by the recipe file, so the same transport can
+    drive ChatGPT, Claude, Gemini, Perplexity, Grok, or another compatible web UI.
+    """
 
     def __init__(
         self,
@@ -96,6 +100,9 @@ class PowerShellChatGPTWebTransport:
             raise RuntimeError(f"{row.get('status')}: {row.get('detail')}")
         return row
 
+
+# Backward-compatible alias for already-qualified B03-B38 code.
+PowerShellChatGPTWebTransport = PowerShellWebAITransport
 
 class PatchSandbox:
     """Apply model patches in an already-isolated git worktree.
