@@ -108,7 +108,7 @@ $('goal').addEventListener('input',()=>{draftDirty=true});
 $('name').addEventListener('input',()=>{draftDirty=true});
 function render(s){
 state=s;const live=!!s.execution_enabled;const real=s.operational_status||'SIN PROYECTO';const schedulerAlive=!!s.scheduler_alive;
-const working=!!(s.active&&live&&schedulerAlive&&['TRABAJANDO','PLANIFICANDO','VERIFICANDO','CORRIGIENDO'].includes(real));
+const working=!!(s.active&&schedulerAlive&&['TRABAJANDO','PLANIFICANDO','VERIFICANDO','CORRIGIENDO'].includes(real));
 $('op').textContent=s.active?real:'SIN PROYECTO';$('op').style.color=working?'#176d2d':(['BLOQUEADO','SIN SCHEDULER'].includes(real)?'#8b2f1f':'#7a5600');
 const keyRecognized=!!s.gemini_key_recognized;const keyStatus=String(s.gemini_key_status||'');
 $('provider').textContent=(live?'IA conectada':(keyRecognized?'Clave Gemini autenticada · proveedor en espera':'IA no activa'))+(schedulerAlive?' · motor activo':' · motor detenido');
@@ -151,7 +151,7 @@ async function waitForRestart(expectedVersion){stopUpdateProgress();updateProgre
 async function oneClickUpdate(){const b=$('oneClickUpdateBtn');if(!updateState||(!updateState.available&&!(updateState.staged||[]).some(x=>!x.installed&&!x.rolled_back))){return checkUpdate()}try{let installable=(updateState.staged||[]).find(x=>!x.installed&&!x.rolled_back&&!x.preflight_failed&&(!updateState.available||!updateState.remote?.version||String(x.version)===String(updateState.remote.version)));if(!installable){setUpdateButton('Descargando y verificando…',false);$('updateHeadline').textContent='Preparando actualización…';startUpdateProgress();$('updateDetail').textContent='CEO comprueba firma, integridad y compatibilidad. La versión actual sigue intacta.';const r=await j('/api/update/stage',{method:'POST'});if(r.available===false){stopUpdateProgress();return await updateStatus(true)}stopUpdateProgress();showUpdateProgress(100,'Lista para instalar','Descarga y verificaciones completadas.');await updateStatus(false);installable=(updateState?.staged||[]).find(x=>!x.installed&&!x.rolled_back&&!x.preflight_failed)}if(!installable)throw new Error('La actualización no quedó preparada para instalar.');const version=installable.version;const ok=confirm('CEO '+version+' está verificado y listo.\n\n¿Instalar y reiniciar ahora?\n\nAntes de cerrar la versión actual, CEO hará una prueba real de arranque de la nueva versión en un entorno aislado.');if(!ok){$('updateHeadline').textContent='Actualización preparada';$('updateDetail').textContent='Queda lista. Puedes instalarla cuando quieras con el mismo botón.';setUpdateButton('Instalar y reiniciar',true,version);return}setUpdateButton('Probando nueva versión…',false);$('updateHeadline').textContent='Prueba previa de '+version+'…';showUpdateProgress(5,'Prueba previa','La versión actual seguirá funcionando hasta que la candidata demuestre que puede arrancar.');const r=await j('/api/update/install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version,confirm:true})});$('updateHeadline').textContent='Reiniciando '+version+'…';$('updateDetail').textContent='Prueba previa superada. CEO cambiará de versión y verificará salud automáticamente.';showUpdateProgress(25,'Reiniciando','Puedes dejar esta ventana abierta; mostrará el resultado del relevo.');waitForRestart(version)}catch(e){stopUpdateProgress();const msg=e.message;await updateStatus(false);$('updateHeadline').textContent='No se pudo actualizar';$('updateDetail').textContent=msg;setUpdateButton('Reintentar actualización',true)}}
 async function projects(){try{const a=await j('/api/projects');$('projects').innerHTML=a.length?a.map(p=>`<div class="project"><div class="row" style="justify-content:space-between"><div><strong>${esc(p.name||p.goal||'Proyecto')}</strong><div class="small">avance ${p.progress??0}% · lote ${p.batch_progress??0}% · ${p.productive_completed??0} completadas reales${p.active?' · activo':''}${p.paused?' · pausado':''}${p.portfolio?(' · cartera #'+p.portfolio.rank+' · '+p.portfolio.slots+' slot'+(p.portfolio.slots===1?'':'s')):''}</div></div>${p.active?'':(p.cancelled_at?'<span class="pill warn">cancelado</span>':`<button class="secondary" onclick="activateProject('${esc(p.id)}')">Reanudar este proyecto</button>`) }</div></div>`).join(''):'<span class="small">No hay proyectos.</span>'}catch(e){}}
 async function activateProject(id){try{$('actionBanner').className='banner warnb';$('actionBanner').textContent='Cambiando al proyecto seleccionado…';const s=await j('/api/project/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project_id:id})});render(s);projects()}catch(e){$('diag').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
-async function startNewProject(){const goal=$('goal').value.trim();const name=$('name').value.trim()||null;const status=$('startStatus');if(!state?.execution_enabled){$('actionBanner').className='banner errb';$('actionBanner').textContent='No iniciado: primero activa y valida Gemini.';if(status)status.textContent='Gemini no está activo.';return}if(goal.length<3){if(status)status.textContent='Escribe un objetivo de al menos 3 caracteres.';return}let slow=setTimeout(()=>{if(status)status.textContent='Cerrando de forma segura el proyecto anterior y preparando el nuevo…';},1800);try{$('startBtn').disabled=true;if(status)status.textContent='Preparando el nuevo objetivo…';$('actionBanner').className='banner warnb';$('actionBanner').textContent='Iniciando proyecto nuevo…';const s=await j('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({goal,name,power_percent:+$('power').value})});clearTimeout(slow);draftDirty=false;$('goal').value='';$('name').value='';if(status)status.textContent='✓ Proyecto nuevo activo: '+(s.project_name||s.goal||'creado');render(s);await projects();setTimeout(refreshAll,700)}catch(e){clearTimeout(slow);$('startBtn').disabled=false;if(status)status.textContent='ERROR: '+e.message;$('actionBanner').className='banner errb';$('actionBanner').textContent='No se pudo iniciar: '+e.message;$('diag').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function startNewProject(){const goal=$('goal').value.trim();const name=$('name').value.trim()||null;const status=$('startStatus');if(goal.length<3){if(status)status.textContent='Escribe un objetivo de al menos 3 caracteres.';return}let slow=setTimeout(()=>{if(status)status.textContent='Cerrando de forma segura el proyecto anterior y preparando el nuevo…';},1800);try{$('startBtn').disabled=true;if(status)status.textContent='Preparando el nuevo objetivo…';$('actionBanner').className='banner warnb';$('actionBanner').textContent='Iniciando proyecto nuevo…';const s=await j('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({goal,name,power_percent:+$('power').value})});clearTimeout(slow);draftDirty=false;$('goal').value='';$('name').value='';if(status)status.textContent='✓ Proyecto nuevo activo: '+(s.project_name||s.goal||'creado');render(s);await projects();setTimeout(refreshAll,700)}catch(e){clearTimeout(slow);$('startBtn').disabled=false;if(status)status.textContent='ERROR: '+e.message;$('actionBanner').className='banner errb';$('actionBanner').textContent='No se pudo iniciar: '+e.message;$('diag').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function pauseProject(){try{render(await j('/api/pause',{method:'POST'}))}catch(e){$('actionBanner').className='banner errb';$('actionBanner').textContent='No se pudo pausar: '+e.message}}
 async function resumeProject(){try{render(await j('/api/resume',{method:'POST'}))}catch(e){$('actionBanner').className='banner errb';$('actionBanner').textContent='No se pudo reanudar: '+e.message}}
 async function cancelProject(){if(!state?.active)return;const ok=confirm('Cancelar este objetivo detendrá su scheduler y retirará definitivamente sus tareas pendientes. El proyecto se conservará como cancelado para auditoría.\n\n¿Cancelar objetivo?');if(!ok)return;try{const s=await j('/api/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm:true})});render(s);await projects();$('actionBanner').className='banner warnb';$('actionBanner').textContent='Objetivo cancelado. No se reanudará automáticamente.'}catch(e){$('actionBanner').className='banner errb';$('actionBanner').textContent='No se pudo cancelar: '+e.message}}
@@ -372,9 +372,6 @@ class CEOEngine:
                 # reopened unless it has an explicit goal-audit proof.
                 state.metadata.setdefault("require_goal_audit", True)
                 state.metadata.setdefault("strict_goal_completion_gate", True)
-                state.metadata.setdefault("min_goal_audit_evidence_refs", 3)
-                state.metadata.setdefault("min_goal_audit_grounded_refs", 2)
-                state.metadata.setdefault("min_goal_continuity_generations", 3)
                 if not (state.goal_success_definition or "").strip():
                     state.goal_success_definition = (
                         "The locked objective is complete only when concrete implementation or deliverable evidence exists, "
@@ -471,8 +468,6 @@ class CEOEngine:
         return report
 
     async def start_project(self, body: dict[str, Any]):
-        if not self.execution_enabled:
-            raise RuntimeError("Gemini no está validado. Actívalo primero; no se creará un proyecto que parezca estar trabajando cuando está pausado.")
         goal_text = str(body.get("goal") or "").strip()
         if len(goal_text) < 3:
             raise ValueError("El objetivo debe tener al menos 3 caracteres")
@@ -519,9 +514,6 @@ class CEOEngine:
         state.metadata["goal_audit_passed"] = False
         state.metadata["goal_continuity_generation"] = 0
         state.metadata["strict_goal_completion_gate"] = True
-        state.metadata["min_goal_audit_evidence_refs"] = 3
-        state.metadata["min_goal_audit_grounded_refs"] = 2
-        state.metadata["min_goal_continuity_generations"] = 3
         lower_goal = goal_text.lower()
         if ("ceo" in lower_goal) and any(token in lower_goal for token in ("autónom", "autonom", "uso diario", "continuamente", "trabajador autónomo")):
             state.metadata["requires_field_endurance_certification"] = True
@@ -1048,9 +1040,6 @@ class CEOEngine:
         self.projects.set_active(project_id)
         state.metadata.setdefault("require_goal_audit", True)
         state.metadata.setdefault("strict_goal_completion_gate", True)
-        state.metadata.setdefault("min_goal_audit_evidence_refs", 3)
-        state.metadata.setdefault("min_goal_audit_grounded_refs", 2)
-        state.metadata.setdefault("min_goal_continuity_generations", 3)
         if not (state.goal_success_definition or "").strip():
             state.goal_success_definition = (
                 "The locked objective is complete only when concrete implementation or deliverable evidence exists, "
@@ -1078,11 +1067,11 @@ class CEOEngine:
                 2, int(state.metadata.get("continuity_nonspawn_rejections", 0) or 0)
             )
             state.metadata["dev20_churn_breaker_primed"] = True
-        state.paused = not self.execution_enabled
+        state.paused = False
         store.save(state)
         self.projects.touch(state)
         self.state = state
-        if self.execution_enabled and state.completed_at is None:
+        if state.completed_at is None and not state.cancelled_at and not state.metadata.get("operator_cancelled"):
             self.router = self._router()
             self.scheduler = self.ContinuousScheduler(state, None, store, graph=self.Graph(), router=self.router)
             self.scheduler.start()
@@ -1255,8 +1244,6 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/pause":
                 return self.json(self.engine.call(self.engine.pause(True)))
             if path == "/api/resume":
-                if not self.engine.execution_enabled:
-                    return self.json({"error": "Gemini no está validado en esta sesión. Actívalo desde la interfaz antes de reanudar."}, 409)
                 return self.json(self.engine.call(self.engine.pause(False)))
             if path == "/api/cancel":
                 body = self.body()
