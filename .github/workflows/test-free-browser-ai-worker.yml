@@ -61,7 +61,7 @@ jobs:
         shell: pwsh
         run: |
           Push-Location ceo-browser
-          python -m py_compile browser_ai_worker.py browser_provider_pool.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py real_code_candidate.py first_trial_safety.py first_trial_orchestrator.py build_first_trial_lab.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py run_b38_real_ceo_candidate.py test_browser_ai_worker.py test_browser_provider_pool.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py test_harness_server.py
+          python -m py_compile browser_ai_worker.py browser_provider_pool.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py real_code_candidate.py first_trial_safety.py first_trial_orchestrator.py build_first_trial_lab.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py run_field_campaign.py run_b38_real_ceo_candidate.py test_browser_ai_worker.py test_browser_provider_pool.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py test_harness_server.py
           if ($LASTEXITCODE -ne 0) { throw "compile failed" }
           python -m unittest -v test_browser_ai_worker.py test_browser_provider_pool.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_first_trial_safety.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
@@ -144,17 +144,25 @@ jobs:
           $errors2=$null
           [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\open_chatgpt_profile.ps1"),[ref]$tokens2,[ref]$errors2)
           if($errors2.Count -gt 0){$errors2 | ForEach-Object { Write-Host $_.Message }; throw "PowerShell login helper parse failed"}
+          $tokens3=$null
+          $errors3=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\open_web_ai_profile.ps1"),[ref]$tokens3,[ref]$errors3)
+          if($errors3.Count -gt 0){$errors3 | ForEach-Object { Write-Host $_.Message }; throw "generic web profile helper parse failed"}
 
       - name: Real-UI input and clean-start contract
         shell: pwsh
         run: |
           $driver=Get-Content -Raw -Encoding UTF8 "ceo-browser\windows_chatgpt_cdp_driver.ps1"
           if($driver -notmatch 'Input\.insertText'){throw "browser-level text input missing"}
+          if($driver -notmatch 'Input\.dispatchMouseEvent'){throw "trusted CDP mouse submission missing"}
           if($driver -notmatch 'Clear-RestoredTabState'){throw "pre-launch restored-tab cleanup missing"}
           if($driver -notmatch 'Default.*Sessions'){throw "Chrome session restore cleanup path missing"}
           $domAssign='\binput\.value\s*=|\binput\.textContent\s*='
           $b09=$driver.Substring($driver.IndexOf('# B09'),$driver.IndexOf('# B10')-$driver.IndexOf('# B09'))
           if($b09 -match $domAssign){throw "B09 still mutates composer DOM directly"}
+          $b10=$driver.Substring($driver.IndexOf('# B10'),$driver.IndexOf('# B11/B12')-$driver.IndexOf('# B10'))
+          if($b10 -match '\.click\(\)'){throw "B10 still uses synthetic DOM click"}
+          if($b10 -notmatch 'user_messages_after'){throw "B10 user-message evidence missing"}
           $launch=$driver.IndexOf('Start-Process -FilePath $chrome')
           $cleanup=$driver.IndexOf('Clear-RestoredTabState $ProfileDir $targetUrl')
           if($cleanup -lt 0 -or $launch -lt 0 -or $cleanup -gt $launch){throw "restored-tab cleanup must happen before browser launch"}
@@ -167,6 +175,26 @@ jobs:
           Start-Sleep -Seconds 1
           $r=Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/ -TimeoutSec 3
           if($r.StatusCode -ne 200){throw "harness not healthy"}
+
+      - name: Unified B14-B20 campaign end to end
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-unified-campaign-profile"
+          $evidence=Join-Path $env:RUNNER_TEMP "ceo-unified-campaign-evidence"
+          $canonical=Join-Path $env:RUNNER_TEMP "ceo-unified-canonical.json"
+          python ceo-browser\run_field_campaign.py --provider test-harness-campaign --profile-dir $profile --evidence-dir $evidence --canonical-out $canonical --trial-id CI-UNIFIED-CAMPAIGN --port 9300 --timeout 45
+          if($LASTEXITCODE -ne 0){throw "unified field campaign failed"}
+          $state=Get-Content -Raw -Encoding UTF8 $canonical | ConvertFrom-Json
+          if($state.BROWSER_FIELD_VERIFIED -ne $true){throw "unified campaign did not verify field state"}
+          if($state.trial_id -ne "CI-UNIFIED-CAMPAIGN"){throw "trial isolation id lost"}
+          if($state.browser_ai_surface -ne "test-harness-campaign"){throw "provider evidence mismatch"}
+          $b14=Get-Content -Raw -Encoding UTF8 (Join-Path $evidence "B09_B14_PHYSICAL_GATE.json") | ConvertFrom-Json
+          $b18=Get-Content -Raw -Encoding UTF8 (Join-Path $evidence "B15_B18_PHYSICAL_GATE.json") | ConvertFrom-Json
+          $b20=Get-Content -Raw -Encoding UTF8 (Join-Path $evidence "B19_B20_CODE_GATE.json") | ConvertFrom-Json
+          if($b14.status -ne "B14_REAL_WEB_TWO_TURN_PASS"){throw "B14 unified status mismatch"}
+          if($b18.status -ne "B18_REAL_BROWSER_ARTIFACT_PASS" -or $b18.content_verified -ne $true){throw "B18 unified artifact mismatch"}
+          if($b20.status -ne "B20_REAL_WEB_CODE_GATE_PASS" -or $b20.final_tests_passed -ne $true){throw "B20 unified coding mismatch"}
+          Write-Host "UNIFIED_B14_B20_CAMPAIGN_PASS"
 
       - name: B03 locate open and control Chrome through CDP
         shell: pwsh
@@ -674,9 +702,12 @@ jobs:
           $orchestrator=Get-Content -Raw -Encoding UTF8 "ceo-browser\first_trial_orchestrator.py"
           if($orchestrator -match "run_b38_real_ceo_candidate"){throw "orchestrator must not start B38"}
           if($orchestrator -match 'restart_gate=base/"run_browser_restart_gate.ps1"'){throw "restart gate must not run in the functional campaign"}
-          if($orchestrator -notmatch "SKIPPED_ADVISORY"){throw "restart advisory state missing"}
-          if($orchestrator -notmatch "run_b29_b30_full_field_gate"){throw "B29-B30 missing from orchestrator"}
+          if($orchestrator -notmatch "SKIPPED_SEPARATE_RESILIENCE_TEST"){throw "restart separation state missing"}
+          if($orchestrator -notmatch "run_field_campaign.py"){throw "unified field campaign missing from orchestrator"}
+          if($orchestrator -match 'runner=base/"run_b29_b30_full_field_gate.ps1"'){throw "legacy chained B29 runner still active"}
           if($orchestrator -notmatch "reset_owned_browser"){throw "single-campaign owned-browser reset missing"}
+          if($orchestrator -notmatch 'evidence/"trials"/report.trial_id'){throw "trial-isolated evidence path missing"}
+          if($orchestrator -notmatch "CURRENT_TRIAL.json"){throw "current trial pointer missing"}
           Write-Host "FIRST_TRIAL_40_CONTRACT_PASS"
 
       - name: Build and inspect portable first-trial LAB
@@ -687,10 +718,15 @@ jobs:
           @'
           import json, zipfile
           from pathlib import Path
-          zpath=Path("ceo-browser/CEO_FIRST_TRIAL_LAB.zip")
+          zips=list(Path("ceo-browser").glob("CEO_FIRST_TRIAL_LAB_*.zip"))
+          assert len(zips)==1,zips
+          zpath=zips[0]
           qpath=Path("ceo-browser/CEO_FIRST_TRIAL_LAB_QUALIFICATION.json")
           assert zpath.is_file() and qpath.is_file()
           q=json.loads(qpath.read_text(encoding="utf-8"))
+          assert q["artifact"]==zpath.name
+          assert q["build_id"] and q["build_id"]!="local"
+          assert q["source_sha"]
           assert q["installable_update"] is False
           assert q["stable_channel_modified"] is False
           assert q["current_json_modified"] is False
@@ -706,6 +742,8 @@ jobs:
                   "CEO_FIRST_TRIAL_LAB.json",
                   "CEO_FIRST_TRIAL_MANIFEST.json",
                   "ceo_core/browser_ai/run_browser_restart_gate.ps1",
+                  "ceo_core/browser_ai/open_web_ai_profile.ps1",
+                  "ceo_core/browser_ai/run_field_campaign.py",
                   "ceo_core/browser_ai/first_trial_orchestrator.py",
               }
               assert not (required-names), sorted(required-names)
@@ -720,7 +758,7 @@ jobs:
         with:
           name: CEO_FIRST_TRIAL_LAB
           path: |
-            ceo-browser/CEO_FIRST_TRIAL_LAB.zip
+            ceo-browser/CEO_FIRST_TRIAL_LAB_*.zip
             ceo-browser/CEO_FIRST_TRIAL_LAB_QUALIFICATION.json
           if-no-files-found: error
           retention-days: 7
