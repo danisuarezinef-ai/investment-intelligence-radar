@@ -247,6 +247,31 @@ class InAppUpdater:
         self._urlopen = urlopen or urllib.request.urlopen
         self._trusted_keys = trusted_keys if trusted_keys is not None else self._load_trusted_keys()
 
+    def _note_nonfatal(self, area: str, exc: BaseException) -> None:
+        """Persist best-effort updater failures instead of swallowing them.
+
+        These events do not change transaction outcome, but they must remain
+        observable so field failures never collapse into a disappearing console.
+        """
+        row = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "area": str(area),
+            "error_type": type(exc).__name__,
+            "error": str(exc)[:1200],
+        }
+        path = self.root / "nonfatal-errors.jsonl"
+        try:
+            with path.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+                fh.flush()
+                os.fsync(fh.fileno())
+        except Exception as log_exc:
+            print(
+                f"[CEO][UPDATE][WARN] {area}: {type(exc).__name__}: {exc}; "
+                f"diagnostic-write-failed={type(log_exc).__name__}: {log_exc}",
+                file=sys.stderr,
+            )
+
     @staticmethod
     def _version_key(value: str) -> tuple[Any, ...]:
         """Comparable key for CEO version strings without external dependencies.
@@ -345,8 +370,8 @@ class InAppUpdater:
                 if key_id in built_in and built_in[key_id] != public_b64:
                     continue
                 built_in[key_id] = public_b64
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("trusted_keys.local_authority", exc)
         return built_in
 
     def load_config(self) -> dict[str, Any]:
@@ -368,8 +393,8 @@ class InAppUpdater:
                         base[key] = data[key]
                 if data.get("manifest_url"):
                     base["channel_source"] = "user-config"
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("config.load", exc)
         env_url = os.getenv("CEO_UPDATE_MANIFEST_URL", "").strip()
         if env_url:
             base["manifest_url"] = env_url
@@ -556,8 +581,8 @@ class InAppUpdater:
                 str(phase), version=str(fields.get("version") or ""),
                 percent=fields.get("percent"), reason=str(fields.get("reason") or "")[:1000],
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("progress.transaction_journal", exc)
         if str(phase).lower() in {"preflight_failed", "rollback", "rolled_back"} or fields.get("reason"):
             try:
                 UpdateFailureEvidenceRecorderV1(self.root).record(
@@ -565,8 +590,8 @@ class InAppUpdater:
                     version=str(fields.get("version") or ""), progress=row,
                     current=self.current_pointer(), previous=self.previous_pointer(),
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                self._note_nonfatal("progress.failure_evidence", exc)
         return row
 
     def progress(self) -> dict[str, Any]:
@@ -581,14 +606,14 @@ class InAppUpdater:
             restart = json.loads((self.root / "restart-progress.json").read_text(encoding="utf-8"))
             if isinstance(restart, dict) and float(restart.get("updated_at_epoch") or 0) >= float(row.get("updated_at_epoch") or 0):
                 row = {**row, **restart}
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("progress.restart_progress", exc)
         try:
             sup = json.loads((self.root / "last-restart-supervision.json").read_text(encoding="utf-8"))
             if isinstance(sup, dict):
                 row["last_restart"] = sup
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("progress.restart_supervision", exc)
         return row
 
     def diagnostics(self) -> dict[str, Any]:
@@ -660,8 +685,8 @@ class InAppUpdater:
                 row = json.loads(path.read_text(encoding="utf-8"))
                 if row.get("token") == token:
                     path.unlink(missing_ok=True)
-            except Exception:
-                pass
+            except Exception as exc:
+                self._note_nonfatal("lock.cleanup", exc)
 
     def _manifest_state_path(self) -> Path:
         return self.root / self.MANIFEST_STATE_NAME
@@ -1085,8 +1110,8 @@ class InAppUpdater:
                     self._verify_staged_integrity(final_root, row)
                     self._record_accepted_manifest(manifest)
                     return row
-            except Exception:
-                pass
+            except Exception as exc:
+                self._note_nonfatal("stage.existing_receipt", exc)
         temp = Path(tempfile.mkdtemp(prefix=f"ceo-update-{safe}-", dir=str(self.versions)))
         backup: Path | None = None
         try:
@@ -1176,8 +1201,8 @@ class InAppUpdater:
             restart = json.loads((self.root / "restart-progress.json").read_text(encoding="utf-8"))
             if isinstance(restart, dict) and str(restart.get("phase") or "") == "rolled_back":
                 rolled_back_version = str(restart.get("version") or "")
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("staged.rollback_marker", exc)
         for d in sorted(self.versions.iterdir(), reverse=True):
             if not d.is_dir() or d.name.startswith("ceo-update-"):
                 continue
@@ -1336,8 +1361,8 @@ class InAppUpdater:
                 "healthy", outcome="activation_committed", version=version,
                 activation_id=pointer.get("activation_id"), health=health or {},
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("health.activation_evidence", exc)
         return {"pointer": pointer, "receipt": row}
 
     def rollback(self, *, reason: str, failed_version: str | None = None) -> dict[str, Any]:
@@ -1360,8 +1385,8 @@ class InAppUpdater:
                         "rolled_back_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
                     })
                     self._atomic_json(receipt_path, row)
-            except Exception:
-                pass
+            except Exception as exc:
+                self._note_nonfatal("rollback.failed_receipt", exc)
         if previous and Path(str(previous.get("root") or "")).is_dir():
             restored = dict(previous)
             restored.update({
@@ -1380,8 +1405,8 @@ class InAppUpdater:
                     failed_version=str((current or {}).get("version") or failed_version or ""),
                     restored_version=str(restored.get("version") or ""), result=result,
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                self._note_nonfatal("rollback.previous_restore_evidence", exc)
             return result
         self.current_path.unlink(missing_ok=True)
         self._clear_operation()
@@ -1391,8 +1416,8 @@ class InAppUpdater:
                 "rolled_back", outcome="bundled_fallback_required", reason=reason,
                 failed_version=str((current or {}).get("version") or failed_version or ""), result=result,
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            self._note_nonfatal("rollback.bundled_fallback_evidence", exc)
         return result
 
     def verify_health_url(
