@@ -1,0 +1,58 @@
+{
+  "provider": "claude-web",
+  "url": "https://claude.ai/new",
+  "session_policy": "persistent_user_login",
+  "conversation_url_regex": "/.+",
+  "exclusive_profile_cleanup": true,
+  "input_selectors": [
+    "div.ProseMirror",
+    "textarea",
+    "[contenteditable='true'][role='textbox']",
+    "[contenteditable='true']"
+  ],
+  "input_semantic_hints": [
+    "prompt",
+    "message",
+    "ask",
+    "chat",
+    "mensaje",
+    "pregunta",
+    "preguntar"
+  ],
+  "send_selectors": [
+    "button[type='submit']",
+    "button[aria-label*='Send']",
+    "button[aria-label*='Enviar']",
+    "button[aria-label*='Submit']"
+  ],
+  "response_selectors": [
+    "[data-testid*='message']",
+    "[data-message-author-role='assistant']",
+    "article",
+    ".prose"
+  ],
+  "busy_selectors": [
+    "button[aria-label*='Stop']",
+    "button[aria-label*='Detener']",
+    "button[aria-label*='Cancel']"
+  ],
+  "logged_in_selectors": [
+    "button[aria-label*='Profile']",
+    "button[aria-label*='Account']",
+    "button[aria-label*='Perfil']",
+    "[data-testid*='profile']"
+  ],
+  "login_required_selectors": [
+    "a[href*='login']",
+    "button[data-testid*='login']",
+    "button[aria-label*='Log in']",
+    "button[aria-label*='Sign in']"
+  ],
+  "constraints": {
+    "no_captcha_bypass": true,
+    "no_2fa_bypass": true,
+    "no_purchase": true,
+    "no_subscription_change": true,
+    "manual_login_allowed": true
+  }
+}
