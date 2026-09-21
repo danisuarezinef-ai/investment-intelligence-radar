@@ -1,0 +1,51 @@
+name: Bootstrap canonical CEO source
+
+on:
+  push:
+    branches: [ceo-deep-stabilization-audit]
+    paths:
+      - '.github/workflows/bootstrap-ceo-canonical-source.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-deep-stabilization-audit
+          fetch-depth: 1
+      - name: Extract last field-opening base
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf ceo-canonical /tmp/ceo-canonical
+          mkdir -p ceo-canonical /tmp/ceo-canonical
+          unzip -q ceo-updates/CEO_1.5.86-rc1-provider-session-integrity.zip -d /tmp/ceo-canonical
+          cp -a /tmp/ceo-canonical/. ceo-canonical/
+          rm -rf ceo-canonical/__pycache__ ceo-canonical/.pytest_cache
+          find ceo-canonical -type d -name __pycache__ -prune -exec rm -rf {} +
+          cat > ceo-canonical/CANONICAL_SOURCE.json <<'JSON'
+          {
+            "schema": 1,
+            "source_of_truth": true,
+            "field_base": "1.5.86-rc1-provider-session-integrity",
+            "source_artifact": "ceo-updates/CEO_1.5.86-rc1-provider-session-integrity.zip",
+            "release_publication_disabled": true,
+            "purpose": "Deep stabilization audit. Do not publish directly."
+          }
+          JSON
+      - name: Compile canonical source
+        shell: bash
+        run: |
+          python -m compileall -q ceo-canonical
+      - name: Commit canonical source
+        shell: bash
+        run: |
+          git config user.name "CEO Stabilization Audit"
+          git config user.email "ceo-stabilization@local.invalid"
+          git add ceo-canonical
+          git commit -m "Establish 1.5.86 as canonical stabilization source"
+          git push origin HEAD:ceo-deep-stabilization-audit
