@@ -264,6 +264,20 @@ def patch_work_mode() -> None:
     p = ROOT / "scripts" / "ceo_stdlib_work_mode.py"
     s = p.read_text(encoding="utf-8")
 
+    # Backend must also allow project intake while the external provider is down.
+    # Local planning/scheduler state can exist; only IA-dependent leaves wait.
+    backend_old = '''    async def start_project(self, body: dict[str, Any]):
+        if not self.execution_enabled:
+            raise RuntimeError("Gemini no está validado. Actívalo primero; no se creará un proyecto que parezca estar trabajando cuando está pausado.")
+        goal_text = str(body.get("goal") or "").strip()
+'''
+    backend_new = '''    async def start_project(self, body: dict[str, Any]):
+        goal_text = str(body.get("goal") or "").strip()
+'''
+    if s.count(backend_old) != 1:
+        raise RuntimeError(f"provider-independent backend anchor={s.count(backend_old)}")
+    s = s.replace(backend_old, backend_new, 1)
+
     # Don't make the entire local CEO UI unusable because a provider is waiting.
     ui_old = """$('power').value=s.power_percent??30;$('powerLabel').textContent=$('power').value+'%';const hasActive=!!s.active;$('pauseBtn').disabled=!hasActive||!!s.paused;$('resumeBtn').disabled=!hasActive||!s.paused||!live;$('cancelBtn').disabled=!hasActive;$('startBtn').disabled=!live;$('startBtn').title=live?'Iniciar trabajo real':'Primero activa y valida Gemini';
 """
