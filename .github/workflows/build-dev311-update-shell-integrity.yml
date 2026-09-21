@@ -1,4 +1,4 @@
-name: Build DEV311 Update Shell Integrity
+name: Build DEV311 Update Shell Integrity # publish retry
 
 on:
   push:
