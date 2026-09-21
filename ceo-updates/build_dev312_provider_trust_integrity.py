@@ -101,6 +101,29 @@ def _forget_windows_dpapi_gemini_trust() -> bool:
         return False
 
 
+def _migrate_legacy_gemini_trust(state, key: str) -> dict:
+    """Bootstrap DEV312 trust from prior durable evidence for the current DPAPI key."""
+    if not key or state is None:
+        return {"migrated": False, "reason": "missing_state_or_key"}
+    existing = _load_windows_dpapi_gemini_trust(key)
+    if existing:
+        return {"migrated": False, "reason": "already_trusted", "trust": existing}
+    meta = dict(getattr(state, "metadata", {}) or {})
+    prior_saved = bool(meta.get("gemini_dpapi_saved"))
+    prior_recognized = bool(meta.get("gemini_key_recognized") or meta.get("gemini_live_verified"))
+    if not (prior_saved and prior_recognized):
+        return {"migrated": False, "reason": "legacy_evidence_insufficient"}
+    model = str(meta.get("gemini_model") or "")
+    ok = _save_windows_dpapi_gemini_trust(
+        key, model=model or None, source="dev312_legacy_migration"
+    )
+    return {
+        "migrated": bool(ok),
+        "reason": "legacy_authenticated_key_bound" if ok else "trust_write_failed",
+        "model": model,
+    }
+
+
 '''
     s = s[:idx] + trust_helpers + s[idx:]
 
@@ -147,6 +170,30 @@ def _forget_windows_dpapi_gemini_trust() -> bool:
     if s.count(init_anchor) != 1:
         raise RuntimeError(f"startup trust anchor={s.count(init_anchor)}")
     s = s.replace(init_anchor, init_new, 1)
+
+    legacy_resume_anchor = '''            if state is not None:
+                state = store.prepare_for_resume(state)
+                self._ensure_project_workspace(state)
+                self.state = state
+'''
+    legacy_resume_new = '''            if state is not None:
+                state = store.prepare_for_resume(state)
+                self._ensure_project_workspace(state)
+                if self._pending_gemini_key:
+                    trust_migration = _migrate_legacy_gemini_trust(state, self._pending_gemini_key)
+                    state.metadata["dev312_gemini_trust_migration"] = trust_migration
+                    migrated_trust = _load_windows_dpapi_gemini_trust(self._pending_gemini_key)
+                    if migrated_trust:
+                        self.gemini_key = self._pending_gemini_key
+                        self.gemini_key_recognized = True
+                        self.gemini_key_status = self.gemini_key_status or "TRUSTED_PREVIOUSLY_VERIFIED"
+                        self.provider_mode = "gemini-authenticated-waiting"
+                        self.gemini_model = str(migrated_trust.get("model") or "") or self.gemini_model
+                self.state = state
+'''
+    if s.count(legacy_resume_anchor) != 1:
+        raise RuntimeError(f"legacy trust resume anchor={s.count(legacy_resume_anchor)}")
+    s = s.replace(legacy_resume_anchor, legacy_resume_new, 1)
 
     # Startup validation catch must not demote an already trusted key merely
     # because the network probe failed.
@@ -334,6 +381,7 @@ def main() -> None:
         "root": str(ROOT),
         "invariants": [
             "authenticated_key_trust_persists_encrypted_across_restart",
+            "legacy_1_5_86_authenticated_state_bootstraps_trust_before_first_probe",
             "transport_failure_never_demotes_prior_authenticated_key",
             "only_explicit_auth_rejection_revokes_trust",
             "startup_probe_cannot_false-label_transport_as_auth_failure",
