@@ -15,9 +15,9 @@ if(-not $python){$python=(Get-Command py.exe -ErrorAction SilentlyContinue)}
 if(-not $python){throw "Python no encontrado"}
 
 Write-Host "=========================================================="
-Write-Host " CEO DE IAs - GATE 0 + ENSAYO GENERAL B29-B30"
+Write-Host " CEO DE IAs - PRIMERA CAMPANA FUNCIONAL B29-B30"
 Write-Host "=========================================================="
-Write-Host "Este lanzador NO ejecuta B38 automaticamente."
+Write-Host "Este lanzador abre una sola sesion de navegador y NO ejecuta B38 automaticamente."
 Write-Host "No actualiza CEO estable, no hace merge y no usa APIs."
 
 $args=@(
