@@ -61,9 +61,9 @@ jobs:
         shell: pwsh
         run: |
           Push-Location ceo-browser
-          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_harness_server.py
+          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py real_code_candidate.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py run_b38_real_ceo_candidate.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py test_harness_server.py
           if ($LASTEXITCODE -ne 0) { throw "compile failed" }
-          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py
+          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_real_code_candidate.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
           Pop-Location
 
@@ -503,6 +503,65 @@ jobs:
           if($finalizer -notmatch "automatic_merge_allowed"){throw "B30 merge boundary missing"}
           if($finalizer -notmatch "automatic_purchase_allowed"){throw "B30 purchase boundary missing"}
           Write-Host "B29_B30_FIELD_GATE_READY_PASS"
+
+      - name: B31-B37 field-gated candidate isolation and evidence
+        shell: pwsh
+        run: |
+          Push-Location ceo-browser
+          python -m unittest -v test_real_code_candidate.py
+          if($LASTEXITCODE -ne 0){throw "B31-B37 candidate workflow tests failed"}
+          @'
+          from pathlib import Path
+          import json, tempfile
+          from real_code_candidate import BrowserFieldGuard
+
+          with tempfile.TemporaryDirectory() as td:
+              root=Path(td)
+              try:
+                  BrowserFieldGuard(root).require_verified()
+              except RuntimeError as exc:
+                  assert "BROWSER_FIELD_NOT_VERIFIED" in str(exc)
+              else:
+                  raise AssertionError("B31 accepted missing physical field proof")
+
+              (root/"BROWSER_FIELD_STATE.json").write_text(json.dumps({
+                  "BROWSER_FIELD_VERIFIED": True,
+                  "api_calls_required": 0,
+                  "production_promotion_allowed": False,
+                  "automatic_merge_allowed": False,
+              }),encoding="utf-8")
+              assert BrowserFieldGuard(root).require_verified()["BROWSER_FIELD_VERIFIED"] is True
+          print("B31_B37_CANDIDATE_CONTRACT_PASS")
+          '@ | Set-Content -Encoding UTF8 b31_b37_check.py
+          python b31_b37_check.py
+          if($LASTEXITCODE -ne 0){throw "B31-B37 gate contract failed"}
+          Pop-Location
+
+      - name: B38 physical self-development candidate runner contract
+        shell: pwsh
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\run_b38_real_ceo_candidate.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "B38 PowerShell runner parse failed"}
+          if(-not (Test-Path "ceo-browser\EJECUTAR_B38_CANDIDATE.cmd")){throw "B38 launcher missing"}
+          $contract=Get-Content -Raw -Encoding UTF8 "ceo-browser\B31_B38_CONTRACT.json" | ConvertFrom-Json
+          if($contract.B38.physical_verification -ne $false){throw "B38 must remain physical-pending"}
+          if($contract.B38.automatic_merge -ne $false){throw "B38 automatic merge boundary weakened"}
+          if($contract.B38.production_promotion -ne $false){throw "B38 production boundary weakened"}
+          if($contract.B38.api_calls_required -ne 0){throw "B38 API boundary violated"}
+          if(-not $contract.B38.human_review_required){throw "B38 human review gate missing"}
+
+          $runner=Get-Content -Raw -Encoding UTF8 "ceo-browser\run_b38_real_ceo_candidate.py"
+          if($runner -notmatch "BrowserFieldGuard\\(evidence_dir\\)\\.require_verified\\(\\)"){throw "B38 does not require physical field proof"}
+          if($runner -notmatch "B38_REAL_CEO_CANDIDATE_PASS"){throw "B38 PASS evidence status missing"}
+          if($runner -notmatch "original_source_unchanged"){throw "B38 source immutability evidence missing"}
+          if($runner -notmatch "automatic_merge"){throw "B38 merge evidence missing"}
+          if($runner -notmatch "human_review_required"){throw "B38 review boundary missing"}
+
+          $candidate=Get-Content -Raw -Encoding UTF8 "ceo-browser\real_code_candidate.py"
+          if($candidate -match 'git\\([^\\n]*"push"' -or $candidate -match 'git\\([^\\n]*"merge"'){throw "B31-B38 candidate code contains forbidden promotion action"}
+          Write-Host "B38_CANDIDATE_RUNNER_READY_PASS"
 
       - name: Exercise CEO AITransport through Chrome with zero API keys
         shell: pwsh
