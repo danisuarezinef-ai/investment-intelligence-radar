@@ -1,0 +1,364 @@
+{
+  "files": [
+    {
+      "broad_except_pass": 2,
+      "global_mutation": 8,
+      "path": "ceo_app/main.py",
+      "subprocess": 8,
+      "time_sleep": 1
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "scripts/browser_preflight_v19.py"
+    },
+    {
+      "path": "scripts/bootstrap_web_runtime.py",
+      "subprocess": 2
+    },
+    {
+      "broad_except_pass": 1,
+      "execution_enabled": 2,
+      "path": "scripts/dev184_project_handoff_qualification.py"
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/dev251_local_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "global_mutation": 2,
+      "path": "scripts/install_windows_bootstrap.py",
+      "subprocess": 6
+    },
+    {
+      "path": "scripts/dev85_local_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/continue_ai_gates_single_process.py",
+      "subprocess": 1
+    },
+    {
+      "path": "scripts/browser_auth_v18.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/validate_self_hosting_41_50_windows.py"
+    },
+    {
+      "broad_except_pass": 3,
+      "execution_enabled": 2,
+      "path": "scripts/dev241_local_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/dev261_local_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/dev182_windows_update_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 2,
+      "path": "scripts/repair_shadowed_project_store_and_start_work.py",
+      "subprocess": 1
+    },
+    {
+      "path": "scripts/dev294_internal_update_pipeline_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "path": "scripts/dev261_windows_preflight.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "execution_enabled": 2,
+      "path": "scripts/dev185_native_gemini_secret_qualification.py"
+    },
+    {
+      "path": "scripts/mobile_worker_loop.py",
+      "time_sleep": 2,
+      "while_true": 1
+    },
+    {
+      "path": "scripts/rerun_ai_gates_and_continue.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 6,
+      "path": "scripts/relaunch_after_update.py",
+      "subprocess": 12,
+      "time_sleep": 2,
+      "while_true": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/run_first_ceo_work_session.py",
+      "subprocess": 2
+    },
+    {
+      "path": "scripts/dev295_update_confirm_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 13,
+      "execution_enabled": 25,
+      "path": "scripts/ceo_stdlib_work_mode.py",
+      "subprocess": 9,
+      "time_sleep": 4
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/mobile_discovery.py"
+    },
+    {
+      "path": "scripts/rerun_chrome_session_and_continue.py",
+      "subprocess": 1
+    },
+    {
+      "path": "scripts/browser_auth_v15.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "scripts/launch_current.py",
+      "subprocess": 3
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "scripts/browser_preflight_v20.py"
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "scripts/browser_preflight_v18.py"
+    },
+    {
+      "path": "scripts/dev271_windows_campaign.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 2,
+      "path": "scripts/close_mission85_from_real_work.py"
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/dev183_gemini_live_recovery_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/dev181_local_qualification.py",
+      "subprocess": 4
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "scripts/browser_preflight_v21.py"
+    },
+    {
+      "path": "scripts/browser_auth_v21.py",
+      "subprocess": 1
+    },
+    {
+      "execution_enabled": 1,
+      "path": "scripts/dev188_gemini_key_replacement_qualification.py"
+    },
+    {
+      "path": "scripts/browser_auth_v14.py",
+      "subprocess": 1
+    },
+    {
+      "path": "scripts/dev171_local_qualification.py",
+      "subprocess": 4
+    },
+    {
+      "path": "scripts/browser_auth_v20.py",
+      "subprocess": 1
+    },
+    {
+      "path": "scripts/browser_auth_v17.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/dev271_local_qualification.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/update_dev212_side_by_side.py",
+      "subprocess": 3,
+      "time_sleep": 1
+    },
+    {
+      "path": "scripts/run_quality_21_40_benchmark.py",
+      "subprocess": 5
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "scripts/update_candidate_preflight.py",
+      "time_sleep": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/run_first_real_supervised_dev.py"
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/browser_preflight_v17.py"
+    },
+    {
+      "path": "scripts/browser_auth_v19.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/run_mission83_real.py"
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "scripts/dev211_windows_install_preflight.py",
+      "subprocess": 2
+    },
+    {
+      "path": "scripts/run_windows_physical_gate_v11.py",
+      "subprocess": 3,
+      "time_sleep": 1
+    },
+    {
+      "path": "ceo_core/self_improvement.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "ceo_core/restart_rehearsal_v2.py"
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "ceo_core/operations_dashboard.py"
+    },
+    {
+      "path": "ceo_core/self_hosting_tools.py",
+      "subprocess": 2
+    },
+    {
+      "path": "ceo_core/internal_release_publisher.py",
+      "subprocess": 3
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "ceo_core/desktop_integration.py",
+      "subprocess": 4
+    },
+    {
+      "broad_except_pass": 2,
+      "path": "ceo_core/remote_control.py"
+    },
+    {
+      "global_mutation": 1,
+      "path": "ceo_core/useful_output_watchdog_v2.py"
+    },
+    {
+      "path": "ceo_core/resource_adaptive.py",
+      "subprocess": 1
+    },
+    {
+      "global_mutation": 1,
+      "path": "ceo_core/quality_engineering.py",
+      "subprocess": 1,
+      "while_true": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "ceo_core/internal_release_coordinator.py"
+    },
+    {
+      "path": "ceo_core/change_sandbox.py",
+      "subprocess": 1
+    },
+    {
+      "broad_except_pass": 13,
+      "path": "ceo_core/in_app_updater.py",
+      "subprocess": 2,
+      "time_sleep": 1,
+      "while_true": 1
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "ceo_core/browser_worker.py"
+    },
+    {
+      "broad_except_pass": 4,
+      "path": "ceo_core/mobile_node.py",
+      "subprocess": 4
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "ceo_core/project_catalog.py"
+    },
+    {
+      "global_mutation": 1,
+      "path": "ceo_core/autonomous_loop.py"
+    },
+    {
+      "broad_except_pass": 2,
+      "path": "ceo_core/windows_shell.py",
+      "subprocess": 3
+    },
+    {
+      "broad_except_pass": 2,
+      "path": "ceo_core/mobile_v2.py"
+    },
+    {
+      "execution_enabled": 6,
+      "path": "ceo_core/core_health_contract_v2.py"
+    },
+    {
+      "path": "ceo_core/integrity_engineering.py",
+      "time_sleep": 1
+    },
+    {
+      "broad_except_pass": 1,
+      "path": "ceo_core/credentials.py"
+    },
+    {
+      "global_mutation": 2,
+      "path": "ceo_core/operational_scale.py"
+    },
+    {
+      "path": "ceo_core/operational_autonomy.py",
+      "shell_true": 1,
+      "subprocess": 2,
+      "while_true": 1
+    },
+    {
+      "global_mutation": 1,
+      "path": "ceo_core/scheduler_productivity_supervisor_v1.py"
+    },
+    {
+      "global_mutation": 1,
+      "path": "ceo_core/engineering_autonomy.py",
+      "subprocess": 3
+    },
+    {
+      "broad_except_pass": 1,
+      "global_mutation": 1,
+      "path": "ceo_core/scheduler.py"
+    }
+  ],
+  "totals": {
+    "broad_except_pass": 104,
+    "execution_enabled": 38,
+    "global_mutation": 18,
+    "shell_true": 1,
+    "subprocess": 112,
+    "time_sleep": 14,
+    "while_true": 5
+  }
+}

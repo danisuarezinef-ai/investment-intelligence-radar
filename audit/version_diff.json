@@ -1,0 +1,45 @@
+{
+  "diff_186_to_189native": {
+    "added": [],
+    "changed": [
+      "CEO_UPDATE_PACKAGE.json",
+      "ceo_core/providers/gemini_interactions.py",
+      "scripts/ceo_stdlib_work_mode.py",
+      "scripts/launch_current.py"
+    ],
+    "removed": []
+  },
+  "diff_186_to_192": {
+    "added": [
+      "ceo_core/deterministic_completion_certifier_v1.py",
+      "ceo_core/field_endurance_certification_v1.py"
+    ],
+    "changed": [
+      "CEO_UPDATE_PACKAGE.json",
+      "ceo_core/autonomous_loop.py",
+      "ceo_core/providers/gemini_interactions.py",
+      "ceo_core/scheduler.py",
+      "scripts/ceo_stdlib_work_mode.py",
+      "scripts/launch_current.py"
+    ],
+    "removed": []
+  },
+  "diff_189native_to_192": {
+    "added": [
+      "ceo_core/deterministic_completion_certifier_v1.py",
+      "ceo_core/field_endurance_certification_v1.py"
+    ],
+    "changed": [
+      "CEO_UPDATE_PACKAGE.json",
+      "ceo_core/autonomous_loop.py",
+      "ceo_core/scheduler.py",
+      "scripts/ceo_stdlib_work_mode.py"
+    ],
+    "removed": []
+  },
+  "files": {
+    "1.5.86": 523,
+    "1.5.89-native": 523,
+    "1.5.92-linear": 525
+  }
+}
