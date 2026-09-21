@@ -17,7 +17,13 @@ ROOT=Path(os.environ.get("CEO_FIRST_TRIAL_BUILD_ROOT", str(REPO/".tmp-first-tria
 BROWSER_FILES=[
     "windows_chatgpt_cdp_driver.ps1",
     "open_chatgpt_profile.ps1",
+    "provider_registry.json",
+    "browser_provider_pool.py",
     "recipes/chatgpt_web.json",
+    "recipes/claude_web.json",
+    "recipes/gemini_web.json",
+    "recipes/perplexity_web.json",
+    "recipes/grok_web.json",
     "recipes/test_harness.json",
     "recipes/test_harness_semantic.json",
     "browser_ai_worker.py",
@@ -53,12 +59,14 @@ ROOT_FILES={
 README="""CEO DE IAs — PRIMERA PRUEBA BROWSER LAB
 
 1. Este paquete es un LAB portátil. NO actualiza CEO estable.
-2. Doble clic en EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd.
-3. El lanzador realiza Gate 0 y después B29-B30.
-4. Si ChatGPT requiere login, hazlo manualmente. No se automatiza CAPTCHA/2FA.
-5. Si termina GO, B38 NO se inicia automáticamente.
-6. Solo entonces, y de forma separada, puedes lanzar EJECUTAR_B38_CANDIDATE.cmd.
-7. RECUPERAR_PRUEBA_CEO.cmd cierra solo procesos Chrome/Edge que usen el perfil exclusivo del LAB.
+2. El motor browser es multi-proveedor: ChatGPT, Claude, Gemini, Perplexity y Grok.
+3. Esta primera validación física usa ChatGPT porque conserva la sesión que ya abriste; no es una dependencia arquitectónica.
+4. Doble clic en EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd.
+5. El lanzador realiza Gate 0 y después B29-B30.
+6. Si el proveedor web requiere login, hazlo manualmente. No se automatiza CAPTCHA/2FA.
+7. Si termina GO, B38 NO se inicia automáticamente.
+8. Solo entonces, y de forma separada, puedes lanzar EJECUTAR_B38_CANDIDATE.cmd.
+9. RECUPERAR_PRUEBA_CEO.cmd cierra solo procesos Chrome/Edge que usen el perfil exclusivo del LAB.
 
 LIMITES
 - Sin OpenAI API.
