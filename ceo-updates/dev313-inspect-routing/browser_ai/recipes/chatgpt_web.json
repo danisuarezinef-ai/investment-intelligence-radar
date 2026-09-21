@@ -4,9 +4,20 @@
   "session_policy": "persistent_user_login",
   "input_selectors": [
     "#prompt-textarea",
+    "textarea[data-testid='prompt-textarea']",
     "textarea",
     "[contenteditable='true'][role='textbox']",
+    "[contenteditable='true'][data-testid*='prompt']",
     "[contenteditable='true']"
+  ],
+  "input_semantic_hints": [
+    "prompt",
+    "message",
+    "ask",
+    "chat",
+    "mensaje",
+    "pregunta",
+    "preguntar"
   ],
   "send_selectors": [
     "button[data-testid='send-button']",
@@ -21,6 +32,18 @@
     "button[data-testid='stop-button']",
     "button[aria-label*='Stop']",
     "button[aria-label*='Detener']"
+  ],
+  "logged_in_selectors": [
+    "button[data-testid='profile-button']",
+    "button[data-testid='accounts-profile-button']",
+    "[data-testid='profile-button']",
+    "button[aria-label*='Profile']",
+    "button[aria-label*='Perfil']"
+  ],
+  "login_required_selectors": [
+    "a[href*='/auth/login']",
+    "button[data-testid='login-button']",
+    "a[data-testid='login-button']"
   ],
   "new_chat_urls": [
     "https://chatgpt.com/"
