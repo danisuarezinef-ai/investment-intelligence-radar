@@ -1,4 +1,4 @@
-name: Debug DEV309 generated scheduler
+name: Debug DEV309 generated scheduler # rerun current builder
 
 on:
   push:
