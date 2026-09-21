@@ -4,12 +4,12 @@
   "branch": "free-browser-ai-worker",
   "objective": "Turn the verified browser conversation mechanism into one saved artifact task and one isolated coding task, with zero AI APIs.",
   "status": {
-    "B15_structured_artifact_protocol": "IMPLEMENTED_CI_PENDING",
-    "B16_safe_atomic_artifact_persistence": "IMPLEMENTED_CI_PENDING",
-    "B17_bounded_artifact_task_runner": "IMPLEMENTED_CI_PENDING",
-    "B18_first_real_browser_artifact_gate": "RUNNER_READY_PHYSICAL_PENDING",
-    "B19_isolated_bug_sandbox": "IMPLEMENTED_CI_PENDING",
-    "B20_real_chatgpt_code_gate": "RUNNER_READY_PHYSICAL_PENDING"
+    "B15_structured_artifact_protocol": "COMPLETE_CI_VERIFIED",
+    "B16_safe_atomic_artifact_persistence": "COMPLETE_CI_VERIFIED",
+    "B17_bounded_artifact_task_runner": "COMPLETE_CI_VERIFIED",
+    "B18_first_real_browser_artifact_gate": "RUNNER_CI_VERIFIED_REAL_CHATGPT_PHYSICAL_PENDING",
+    "B19_isolated_bug_sandbox": "COMPLETE_CI_VERIFIED",
+    "B20_real_chatgpt_code_gate": "RUNNER_CI_VERIFIED_REAL_CHATGPT_PHYSICAL_PENDING"
   },
   "B15": {
     "protocol": "<CEO_ARTIFACT>...</CEO_ARTIFACT>",
@@ -66,5 +66,22 @@
     "no_radar_changes": true,
     "no_production_release": true,
     "no_self_merge": true
+  },
+  "verification": {
+    "workflow_run_id": 35651149474,
+    "conclusion": "success",
+    "passed": [
+      "all prior B03-B14 browser gates",
+      "B15 structured CEO_ARTIFACT parsing",
+      "B16 root-confined atomic artifact persistence with SHA-256",
+      "B17 bounded artifact task runner",
+      "B18 physical artifact runner contract",
+      "B19 isolated failing git sandbox with no remotes",
+      "B20 bounded fake web-AI correction loop and physical runner contract",
+      "zero-API AITransport integration",
+      "free-only/no-production boundaries"
+    ],
+    "real_chatgpt_artifact_gate_verified": false,
+    "real_chatgpt_code_gate_verified": false
   }
 }
