@@ -1,0 +1,43 @@
+name: Run CEO 300-pass audit
+
+on:
+  push:
+    branches: [ceo-deep-stabilization-audit]
+    paths:
+      - 'audit/ceo_300_pass_audit.py'
+      - '.github/workflows/run-ceo-300-pass-audit.yml'
+      - 'ceo-canonical/**'
+      - 'ceo-updates/DEV*_MANIFEST_UNSIGNED.json'
+      - 'ceo-updates/DEV*_QUALIFICATION.json'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-deep-stabilization-audit
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install canonical package
+        shell: bash
+        run: |
+          python -m pip install -q -e ./ceo-canonical
+      - name: Run 300 adversarial checks
+        shell: bash
+        run: |
+          python audit/ceo_300_pass_audit.py
+      - name: Commit audit result
+        shell: bash
+        run: |
+          git config user.name "CEO Stabilization Audit"
+          git config user.email "ceo-stabilization@local.invalid"
+          git add audit/CEO_300_PASS_AUDIT.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Record CEO 300-pass audit result"
+          git push origin HEAD:ceo-deep-stabilization-audit
