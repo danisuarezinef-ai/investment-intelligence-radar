@@ -68,6 +68,11 @@ function clearComposer(){
 function submitPrompt(){
   const prompt=input.innerText || input.textContent || input.value || '';
   if(!prompt.trim()) return;
+
+  const user=document.createElement('div');
+  user.setAttribute('data-message-author-role','user');
+  user.textContent=prompt;
+  document.getElementById('messages').appendChild(user);
   clearComposer();
 
   if(params.get('conversation')==='transition' && !location.pathname.startsWith('/c/')){
@@ -82,9 +87,18 @@ function submitPrompt(){
   const msg=document.createElement('div');
   msg.setAttribute('data-message-author-role','assistant');
 
+  let campaignResponse='';
+  if(prompt.includes('EXPECTED ARTIFACT: B18_PRIMER_ARTEFACTO.txt')){
+    const match=prompt.match(/PROVIDER=([A-Za-z0-9_-]+)/);
+    const provider=match ? match[1] : 'test-harness-campaign';
+    campaignResponse='<CEO_ARTIFACT>CEO_BROWSER_ARTIFACT_OK\\nPROVIDER='+provider+'\\nAPIS=0</CEO_ARTIFACT>\\n<CEO_DONE>true</CEO_DONE>';
+  }else if(prompt.includes('Corrige únicamente el bug de calc.py') || prompt.includes('Corrige unicamente el bug de calc.py')){
+    campaignResponse='<CEO_PATCH>diff --git a/calc.py b/calc.py\\n--- a/calc.py\\n+++ b/calc.py\\n@@ -1,2 +1,2 @@\\n def add(a, b):\\n-    return a - b\\n+    return a + b</CEO_PATCH>\\n<CEO_DONE>true</CEO_DONE>';
+  }
+
   if(params.get('stream')==='1'){
     document.getElementById('messages').appendChild(msg);
-    const chunks=[
+    const chunks=campaignResponse ? [campaignResponse] : [
       'HARNESS_RESPONSE: ',
       prompt,
       ' <CEO_DONE>true</CEO_DONE>',
@@ -100,7 +114,7 @@ function submitPrompt(){
     },250);
   }else{
     setTimeout(() => {
-      msg.textContent='HARNESS_RESPONSE: '+prompt+' <CEO_DONE>true</CEO_DONE> COMPLETE_TAIL';
+      msg.textContent=campaignResponse || ('HARNESS_RESPONSE: '+prompt+' <CEO_DONE>true</CEO_DONE> COMPLETE_TAIL');
       document.getElementById('messages').appendChild(msg);
       stop.remove();
     },300);
