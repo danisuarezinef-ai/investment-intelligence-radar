@@ -670,6 +670,16 @@ jobs:
           python first_trial_lab_check.py
           if($LASTEXITCODE -ne 0){throw "first-trial LAB qualification failed"}
 
+      - name: Publish first-trial LAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CEO_FIRST_TRIAL_LAB
+          path: |
+            ceo-browser/CEO_FIRST_TRIAL_LAB.zip
+            ceo-browser/CEO_FIRST_TRIAL_LAB_QUALIFICATION.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Exercise CEO AITransport through Chrome with zero API keys
         shell: pwsh
         run: |
