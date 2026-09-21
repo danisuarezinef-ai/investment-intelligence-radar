@@ -553,7 +553,7 @@ jobs:
           if(-not $contract.B38.human_review_required){throw "B38 human review gate missing"}
 
           $runner=Get-Content -Raw -Encoding UTF8 "ceo-browser\run_b38_real_ceo_candidate.py"
-          if($runner -notmatch "BrowserFieldGuard\\(evidence_dir\\)\\.require_verified\\(\\)"){throw "B38 does not require physical field proof"}
+          if($runner -notmatch 'BrowserFieldGuard\(evidence_dir\)\.require_verified\(\)'){throw "B38 does not require physical field proof"}
           if($runner -notmatch "B38_REAL_CEO_CANDIDATE_PASS"){throw "B38 PASS evidence status missing"}
           if($runner -notmatch "original_source_unchanged"){throw "B38 source immutability evidence missing"}
           if($runner -notmatch "automatic_merge"){throw "B38 merge evidence missing"}
