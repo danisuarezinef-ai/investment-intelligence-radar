@@ -66,12 +66,39 @@ function Get-PageTarget([int]$port,[string]$wantedUrl,[int]$timeoutSeconds) {
           $wantedUrl.StartsWith([string]$_.url)
         } | Select-Object -First 1
         if($match) { return $match }
-        return $pages | Select-Object -First 1
+        # Never fall back to an unrelated restored tab. Wait for the requested target.
       }
     } catch {}
     Start-Sleep -Milliseconds 250
   }
-  throw "No debuggable page target found"
+  throw "Requested debuggable page target not found"
+}
+
+function Close-StaleLocalTargets([int]$port,[string]$wantedUrl) {
+  # Only clean stale local/error tabs when using real ChatGPT.
+  # CI harnesses intentionally use 127.0.0.1 and must never be affected.
+  if(-not ([string]$wantedUrl).StartsWith("https://chatgpt.com/")) { return 0 }
+  $closed=0
+  try {
+    $targets = Invoke-RestMethod -Uri ("http://127.0.0.1:{0}/json" -f $port) -TimeoutSec 2
+    foreach($t in @($targets | Where-Object { $_.type -eq "page" -and $_.id })) {
+      $u=[string]$t.url
+      $stale=(
+        $u.StartsWith("http://127.0.0.1") -or
+        $u.StartsWith("https://127.0.0.1") -or
+        $u.StartsWith("http://localhost") -or
+        $u.StartsWith("https://localhost") -or
+        $u.StartsWith("chrome-error://")
+      )
+      if($stale) {
+        try {
+          Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:{0}/json/close/{1}" -f $port,$t.id) -TimeoutSec 2 | Out-Null
+          $closed += 1
+        } catch {}
+      }
+    }
+  } catch {}
+  return $closed
 }
 
 function Connect-CDP([string]$wsUrl) {
@@ -407,6 +434,7 @@ if(-not $NoLaunch -and -not $existing) {
 
 try {
   Wait-DevTools $Port ([Math]::Min(30,$TimeoutSeconds)) | Out-Null
+  [void](Close-StaleLocalTargets $Port $targetUrl)
   $target = Get-PageTarget $Port $targetUrl ([Math]::Min(30,$TimeoutSeconds))
   $ws = Connect-CDP ([string]$target.webSocketDebuggerUrl)
   try {
