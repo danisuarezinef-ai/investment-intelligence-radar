@@ -1,0 +1,96 @@
+name: Test Free Browser AI Worker
+
+on:
+  push:
+    branches: [free-browser-ai-worker]
+    paths:
+      - 'ceo-browser/**'
+      - '.github/workflows/test-free-browser-ai-worker.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-worker:
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: free-browser-ai-worker
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Python contracts and bounded prompt tests
+        shell: pwsh
+        run: |
+          Push-Location ceo-browser
+          python -m py_compile browser_ai_worker.py test_browser_ai_worker.py test_harness_server.py
+          if ($LASTEXITCODE -ne 0) { throw "compile failed" }
+          python -m unittest -v test_browser_ai_worker.py
+          if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
+          Pop-Location
+
+      - name: PowerShell syntax check
+        shell: pwsh
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\windows_chatgpt_cdp_driver.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "PowerShell parse failed"}
+
+      - name: Start local fake web AI
+        shell: pwsh
+        run: |
+          Start-Process python -ArgumentList "ceo-browser\test_harness_server.py" -WindowStyle Hidden
+          Start-Sleep -Seconds 1
+          $r=Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/ -TimeoutSec 3
+          if($r.StatusCode -ne 200){throw "harness not healthy"}
+
+      - name: Drive Chrome like a browser worker first turn
+        id: first
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-browser-profile"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","PRIMER_TURNO","-ProfileDir",$profile,"-Port","9227","-TimeoutSeconds","30")
+          $raw=& powershell.exe @args
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if(-not $row.ok){throw "browser turn 1 failed: $raw"}
+          if($row.response -notmatch "HARNESS_RESPONSE: PRIMER_TURNO"){throw "wrong response: $($row.response)"}
+          "conversation_url=$($row.conversation_url)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Continue same browser conversation second turn
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-browser-profile"
+          $url="\${{ steps.first.outputs.conversation_url }}"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-Prompt","SEGUNDO_TURNO","-ConversationUrl",$url,"-ProfileDir",$profile,"-Port","9227","-TimeoutSeconds","30","-NoLaunch")
+          $raw=& powershell.exe @args
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if(-not $row.ok){throw "browser turn 2 failed: $raw"}
+          if($row.response -notmatch "HARNESS_RESPONSE: SEGUNDO_TURNO"){throw "wrong second response: $($row.response)"}
+
+      - name: Enforce free-only and no-production boundaries
+        shell: pwsh
+        run: |
+          @'
+          from pathlib import Path
+          scope=Path("ceo-browser/BROWSER_AI_WORKER_SCOPE.md").read_text(encoding="utf-8")
+          core=Path("ceo-browser/browser_ai_worker.py").read_text(encoding="utf-8")
+          driver=Path("ceo-browser/windows_chatgpt_cdp_driver.ps1").read_text(encoding="utf-8")
+          recipe=Path("ceo-browser/recipes/chatgpt_web.json").read_text(encoding="utf-8")
+          joined="\n".join([core,driver,recipe])
+          assert "api.openai.com" not in joined.lower()
+          assert "OPENAI_API_KEY" not in joined
+          assert "no se modifica" in scope and "MVP_FIELD" in scope
+          assert "no se publica una nueva versión de CEO" in scope
+          assert "no se usa OpenAI API de pago" in scope
+          print("FREE_BROWSER_BOUNDARY_PASS")
+          '@ | Set-Content -Encoding UTF8 boundary.py
+          python boundary.py
+          if ($LASTEXITCODE -ne 0) { throw "boundary failed" }
