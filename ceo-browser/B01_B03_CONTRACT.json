@@ -1,0 +1,69 @@
+{
+  "phase": "B01-B03",
+  "date": "2026-09-21",
+  "branch": "free-browser-ai-worker",
+  "base_sha": "aaf5467c2b507fdda8394fd979e527a3fe02c2d9",
+  "status": {
+    "B01_no_api_required": "implemented_pending_ci",
+    "B02_scope_freeze": "implemented_pending_ci",
+    "B03_browser_primary_surface": "implemented_pending_ci"
+  },
+  "B01": {
+    "no_api_required": true,
+    "paid_api_allowed": false,
+    "optional_api_default_enabled": false,
+    "primary_ai_surface": "chatgpt-web",
+    "requirements": [
+      "CEO must start and accept real work with zero API keys.",
+      "No API key prompt may block normal startup.",
+      "Gemini/OpenAI API absence must not disable browser execution.",
+      "Optional API support may exist only behind explicit opt-in."
+    ]
+  },
+  "B02": {
+    "freeze_everything_outside_browser_path": true,
+    "allowed_paths": [
+      "ceo-browser/**",
+      "ceo-updates/dev313-inspect-routing/browser_ai/**",
+      "ceo-updates/dev313-inspect-routing/providers/chatgpt_web.py",
+      "ceo-updates/dev313-inspect-routing/ceo_stdlib_work_mode.py",
+      "ceo-updates/dev313-inspect-routing/routing.py",
+      ".github/workflows/test-free-browser-ai-worker.yml"
+    ],
+    "frozen_examples": [
+      "Android",
+      "MVP_FIELD",
+      "updater/release machinery",
+      "recovery/integrity expansion",
+      "Radar production code",
+      "stable release channel"
+    ],
+    "rule": "Until the browser path completes a first real goal, changes outside the allowlist are out of scope."
+  },
+  "B03": {
+    "surface": "Chrome/Edge via Chrome DevTools Protocol",
+    "preference_order": [
+      "Google Chrome Program Files",
+      "Google Chrome LocalAppData",
+      "Microsoft Edge Program Files",
+      "PATH chrome.exe",
+      "PATH msedge.exe"
+    ],
+    "persistent_profile": "%LOCALAPPDATA%\\CEO de IAs\\browser-profile",
+    "startup_preflight_required": true,
+    "preflight_success_status": "BROWSER_CONTROL_READY",
+    "preflight_proves": [
+      "browser executable found",
+      "browser process launched or reused",
+      "DevTools endpoint reachable",
+      "page target attached",
+      "JavaScript evaluation through CDP succeeded"
+    ],
+    "preflight_does_not_prove_yet": [
+      "ChatGPT login is active",
+      "real ChatGPT prompt send works",
+      "real ChatGPT response extraction works"
+    ]
+  },
+  "next_after_B03": "B04 persistent browser profile/session, then B05 one-time manual login, then first real simple task."
+}
