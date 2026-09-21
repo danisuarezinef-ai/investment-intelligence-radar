@@ -31,7 +31,7 @@ class ChatGPTWebTransport(AITransport):
         port: int = 9227,
         max_prompt_chars: int = 22_000,
     ) -> None:
-        package_root = Path(root).resolve() if root else Path(__file__).resolve().parents[2]
+        package_root = Path(root).resolve() if root else Path(__file__).resolve().parents[1]
         self.root = package_root
         self.driver = package_root / "browser_ai" / "windows_chatgpt_cdp_driver.ps1"
         self.recipe = package_root / "browser_ai" / "recipes" / "chatgpt_web.json"
