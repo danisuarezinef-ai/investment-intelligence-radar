@@ -168,6 +168,7 @@ jobs:
           if($code -eq 0){throw "fresh profile unexpectedly passed login gate"}
           if($row.status -ne "LOGIN_REQUIRED"){throw "expected LOGIN_REQUIRED, got $($row.status)"}
           Write-Host "B05_LOGIN_REQUIRED_PASS"
+          $global:LASTEXITCODE=0
           Start-Sleep -Seconds 2
 
       - name: B05 manual-login completion path reaches session ready
