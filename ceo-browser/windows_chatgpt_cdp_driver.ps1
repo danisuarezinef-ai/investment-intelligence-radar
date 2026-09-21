@@ -704,20 +704,20 @@ try {
     $matchedRepresentation=""
     $actualNormalized=""
     foreach($name in @("value","logicalText","textContent","innerText")){
-      $candidate=[string]$variants[$name]
-      if($candidate -eq $expectedNormalized){
+      $candidateText=[string]$variants[$name]
+      if($candidateText -eq $expectedNormalized){
         $matchedRepresentation=$name
-        $actualNormalized=$candidate
+        $actualNormalized=$candidateText
         break
       }
     }
     if(-not $matchedRepresentation) {
       $variantDiag=[ordered]@{}
       foreach($name in @("value","logicalText","textContent","innerText")){
-        $candidate=[string]$variants[$name]
+        $candidateText=[string]$variants[$name]
         $variantDiag[$name]=[ordered]@{
-          chars=[int]$candidate.Length
-          newlines=[int](([regex]::Matches($candidate,"\n")).Count)
+          chars=[int]$candidateText.Length
+          newlines=[int](([regex]::Matches($candidateText,"\n")).Count)
         }
       }
       Write-JsonResult @{
