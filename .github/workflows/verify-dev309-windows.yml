@@ -1,0 +1,136 @@
+name: Verify DEV309 on Windows with 1.5.84 updater
+
+on:
+  push:
+    branches: [ceo-update-channel]
+    paths:
+      - '.github/workflows/verify-dev309-windows.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ceo-update-channel
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Extract current updater and DEV309 candidate
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force tmp184,tmp185 -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory tmp184 | Out-Null
+          New-Item -ItemType Directory tmp185 | Out-Null
+          Expand-Archive ceo-updates/CEO_1.5.84-rc1-executable-route-integrity.zip tmp184
+          Expand-Archive ceo-updates/CEO_1.5.85-rc1-closure-convergence.zip tmp185
+          python -m pip install --disable-pip-version-check -q -e .\tmp184
+
+      - name: Stage and preflight exact DEV309 package
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH=(Resolve-Path .\tmp184).Path
+          @'
+          import dataclasses, hashlib, json, pathlib, sys, tempfile, time
+          from ceo_core.in_app_updater import InAppUpdater, UpdateManifest
+
+          repo=pathlib.Path.cwd()
+          manifest=json.loads((repo/'ceo-updates/DEV309_MANIFEST_UNSIGNED.json').read_text(encoding='utf-8'))
+          artifact=repo/'ceo-updates/CEO_1.5.85-rc1-closure-convergence.zip'
+          data=artifact.read_bytes()
+          assert hashlib.sha256(data).hexdigest()==manifest['sha256']
+          assert len(data)==manifest['size_bytes']
+
+          manifest['url']=artifact.resolve().as_uri()
+          allowed={f.name for f in dataclasses.fields(UpdateManifest)}
+          m=UpdateManifest(**{k:v for k,v in manifest.items() if k in allowed})
+
+          with tempfile.TemporaryDirectory(prefix='ceo-dev309-win-') as td:
+              u=InAppUpdater(data_root=td)
+              t=time.perf_counter()
+              row=u.stage(m)
+              stage_s=time.perf_counter()-t
+              assert row['version']=='1.5.85-rc1-closure-convergence',row
+              assert row.get('contract_verified') is True,row
+              assert u.progress().get('phase')=='ready_to_install',u.progress()
+
+              t=time.perf_counter()
+              pre=u.preflight_staged(row['version'],python_executable=sys.executable,timeout=60)
+              pre_s=time.perf_counter()-t
+              assert pre.get('ok') is True,pre
+              print(json.dumps({
+                  'windows_stage_pass':True,
+                  'windows_preflight_pass':True,
+                  'stage_seconds':stage_s,
+                  'preflight_seconds':pre_s,
+                  'version':row['version'],
+                  'contract_verified':row.get('contract_verified'),
+                  'file_count':row.get('file_count'),
+                  'preflight':pre,
+              },indent=2,default=str))
+          '@ | Set-Content -Encoding UTF8 verify309.py
+          python verify309.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV309 Windows stage/preflight failed" }
+
+      - name: Exact DEV309 closure semantics smoke
+        shell: pwsh
+        run: |
+          $root=(Resolve-Path .\tmp185).Path
+          $env:CEO_DEV309_BUILD_ROOT=$root
+          $env:PYTHONPATH=$root
+          python ceo-updates\qualify_dev309_closure_convergence.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV309 Windows closure qualification failed" }
+
+          @'
+          import importlib.util, pathlib, tempfile
+          root=pathlib.Path('tmp185').resolve()
+          sched=(root/'ceo_core/scheduler.py').read_text(encoding='utf-8')
+          loop=(root/'ceo_core/autonomous_loop.py').read_text(encoding='utf-8')
+          work=(root/'scripts/ceo_stdlib_work_mode.py').read_text(encoding='utf-8')
+          gate=(root/'ceo_core/goal_completion_gate.py').read_text(encoding='utf-8')
+          assert 'dev309-closure-convergence-v1' in sched
+          assert '_promote_provider_artifact_to_deliverable' in sched
+          assert 'closure_target_deliverable' in sched
+          assert 'max_goal_continuity_generations' in loop
+          assert 'closure_convergence_exhausted' in loop
+          assert '_ensure_project_workspace' in work
+          assert 'self.data_dir / "workspaces" / state.id' in work
+          assert 'auto_evidence_refs' in gate
+          print('DEV309_WINDOWS_CLOSURE_SEMANTICS_PASS')
+          '@ | Set-Content -Encoding UTF8 smoke309.py
+          python smoke309.py
+          if ($LASTEXITCODE -ne 0) { throw "DEV309 Windows closure semantics smoke failed" }
+
+      - name: Record Windows qualification
+        shell: pwsh
+        run: |
+          @'
+          import json, pathlib
+          p=pathlib.Path('ceo-updates/DEV309_QUALIFICATION.json')
+          q=json.loads(p.read_text(encoding='utf-8'))
+          q['windows_stage_preflight_passed']=True
+          q['windows_exact_closure_qualification_passed']=True
+          q['windows_closure_semantics_smoke_passed']=True
+          q['field_validation_pending']=True
+          q['production_ready']=False
+          q['production_ready_reason']=(
+              'Awaiting operator-approved installation on the real Windows host and '
+              'bounded continuation of the existing Goal continuity audit #173 project.'
+          )
+          p.write_text(json.dumps(q,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          '@ | Set-Content -Encoding UTF8 record309.py
+          python record309.py
+
+          git config user.name "CEO Reliability Engineering"
+          git config user.email "ceo-reliability@local.invalid"
+          git add ceo-updates/DEV309_QUALIFICATION.json
+          git commit -m "Record DEV309 Windows preflight qualification"
+          git push origin HEAD:ceo-update-channel
