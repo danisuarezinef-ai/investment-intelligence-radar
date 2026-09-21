@@ -239,15 +239,15 @@ def patch_scheduler() -> None:
     s = p.read_text(encoding="utf-8")
 
     header = s[:1200]
-    if "import pathlib\\n" not in header or "import re\\n" not in header:
-        anchor = "import asyncio\\n"
+    if "import pathlib\n" not in header or "import re\n" not in header:
+        anchor = "import asyncio\n"
         if s.count(anchor) != 1:
             raise RuntimeError(f"scheduler import anchor={s.count(anchor)}")
-        additions = "import asyncio\\n"
-        if "import pathlib\\n" not in header:
-            additions += "import pathlib\\n"
-        if "import re\\n" not in header:
-            additions += "import re\\n"
+        additions = "import asyncio\n"
+        if "import pathlib\n" not in header:
+            additions += "import pathlib\n"
+        if "import re\n" not in header:
+            additions += "import re\n"
         s = s.replace(anchor, additions, 1)
 
     old_import = "from .self_hosting_tools import ArtifactExchangeLayer, ProviderContextRecovery, WorkerSessionManager\n"
@@ -563,7 +563,7 @@ def patch_import_pathlib() -> None:
     p = ROOT / "ceo_core" / "scheduler.py"
     s = p.read_text(encoding="utf-8")
     header = s[:1200]
-    if "import pathlib\\n" not in header or "import re\\n" not in header:
+    if "import pathlib\n" not in header or "import re\n" not in header:
         raise RuntimeError("DEV309 scheduler module imports missing from header")
 
 def update_version_and_contract() -> None:
