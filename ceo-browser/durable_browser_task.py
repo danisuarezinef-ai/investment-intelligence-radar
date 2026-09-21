@@ -87,6 +87,13 @@ class DurableArtifactRunner:
                 success=False,
                 failure_reason=detail,
             )
+        if prior and prior.task_id != task_id:
+            return DurableRunResult(
+                status=prior.status,
+                success=False,
+                conversation_url=prior.conversation_url,
+                failure_reason="idempotency key already belongs to an unfinished task",
+            )
 
         record = self.ledger.load(task_id)
         if record is None:
@@ -104,7 +111,21 @@ class DurableArtifactRunner:
                 success=False,
                 failure_reason="task_id already belongs to a different objective",
             )
-        elif record.status in {"WAITING_REVIEW", "WAITING_HUMAN"}:
+        elif record.status == "RUNNING":
+            # A restart after TURN_DISPATCHING is ambiguous: the browser may have
+            # accepted the prompt even if this process never recorded the response.
+            # Never duplicate that work automatically.
+            record.status = "WAITING_REVIEW"
+            record.last_error_status = "INTERRUPTED_RUNNING_TASK"
+            record.last_error_detail = "task was interrupted while a browser turn may have been in flight"
+            self.ledger.save(record)
+            return DurableRunResult(
+                status="WAITING_REVIEW",
+                success=False,
+                conversation_url=record.conversation_url,
+                failure_reason=record.last_error_detail,
+            )
+        elif record.status in {"WAITING_REVIEW", "WAITING_HUMAN", "FAILED", "CORRUPT"}:
             return DurableRunResult(
                 status=record.status,
                 success=False,
