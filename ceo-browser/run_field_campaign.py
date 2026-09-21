@@ -377,6 +377,7 @@ def main() -> int:
     )
     recipe_path = spec.recipe_path
     provider = spec.name
+    effective_port = spec.port
 
     summary = {
         "schema_version": 2,
@@ -384,7 +385,7 @@ def main() -> int:
         "provider": provider,
         "evidence_dir": str(evidence_dir),
         "profile_dir": str(profile_dir),
-        "port": args.port,
+        "port": effective_port,
         "api_calls": 0,
         "paid_api_calls": 0,
         "session_prepared": False,
@@ -398,7 +399,7 @@ def main() -> int:
         base=base,
         profile_dir=profile_dir,
         recipe_path=recipe_path,
-        port=args.port,
+        port=effective_port,
         timeout=args.timeout,
         evidence_dir=evidence_dir,
     )
@@ -420,7 +421,7 @@ def main() -> int:
         driver_path=base / "windows_chatgpt_cdp_driver.ps1",
         recipe_path=recipe_path,
         profile_dir=profile_dir,
-        port=args.port,
+        port=effective_port,
         timeout_seconds=args.timeout,
     )
 
