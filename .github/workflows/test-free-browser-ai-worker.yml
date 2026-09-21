@@ -98,6 +98,8 @@ jobs:
           assert 'browser_control_verified' in work
           assert 'BROWSER_CONTROL_READY' in work
           assert 'No se detecto automaticamente una Gemini API key valida.' not in work
+          assert 'CEO_BROWSER_PROFILE.json' in provider
+          assert 'async def probe_session' in provider
           print("CEO_BROWSER_FIRST_SOURCE_PASS")
           '@ | Set-Content -Encoding UTF8 browser_first_source.py
           python browser_first_source.py
@@ -109,7 +111,11 @@ jobs:
           $tokens=$null
           $errors=$null
           [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\windows_chatgpt_cdp_driver.ps1"),[ref]$tokens,[ref]$errors)
-          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "PowerShell parse failed"}
+          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "PowerShell driver parse failed"}
+          $tokens2=$null
+          $errors2=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\open_chatgpt_profile.ps1"),[ref]$tokens2,[ref]$errors2)
+          if($errors2.Count -gt 0){$errors2 | ForEach-Object { Write-Host $_.Message }; throw "PowerShell login helper parse failed"}
 
       - name: Start local fake web AI
         shell: pwsh
@@ -133,6 +139,99 @@ jobs:
           if(-not $row.cdp_port){throw "CDP port not reported"}
           Write-Host "B03_BROWSER_CONTROL_PASS"
 
+      - name: B04 exclusive persistent CEO browser profile
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b04-profile"
+          $target="http://127.0.0.1:8765/?seed=1"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\open_chatgpt_profile.ps1","-ProfileDir",$profile,"-Port","9240","-TimeoutSeconds","30","-RecipePath","ceo-browser\recipes\test_harness.json","-DriverPath","ceo-browser\windows_chatgpt_cdp_driver.ps1","-TargetUrl",$target,"-CloseBrowserAfter")
+          & powershell.exe @args
+          if($LASTEXITCODE -ne 0){throw "B04 profile setup failed"}
+          $marker=Get-Content -Raw -Encoding UTF8 (Join-Path $profile "CEO_BROWSER_PROFILE.json") | ConvertFrom-Json
+          if(-not $marker.exclusive_profile){throw "B04 exclusive profile marker missing"}
+          if($marker.no_api_required -ne $true){throw "B04 no-api marker missing"}
+          if($marker.profile_dir -ne $profile){throw "B04 profile path mismatch"}
+          $session=Get-Content -Raw -Encoding UTF8 (Join-Path $profile "CEO_BROWSER_SESSION.json") | ConvertFrom-Json
+          if(-not $session.ok){throw "B04 session setup not ready"}
+          Write-Host "B04_PROFILE_CONTRACT_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B05 fresh profile reports login required instead of bypassing it
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b05-fresh"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-ProfileDir",$profile,"-Port","9241","-TimeoutSeconds","20","-SessionProbeOnly","-CloseBrowserAfter")
+          $raw=& powershell.exe @args
+          $code=$LASTEXITCODE
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if($code -eq 0){throw "fresh profile unexpectedly passed login gate"}
+          if($row.status -ne "LOGIN_REQUIRED"){throw "expected LOGIN_REQUIRED, got $($row.status)"}
+          Write-Host "B05_LOGIN_REQUIRED_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B05 manual-login completion path reaches session ready
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b05-login"
+          $target="http://127.0.0.1:8765/?seed=1"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\open_chatgpt_profile.ps1","-ProfileDir",$profile,"-Port","9242","-TimeoutSeconds","30","-RecipePath","ceo-browser\recipes\test_harness.json","-DriverPath","ceo-browser\windows_chatgpt_cdp_driver.ps1","-TargetUrl",$target,"-CloseBrowserAfter")
+          & powershell.exe @args
+          if($LASTEXITCODE -ne 0){throw "B05 login-completion path failed"}
+          $session=Get-Content -Raw -Encoding UTF8 (Join-Path $profile "CEO_BROWSER_SESSION.json") | ConvertFrom-Json
+          if($session.status -ne "SESSION_READY"){throw "B05 session not ready"}
+          if(-not $session.logged_in_evidence){throw "B05 logged-in evidence not detected in harness"}
+          Write-Host "B05_MANUAL_LOGIN_FLOW_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B06 reopen reuses the same persisted session
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b05-login"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-ProfileDir",$profile,"-Port","9243","-TimeoutSeconds","30","-SessionProbeOnly","-CloseBrowserAfter")
+          $raw=& powershell.exe @args
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if(-not $row.ok){throw "B06 persisted session not reusable"}
+          if($row.status -ne "SESSION_READY"){throw "B06 unexpected status: $($row.status)"}
+          if(-not $row.logged_in_evidence){throw "B06 persistent login evidence lost"}
+          Write-Host "B06_SESSION_REUSE_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B07 navigation uses CDP and not screen coordinates
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b07-profile"
+          $first="http://127.0.0.1:8765/?seed=1"
+          $args1=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-ProfileDir",$profile,"-Port","9244","-TimeoutSeconds","30","-ConversationUrl",$first,"-ProbeOnly")
+          $r1=& powershell.exe @args1
+          if($LASTEXITCODE -ne 0){throw "B07 initial browser launch failed: $r1"}
+          $second="http://127.0.0.1:8765/?variant=fallback"
+          $args2=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-ProfileDir",$profile,"-Port","9244","-TimeoutSeconds","30","-ConversationUrl",$second,"-ProbeOnly","-NoLaunch","-CloseBrowserAfter")
+          $r2=& powershell.exe @args2
+          Write-Host $r2
+          $row=$r2 | ConvertFrom-Json
+          if(-not $row.ok){throw "B07 navigation failed"}
+          if(-not $row.navigation_used){throw "B07 did not exercise Page.navigate"}
+          if($row.conversation_url -notlike "$second*"){throw "B07 wrong destination: $($row.conversation_url)"}
+          $driver=Get-Content -Raw -Encoding UTF8 "ceo-browser\windows_chatgpt_cdp_driver.ps1"
+          if($driver -match "SetCursorPos|mouse_event|SendKeys"){throw "B07 forbidden coordinate/keystroke navigation found"}
+          Write-Host "B07_CDP_NAVIGATION_PASS"
+          Start-Sleep -Seconds 2
+
+      - name: B08 prompt input survives missing primary selectors
+        shell: pwsh
+        run: |
+          $profile=Join-Path $env:RUNNER_TEMP "ceo-b08-profile"
+          $target="http://127.0.0.1:8765/?variant=semantic&seed=1"
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness_semantic.json","-Prompt","B08_SEMANTIC_INPUT","-ConversationUrl",$target,"-ProfileDir",$profile,"-Port","9245","-TimeoutSeconds","30","-CloseBrowserAfter")
+          $raw=& powershell.exe @args
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if(-not $row.ok){throw "B08 semantic prompt discovery failed"}
+          if($row.input_strategy -ne "semantic-fallback"){throw "B08 fallback not used: $($row.input_strategy)"}
+          if($row.response -notmatch "B08_SEMANTIC_INPUT"){throw "B08 wrong response"}
+          Write-Host "B08_SEMANTIC_PROMPT_PASS"
       - name: Drive Chrome like a browser worker first turn
         id: first
         shell: pwsh
