@@ -1,0 +1,25 @@
+{
+  "artifact": {
+    "entries": 523,
+    "name": "CEO_1.5.87-rc1-update-shell-integrity.zip",
+    "sha256": "20c41a84c55264614a0d87a43d02aa1a2455d08d8e2ea6818010ebc4795cadfa",
+    "size_bytes": 1150615
+  },
+  "autonomy_bootstrap_gates_1_6_repassed": true,
+  "base": "1.5.86-rc1-provider-session-integrity",
+  "candidate": "1.5.87-rc1-update-shell-integrity",
+  "existing_backend_app_mode": true,
+  "field_validation_pending": true,
+  "human_install_confirmation_preserved": true,
+  "operator_install_confirmation_required": true,
+  "production_ready": false,
+  "ready_to_install_self_heal": true,
+  "release_sequence": 311,
+  "security_passed": true,
+  "single_file_activator_verified": false,
+  "single_instance_shortcut": true,
+  "stage_receipt_ready_transition": true,
+  "tests_passed": true,
+  "update_single_flight": true,
+  "windows_stage_preflight_passed": false
+}

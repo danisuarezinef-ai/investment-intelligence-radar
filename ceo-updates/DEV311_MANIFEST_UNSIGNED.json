@@ -1,0 +1,21 @@
+{
+  "artifact_name": "CEO_1.5.87-rc1-update-shell-integrity.zip",
+  "channel": "stable",
+  "data_schema_version": 1,
+  "health_path": "/api/health",
+  "launcher": "ABRIR_CEO.cmd",
+  "manifest_version": 2,
+  "max_app_version": "",
+  "min_app_version": "1.5.86-rc1-provider-session-integrity",
+  "notes": "DEV311 Update Shell Integrity: ready-to-install is driven directly by the verified stage receipt and self-heals from ready_to_install telemetry; update actions are single-flight; the Windows shortcut reuses an existing healthy CEO backend and opens it in browser app mode instead of starting a second scheduler.",
+  "package_contract_version": 1,
+  "published_at": "2026-09-21T11:30:00Z",
+  "release_id": "dev311-1.5.87-rc1-update-shell-integrity",
+  "release_sequence": 311,
+  "release_status": "release",
+  "sha256": "20c41a84c55264614a0d87a43d02aa1a2455d08d8e2ea6818010ebc4795cadfa",
+  "signature_alg": "ed25519",
+  "size_bytes": 1150615,
+  "url": "https://raw.githubusercontent.com/danisuarezinef-ai/investment-intelligence-radar/ceo-update-channel/ceo-updates/CEO_1.5.87-rc1-update-shell-integrity.zip",
+  "version": "1.5.87-rc1-update-shell-integrity"
+}
