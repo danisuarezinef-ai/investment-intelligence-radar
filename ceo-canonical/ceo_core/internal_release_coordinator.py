@@ -10,6 +10,7 @@ from typing import Any
 
 from .internal_release_publisher import InternalReleasePublisher, InternalReleasePublishResult
 from .runtime import user_data_root
+from .release_firewall import ReleaseQualificationFirewall
 
 
 @dataclass(slots=True)
@@ -90,20 +91,16 @@ class InternalReleaseCoordinator:
 
     @classmethod
     def validate_qualification(cls, payload: dict[str, Any]) -> tuple[bool, list[str]]:
+        # Internal release publication targets the stable channel. Local CI success
+        # alone is therefore insufficient: the same fail-closed production firewall
+        # used by the publisher must approve the qualification.
         q = payload if isinstance(payload, dict) else {}
-        problems: list[str] = []
-        for key in cls.REQUIRED_QUALIFICATION_FLAGS:
-            if q.get(key) is not True:
-                problems.append(f"{key}=false")
-        if int(q.get("failed_tests") or 0) != 0:
-            problems.append("failed_tests>0")
-        if int(q.get("security_findings") or 0) != 0:
-            problems.append("security_findings>0")
-        # A candidate may explicitly carry local_candidate_ready as an additional
-        # aggregate gate. If present it must be true; absence remains compatible
-        # with older qualification producers that provide the four concrete gates.
+        report = ReleaseQualificationFirewall.evaluate(
+            q, channel="stable", release_status="release"
+        )
+        problems = list(report.problems)
         if "local_candidate_ready" in q and q.get("local_candidate_ready") is not True:
-            problems.append("local_candidate_ready=false")
+            problems.append("local_candidate_ready!=true")
         return not problems, problems
 
     def enqueue(self, request: InternalReleaseRequest) -> dict[str, Any]:
@@ -160,6 +157,7 @@ class InternalReleaseCoordinator:
             release_id=request["release_id"],
             notes=request.get("notes", ""),
             min_app_version=request.get("min_app_version", ""),
+            qualification=dict(request.get("qualification") or {}),
         )
         self._receipt(path, request, result)
         if result.ok or result.status in self.TERMINAL_FAILURES:
