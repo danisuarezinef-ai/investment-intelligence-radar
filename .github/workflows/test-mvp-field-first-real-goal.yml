@@ -1,0 +1,72 @@
+name: Test MVP_FIELD First Real Goal
+
+on:
+  push:
+    branches: [mvp-field-first-real-goal]
+    paths:
+      - 'ceo-updates/mvp_field/**'
+      - '.github/workflows/test-mvp-field-first-real-goal.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  happy-path-only:
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: mvp-field-first-real-goal
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile minimal field mode
+        shell: pwsh
+        run: |
+          python -m py_compile ceo-updates\mvp_field\first_real_goal_mode.py
+          if ($LASTEXITCODE -ne 0) { throw "field runner compile failed" }
+          python -m py_compile ceo-updates\mvp_field\launch_mvp_field.py
+          if ($LASTEXITCODE -ne 0) { throw "field launcher compile failed" }
+
+      - name: Run focused happy-path tests
+        shell: pwsh
+        run: |
+          Push-Location ceo-updates\mvp_field
+          python -m unittest -v test_first_real_goal_mode.py
+          if ($LASTEXITCODE -ne 0) { throw "MVP_FIELD tests failed" }
+          Pop-Location
+
+      - name: Assert frozen complexity is absent from executor
+        shell: pwsh
+        run: |
+          @'
+          from pathlib import Path
+          p=Path("ceo-updates/mvp_field/first_real_goal_mode.py")
+          s=p.read_text(encoding="utf-8")
+          forbidden=[
+              "ContinuousScheduler",
+              "MultiProviderRouter",
+              "WorkerRecoverySupervisor",
+              "RecoveryStormGuard",
+              "ContinuityManager",
+              "IntegrityEngineeringCore",
+              "InternalReleaseCoordinator",
+              "InAppUpdater",
+              "AutonomousProjectLoop",
+              "MissionSupervisor",
+          ]
+          hits=[x for x in forbidden if x in s]
+          assert not hits, hits
+          assert "for attempt in (1, 2):" in s
+          assert "max_models=1" in s
+          assert "max_attempts_per_model=1" in s
+          assert "delivery_pass" in s
+          assert len(__import__("ast").parse(s).body)>0
+          print("MVP_FIELD_COMPLEXITY_FREEZE_PASS")
+          '@ | Set-Content -Encoding UTF8 mvp_field_static.py
+          python mvp_field_static.py
+          if ($LASTEXITCODE -ne 0) { throw "complexity freeze failed" }
