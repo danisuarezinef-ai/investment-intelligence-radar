@@ -28,6 +28,21 @@ class PreparedReleaseBridge:
             if len(data)!=size or hashlib.sha256(data).hexdigest()!=sha:return {"ok":False,"status":"PREPARED_PACKAGE_MISMATCH"}
             with tempfile.TemporaryDirectory(prefix="ceo-prepared-release-") as td:
                 package=Path(td)/str(payload.get("artifact_name") or Path(urlparse(package_url).path).name); package.write_bytes(data)
-                result=self.publisher.publish(package_path=package,version=str(payload.get("version") or ""),release_sequence=int(payload.get("release_sequence") or 0),release_id=str(payload.get("release_id") or ""),notes=str(payload.get("notes") or ""),min_app_version=str(payload.get("min_app_version") or ""))
+                qualification = payload.get("qualification")
+                if not isinstance(qualification, dict):
+                    return {
+                        "ok": False,
+                        "status": "PREPARED_QUALIFICATION_MISSING",
+                        "detail": "Stable prepared releases require embedded production qualification.",
+                    }
+                result=self.publisher.publish(
+                    package_path=package,
+                    version=str(payload.get("version") or ""),
+                    release_sequence=int(payload.get("release_sequence") or 0),
+                    release_id=str(payload.get("release_id") or ""),
+                    notes=str(payload.get("notes") or ""),
+                    min_app_version=str(payload.get("min_app_version") or ""),
+                    qualification=qualification,
+                )
                 row=asdict(result); row["automatic_installation"]=False; row["operator_install_confirmation_required"]=True; return row
         except Exception as exc:return {"ok":False,"status":"PREPARED_RELEASE_FAILED","detail":f"{type(exc).__name__}: {exc}"[:800]}
