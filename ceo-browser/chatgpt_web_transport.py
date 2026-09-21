@@ -40,6 +40,8 @@ class ChatGPTWebTransport(AITransport):
         )
         local = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
         self.profile_dir = Path(profile_dir).resolve() if profile_dir else local / "CEO de IAs" / "browser-profile"
+        self.profile_marker = self.profile_dir / "CEO_BROWSER_PROFILE.json"
+        self.session_status_path = self.profile_dir / "CEO_BROWSER_SESSION.json"
         self.timeout_seconds = max(30, int(timeout_seconds))
         self.port = int(port)
         self.max_prompt_chars = max(2_000, int(max_prompt_chars))
@@ -64,7 +66,31 @@ class ChatGPTWebTransport(AITransport):
                 return str(path)
         return shutil.which("chrome.exe") or shutil.which("msedge.exe")
 
+    def ensure_profile_contract(self) -> dict:
+        self.profile_dir.mkdir(parents=True, exist_ok=True)
+        row = {}
+        if self.profile_marker.is_file():
+            try:
+                loaded = json.loads(self.profile_marker.read_text(encoding="utf-8-sig"))
+                if isinstance(loaded, dict):
+                    row = loaded
+            except Exception:
+                row = {}
+        row.setdefault("schema_version", 1)
+        row.setdefault("owner", "CEO de IAs")
+        row.setdefault("exclusive_profile", True)
+        row.setdefault("provider_surface", "chatgpt-web")
+        row.setdefault("profile_dir", str(self.profile_dir))
+        row.setdefault("no_api_required", True)
+        row["last_used_at"] = __import__("time").strftime("%Y-%m-%dT%H:%M:%S")
+        self.profile_marker.write_text(
+            json.dumps(row, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        return row
+
     def host_ready(self) -> tuple[bool, str]:
+        self.ensure_profile_contract()
         if os.name != "nt":
             return False, "browser worker requires Windows in this build"
         if not self._powershell():
@@ -125,6 +151,66 @@ class ChatGPTWebTransport(AITransport):
         row["api_required"] = False
         return row
 
+    async def probe_session(self, *, allow_manual_login: bool = False) -> dict:
+        ready, detail = self.host_ready()
+        if not ready:
+            return {"ok": False, "status": "BROWSER_UNAVAILABLE", "detail": detail}
+        powershell = self._powershell()
+        assert powershell
+        cmd = [
+            powershell,
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(self.driver),
+            "-RecipePath",
+            str(self.recipe),
+            "-ProfileDir",
+            str(self.profile_dir),
+            "-Port",
+            str(self.port),
+            "-TimeoutSeconds",
+            str(300 if allow_manual_login else 30),
+            "-SessionProbeOnly",
+        ]
+        if allow_manual_login:
+            cmd.append("-AllowManualLogin")
+        import subprocess as _subprocess
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            creationflags=getattr(_subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=(330 if allow_manual_login else 50),
+        )
+        raw = stdout.decode("utf-8", "replace").strip()
+        if not raw:
+            return {
+                "ok": False,
+                "status": "SESSION_PROBE_EMPTY",
+                "detail": stderr.decode("utf-8", "replace")[-1000:],
+            }
+        try:
+            row = json.loads(raw.splitlines()[-1])
+        except Exception:
+            return {"ok": False, "status": "SESSION_PROBE_BAD_JSON", "detail": raw[-1000:]}
+        if isinstance(row, dict):
+            row["api_required"] = False
+            row["persistent_profile"] = str(self.profile_dir)
+            try:
+                self.session_status_path.write_text(
+                    json.dumps(row, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
+            except Exception:
+                pass
+            return row
+        return {"ok": False, "status": "SESSION_PROBE_BAD_RESULT", "detail": str(row)[:1000]}
+
     async def healthcheck(self) -> ProviderHealth:
         ready, detail = self.host_ready()
         return ProviderHealth(
@@ -136,6 +222,8 @@ class ChatGPTWebTransport(AITransport):
                 "api_required": False,
                 "paid_api_required": False,
                 "persistent_profile": str(self.profile_dir),
+                "profile_marker": str(self.profile_marker),
+                "session_status": str(self.session_status_path),
                 "login_state": "not_probed",
             },
         )
