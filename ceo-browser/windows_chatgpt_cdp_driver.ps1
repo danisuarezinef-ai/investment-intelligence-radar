@@ -53,6 +53,15 @@ function Wait-DevTools([int]$port,[int]$timeoutSeconds) {
   throw "Chrome DevTools did not become available"
 }
 
+function Wait-DevToolsDown([int]$port,[int]$timeoutSeconds=20) {
+  $deadline = [DateTime]::UtcNow.AddSeconds($timeoutSeconds)
+  while([DateTime]::UtcNow -lt $deadline) {
+    if(-not (Get-DevToolsVersion $port)) { return $true }
+    Start-Sleep -Milliseconds 250
+  }
+  return $false
+}
+
 function Get-PageTarget([int]$port,[string]$wantedUrl,[int]$timeoutSeconds) {
   $deadline = [DateTime]::UtcNow.AddSeconds($timeoutSeconds)
   while([DateTime]::UtcNow -lt $deadline) {
@@ -90,30 +99,43 @@ function Get-PageTarget([int]$port,[string]$wantedUrl,[int]$timeoutSeconds) {
   throw "Requested debuggable page target not found"
 }
 
-function Close-StaleLocalTargets([int]$port,[string]$wantedUrl) {
-  # Only clean stale local/error tabs when using real ChatGPT.
-  # CI harnesses intentionally use 127.0.0.1 and must never be affected.
-  if(-not ([string]$wantedUrl).StartsWith("https://chatgpt.com/")) { return 0 }
+function Prune-UnrelatedRestoredTargets([int]$port,[string]$wantedUrl,[int]$settleSeconds=4) {
+  # The CEO browser profile is exclusive. For external web-AI providers, remove restored
+  # tabs from previous local harness runs or unrelated sites. CI localhost harnesses are
+  # deliberately excluded from this cleanup.
+  try { $wanted=[Uri]$wantedUrl } catch { return 0 }
+  if($wanted.Host -in @("127.0.0.1","localhost")) { return 0 }
+
+  $deadline=[DateTime]::UtcNow.AddSeconds([Math]::Max(1,$settleSeconds))
   $closed=0
-  try {
-    $targets = Invoke-RestMethod -Uri ("http://127.0.0.1:{0}/json" -f $port) -TimeoutSec 2
-    foreach($t in @($targets | Where-Object { $_.type -eq "page" -and $_.id })) {
-      $u=[string]$t.url
-      $stale=(
-        $u.StartsWith("http://127.0.0.1") -or
-        $u.StartsWith("https://127.0.0.1") -or
-        $u.StartsWith("http://localhost") -or
-        $u.StartsWith("https://localhost") -or
-        $u.StartsWith("chrome-error://")
-      )
-      if($stale) {
+  $stable=0
+  while([DateTime]::UtcNow -lt $deadline -and $stable -lt 3) {
+    $closedThisPass=0
+    try {
+      $targets=Invoke-RestMethod -Uri ("http://127.0.0.1:{0}/json" -f $port) -TimeoutSec 2
+      foreach($t in @($targets | Where-Object { $_.type -eq "page" -and $_.id })) {
+        $u=[string]$t.url
+        $keep=$false
         try {
-          Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:{0}/json/close/{1}" -f $port,$t.id) -TimeoutSec 2 | Out-Null
-          $closed += 1
+          $uri=[Uri]$u
+          $keep=(
+            $uri.Scheme -eq $wanted.Scheme -and
+            $uri.Host -eq $wanted.Host -and
+            $uri.Port -eq $wanted.Port
+          )
         } catch {}
+        if(-not $keep) {
+          try {
+            Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:{0}/json/close/{1}" -f $port,$t.id) -TimeoutSec 2 | Out-Null
+            $closed += 1
+            $closedThisPass += 1
+          } catch {}
+        }
       }
-    }
-  } catch {}
+    } catch {}
+    if($closedThisPass -eq 0){$stable+=1}else{$stable=0}
+    Start-Sleep -Milliseconds 300
+  }
   return $closed
 }
 
@@ -413,8 +435,12 @@ function Get-SessionState([System.Net.WebSockets.ClientWebSocket]$ws,[object[]]$
   return Eval-JS $ws $expr
 }
 
-function Close-ControlledBrowser([System.Net.WebSockets.ClientWebSocket]$ws) {
+function Close-ControlledBrowser([System.Net.WebSockets.ClientWebSocket]$ws,[int]$port) {
   try { Send-CDP $ws "Browser.close" @{} | Out-Null } catch {}
+  try { $ws.Dispose() } catch {}
+  if(-not (Wait-DevToolsDown $port 20)) {
+    throw "Controlled browser did not fully release CDP port after Browser.close"
+  }
 }
 
 $recipe = Get-Content -Raw -Encoding UTF8 $RecipePath | ConvertFrom-Json
@@ -450,7 +476,7 @@ if(-not $NoLaunch -and -not $existing) {
 
 try {
   Wait-DevTools $Port ([Math]::Min(30,$TimeoutSeconds)) | Out-Null
-  [void](Close-StaleLocalTargets $Port $targetUrl)
+  [void](Prune-UnrelatedRestoredTargets $Port $targetUrl 4)
   $target = Get-PageTarget $Port $targetUrl ([Math]::Min(30,$TimeoutSeconds))
   $ws = Connect-CDP ([string]$target.webSocketDebuggerUrl)
   try {
@@ -471,7 +497,7 @@ try {
         profile_dir=$ProfileDir
         navigation_used=[bool]$nav.navigated
       }
-      if($CloseBrowserAfter){Close-ControlledBrowser $ws}
+      if($CloseBrowserAfter){Close-ControlledBrowser $ws $Port}
       Write-JsonResult $row
       exit 0
     }
@@ -505,7 +531,7 @@ try {
             input_strategy=if($candidate){[string]$candidate.strategy}else{""}
             navigation_used=[bool]$nav.navigated
           }
-          if($CloseBrowserAfter){Close-ControlledBrowser $ws}
+          if($CloseBrowserAfter){Close-ControlledBrowser $ws $Port}
           Write-JsonResult $row
           exit 0
         }
@@ -520,7 +546,7 @@ try {
         profile_dir=$ProfileDir
         detail=if($lastState -and $lastState.state -eq "LOGIN_REQUIRED"){"Manual login is required in the persistent CEO browser profile."}else{"ChatGPT session did not become interactive before timeout."}
       }
-      if($CloseBrowserAfter){Close-ControlledBrowser $ws}
+      if($CloseBrowserAfter){Close-ControlledBrowser $ws $Port}
       Write-JsonResult $row
       exit 4
     }
@@ -757,7 +783,7 @@ try {
       navigation_used=[bool]$nav.navigated
       profile_dir=$ProfileDir
     }
-    if($CloseBrowserAfter){Close-ControlledBrowser $ws}
+    if($CloseBrowserAfter){Close-ControlledBrowser $ws $Port}
     Write-JsonResult $row
   } finally {
     if($ws) { $ws.Dispose() }
