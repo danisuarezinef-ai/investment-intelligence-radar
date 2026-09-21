@@ -392,6 +392,20 @@ function Get-ComposerText([System.Net.WebSockets.ClientWebSocket]$ws,[string]$se
   return [string](Eval-JS $ws $expr)
 }
 
+function Insert-PromptThroughChrome([System.Net.WebSockets.ClientWebSocket]$ws,[string]$value) {
+  $normalized=[regex]::Replace([string]$value,"\r\n?","\n")
+  $lines=$normalized.Split([char]10)
+  for($i=0;$i -lt $lines.Count;$i++){
+    if($lines[$i].Length -gt 0){
+      Send-CDP $ws "Input.insertText" @{text=[string]$lines[$i]} | Out-Null
+    }
+    if($i -lt ($lines.Count-1)){
+      Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Enter";code="Enter";modifiers=8;windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+      Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Enter";code="Enter";modifiers=8;windowsVirtualKeyCode=13;nativeVirtualKeyCode=13} | Out-Null
+    }
+  }
+}
+
 function Normalize-ComposerText([string]$value) {
   $s=[regex]::Replace([string]$value,"\\r\\n?","\\n")
   $s=$s.Replace([char]0x00A0,[char]0x20)
@@ -647,9 +661,9 @@ try {
     Send-CDP $ws "Input.dispatchKeyEvent" @{type="rawKeyDown";key="Backspace";code="Backspace";windowsVirtualKeyCode=8;nativeVirtualKeyCode=8} | Out-Null
     Send-CDP $ws "Input.dispatchKeyEvent" @{type="keyUp";key="Backspace";code="Backspace";windowsVirtualKeyCode=8;nativeVirtualKeyCode=8} | Out-Null
 
-    # Input.insertText is handled by Chrome as genuine text input and reaches the
-    # site's editor/framework state (unlike direct DOM assignment).
-    Send-CDP $ws "Input.insertText" @{text=[string]$Prompt} | Out-Null
+    # Type through Chrome's input pipeline. Multiline prompts use real Shift+Enter
+    # between lines so contenteditable editors keep the same logical text.
+    Insert-PromptThroughChrome $ws ([string]$Prompt)
     Start-Sleep -Milliseconds 650
 
     $actualTyped=Get-ComposerText $ws $inputSelector
@@ -664,7 +678,9 @@ try {
         typed_chars=[string]$actualTyped.Length
         expected_normalized_chars=[int]$expectedNormalized.Length
         actual_normalized_chars=[int]$actualNormalized.Length
-        detail="B09 browser-level typed prompt differed after contenteditable normalization."
+        expected_newlines=[int](([regex]::Matches($expectedNormalized,"\n")).Count)
+        actual_newlines=[int](([regex]::Matches($actualNormalized,"\n")).Count)
+        detail=("B09 browser-level typed prompt differed after normalization; expected_chars=" + $expectedNormalized.Length + ", actual_chars=" + $actualNormalized.Length + ", expected_newlines=" + ([regex]::Matches($expectedNormalized,"\n")).Count + ", actual_newlines=" + ([regex]::Matches($actualNormalized,"\n")).Count)
       }
       exit 6
     }
