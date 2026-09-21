@@ -61,9 +61,9 @@ jobs:
         shell: pwsh
         run: |
           Push-Location ceo-browser
-          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_harness_server.py
+          python -m py_compile browser_ai_worker.py programming_browser_loop.py simple_browser_task.py browser_task_state.py durable_browser_task.py sandbox_recovery.py build_b19_code_sandbox.py run_b15_b18_physical_task.py run_b20_code_gate.py finalize_browser_field.py test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py test_harness_server.py
           if ($LASTEXITCODE -ne 0) { throw "compile failed" }
-          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py
+          python -m unittest -v test_browser_ai_worker.py test_programming_browser_loop.py test_simple_browser_task.py test_browser_task_state.py
           if ($LASTEXITCODE -ne 0) { throw "unit tests failed" }
           Pop-Location
 
@@ -429,6 +429,80 @@ jobs:
           if($LASTEXITCODE -ne 0){throw "B20 bounded correction simulation failed"}
           Pop-Location
           Write-Host "B20_CODE_GATE_READY_PASS"
+
+      - name: B21-B27 durable state, idempotency and recovery policy
+        shell: pwsh
+        run: |
+          Push-Location ceo-browser
+          python -m unittest -v test_browser_task_state.py
+          if($LASTEXITCODE -ne 0){throw "B21-B27 durable-state tests failed"}
+          @'
+          from browser_task_state import BoundedRecoveryPolicy, classify_browser_failure
+          assert classify_browser_failure("PROMPT_NOT_SUBMITTED")=="SAFE_RETRY"
+          assert classify_browser_failure("RESPONSE_TIMEOUT")=="AMBIGUOUS"
+          assert classify_browser_failure("LOGIN_REQUIRED")=="HUMAN_ACTION"
+          p=BoundedRecoveryPolicy(max_retries=1)
+          assert p.decision(attempts=1,status="PROMPT_NOT_SUBMITTED")=="RETRY_ONCE"
+          assert p.decision(attempts=1,status="RESPONSE_TIMEOUT")=="WAIT_REVIEW"
+          assert p.decision(attempts=1,status="LOGIN_REQUIRED")=="WAIT_HUMAN"
+          assert p.decision(attempts=2,status="PROMPT_NOT_SUBMITTED")=="STOP"
+          print("B21_B27_DURABLE_STATE_PASS")
+          '@ | Set-Content -Encoding UTF8 b21_b27_check.py
+          python b21_b27_check.py
+          if($LASTEXITCODE -ne 0){throw "B21-B27 policy contract failed"}
+          Pop-Location
+
+      - name: B26 continuation may relaunch Chrome without losing conversation URL
+        shell: pwsh
+        run: |
+          $coding=Get-Content -Raw -Encoding UTF8 "ceo-browser\programming_browser_loop.py"
+          $provider=Get-Content -Raw -Encoding UTF8 "ceo-updates\dev313-inspect-routing\providers\chatgpt_web.py"
+          if($coding -match '"-ConversationUrl", conversation_url, "-NoLaunch"'){throw "B26 coding transport still forbids relaunch"}
+          if($provider -match '"-ConversationUrl", str\(request\.conversation_id\), "-NoLaunch"'){throw "B26 CEO transport still forbids relaunch"}
+          if($coding -notmatch '"-ConversationUrl", conversation_url'){throw "B26 coding conversation preservation missing"}
+          Write-Host "B26_RELAUNCH_CONVERSATION_PASS"
+
+      - name: B28 guarded sandbox rollback
+        shell: pwsh
+        run: |
+          Push-Location ceo-browser
+          @'
+          import tempfile
+          from pathlib import Path
+          from build_b19_code_sandbox import build_sandbox
+          from sandbox_recovery import SandboxRecovery
+          with tempfile.TemporaryDirectory() as td:
+              root=build_sandbox(Path(td)/"repo")
+              g=SandboxRecovery(root)
+              (root/"calc.py").write_text("bad\n",encoding="utf-8")
+              (root/"junk.tmp").write_text("junk",encoding="utf-8")
+              g.restore_baseline()
+              assert "return a - b" in (root/"calc.py").read_text(encoding="utf-8")
+              assert not (root/"junk.tmp").exists()
+          print("B28_SANDBOX_ROLLBACK_PASS")
+          '@ | Set-Content -Encoding UTF8 b28_check.py
+          python b28_check.py
+          if($LASTEXITCODE -ne 0){throw "B28 rollback failed"}
+          Pop-Location
+
+      - name: B29-B30 full field gate contract
+        shell: pwsh
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\run_b29_b30_full_field_gate.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object { Write-Host $_.Message }; throw "B29-B30 runner parse failed"}
+          if(-not (Test-Path "ceo-browser\EJECUTAR_B29_B30_FIELD_GATE.cmd")){throw "B29-B30 launcher missing"}
+          $contract=Get-Content -Raw -Encoding UTF8 "ceo-browser\B21_B30_CONTRACT.json" | ConvertFrom-Json
+          if($contract.B30.physical_verification -ne $false){throw "B30 must remain physical pending"}
+          if($contract.B26.max_automatic_retries -ne 1){throw "B26 retry bound changed"}
+          if($contract.B25.post_send_timeout_auto_repeat -ne $false){throw "B25 ambiguous retry boundary weakened"}
+          $finalizer=Get-Content -Raw -Encoding UTF8 "ceo-browser\finalize_browser_field.py"
+          if($finalizer -notmatch "BROWSER_FIELD_VERIFIED"){throw "B30 verified state missing"}
+          if($finalizer -notmatch "production_promotion_allowed"){throw "B30 production boundary missing"}
+          if($finalizer -notmatch "automatic_merge_allowed"){throw "B30 merge boundary missing"}
+          if($finalizer -notmatch "automatic_purchase_allowed"){throw "B30 purchase boundary missing"}
+          Write-Host "B29_B30_FIELD_GATE_READY_PASS"
 
       - name: Exercise CEO AITransport through Chrome with zero API keys
         shell: pwsh
