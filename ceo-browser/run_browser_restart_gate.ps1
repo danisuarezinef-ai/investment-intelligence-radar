@@ -62,36 +62,74 @@ function Invoke-Turn(
   return $row
 }
 
-$token1="CEO_BROWSER_RESTART_TURN_1_OK"
-$token2="CEO_BROWSER_RESTART_TURN_2_OK"
-$t1=Invoke-Turn -Prompt "Responde únicamente con $token1" -CloseAfter
-if(([string]$t1.response) -notmatch [regex]::Escape($token1)){throw "Turno 1 incorrecto"}
-$conversation=[string]$t1.conversation_url
-if(-not $conversation){throw "No se obtuvo URL de conversación"}
-Start-Sleep -Seconds 2
+$stage="START"
+try {
+  $token1="CEO_BROWSER_RESTART_TURN_1_OK"
+  $token2="CEO_BROWSER_RESTART_TURN_2_OK"
 
-$t2=Invoke-Turn -Prompt "Continúa en esta misma conversación y responde únicamente con $token2" -ConversationUrl $conversation -CloseAfter
-if(([string]$t2.response) -notmatch [regex]::Escape($token2)){throw "Turno 2 incorrecto"}
-$same=([string]$t2.conversation_url -eq $conversation)
-if(-not $same){throw "La conversación cambió tras relanzar Chrome"}
+  $stage="TURN_1"
+  $t1=Invoke-Turn -Prompt "Responde únicamente con $token1" -CloseAfter
+  if(([string]$t1.response) -notmatch [regex]::Escape($token1)){throw "Turno 1 incorrecto"}
+  $conversation=[string]$t1.conversation_url
+  if(-not $conversation){throw "No se obtuvo URL de conversación"}
+  Start-Sleep -Seconds 2
 
-$result=[ordered]@{
-  schema_version=1
-  generated_at=(Get-Date).ToString("s")
-  ok=$true
-  status="BROWSER_RESTART_SAME_CONVERSATION_PASS"
-  provider="chatgpt-web"
-  api_calls=0
-  paid_api_calls=0
-  profile_dir=$ProfileDir
-  port=$Port
-  browser_closed_between_turns=$true
-  browser_relaunched=$true
-  same_conversation=$same
-  conversation_url=[string]$t2.conversation_url
-  turn_1_response=[string]$t1.response
-  turn_2_response=[string]$t2.response
+  $stage="TURN_2_RELAUNCH"
+  $t2=Invoke-Turn -Prompt "Continúa en esta misma conversación y responde únicamente con $token2" -ConversationUrl $conversation -CloseAfter
+  if(([string]$t2.response) -notmatch [regex]::Escape($token2)){throw "Turno 2 incorrecto"}
+
+  $stage="SAME_CONVERSATION_CHECK"
+  $same=([string]$t2.conversation_url -eq $conversation)
+  if(-not $same){throw "La conversación cambió tras relanzar Chrome"}
+
+  $result=[ordered]@{
+    schema_version=2
+    generated_at=(Get-Date).ToString("s")
+    ok=$true
+    status="BROWSER_RESTART_SAME_CONVERSATION_PASS"
+    stage="COMPLETE"
+    provider="chatgpt-web"
+    api_calls=0
+    paid_api_calls=0
+    profile_dir=$ProfileDir
+    port=$Port
+    browser_closed_between_turns=$true
+    browser_relaunched=$true
+    same_conversation=$same
+    conversation_url=[string]$t2.conversation_url
+    turn_1_response=[string]$t1.response
+    turn_2_response=[string]$t2.response
+    detail=""
+  }
+  $result | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $ResultPath
+  Write-Host "[PASS] Chrome cerrado y relanzado entre turnos conservando conversación."
+  Write-Host "[EVIDENCIA] $ResultPath"
+  exit 0
 }
-$result | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $ResultPath
-Write-Host "[PASS] Chrome cerrado y relanzado entre turnos conservando conversación."
-Write-Host "[EVIDENCIA] $ResultPath"
+catch {
+  $detail=($_.Exception.Message | Out-String).Trim()
+  if(-not $detail){$detail=($_ | Out-String).Trim()}
+  $result=[ordered]@{
+    schema_version=2
+    generated_at=(Get-Date).ToString("s")
+    ok=$false
+    status="BROWSER_RESTART_RESILIENCE_DEGRADED"
+    stage=$stage
+    provider="chatgpt-web"
+    api_calls=0
+    paid_api_calls=0
+    profile_dir=$ProfileDir
+    port=$Port
+    browser_closed_between_turns=($stage -ne "START" -and $stage -ne "TURN_1")
+    browser_relaunched=($stage -eq "SAME_CONVERSATION_CHECK")
+    same_conversation=$false
+    conversation_url=""
+    detail=$detail
+  }
+  $result | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $ResultPath
+  Write-Host "[WARN] Reinicio de navegador no verificado."
+  Write-Host ("[ETAPA] " + $stage)
+  Write-Host ("[DETALLE] " + $detail)
+  Write-Host ("[EVIDENCIA] " + $ResultPath)
+  exit 5
+}
