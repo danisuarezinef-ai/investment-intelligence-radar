@@ -1,0 +1,95 @@
+{
+  "phase": "B21-B30",
+  "date": "2026-09-21",
+  "branch": "free-browser-ai-worker",
+  "objective": "Make zero-API browser work resumable, idempotent, conservative under failure, and physically field-qualifiable before any real-code candidate work.",
+  "status": {
+    "B21_persistent_task_ledger": "IMPLEMENTED_CI_PENDING",
+    "B22_idempotent_completed_task_reuse": "IMPLEMENTED_CI_PENDING",
+    "B23_turn_checkpoints": "IMPLEMENTED_CI_PENDING",
+    "B24_conservative_resume_states": "IMPLEMENTED_CI_PENDING",
+    "B25_failure_classification": "IMPLEMENTED_CI_PENDING",
+    "B26_one_safe_retry_and_browser_relaunch": "IMPLEMENTED_CI_PENDING",
+    "B27_artifact_integrity_on_resume": "IMPLEMENTED_CI_PENDING",
+    "B28_guarded_sandbox_rollback": "IMPLEMENTED_CI_PENDING",
+    "B29_full_physical_gate_sequence": "RUNNER_READY_PHYSICAL_PENDING",
+    "B30_browser_field_verified_gate": "RUNNER_READY_PHYSICAL_PENDING"
+  },
+  "B21": {
+    "storage": "one atomic JSON record per task",
+    "root_owned_by_ceo": true
+  },
+  "B22": {
+    "idempotency_key": true,
+    "reuse_only_if_completed_and_artifact_integrity_passes": true
+  },
+  "B23": {
+    "checkpoint_fields": [
+      "turn_index",
+      "conversation_url",
+      "prompt_sha256",
+      "response_sha256",
+      "status"
+    ]
+  },
+  "B24": {
+    "resumable_states": [
+      "PENDING",
+      "RUNNING",
+      "WAITING_RETRY",
+      "WAITING_HUMAN"
+    ],
+    "ambiguous_state": "WAITING_REVIEW"
+  },
+  "B25": {
+    "categories": [
+      "SAFE_RETRY",
+      "AMBIGUOUS",
+      "HUMAN_ACTION",
+      "PERMANENT"
+    ],
+    "post_send_timeout_auto_repeat": false
+  },
+  "B26": {
+    "max_automatic_retries": 1,
+    "safe_pre_send_only": true,
+    "login_captcha_2fa_auto_retry": false,
+    "continuation_can_relaunch_chrome_with_same_profile_and_url": true
+  },
+  "B27": {
+    "sha256_required": true,
+    "char_count_check": true,
+    "corruption_fails_closed": true
+  },
+  "B28": {
+    "sandbox_marker_required": "CEO_B19_SANDBOX.json",
+    "remotes_must_be_empty": true,
+    "production_must_be_false": true,
+    "restore": "git reset --hard baseline + git clean -fd"
+  },
+  "B29": {
+    "launcher": "EJECUTAR_B29_B30_FIELD_GATE.cmd",
+    "sequence": [
+      "B14 real two-turn conversation",
+      "B18 real saved artifact",
+      "B20 real sandbox coding"
+    ]
+  },
+  "B30": {
+    "output": "BROWSER_FIELD_STATE.json",
+    "verified_flag": "BROWSER_FIELD_VERIFIED",
+    "verified_only_if_all_physical_gates_pass": true,
+    "production_promotion_allowed": false,
+    "automatic_merge_allowed": false,
+    "automatic_purchase_allowed": false,
+    "physical_verification": false
+  },
+  "boundaries": {
+    "no_openai_api": true,
+    "no_paid_api": true,
+    "no_new_provider": true,
+    "no_production_release": true,
+    "no_automatic_merge": true,
+    "no_automatic_purchase": true
+  }
+}
