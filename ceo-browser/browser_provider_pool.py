@@ -60,8 +60,13 @@ class BrowserProviderRegistry:
                 seen.add(name)
         return order
 
-    def first_with_existing_session(self, preferred: Iterable[str] | None = None) -> ProviderSpec | None:
-        for spec in self.ordered(preferred):
+    def first_with_existing_session(
+        self,
+        preferred: Iterable[str] | None = None,
+        *,
+        local_root: str | Path | None = None,
+    ) -> ProviderSpec | None:
+        for spec in self.ordered(preferred, local_root=local_root):
             session = spec.profile_dir / "CEO_BROWSER_SESSION.json"
             if not session.is_file():
                 continue
