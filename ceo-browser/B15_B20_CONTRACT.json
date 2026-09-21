@@ -1,0 +1,70 @@
+{
+  "phase": "B15-B20",
+  "date": "2026-09-21",
+  "branch": "free-browser-ai-worker",
+  "objective": "Turn the verified browser conversation mechanism into one saved artifact task and one isolated coding task, with zero AI APIs.",
+  "status": {
+    "B15_structured_artifact_protocol": "IMPLEMENTED_CI_PENDING",
+    "B16_safe_atomic_artifact_persistence": "IMPLEMENTED_CI_PENDING",
+    "B17_bounded_artifact_task_runner": "IMPLEMENTED_CI_PENDING",
+    "B18_first_real_browser_artifact_gate": "RUNNER_READY_PHYSICAL_PENDING",
+    "B19_isolated_bug_sandbox": "IMPLEMENTED_CI_PENDING",
+    "B20_real_chatgpt_code_gate": "RUNNER_READY_PHYSICAL_PENDING"
+  },
+  "B15": {
+    "protocol": "<CEO_ARTIFACT>...</CEO_ARTIFACT>",
+    "done_required": true,
+    "raw_response_not_treated_as_file": true
+  },
+  "B16": {
+    "root_confined": true,
+    "path_escape_blocked": true,
+    "atomic_replace": true,
+    "sha256": true,
+    "fail_closed_on_missing_artifact": true
+  },
+  "B17": {
+    "bounded_task": true,
+    "prompt_sizer_reused": true,
+    "one_browser_turn_target": true,
+    "api_calls": 0
+  },
+  "B18": {
+    "launcher": "EJECUTAR_B15_B18.cmd",
+    "expected_artifact": "B18_PRIMER_ARTEFACTO.txt",
+    "exact_content": [
+      "CEO_BROWSER_ARTIFACT_OK",
+      "CANAL=CHATGPT_WEB",
+      "APIS=0"
+    ],
+    "evidence": "B15_B18_PHYSICAL_GATE.json",
+    "physical_verification": false
+  },
+  "B19": {
+    "sandbox_only": true,
+    "intentional_bug": "calc.add subtracts instead of adds",
+    "baseline_test_must_fail": true,
+    "production": false,
+    "real_trading": false
+  },
+  "B20": {
+    "launcher": "EJECUTAR_B20_CODE_GATE.cmd",
+    "max_browser_turns": 3,
+    "patch_protocol": "<CEO_PATCH>...</CEO_PATCH>",
+    "apply_check": "git apply --check",
+    "test_command": "python -m unittest -q",
+    "final_tests_must_pass": true,
+    "head_must_remain_baseline": true,
+    "remotes_must_be_empty": true,
+    "no_commit_push_merge": true,
+    "evidence": "B19_B20_CODE_GATE.json",
+    "physical_verification": false
+  },
+  "boundaries": {
+    "no_openai_api": true,
+    "no_paid_api": true,
+    "no_radar_changes": true,
+    "no_production_release": true,
+    "no_self_merge": true
+  }
+}
