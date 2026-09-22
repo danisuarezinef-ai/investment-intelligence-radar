@@ -1,0 +1,125 @@
+name: CEO Android M02-B Qualification
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/android/app/src/main/java/**"
+      - "ceo-android-app/android/app/src/debug/**"
+      - "ceo-android-app/android/app/src/androidTest/**"
+      - "ceo-android-app/android/app/src/main/res/**"
+      - "ceo-android-app/android/app/src/main/python/**"
+      - "ceo-android-app/android/gradlew"
+      - "ceo-android-app/android/gradlew.bat"
+      - "ceo-android-app/android/gradle/wrapper/**"
+      - "ceo-android-app/android/TOOLCHAIN.lock.json"
+      - "ceo-android-app/scripts/verify_m02b.py"
+      - ".github/workflows/ceo-android-m02b.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-m02b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout Android branch
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Prepare pinned Android SDK 36
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify APP011-APP013 source contracts
+        run: python ceo-android-app/scripts/verify_m02b.py
+
+      - name: Verify Python foundation syntax
+        shell: bash
+        run: |
+          python -m py_compile             ceo-android-app/android/app/src/main/python/ceo_android_bridge.py             ceo-android-app/android/app/src/main/python/ceo_shared/__init__.py             ceo-android-app/android/app/src/main/python/ceo_shared/runtime.py             ceo-android-app/android/app/src/main/python/ceo_shared/worker.py
+
+      - name: Verify Gradle wrapper identity
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew --version | tee /tmp/gradle-version.txt
+          grep -q "Gradle 9.4.1" /tmp/gradle-version.txt
+          echo "M02B_WRAPPER_PASS"
+
+      - name: Clean build app and instrumentation APKs
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          ./gradlew clean :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace --no-daemon
+          echo "M02B_CLEAN_BUILD_PASS"
+
+      - name: Inspect APK identity and generate receipt
+        shell: bash
+        run: |
+          APP_APK="ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk"
+          TEST_APK="ceo-android-app/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+          test -f "$APP_APK"
+          test -f "$TEST_APK"
+          AAPT="$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt"
+          test -x "$AAPT"
+          "$AAPT" dump badging "$APP_APK" > /tmp/app-badging.txt
+          grep -q "package: name='ai.ceo.android.dev.debug'" /tmp/app-badging.txt
+          grep -q "sdkVersion:'26'" /tmp/app-badging.txt
+          grep -q "targetSdkVersion:'36'" /tmp/app-badging.txt
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+
+          app=Path("ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk")
+          test=Path("ceo-android-app/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk")
+          badging=Path("/tmp/app-badging.txt").read_text(encoding="utf-8",errors="replace")
+          row={
+              "schema_version":1,
+              "status":"M02B_COMPLETE_BUILD_VERIFIED",
+              "app_apk":{
+                  "size_bytes":app.stat().st_size,
+                  "sha256":hashlib.sha256(app.read_bytes()).hexdigest(),
+                  "package":"ai.ceo.android.dev.debug",
+                  "min_sdk":26,
+                  "target_sdk":36,
+              },
+              "android_test_apk":{
+                  "size_bytes":test.stat().st_size,
+                  "sha256":hashlib.sha256(test.read_bytes()).hexdigest(),
+              },
+              "badging_excerpt":"\n".join(badging.splitlines()[:8]),
+              "physical_installation_allowed":False,
+              "production_verified":False,
+              "updater_activation_allowed":False,
+          }
+          Path("ceo-android-app/M02B_BUILD_RECEIPT.json").write_text(
+              json.dumps(row,ensure_ascii=False,indent=2,sort_keys=True)+"\n",
+              encoding="utf-8"
+          )
+          print(json.dumps(row,ensure_ascii=False))
+          print("M02B_APK_INSPECTION_PASS")
+          PY
+
+      - name: Upload M02-B diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: CEO_ANDROID_M02B_DIAGNOSTICS
+          path: |
+            ceo-android-app/M02B_SOURCE_VERIFICATION.json
+            ceo-android-app/M02B_BUILD_RECEIPT.json
+          if-no-files-found: error
+          retention-days: 7
