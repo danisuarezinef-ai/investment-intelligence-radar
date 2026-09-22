@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "jdk": "17",
+  "gradle": "9.4.1",
+  "android_gradle_plugin": "9.2.1",
+  "compile_sdk": 36,
+  "target_sdk": 36,
+  "min_sdk": 26,
+  "kotlin": "AGP-9-built-in",
+  "compose_plugin": "2.3.21",
+  "compose_bom": "2026.08.00",
+  "activity_compose": "1.13.0",
+  "core_ktx": "1.19.0",
+  "work_manager": "2.11.2",
+  "runtime_test_api_levels": [
+    35,
+    36
+  ]
+}
