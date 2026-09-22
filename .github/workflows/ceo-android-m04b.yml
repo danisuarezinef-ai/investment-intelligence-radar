@@ -1,0 +1,116 @@
+name: CEO Android M04-B Emulator Runtime
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/M04A_QUALIFICATION.json"
+      - "ceo-android-app/M04_SPLIT_PLAN.json"
+      - "ceo-android-app/scripts/verify_m04b.py"
+      - "ceo-android-app/scripts/run_m04b_emulator.sh"
+      - ".github/workflows/ceo-android-m04b.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TZ: UTC
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+
+jobs:
+  qualify-m04b:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up pinned Temurin JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17.0.20"
+
+      - name: Prepare Android build SDK
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify M04-B preconditions
+        run: python ceo-android-app/scripts/verify_m04b.py
+
+      - name: Build emulator inputs from current source
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew clean :app:assembleDebug :app:assembleDebugAndroidTest             --no-daemon --no-build-cache --rerun-tasks --stacktrace
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          test -f app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+
+      - name: Enable KVM access
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+            ls -l /dev/kvm
+          fi
+
+      - name: APP027-APP030 run CEO in Android emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          disk-size: 4096M
+          heap-size: 1024M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: |
+            chmod +x ceo-android-app/scripts/run_m04b_emulator.sh
+            bash ceo-android-app/scripts/run_m04b_emulator.sh
+
+      - name: Verify M04-B runtime receipt
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("ceo-android-app/M04B_RUNTIME_RECEIPT.json")
+          assert p.is_file()
+          r=json.loads(p.read_text())
+          assert r["status"]=="M04B_COMPLETE_EMULATOR_VERIFIED"
+          assert all(r[f"APP{n:03d}"]=="PASS" for n in range(27,31))
+          assert r["emulator"]["api"]==35
+          assert r["emulator"]["abi"]=="x86_64"
+          assert r["emulator"]["install_success"] is True
+          assert r["emulator"]["launch_cycles"]==3
+          assert r["emulator"]["force_stop_relaunch_verified"] is True
+          assert r["emulator"]["final_process_alive"] is True
+          assert r["emulator"]["fatal_exception_detected"] is False
+          assert r["emulator"]["anr_detected"] is False
+          assert r["emulator"]["instrumentation_pass"] is True
+          assert r["emulator"]["ui_title_observed_each_cycle"] is True
+          assert r["physical_phone_used"] is False
+          assert r["physical_installation_allowed"] is False
+          print("M04B_RUNTIME_RECEIPT_PASS")
+          PY
+
+      - name: Upload M04-B emulator evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: CEO_ANDROID_M04B_EMULATOR_EVIDENCE
+          path: |
+            ceo-android-app/M04B_PRECHECK.json
+            ceo-android-app/M04B_RUNTIME_RECEIPT.json
+            ceo-android-app/m04b-evidence/**
+          if-no-files-found: warn
+          retention-days: 7
