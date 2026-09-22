@@ -73,7 +73,7 @@ class M05BShellUiTest {
 
         composeRule.onNodeWithContentDescription("decision-proposal-0").performClick()
         composeRule.onNodeWithContentDescription("selected-decision").fetchSemanticsNode()
-        composeRule.onNodeWithText("Priorizar calidad").fetchSemanticsNode()
+        composeRule.onNodeWithText("Seleccionada").fetchSemanticsNode()
 
         composeRule.onNodeWithContentDescription("decision-custom-input")
             .performTextInput("Propuesta propia M05")
