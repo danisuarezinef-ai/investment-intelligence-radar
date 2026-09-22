@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-09-22",
+  "active_project": "CEO App Android",
+  "active_branch": "ceo-android-first-install",
+  "base_branch": "ceo-deep-stabilization-audit",
+  "base_sha": "7dc267807e4e89ed5aedeea0a19972186d1c1d94",
+  "objective": "Reach a pre-installation-complete Android CEO app: installable, functionally useful for complete simple tasks, persistent, and internally updateable without manual external downloads after first install.",
+  "development_root": "ceo-android-app/",
+  "reference_roots": [
+    "ceo-canonical/ceo_core/",
+    "ceo-canonical/schemas/android_dev21/",
+    "ceo-updates/CEO_DEV21_BOOTSTRAP_PATCH.zip"
+  ],
+  "reference_roots_read_only": true,
+  "frozen_projects": [
+    "CEO Windows",
+    "Radar de inversión",
+    "Thermal/Tm systematic review",
+    "Beginner Strength & Endurance book",
+    "All other non-Android work"
+  ],
+  "frozen_code_roots": [
+    "ceo-browser/",
+    "mobile/",
+    "radar_*",
+    "paper_*"
+  ],
+  "allowed_change_scope": [
+    "ceo-android-app/**",
+    ".github/workflows/ceo-android-*.yml"
+  ],
+  "installation_policy": {
+    "physical_phone_installation_blocked_until": "APP220 / M25",
+    "no_manual_apk_downloads_after_first_install": true,
+    "in_app_update_download_and_verification_required": true,
+    "android_system_install_confirmation_may_be_required": true
+  },
+  "safety_invariants": {
+    "payments": false,
+    "subscription_purchase": false,
+    "real_trading": false,
+    "arbitrary_shell": false,
+    "credential_export": false,
+    "silent_installation_without_platform_authority": false
+  }
+}
