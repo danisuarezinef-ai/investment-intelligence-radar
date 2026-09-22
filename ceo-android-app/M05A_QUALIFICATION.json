@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M05-A",
+  "tasks": [
+    "APP031",
+    "APP032",
+    "APP033",
+    "APP034"
+  ],
+  "status": "M05A_COMPLETE_EMULATOR_VERIFIED",
+  "workflow_run_id": 35732038552,
+  "verified_head": "1902d1121afe9b5df792ab16f01e8aeb6aad08bc",
+  "conclusion": "success",
+  "verification": {
+    "APP031": {
+      "status": "PASS",
+      "home_screen_observed": true,
+      "main_activity_visible": true,
+      "scrollable_shell": true
+    },
+    "APP032": {
+      "status": "PASS",
+      "goal_engine_observed": true,
+      "title_visible": true,
+      "objective_initially_collapsed": true,
+      "expand_collapse_interaction_verified": true,
+      "goal_save_interaction_verified": true
+    },
+    "APP033": {
+      "status": "PASS",
+      "general_status_observed": true,
+      "prepared_state_verified": true
+    },
+    "APP034": {
+      "status": "PASS",
+      "progress_surface_observed": true,
+      "percentage_observed": "0%",
+      "progress_engine_activation_deferred_to": "M07"
+    }
+  },
+  "emulator": {
+    "api": 35,
+    "abi": "x86_64",
+    "install_success": true,
+    "instrumentation_tests": 6,
+    "instrumentation_failures": 0,
+    "fatal_exception_detected": false
+  },
+  "app_apk": {
+    "package": "ai.ceo.android.dev.debug",
+    "size_bytes": 11567706,
+    "sha256": "397c782db59e74fb566bb79f8b5b002929e7fa04d14945f7fc0dc0565d23008d"
+  },
+  "evidence": {
+    "artifact_name": "CEO_ANDROID_M05A_SHELL_EVIDENCE",
+    "artifact_id": 10696930007,
+    "artifact_size_bytes": 826299,
+    "artifact_zip_sha256": "753645a94c74f93ec43ee456053dc7c2dc0e6ea6f11dc05be4854b604ffd47b4"
+  },
+  "scope_limits": {
+    "m05b_started": false,
+    "task_engine_active": false,
+    "updater_activation_allowed": false,
+    "physical_phone_used": false,
+    "physical_installation_allowed": false
+  },
+  "next": {
+    "block": "M05-B",
+    "task": "APP035"
+  }
+}
