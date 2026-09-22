@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-09-22",
+  "status": "RECOVERED_REFERENCE_BASELINE",
+  "branch": "ceo-android-first-install",
+  "development_root": "ceo-android-app/",
+  "most_advanced_preserved_candidate": "0.8.0-rc5-runtime-a181-a190",
+  "underlying_build_payload_manifest_candidate": "0.8.0-rc5-update-engine",
+  "version_code": 10,
+  "package_name": "ai.ceo.android.dev",
+  "manifest_file_count": 45,
+  "manifest_total_bytes": 152062,
+  "recovered_exact_source_count": 1,
+  "unrecovered_source_body_count": 44,
+  "recovered_exact_source": [
+    {
+      "path": "TOOLCHAIN.lock.json",
+      "source": "ceo-canonical/schemas/android_dev21/TOOLCHAIN.lock.json",
+      "sha256": "3f5a3fa7893ab2a080ea61565f114e94d25c2d3f3006522d2e9ddab5ceadae63"
+    }
+  ],
+  "preserved_identities": {
+    "source_fingerprint": "d0baaf9d35d04dc9606d9c77f7856277e24f6a711e9e1a79e367d61937646ce8",
+    "sbom_sha256": "b92e3cf049d39e02b68eef3ccb3d73496eb65a6c424b999c83adff913636f394",
+    "build_payload_sha256": "48fa82db04580802703b921778097a71c56460151c3b980c09976d0f6675c0a5",
+    "build_manifest_sha256": "038b22cc0bdc3e7d6fc75aea5e1e940f425ea886db9638671c59d5e197279e08",
+    "toolchain_lock_sha256": "3f5a3fa7893ab2a080ea61565f114e94d25c2d3f3006522d2e9ddab5ceadae63",
+    "clean_validation_sha256": "70363cb00cb073f51fbf716a30435f6c78bf05c0f786ecb42cf6fa1ed8f2bb6a",
+    "runtime_gate_sha256": "35f2fe46a2ebba76f1028e0ab876d25ec85fe763b277c4d380bbb9be5273c229"
+  },
+  "preserved_validation": {
+    "historical_source_tests": "194/194 PASS",
+    "clean_android_source_audit": "PASS",
+    "clean_kotlin_structure": "PASS",
+    "clean_signing_source_audit": "PASS",
+    "runtime_api35_executed": false,
+    "runtime_api36_executed": false,
+    "android_runtime_accepted": false,
+    "production_verified": false,
+    "physical_device_still_required": true
+  },
+  "preserved_architecture": {
+    "independent_ui": true,
+    "independent_packaging": true,
+    "single_public_install_package": true,
+    "manual_post_install_configuration_required": false,
+    "in_app_updates_after_first_install": true,
+    "update_requires_explicit_human_install_confirmation": true,
+    "battery_thermal_admission_required": true
+  },
+  "preserved_updater_design": [
+    "signed manifest",
+    "HTTPS channel",
+    "download inside CEO",
+    "SHA-256 and size verification",
+    "signature verification",
+    "anti-downgrade/version policy",
+    "staging and recovery",
+    "explicit human activation/install confirmation where Android requires it"
+  ],
+  "recovery_truth": {
+    "full_original_android_source_recovered": false,
+    "metadata_and_contract_recovery_complete": true,
+    "old_validation_is_not_new_source_validation": true,
+    "no_physical_installation_authorized": true,
+    "reconstruction_starts_in": "M02 / APP007"
+  }
+}
