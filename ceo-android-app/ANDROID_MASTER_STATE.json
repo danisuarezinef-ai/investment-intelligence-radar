@@ -5,10 +5,10 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M04-A",
-  "current_status": "M04A_COMPLETE_CI_VERIFIED",
-  "next_block": "M04-B",
-  "next_task": "APP027",
+  "current_block": "M05-B",
+  "current_status": "M05A_COMPLETE_EMULATOR_VERIFIED_M05B_PENDING",
+  "next_block": "M05-B",
+  "next_task": "APP035",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
   "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
@@ -120,9 +120,9 @@
   },
   "m04_split": {
     "plan": "ceo-android-app/M04_SPLIT_PLAN.json",
-    "current_focus": "M04-B",
+    "current_focus": "M04-COMPLETE",
     "m04a_status": "M04A_COMPLETE_CI_VERIFIED",
-    "m04b_status": "PENDING_SEPARATE_ATTACK",
+    "m04b_status": "M04B_COMPLETE_EMULATOR_VERIFIED",
     "historical_full_m04": {
       "plan": "ceo-android-app/M04_PLAN.json",
       "qualification": "ceo-android-app/M04_QUALIFICATION.json",
@@ -181,7 +181,7 @@
   },
   "m05_split": {
     "plan": "ceo-android-app/M05_SPLIT_PLAN.json",
-    "current_focus": "M05-A-COMPLETE",
+    "current_focus": "M05-B",
     "m05a_status": "M05A_COMPLETE_EMULATOR_VERIFIED",
     "m05a_qualification": {
       "workflow_run_id": 35732038552,
