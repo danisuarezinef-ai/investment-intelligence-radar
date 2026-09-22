@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "channel": "dev",
+  "versionCode": 11,
+  "versionName": "0.9.0-alpha1-dev",
+  "apkUrl": "https://github.com/danisuarezinef-ai/investment-intelligence-radar/releases/download/ceo-android-initial/CEO-Android-dev.apk",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "sizeBytes": 1,
+  "notes": "Canal inicial. No hay actualización superior publicada todavía.",
+  "mandatory": false
+}
