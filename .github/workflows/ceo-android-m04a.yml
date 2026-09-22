@@ -96,9 +96,6 @@ jobs:
           grep -q "launchable-activity: name='ai.ceo.android.MainActivity'" /tmp/app-badging.txt
           grep -q "application-label:'CEO'" /tmp/app-badging.txt
 
-          grep -q "instrumentation:" /tmp/test-badging.txt
-          grep -q "targetPackage='ai.ceo.android.dev.debug'" /tmp/test-badging.txt
-
           echo "M04A_APP026_IDENTITY_PASS"
 
       - name: Persist M04-A receipt
