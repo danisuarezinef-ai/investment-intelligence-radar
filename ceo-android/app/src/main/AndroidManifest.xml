@@ -8,7 +8,7 @@
         android:allowBackup="true"
         android:label="CEO de IAs"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault.DayNight.NoActionBar"
+        android:theme="@style/Theme.CEO"
         android:usesCleartextTraffic="false">
 
         <activity
