@@ -1,0 +1,67 @@
+name: CEO Android M02-A Qualification
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/android/settings.gradle.kts"
+      - "ceo-android-app/android/build.gradle.kts"
+      - "ceo-android-app/android/gradle.properties"
+      - "ceo-android-app/android/REPOSITORY_POLICY.json"
+      - "ceo-android-app/android/app/build.gradle.kts"
+      - "ceo-android-app/android/app/src/main/AndroidManifest.xml"
+      - "ceo-android-app/scripts/verify_m02a.py"
+      - ".github/workflows/ceo-android-m02a.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-m02a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Android branch
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Verify APP007-APP010 source contracts
+        run: python ceo-android-app/scripts/verify_m02a.py
+
+      - name: Prepare API 36 SDK for Gradle configuration
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Configure Gradle project only
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew projects --no-daemon
+          ./gradlew :app:tasks --no-daemon >/tmp/ceo-app-tasks.txt
+          grep -q "assembleDebug" /tmp/ceo-app-tasks.txt
+          echo "M02A_GRADLE_CONFIGURATION_PASS"
+
+      - name: Confirm no build or install claim
+        shell: bash
+        run: |
+          test ! -f ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row=json.loads(Path("ceo-android-app/M02_SPLIT_PLAN.json").read_text())
+          assert row["current_focus"]=="M02-A"
+          assert row["physical_installation_allowed"] is False
+          print("M02A_NO_BUILD_NO_INSTALL_OVERCLAIM_PASS")
+          PY
