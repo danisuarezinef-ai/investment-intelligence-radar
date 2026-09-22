@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-22",
+  "block": "M05",
+  "split": {
+    "M05-A": {
+      "tasks": [
+        "APP031",
+        "APP032",
+        "APP033",
+        "APP034"
+      ],
+      "objective": "Build and verify the main CEO mobile shell: home screen, expandable Goal Engine, general status and progress percentage.",
+      "exit_gate": "M05A_COMPLETE_EMULATOR_VERIFIED",
+      "status": "IN_PROGRESS"
+    },
+    "M05-B": {
+      "tasks": [
+        "APP035",
+        "APP036",
+        "APP037",
+        "APP038"
+      ],
+      "objective": "Add active tasks, proposals/decisions, navigation and final visual polish.",
+      "status": "PENDING_SEPARATE_ATTACK"
+    }
+  },
+  "current_focus": "M05-A",
+  "physical_installation_allowed": false
+}
