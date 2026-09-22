@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install runtime test dependencies
+        run: python -m pip install --disable-pip-version-check 'pydantic>=2,<3'
       - name: Extract exact CEO 1.5.92 candidate
         shell: bash
         run: |
