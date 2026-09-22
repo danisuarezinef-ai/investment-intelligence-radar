@@ -6,9 +6,9 @@
   "active_root": "ceo-android-app/",
   "only_active_project": true,
   "current_block": "M04-A",
-  "current_status": "M04A_IN_PROGRESS",
-  "next_block": "M04-A",
-  "next_task": "APP023",
+  "current_status": "M04A_COMPLETE_CI_VERIFIED",
+  "next_block": "M04-B",
+  "next_task": "APP027",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
   "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
@@ -43,10 +43,10 @@
     "APP020": "COMPLETE_CI_VERIFIED",
     "APP021": "COMPLETE_CI_VERIFIED",
     "APP022": "COMPLETE_CI_VERIFIED",
-    "APP023": "CI_RUNNING",
-    "APP024": "CI_RUNNING",
-    "APP025": "CI_RUNNING",
-    "APP026": "CI_RUNNING",
+    "APP023": "COMPLETE_CI_VERIFIED",
+    "APP024": "COMPLETE_CI_VERIFIED",
+    "APP025": "COMPLETE_CI_VERIFIED",
+    "APP026": "COMPLETE_CI_VERIFIED",
     "APP027": "PENDING_SEPARATE_ATTACK",
     "APP028": "PENDING_SEPARATE_ATTACK",
     "APP029": "PENDING_SEPARATE_ATTACK",
@@ -112,8 +112,8 @@
   },
   "m04_split": {
     "plan": "ceo-android-app/M04_SPLIT_PLAN.json",
-    "current_focus": "M04-A",
-    "m04a_status": "CI_RUNNING",
+    "current_focus": "M04-B",
+    "m04a_status": "M04A_COMPLETE_CI_VERIFIED",
     "m04b_status": "PENDING_SEPARATE_ATTACK",
     "historical_full_m04": {
       "plan": "ceo-android-app/M04_PLAN.json",
@@ -133,6 +133,15 @@
       "evidence_artifact_id": 10691951770,
       "physical_phone_used": false,
       "physical_installation_allowed": false
+    },
+    "m04a_qualification": {
+      "workflow_run_id": 35726177319,
+      "verified_head": "65dd04a32745f44251f14e59bb31f5fb2b467a0a",
+      "conclusion": "success",
+      "qualification_file": "ceo-android-app/M04A_QUALIFICATION.json",
+      "checkpoint_file": "ceo-android-app/M04A_MASTER_CHECKPOINT.md",
+      "app_apk_sha256": "4017c0c33b239658e8693ff4110da7b53ad705fab982af605e03987b056b8580",
+      "instrumentation_apk_sha256": "9d4f21f36684afecf4ed83e43371c590d4b10b7c9b6ab1f63edd2cb14aa5fc71"
     }
   },
   "m04_historical": {
