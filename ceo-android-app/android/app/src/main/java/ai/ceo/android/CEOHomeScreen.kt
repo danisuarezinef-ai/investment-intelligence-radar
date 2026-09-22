@@ -1,6 +1,5 @@
 package ai.ceo.android
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -140,7 +139,7 @@ private fun GoalEngineCard(
                 Text(if (expanded) "Ocultar objetivo" else "Mostrar objetivo")
             }
 
-            AnimatedVisibility(visible = expanded) {
+            if (expanded) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = objective,
