@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M02-A",
+  "tasks": [
+    "APP007",
+    "APP008",
+    "APP009",
+    "APP010"
+  ],
+  "workflow_run_id": 35716018519,
+  "conclusion": "success",
+  "status": "M02A_COMPLETE_CI_VERIFIED",
+  "verified_scope": {
+    "settings_gradle": true,
+    "root_build_gradle": true,
+    "app_module_gradle": true,
+    "android_manifest": true,
+    "gradle_project_configuration": true,
+    "app_project_detected": true,
+    "assemble_debug_task_detected": true
+  },
+  "not_claimed": {
+    "kotlin_compilation": false,
+    "apk_build": false,
+    "instrumentation_build": false,
+    "physical_installation": false,
+    "updater_activation": false,
+    "m02b_complete": false
+  },
+  "next": {
+    "block": "M02-B",
+    "task": "APP011"
+  }
+}
