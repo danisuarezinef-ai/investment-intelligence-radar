@@ -14,7 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -74,11 +74,7 @@ fun CEOAppShell(
                     currentSection = currentSection,
                     onSelect = { currentSectionName = it.name },
                 )
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(0.003f),
-                )
+                VerticalDivider(modifier = Modifier.fillMaxHeight())
                 SectionContent(
                     section = currentSection,
                     preparedTitle = preparedTitle,
