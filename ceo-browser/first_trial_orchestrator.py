@@ -163,6 +163,22 @@ def main() -> int:
     trial_dir=(evidence/"trials"/report.trial_id).resolve()
     trial_dir.mkdir(parents=True,exist_ok=False)
     canonical_state=(evidence/"BROWSER_FIELD_STATE.json").resolve()
+    # Invalidate any prior canonical PASS before this trial starts. A crash must never
+    # inherit authorization from an older field run.
+    atomic_json(canonical_state,{
+        "schema_version":2,
+        "phase":"B29-B30",
+        "trial_id":report.trial_id,
+        "BROWSER_FIELD_VERIFIED":False,
+        "browser_ai_surface":"chatgpt-web",
+        "provider_pool_enabled":True,
+        "api_calls_required":0,
+        "physical_gates":{},
+        "failures":["current trial has not completed"],
+        "production_promotion_allowed":False,
+        "automatic_merge_allowed":False,
+        "automatic_purchase_allowed":False,
+    })
     atomic_json(evidence/"CURRENT_TRIAL.json",{
         "trial_id":report.trial_id,
         "build_id":build.get("build_id",""),
@@ -217,6 +233,15 @@ def main() -> int:
 
     field_path=evidence/"BROWSER_FIELD_STATE.json"
     field=read_json(field_path) if field_path.is_file() else {}
+    if str(field.get("trial_id") or "") != report.trial_id:
+        field={
+            "trial_id":report.trial_id,
+            "BROWSER_FIELD_VERIFIED":False,
+            "api_calls_required":0,
+            "production_promotion_allowed":False,
+            "automatic_merge_allowed":False,
+            "failures":["canonical field state does not belong to current trial"],
+        }
     evidence_fingerprints={}
     for name in (
         "B09_B14_PHYSICAL_GATE.json",
@@ -265,7 +290,25 @@ def main() -> int:
         "field_verified":bool(consolidated["BROWSER_FIELD_VERIFIED"]),
     })
     atomic_json(evidence/"PRIMERA_PRUEBA_CEO_RESULTADO.json",consolidated)
-    print(json.dumps(consolidated,ensure_ascii=False))
+    print("")
+    print("==========================================================")
+    print(f" RESULTADO: {consolidated['stage']}")
+    print(f" BUILD:     {consolidated.get('build_id','')}")
+    print(f" TRIAL:     {report.trial_id}")
+    print(f" EVIDENCIA: {trial_dir}")
+    if criteria["first_autodevelopment_launch_allowed"]:
+        print(" [GO] B14 + B18 + B20 + B29/B30 verificados en este mismo intento.")
+    else:
+        campaign_path=trial_dir/"FIELD_CAMPAIGN_RESULT.json"
+        detail="campaña fallida"
+        if campaign_path.is_file():
+            try:
+                campaign=read_json(campaign_path)
+                detail=str(campaign.get("failure_reason") or campaign.get("status") or detail)
+            except Exception:
+                pass
+        print(f" [NO-GO] {detail}")
+    print("==========================================================")
     return 0 if criteria["first_autodevelopment_launch_allowed"] else 3
 
 
