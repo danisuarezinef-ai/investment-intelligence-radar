@@ -5,10 +5,10 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M04-B",
-  "current_status": "M04B_IN_PROGRESS_EMULATOR_GATE",
-  "next_block": "M04-B",
-  "next_task": "APP027",
+  "current_block": "M04",
+  "current_status": "M04_COMPLETE_AFTER_SPLIT_EMULATOR_VERIFIED",
+  "next_block": "M05",
+  "next_task": "APP031",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
   "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
@@ -47,10 +47,10 @@
     "APP024": "COMPLETE_CI_VERIFIED",
     "APP025": "COMPLETE_CI_VERIFIED",
     "APP026": "COMPLETE_CI_VERIFIED",
-    "APP027": "CI_RUNNING",
-    "APP028": "CI_RUNNING",
-    "APP029": "CI_RUNNING",
-    "APP030": "CI_RUNNING"
+    "APP027": "COMPLETE_EMULATOR_VERIFIED",
+    "APP028": "COMPLETE_EMULATOR_VERIFIED",
+    "APP029": "COMPLETE_EMULATOR_VERIFIED",
+    "APP030": "COMPLETE_EMULATOR_VERIFIED"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -112,9 +112,9 @@
   },
   "m04_split": {
     "plan": "ceo-android-app/M04_SPLIT_PLAN.json",
-    "current_focus": "M04-B",
+    "current_focus": "M04-COMPLETE",
     "m04a_status": "M04A_COMPLETE_CI_VERIFIED",
-    "m04b_status": "CI_RUNNING",
+    "m04b_status": "M04B_COMPLETE_EMULATOR_VERIFIED",
     "historical_full_m04": {
       "plan": "ceo-android-app/M04_PLAN.json",
       "qualification": "ceo-android-app/M04_QUALIFICATION.json",
@@ -143,7 +143,17 @@
       "app_apk_sha256": "4017c0c33b239658e8693ff4110da7b53ad705fab982af605e03987b056b8580",
       "instrumentation_apk_sha256": "9d4f21f36684afecf4ed83e43371c590d4b10b7c9b6ab1f63edd2cb14aa5fc71"
     },
-    "m04b_workflow_run_id": 35728379783
+    "m04b_workflow_run_id": 35728379783,
+    "m04b_qualification": {
+      "workflow_run_id": 35729119405,
+      "verified_head": "d3100cbf41f562fe2ff6fd9a4805271d2f94de64",
+      "conclusion": "success",
+      "qualification_file": "ceo-android-app/M04B_QUALIFICATION.json",
+      "checkpoint_file": "ceo-android-app/M04B_MASTER_CHECKPOINT.md",
+      "artifact_id": 10695355131
+    },
+    "combined_qualification": "ceo-android-app/M04_SPLIT_QUALIFICATION.json",
+    "overall_status": "M04_COMPLETE_AFTER_SPLIT_EMULATOR_VERIFIED"
   },
   "m04_historical": {
     "plan": "ceo-android-app/M04_PLAN.json",
