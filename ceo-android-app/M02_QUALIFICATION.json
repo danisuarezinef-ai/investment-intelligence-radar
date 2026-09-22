@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M02",
+  "status": "M02_COMPLETE_CI_VERIFIED",
+  "workflow_run_id": 35711986202,
+  "verified_head": "9289029aa7e5d16ddce5be715a2f2c654ae44a9a",
+  "conclusion": "success",
+  "project_root": "ceo-android-app/android/",
+  "source_structure": {
+    "historical_expected_paths": 45,
+    "materialized_paths": 45,
+    "gradle_wrapper_complete": true,
+    "wrapper_version": "9.4.1",
+    "compose_ui_present": true,
+    "kotlin_sources_compile": true,
+    "python_foundation_syntax_valid": true,
+    "updater_scaffolding_present": true,
+    "updater_activation_allowed": false
+  },
+  "toolchain": {
+    "jdk": "17",
+    "gradle": "9.4.1",
+    "android_gradle_plugin": "9.2.1",
+    "compile_sdk": 36,
+    "target_sdk": 36,
+    "min_sdk": 26,
+    "compose_bom": "2026.04.01",
+    "compose_core": "1.11.0",
+    "androidx_activity_compose": "1.13.0",
+    "androidx_core": "1.18.0"
+  },
+  "builds": {
+    "debug_app": "PASS",
+    "debug_android_test": "PASS",
+    "debug_apk_size": 11567487,
+    "debug_apk_sha256": "3deae30eca2f5657358c87385f335478600993c1ff53f50c97da70323a5a13c0",
+    "apk_status": "CI_ONLY_NOT_FOR_PHYSICAL_INSTALL"
+  },
+  "historical_recovery_truth": {
+    "original_45_file_source_fully_recovered": false,
+    "new_source_is_reconstruction": true,
+    "historical_hash_equivalence_claimed": false,
+    "source_of_truth_from_now": "ceo-android-app/android/"
+  },
+  "safety": {
+    "physical_installation_allowed": false,
+    "production_verified": false,
+    "internal_update_download_allowed": false,
+    "update_install_handoff_allowed": false,
+    "silent_install_allowed": false
+  },
+  "tasks": {
+    "APP007": "COMPLETE",
+    "APP008": "COMPLETE",
+    "APP009": "COMPLETE",
+    "APP010": "COMPLETE",
+    "APP011": "COMPLETE",
+    "APP012": "COMPLETE",
+    "APP013": "COMPLETE",
+    "APP014": "COMPLETE_CI_VERIFIED"
+  },
+  "next": {
+    "block": "M03",
+    "task": "APP015"
+  }
+}
