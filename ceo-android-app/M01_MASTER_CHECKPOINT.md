@@ -91,9 +91,11 @@ La evidencia histórica de `194/194 PASS` se conserva únicamente como evidencia
 
 ## APP006 — Punto único de reanudación
 
-**COMPLETE pendiente únicamente de qualification CI.**
+**COMPLETE_CI_VERIFIED.**
 
 Este archivo y `ANDROID_MASTER_STATE.json` son el único punto de reanudación.
+
+Qualification CI: **SUCCESS**, workflow `35708659200`, head verificado `0629e7cad3937d9b32398f4eed3c67ae874015de`.
 
 ### Próximo bloque
 
