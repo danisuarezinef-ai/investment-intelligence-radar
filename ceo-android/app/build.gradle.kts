@@ -3,6 +3,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val devKeystorePath = System.getenv("CEO_DEV_KEYSTORE_PATH")
+val devKeystorePassword = System.getenv("CEO_DEV_KEYSTORE_PASSWORD") ?: "ceo-dev-lab-only"
+val devKeyAlias = System.getenv("CEO_DEV_KEY_ALIAS") ?: "ceo-dev-lab"
+val devKeyPassword = System.getenv("CEO_DEV_KEY_PASSWORD") ?: devKeystorePassword
+
 android {
     namespace = "ai.ceo.android"
     compileSdk = 36
@@ -22,8 +27,23 @@ android {
         buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
     }
 
+    signingConfigs {
+        if (!devKeystorePath.isNullOrBlank()) {
+            create("devLab") {
+                storeFile = file(devKeystorePath)
+                storePassword = devKeystorePassword
+                keyAlias = devKeyAlias
+                keyPassword = devKeyPassword
+                storeType = "PKCS12"
+            }
+        }
+    }
+
     buildTypes {
         debug {
+            if (!devKeystorePath.isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("devLab")
+            }
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
             buildConfigField(
