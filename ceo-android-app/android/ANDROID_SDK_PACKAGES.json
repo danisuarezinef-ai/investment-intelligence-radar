@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "compile_sdk": 37,
+  "target_sdk": 37,
+  "build_tools": "37.0.0",
+  "emulator_api_levels": [
+    35,
+    36
+  ],
+  "required": [
+    "platform-tools",
+    "platforms;android-37",
+    "build-tools;37.0.0"
+  ]
+}
