@@ -1,8 +1,6 @@
 package ai.ceo.android
 
 import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.fetchSemanticsNode
-import androidx.compose.ui.test.fetchSemanticsNodes
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
