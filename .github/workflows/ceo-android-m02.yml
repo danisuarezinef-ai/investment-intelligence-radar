@@ -1,0 +1,91 @@
+name: CEO Android M02 Build Qualification
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/android/**"
+      - "ceo-android-app/scripts/verify_m02.py"
+      - ".github/workflows/ceo-android-m02.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-m02:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout Android branch
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install pinned Android SDK components
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0"
+
+      - name: Verify reconstructed source contract
+        run: python ceo-android-app/scripts/verify_m02.py
+
+      - name: Verify Python foundation syntax
+        shell: bash
+        run: |
+          python -m py_compile             ceo-android-app/android/app/src/main/python/ceo_android_bridge.py             ceo-android-app/android/app/src/main/python/ceo_shared/__init__.py             ceo-android-app/android/app/src/main/python/ceo_shared/runtime.py             ceo-android-app/android/app/src/main/python/ceo_shared/worker.py
+
+      - name: Verify Gradle wrapper
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew --version
+
+      - name: Compile CEO Android debug app
+        working-directory: ceo-android-app/android
+        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
+
+      - name: Compile Android instrumentation APK
+        working-directory: ceo-android-app/android
+        run: ./gradlew :app:assembleDebugAndroidTest --stacktrace --no-daemon
+
+      - name: Verify debug APK exists but remains CI-only
+        shell: bash
+        run: |
+          test -f ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk
+          test -f ceo-android-app/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          apk=Path("ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk")
+          row={
+            "schema_version":1,
+            "status":"M02_DEBUG_APK_COMPILED_CI_ONLY",
+            "apk_size":apk.stat().st_size,
+            "apk_sha256":hashlib.sha256(apk.read_bytes()).hexdigest(),
+            "physical_installation_allowed":False,
+            "production_verified":False,
+          }
+          Path("ceo-android-app/M02_BUILD_RECEIPT.json").write_text(json.dumps(row,indent=2)+"\n")
+          print(json.dumps(row))
+          PY
+
+      - name: Upload M02 diagnostic artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: CEO_ANDROID_M02_DIAGNOSTICS
+          path: |
+            ceo-android-app/M02_SOURCE_VERIFICATION.json
+            ceo-android-app/M02_BUILD_RECEIPT.json
+          if-no-files-found: error
+          retention-days: 7
