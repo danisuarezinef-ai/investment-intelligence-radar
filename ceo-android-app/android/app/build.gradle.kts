@@ -4,11 +4,11 @@ plugins {
 }
 android {
     namespace = "ai.ceo.android"
-    compileSdk = 37
+    compileSdk = 36
     defaultConfig {
         applicationId = "ai.ceo.android.dev"
         minSdk = 26
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 11
         versionName = "0.9.0-dev-m02"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
