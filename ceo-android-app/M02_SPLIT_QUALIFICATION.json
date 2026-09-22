@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M02",
+  "status": "M02_COMPLETE_AFTER_SPLIT_CI_VERIFIED",
+  "split_requested": true,
+  "halves": {
+    "M02-A": {
+      "status": "M02A_COMPLETE_CI_VERIFIED",
+      "workflow_run_id": 35716018519,
+      "tasks": [
+        "APP007",
+        "APP008",
+        "APP009",
+        "APP010"
+      ],
+      "qualification_file": "ceo-android-app/M02A_QUALIFICATION.json"
+    },
+    "M02-B": {
+      "status": "M02B_COMPLETE_CI_VERIFIED",
+      "workflow_run_id": 35717406582,
+      "tasks": [
+        "APP011",
+        "APP012",
+        "APP013",
+        "APP014"
+      ],
+      "qualification_file": "ceo-android-app/M02B_QUALIFICATION.json"
+    }
+  },
+  "tasks": {
+    "APP007": "COMPLETE_CI_VERIFIED",
+    "APP008": "COMPLETE_CI_VERIFIED",
+    "APP009": "COMPLETE_CI_VERIFIED",
+    "APP010": "COMPLETE_CI_VERIFIED",
+    "APP011": "COMPLETE_CI_VERIFIED",
+    "APP012": "COMPLETE_CI_VERIFIED",
+    "APP013": "COMPLETE_CI_VERIFIED",
+    "APP014": "COMPLETE_CI_VERIFIED"
+  },
+  "physical_installation_allowed": false,
+  "next_block": "M03",
+  "next_task": "APP015"
+}
