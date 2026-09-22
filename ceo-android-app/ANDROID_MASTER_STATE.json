@@ -6,7 +6,7 @@
   "active_root": "ceo-android-app/",
   "only_active_project": true,
   "current_block": "M01",
-  "current_status": "M01_READY_FOR_QUALIFICATION",
+  "current_status": "M01_COMPLETE_CI_VERIFIED",
   "next_block": "M02",
   "next_task": "APP007",
   "physical_installation_allowed": false,
@@ -26,7 +26,7 @@
     "APP003": "COMPLETE_NO_FULL_SOURCE_ARCHIVE_FOUND",
     "APP004": "COMPLETE",
     "APP005": "COMPLETE_REFERENCE_BASELINE_RECOVERED",
-    "APP006": "COMPLETE_PENDING_CI_QUALIFICATION"
+    "APP006": "COMPLETE_CI_VERIFIED"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -34,5 +34,11 @@
     "Thermal/Tm systematic review",
     "Beginner Strength & Endurance book",
     "all other non-Android work"
-  ]
+  ],
+  "m01_qualification": {
+    "workflow_run_id": 35708659200,
+    "verified_head": "0629e7cad3937d9b32398f4eed3c67ae874015de",
+    "conclusion": "success",
+    "qualification_file": "ceo-android-app/M01_QUALIFICATION.json"
+  }
 }
