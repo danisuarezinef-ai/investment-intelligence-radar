@@ -27,12 +27,12 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install pinned Android SDK components
+      - name: Use runner Android SDK and install pinned components
         shell: bash
         run: |
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          command -v sdkmanager
+          sdkmanager --version
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0"
 
