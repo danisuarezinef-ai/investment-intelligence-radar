@@ -346,3 +346,41 @@ Fuentes de auditoría:
 Siguiente bloque canónico:
 **W6 — auditoría de finalización real / anti-99 %.**
 
+## W6 AUDIT STATUS
+
+**W6 — finalización real / anti-99:** CLOSED — BUG FOUND, FIXED, REGRESSION GREEN
+
+Hallazgo:
+- 1.5.92 podía alcanzar cierre determinista y 100 %, pero al reabrir `migrate_invalid_legacy_pass()` podía invalidarlo por `continuity_rounds:0<3`, borrar `completed_at` y volver `goal_audit_passed=false`.
+
+Corrección:
+- revalidar el certificado determinista actual antes de aplicar migración legacy;
+- recomputar contra evidencia durable;
+- exigir coincidencia del hash guardado, persistido y recomputado;
+- si evidencia cambia o un gate deja de cumplirse, el proyecto sí se reabre.
+
+Evidencia:
+- raw 1.5.92 regression reprodujo el fallo;
+- patched regression: PASS;
+- display progress final: 100 %;
+- restart/reopen persistence: PASS;
+- evidence tamper reopens: PASS;
+- missing deliverable blocks: PASS;
+- field/endurance remains non-bypassable: PASS;
+- package contract hash refreshed: PASS;
+- Windows canonical CI W6 step: PASS;
+- B02 scope guard posterior: PASS.
+
+Archivos:
+- `W6_ANTI99_COMPLETION_AUDIT.md`
+- `apply_w6_completion_persistence.py`
+- `w6_anti99_regression.py`
+- regresión integrada en `.github/workflows/test-free-browser-ai-worker.yml`
+
+No se generó instalador.
+No se modificó el canal stable.
+Validación física del PC del usuario sigue pendiente.
+
+Siguiente bloque canónico:
+**W7 — anti-recovery-loop / productividad real**, salvo que el usuario indique otro punto.
+
