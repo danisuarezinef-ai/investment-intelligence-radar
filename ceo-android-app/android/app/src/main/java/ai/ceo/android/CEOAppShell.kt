@@ -156,14 +156,7 @@ private fun ShellHeader(
             .padding(horizontal = 18.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column {
-            Text(section.label, style = MaterialTheme.typography.titleLarge)
-            Text(
-                "CEO App",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        Text(section.label, style = MaterialTheme.typography.titleLarge)
         Text(
             if (darkThemeActive) "Tema oscuro activo" else "Tema claro activo",
             modifier = Modifier.semantics { contentDescription = "theme-mode" },
