@@ -22,7 +22,7 @@ El chat debe:
 
 1. recuperar `CEO_MASTER_CHECKPOINT_CURRENT.md`;
 2. comprobar HEAD de `free-browser-ai-worker`;
-3. revisar commits posteriores al HEAD registrado en el checkpoint;
+3. revisar commits posteriores al HEAD de implementación registrado en el checkpoint; los commits que sólo toquen `CEO_MASTER_CHECKPOINT_CURRENT.md` o `CEO_CHAT_SYNC_PROTOCOL.md` son metadatos y no cuentan como avance de implementación;
 4. leer `CURRENT_TRIAL.json`/evidencia sólo si el usuario aporta esos archivos o si están disponibles en la fuente conectada;
 5. declarar qué estado toma como canónico antes de hacer cambios importantes.
 
@@ -45,7 +45,7 @@ Si dos chats discrepan:
 
 - no elegir por fecha del chat;
 - no mezclar las dos líneas;
-- comparar ambos con repo HEAD y evidencia física;
+- comparar ambos con el último HEAD de implementación (ignorando commits sólo de sincronización) y con la evidencia física;
 - conservar sólo el estado que esté respaldado por commits/evidencias actuales.
 
 ## Frase corta para reanudar desde cualquier chat
