@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "project": "CEO App Android",
+  "branch": "ceo-android-first-install",
+  "production": false,
+  "physical_phone_installation_allowed": false,
+  "external_manual_apk_download_after_first_install": false,
+  "arbitrary_shell": false,
+  "payments": false,
+  "subscriptions": false,
+  "real_trading": false
+}
