@@ -8,6 +8,10 @@ on:
       - ".github/workflows/ceo-android-debug-apk.yml"
   workflow_dispatch:
 
+concurrency:
+  group: ceo-android-debug-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
