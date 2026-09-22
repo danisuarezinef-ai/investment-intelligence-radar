@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-22",
+  "block": "M02",
+  "split": {
+    "M02-A": {
+      "tasks": [
+        "APP007",
+        "APP008",
+        "APP009",
+        "APP010"
+      ],
+      "objective": "Materialize the Android Gradle project skeleton, root build configuration, app module, and Android manifest/package identity.",
+      "exit_gate": "M02A_COMPLETE_CI_VERIFIED"
+    },
+    "M02-B": {
+      "tasks": [
+        "APP011",
+        "APP012",
+        "APP013",
+        "APP014"
+      ],
+      "objective": "Complete Kotlin/Compose sources, resources, wrapper/toolchain execution, and clean build qualification.",
+      "status": "NOT_CLAIMED_COMPLETE"
+    }
+  },
+  "current_focus": "M02-A",
+  "physical_installation_allowed": false
+}
