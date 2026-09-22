@@ -8,48 +8,31 @@
     "APP025",
     "APP026"
   ],
-  "status": "M04A_COMPLETE_CI_VERIFIED",
   "workflow_run_id": 35726177319,
   "verified_head": "65dd04a32745f44251f14e59bb31f5fb2b467a0a",
   "conclusion": "success",
-  "verification": {
+  "status": "M04A_COMPLETE_CI_VERIFIED",
+  "checks": {
     "clean_debug_build": true,
     "app_apk_generated": true,
     "instrumentation_apk_generated": true,
-    "app_apk_structure": true,
-    "instrumentation_apk_structure": true,
-    "debug_signature_verified": true,
-    "package_identity": true,
-    "version_identity": true,
-    "sdk_identity": true,
-    "launcher_identity": true
+    "apk_structure_verified": true,
+    "apk_signatures_verified": true,
+    "package_verified": true,
+    "version_verified": true,
+    "sdk_verified": true,
+    "launcher_verified": true
   },
-  "app_apk": {
-    "package": "ai.ceo.android.dev.debug",
-    "version_code": 11,
-    "version_name": "0.9.0-dev-m02-debug",
-    "min_sdk": 26,
-    "target_sdk": 36,
-    "launcher": "ai.ceo.android.MainActivity",
-    "size_bytes": 11567487,
-    "sha256": "4017c0c33b239658e8693ff4110da7b53ad705fab982af605e03987b056b8580"
-  },
-  "instrumentation_apk": {
-    "package": "ai.ceo.android.dev.debug.test",
-    "size_bytes": 391241,
-    "sha256": "9d4f21f36684afecf4ed83e43371c590d4b10b7c9b6ab1f63edd2cb14aa5fc71"
-  },
-  "evidence": {
-    "artifact_name": "CEO_ANDROID_M04A_BUILD_INSPECTION",
-    "artifact_id": 10693169302,
-    "artifact_zip_sha256": "d4eb519bace3dae987312537a1db05ac622795ffab8d93fcb65bbe8b20b76550"
-  },
-  "scope_limits": {
+  "scope": {
     "emulator_used": false,
+    "runtime_claimed": false,
     "physical_phone_used": false,
-    "runtime_execution_claimed": false,
-    "crash_free_runtime_claimed": false,
     "physical_installation_allowed": false
+  },
+  "previous_failed_run": {
+    "workflow_run_id": 35725686712,
+    "cause": "Over-strict instrumentation APK aapt text assertion in APP026 gate; app build and APP023-APP025 had passed.",
+    "product_defect": false
   },
   "next": {
     "block": "M04-B",
