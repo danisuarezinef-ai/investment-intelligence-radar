@@ -1,0 +1,3 @@
+CEO_ANDROID_M02_GOLDEN_READONLY_FIXTURE
+physical_installation_allowed=false
+internal_updater_activation=false
