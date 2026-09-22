@@ -1,29 +1,59 @@
 {
-  "schema": 1,
-  "jdk": "17",
-  "gradle": "9.4.1",
-  "android_gradle_plugin": "9.2.1",
-  "compile_sdk": 36,
-  "target_sdk": 36,
-  "min_sdk": 26,
-  "chaquopy": "17.0.0",
-  "python_runtime": "3.13",
-  "kotlin_compose_plugin": "2.3.21",
-  "compose_bom": "2026.04.01",
-  "androidx_activity_compose": "1.13.0",
-  "androidx_core": "1.18.0",
-  "androidx_work": "2.11.2",
-  "ci_emulator_api_levels": [
-    35,
-    36
+  "schema": 2,
+  "stage": "M03",
+  "policy": "active-build-dependencies-only",
+  "jdk": {
+    "distribution": "temurin",
+    "requested_version": "17.0.20",
+    "verified_runtime_prefix": "17.0.20",
+    "verified_vendor": "Eclipse Adoptium"
+  },
+  "gradle": {
+    "version": "9.4.1",
+    "distribution": "bin",
+    "distribution_sha256": "2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb",
+    "wrapper_jar_sha256": "55243ef57851f12b070ad14f7f5bb8302daceeebc5bce5ece5fa6edb23e1145c"
+  },
+  "android": {
+    "gradle_plugin": "9.2.1",
+    "compile_sdk": 36,
+    "target_sdk": 36,
+    "min_sdk": 26,
+    "build_tools": "36.0.0",
+    "sdk_packages": [
+      "platform-tools",
+      "platforms;android-36",
+      "build-tools;36.0.0"
+    ]
+  },
+  "kotlin_compose": {
+    "plugin": "2.3.21",
+    "compose_bom": "2026.04.01",
+    "compose_core": "1.11.0",
+    "activity_compose": "1.13.0",
+    "androidx_core": "1.18.0"
+  },
+  "abi": {
+    "physical_device_primary": "arm64-v8a",
+    "ci_emulator": "x86_64",
+    "native_payload_present": false,
+    "note": "ABI filtering becomes build-enforced when native/Python runtime payload is introduced; M03 fixes target policy without breaking emulator qualification."
+  },
+  "ci": {
+    "runner": "ubuntu-24.04",
+    "checkout_action_sha": "11d5960a326750d5838078e36cf38b85af677262",
+    "setup_java_action_sha": "b6effb05e454b25005698d916606bdc6ffcbf961",
+    "upload_artifact_action_sha": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+    "timezone": "UTC",
+    "locale": "C.UTF-8",
+    "source_date_epoch": 946684800
+  },
+  "removed_from_active_lock": [
+    "chaquopy",
+    "python_runtime",
+    "androidx_work"
   ],
-  "abis": [
-    "arm64-v8a",
-    "x86_64"
-  ],
-  "build_tools": "36.0.0",
-  "m02_reconstructed_baseline": true,
   "historical_lock_reference": "ceo-canonical/schemas/android_dev21/TOOLCHAIN.lock.json",
-  "compose_core": "1.11.0",
-  "compose_compile_sdk_requirement": 36
+  "m02_lock_replaced": true,
+  "physical_installation_allowed": false
 }
