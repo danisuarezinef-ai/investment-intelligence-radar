@@ -1,13 +1,6 @@
 name: CEO Android M04-A APK Build Inspection
 
 on:
-  push:
-    branches:
-      - ceo-android-first-install
-    paths:
-      - "ceo-android-app/M04_SPLIT_PLAN.json"
-      - "ceo-android-app/scripts/verify_m04a.py"
-      - ".github/workflows/ceo-android-m04a.yml"
   workflow_dispatch:
 
 permissions:
