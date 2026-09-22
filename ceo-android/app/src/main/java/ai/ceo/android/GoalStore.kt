@@ -38,4 +38,15 @@ class GoalStore(context: Context) {
         save(next)
         return next
     }
+
+    fun advance(snapshot: GoalSnapshot): GoalSnapshot {
+        if (snapshot.objective.isBlank()) return snapshot
+        val nextProgress = (snapshot.progress + 20).coerceAtMost(100)
+        val next = snapshot.copy(
+            status = if (nextProgress >= 100) "LOCAL_FLOW_COMPLETE" else "RUNNING_LOCAL_FLOW",
+            progress = nextProgress
+        )
+        save(next)
+        return next
+    }
 }
