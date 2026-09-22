@@ -43,6 +43,13 @@ jobs:
         with:
           gradle-version: "9.4.1"
 
+      - name: Prepare persistent Android debug signer
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.android"
+          base64 -d ceo-android/dev-signing/android-debug.keystore.b64 > "$HOME/.android/debug.keystore"
+          test "$(sha256sum "$HOME/.android/debug.keystore" | awk '{print $1}')" = "4c7c7779b8889b1552d52f88dab398ca7a678e7f4230da9e55d4bf84932b2fef"
+
       - name: Build debug APK
         working-directory: ceo-android
         run: gradle :app:assembleDebug --stacktrace --no-daemon
@@ -55,6 +62,12 @@ jobs:
           cp "$APK" CEO-Android-debug.apk
           sha256sum CEO-Android-debug.apk | tee CEO-Android-debug.apk.sha256
           test "$(stat -c%s CEO-Android-debug.apk)" -gt 10000
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          "$AAPT" dump badging CEO-Android-debug.apk | tee CEO-Android-debug.apk.info.txt
+          grep -q "package: name='ai.ceo.android.dev'" CEO-Android-debug.apk.info.txt
+          "$APKSIGNER" verify --print-certs CEO-Android-debug.apk | tee -a CEO-Android-debug.apk.info.txt
+          grep -qi "53:30:4b:53:00:2c:41:88:4a:80:1b:2e:ca:b9:ca:3d:ce:38:9b:db:d5:6d:2b:cf:06:27:28:88:ab:f6:11:39" CEO-Android-debug.apk.info.txt
 
       - uses: actions/upload-artifact@v4
         with:
@@ -62,5 +75,6 @@ jobs:
           path: |
             CEO-Android-debug.apk
             CEO-Android-debug.apk.sha256
+            CEO-Android-debug.apk.info.txt
           if-no-files-found: error
           retention-days: 14
