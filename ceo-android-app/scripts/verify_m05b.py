@@ -31,7 +31,7 @@ def main() -> None:
     assert '"Sin tareas activas"' in shell
     assert '"Tarea preparada"' in shell
     assert '"Pendiente · motor M07"' in shell
-    assert '"CEO no simula progreso antes de M07."' in shell
+    assert "CEO no simula progreso antes de M07." in shell
     assert 'contentDescription = "active-tasks-screen"' in shell
     assert 'contentDescription = "prepared-task-status"' in shell
     assert 'contentDescription = "task-count"' in shell
