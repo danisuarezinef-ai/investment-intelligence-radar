@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M04",
+  "tasks": [
+    "APP023",
+    "APP024",
+    "APP025",
+    "APP026",
+    "APP027",
+    "APP028",
+    "APP029",
+    "APP030"
+  ],
+  "status": "M04_COMPLETE_EMULATOR_VERIFIED",
+  "workflow_run_id": 35721758822,
+  "verified_head": "9d344107a3dfb7805f042920f7803109d3b83ddf",
+  "conclusion": "success",
+  "build": {
+    "clean_debug_build": true,
+    "app_apk": {
+      "package": "ai.ceo.android.dev.debug",
+      "version_code": 11,
+      "version_name": "0.9.0-dev-m02-debug",
+      "min_sdk": 26,
+      "target_sdk": 36,
+      "size_bytes": 11567487,
+      "sha256": "8009420253860d5c311c4eb2bd3b7739f1495fbf1eb116a26c60ea326908e068"
+    },
+    "instrumentation_apk": {
+      "size_bytes": 391241,
+      "sha256": "a47ffa48a39de35286bc77bb448e9ec36f93cc258b6a0889d9a64f5cd32d3317"
+    }
+  },
+  "emulator": {
+    "api": 35,
+    "abi": "x86_64",
+    "install_success": true,
+    "launch_cycles": 3,
+    "force_stop_relaunch_verified": true,
+    "final_process_alive": true,
+    "ui_text_observed": [
+      "CEO App",
+      "Android · M02 foundation",
+      "Título del objetivo",
+      "Objetivo",
+      "Guardar",
+      "Estado preinstalación",
+      "Motor de tareas: reservado para M07",
+      "Segundo plano: reservado para M09",
+      "Updater interno: estructura presente, bloqueado hasta M14–M17",
+      "Instalación física: bloqueada hasta APP220"
+    ],
+    "fatal_exception_detected": false,
+    "instrumentation_tests_started": 3,
+    "instrumentation_tests_finished": 3,
+    "instrumentation_pass": true
+  },
+  "evidence": {
+    "artifact_name": "CEO_ANDROID_M04_EMULATOR_EVIDENCE",
+    "artifact_id": 10691951770,
+    "artifact_zip_sha256": "78bc58d023cdcac52a55a72d5ebd23da3a4f935e29926b3f3fa3edcd684b7c89",
+    "screenshots": 3,
+    "ui_hierarchy_captures": 3,
+    "adb_package_dump": true,
+    "logcat": true
+  },
+  "issues_closed_during_m04": [
+    "Viewport-sensitive UI probe no longer requires off-screen APP220 in accessibility tree.",
+    "androidx.test:runner:1.7.0 added so AndroidJUnitRunner exists inside instrumentation APK.",
+    "Crash detection restricted to CEO package rather than unrelated emulator processes."
+  ],
+  "safety": {
+    "physical_phone_used": false,
+    "physical_installation_allowed": false,
+    "production_verified": false,
+    "updater_activation_allowed": false
+  },
+  "next": {
+    "block": "M05",
+    "task": "APP031"
+  }
+}
