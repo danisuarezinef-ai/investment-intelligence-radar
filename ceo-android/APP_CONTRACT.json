@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "product": "CEO de IAs Android",
+  "application_id": "ai.ceo.android",
+  "debug_application_id": "ai.ceo.android.dev",
+  "first_version_name": "0.9.0-alpha1",
+  "first_version_code": 11,
+  "priorities": [
+    "installable APK",
+    "internal updater",
+    "persistent Goal Engine",
+    "runtime stability",
+    "multi-AI execution",
+    "self-development after update path is proven"
+  ],
+  "update_contract": {
+    "browser_download_required": false,
+    "in_app_download": true,
+    "https_only": true,
+    "sha256_required": true,
+    "exact_size_required": true,
+    "same_package_required": true,
+    "same_signer_required": true,
+    "silent_installation": false,
+    "android_human_install_confirmation": true
+  },
+  "release_signing": {
+    "one_time_windows_bootstrap": true,
+    "persistent_release_key": true,
+    "missing_key_blocks_only_release_signing": true
+  },
+  "forbidden": [
+    "payments_without_explicit_approval",
+    "subscriptions_without_explicit_approval",
+    "silent_install",
+    "real_trading",
+    "automatic_publication"
+  ]
+}
