@@ -11,7 +11,9 @@
         "APP010"
       ],
       "objective": "Materialize the Android Gradle project skeleton, root build configuration, app module, and Android manifest/package identity.",
-      "exit_gate": "M02A_COMPLETE_CI_VERIFIED"
+      "exit_gate": "M02A_COMPLETE_CI_VERIFIED",
+      "status": "M02A_COMPLETE_CI_VERIFIED",
+      "workflow_run_id": 35716018519
     },
     "M02-B": {
       "tasks": [
@@ -21,9 +23,13 @@
         "APP014"
       ],
       "objective": "Complete Kotlin/Compose sources, resources, wrapper/toolchain execution, and clean build qualification.",
-      "status": "NOT_CLAIMED_COMPLETE"
+      "status": "M02B_COMPLETE_CI_VERIFIED",
+      "workflow_run_id": 35717406582
     }
   },
-  "current_focus": "M02-A",
-  "physical_installation_allowed": false
+  "current_focus": "M02-COMPLETE",
+  "physical_installation_allowed": false,
+  "overall_status": "M02_COMPLETE_AFTER_SPLIT_CI_VERIFIED",
+  "next_block": "M03",
+  "next_task": "APP015"
 }
