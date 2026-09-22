@@ -124,11 +124,22 @@ PYLOG
 adb install -t -r "$TEST_APK" | tee "$EVIDENCE/install-test.txt"
 grep -q "Success" "$EVIDENCE/install-test.txt"
 adb shell am instrument -w "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner"   | tee "$EVIDENCE/instrumentation.txt"
-grep -q "INSTRUMENTATION_CODE: -1" "$EVIDENCE/instrumentation.txt"
 if grep -q "FAILURES!!!" "$EVIDENCE/instrumentation.txt"; then
   echo "Instrumentation reported failures" >&2
   exit 42
 fi
+python - "$EVIDENCE/instrumentation.txt" <<'PYINST'
+import re,sys
+from pathlib import Path
+text=Path(sys.argv[1]).read_text(encoding="utf-8",errors="replace")
+m=re.search(r"OK \((\d+) tests?\)", text)
+if not m:
+    raise SystemExit("JUnit success summary not found")
+count=int(m.group(1))
+if count < 3:
+    raise SystemExit(f"Expected at least 3 instrumentation tests, got {count}")
+print(f"M04B_INSTRUMENTATION_PASS tests={count}")
+PYINST
 
 # APP030 — persist runtime receipt.
 cd "$ROOT"
@@ -151,8 +162,7 @@ m=re.search(r"OK \((\d+) tests?\)", instrumentation)
 if m:
     tests=int(m.group(1))
 else:
-    # Android instrumentation output may omit JUnit's OK summary. The -1 code is
-    # already enforced by the shell gate; preserve unknown count without guessing.
+    # Shell gate already requires the JUnit success summary; this branch is defensive.
     tests=None
 
 ui_observed=[]
