@@ -1,18 +1,7 @@
 name: CEO Android M03 Reproducible Toolchain
 
 on:
-  push:
-    branches:
-      - ceo-android-first-install
-    paths:
-      - "ceo-android-app/android/**"
-      - "ceo-android-app/M03_PLAN.json"
-      - "ceo-android-app/scripts/verify_m03.py"
-      - ".github/workflows/ceo-android-m03.yml"
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 env:
   TZ: UTC
