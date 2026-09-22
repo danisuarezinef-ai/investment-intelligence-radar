@@ -6,5 +6,9 @@
   "android_gradle_plugin": "9.2.1",
   "kotlin_compose_plugin": "2.3.21",
   "source_of_truth": "TOOLCHAIN.lock.json",
-  "physical_installation_allowed": false
+  "physical_installation_allowed": false,
+  "compile_sdk": 36,
+  "target_sdk": 36,
+  "build_tools": "36.0.0",
+  "historical_api37_not_available_on_runner": true
 }
