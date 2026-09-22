@@ -1,0 +1,54 @@
+name: CEO Android M01 Recovery Qualification
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/**"
+      - ".github/workflows/ceo-android-m01.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-m01:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Android branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify M01 recovery truth
+        run: python ceo-android-app/scripts/verify_m01.py
+
+      - name: Verify Android-only scope marker
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          f=json.loads(Path("ceo-android-app/M01_PROJECT_FREEZE.json").read_text())
+          assert f["active_project"]=="CEO App Android"
+          assert f["active_branch"]=="ceo-android-first-install"
+          assert f["reference_roots_read_only"] is True
+          assert f["installation_policy"]["physical_phone_installation_blocked_until"]=="APP220 / M25"
+          print("M01_ANDROID_ONLY_SCOPE_PASS")
+          PY
+
+      - name: Verify no physical-install overclaim
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path("ceo-android-app/ANDROID_MASTER_STATE.json").read_text())
+          assert s["physical_installation_allowed"] is False
+          assert s["installation_gate"]=="APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true"
+          print("M01_NO_INSTALL_OVERCLAIM_PASS")
+          PY
