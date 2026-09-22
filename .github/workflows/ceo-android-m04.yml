@@ -1,0 +1,115 @@
+name: CEO Android M04 Emulator Runtime
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/android/**"
+      - "ceo-android-app/M04_PLAN.json"
+      - "ceo-android-app/scripts/verify_m04.py"
+      - "ceo-android-app/scripts/run_m04_emulator.sh"
+      - ".github/workflows/ceo-android-m04.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TZ: UTC
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+
+jobs:
+  qualify-m04:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up pinned Temurin JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17.0.20"
+
+      - name: Prepare Android SDK 36 for build
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify M04 preconditions
+        run: python ceo-android-app/scripts/verify_m04.py
+
+      - name: Clean-build laboratory APKs
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew clean :app:assembleDebug :app:assembleDebugAndroidTest             --no-daemon --no-build-cache --rerun-tasks --stacktrace
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          test -f app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          echo "M04_CLEAN_DEBUG_BUILD_PASS"
+
+      - name: Enable KVM access
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+            ls -l /dev/kvm
+          else
+            echo "/dev/kvm not present before emulator action; runner action may use software acceleration."
+          fi
+
+      - name: Run CEO in Android emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          disk-size: 4096M
+          heap-size: 1024M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: |
+            chmod +x ceo-android-app/scripts/run_m04_emulator.sh
+            bash ceo-android-app/scripts/run_m04_emulator.sh
+
+      - name: Verify runtime receipt
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("ceo-android-app/M04_RUNTIME_RECEIPT.json")
+          assert p.is_file()
+          r=json.loads(p.read_text())
+          assert r["status"]=="M04_EMULATOR_RUNTIME_PASS"
+          assert all(r[f"APP{n:03d}"]=="PASS" for n in range(23,31))
+          assert r["emulator"]["api"]==35
+          assert r["emulator"]["abi"]=="x86_64"
+          assert r["emulator"]["install_success"] is True
+          assert r["emulator"]["launch_cycles"]==3
+          assert r["emulator"]["force_stop_relaunch_verified"] is True
+          assert r["emulator"]["fatal_exception_detected"] is False
+          assert r["emulator"]["instrumentation_pass"] is True
+          assert r["physical_phone_used"] is False
+          assert r["physical_installation_allowed"] is False
+          print("M04_RUNTIME_RECEIPT_PASS")
+          PY
+
+      - name: Upload M04 evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: CEO_ANDROID_M04_EMULATOR_EVIDENCE
+          path: |
+            ceo-android-app/M04_PRECHECK.json
+            ceo-android-app/M04_RUNTIME_RECEIPT.json
+            ceo-android-app/m04-evidence/**
+          if-no-files-found: error
+          retention-days: 7
