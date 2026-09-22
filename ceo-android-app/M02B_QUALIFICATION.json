@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M02-B",
+  "tasks": [
+    "APP011",
+    "APP012",
+    "APP013",
+    "APP014"
+  ],
+  "workflow_run_id": 35717406582,
+  "verified_head": "10e08bfc4b50e6614e316b385074c50208df5007",
+  "conclusion": "success",
+  "status": "M02B_COMPLETE_CI_VERIFIED",
+  "verification": {
+    "source_contract": "PASS",
+    "kotlin_main_files": 21,
+    "kotlin_debug_files": 3,
+    "android_test_files": 2,
+    "resources_parseable": true,
+    "python_foundation_syntax": "PASS",
+    "gradle_wrapper": "PASS",
+    "clean_build": "PASS",
+    "app_debug_apk": "PASS",
+    "instrumentation_apk": "PASS",
+    "apk_badging_inspection": "PASS"
+  },
+  "toolchain": {
+    "jdk": "17",
+    "gradle": "9.4.1",
+    "android_gradle_plugin": "9.2.1",
+    "compile_sdk": 36,
+    "target_sdk": 36,
+    "min_sdk": 26,
+    "build_tools": "36.0.0",
+    "compose_bom": "2026.04.01"
+  },
+  "build": {
+    "app_apk": {
+      "package": "ai.ceo.android.dev.debug",
+      "version_code": 11,
+      "version_name": "0.9.0-dev-m02-debug",
+      "size_bytes": 11567487,
+      "sha256": "c30eb3f5cd3e1600961fd53ba7cf60d8bbae09a61e964fa7fcd4070320075307"
+    },
+    "android_test_apk": {
+      "size_bytes": 287633,
+      "sha256": "bd75d1c6e914efffbc79abe55f89fcf21fade47ece9a2f7a28076b2f6440257f"
+    },
+    "artifact_id": 10689706880,
+    "artifact_name": "CEO_ANDROID_M02B_DIAGNOSTICS"
+  },
+  "safety": {
+    "physical_installation_allowed": false,
+    "production_verified": false,
+    "updater_activation_allowed": false,
+    "internal_update_download_allowed": false,
+    "silent_install_allowed": false
+  },
+  "reproducibility_note": "The APK hash differs from an earlier successful M02 debug build. M02 proves clean buildability, not bit-for-bit reproducibility; reproducibility is intentionally closed in M03.",
+  "next": {
+    "block": "M03",
+    "task": "APP015"
+  }
+}
