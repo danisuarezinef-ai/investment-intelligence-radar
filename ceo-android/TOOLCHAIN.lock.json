@@ -8,12 +8,13 @@
   "min_sdk": 26,
   "kotlin": "AGP-9-built-in",
   "compose_plugin": "2.3.21",
-  "compose_bom": "2026.08.00",
   "activity_compose": "1.13.0",
   "core_ktx": "1.19.0",
   "work_manager": "2.11.2",
   "runtime_test_api_levels": [
     35,
     36
-  ]
+  ],
+  "compose_ui": "1.11.4",
+  "material3": "1.4.0"
 }
