@@ -5,10 +5,10 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M02-A",
-  "current_status": "M02A_COMPLETE_CI_VERIFIED",
-  "next_block": "M02-B",
-  "next_task": "APP011",
+  "current_block": "M02",
+  "current_status": "M02_COMPLETE_AFTER_SPLIT_CI_VERIFIED",
+  "next_block": "M03",
+  "next_task": "APP015",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
   "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
@@ -31,10 +31,10 @@
     "APP008": "COMPLETE_CI_VERIFIED",
     "APP009": "COMPLETE_CI_VERIFIED",
     "APP010": "COMPLETE_CI_VERIFIED",
-    "APP011": "NOT_CLAIMED_COMPLETE",
-    "APP012": "NOT_CLAIMED_COMPLETE",
-    "APP013": "NOT_CLAIMED_COMPLETE",
-    "APP014": "NOT_CLAIMED_COMPLETE"
+    "APP011": "COMPLETE_CI_VERIFIED",
+    "APP012": "COMPLETE_CI_VERIFIED",
+    "APP013": "COMPLETE_CI_VERIFIED",
+    "APP014": "COMPLETE_CI_VERIFIED"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -60,13 +60,24 @@
   },
   "m02_split": {
     "plan": "ceo-android-app/M02_SPLIT_PLAN.json",
-    "current_completed_half": "M02-A",
+    "current_completed_half": "M02-B",
     "m02a_qualification": {
       "workflow_run_id": 35716018519,
       "conclusion": "success",
       "qualification_file": "ceo-android-app/M02A_QUALIFICATION.json",
       "checkpoint_file": "ceo-android-app/M02A_MASTER_CHECKPOINT.md"
     },
-    "m02b_status": "PENDING_SEPARATE_ATTACK"
+    "m02b_status": "M02B_COMPLETE_CI_VERIFIED",
+    "m02b_qualification": {
+      "workflow_run_id": 35717406582,
+      "verified_head": "10e08bfc4b50e6614e316b385074c50208df5007",
+      "conclusion": "success",
+      "qualification_file": "ceo-android-app/M02B_QUALIFICATION.json",
+      "checkpoint_file": "ceo-android-app/M02B_MASTER_CHECKPOINT.md",
+      "app_apk_sha256": "c30eb3f5cd3e1600961fd53ba7cf60d8bbae09a61e964fa7fcd4070320075307",
+      "android_test_apk_sha256": "bd75d1c6e914efffbc79abe55f89fcf21fade47ece9a2f7a28076b2f6440257f"
+    },
+    "combined_qualification": "ceo-android-app/M02_SPLIT_QUALIFICATION.json",
+    "overall_status": "M02_COMPLETE_AFTER_SPLIT_CI_VERIFIED"
   }
 }
