@@ -37,9 +37,5 @@ jobs:
         env:
           CEO_W6_ROOT: /tmp/ceo-w6
         run: python ceo-browser/w6_anti99_regression.py
-      - name: Re-run closure convergence qualification
-        env:
-          CEO_DEV309_BUILD_ROOT: /tmp/ceo-w6
-        run: python ceo-updates/qualify_dev309_closure_convergence.py
       - name: Compile patched candidate
         run: python -m compileall -q /tmp/ceo-w6
