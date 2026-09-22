@@ -12,7 +12,9 @@
       ],
       "objective": "Produce laboratory debug APKs from a clean build and verify APK structure plus package/version/SDK/launcher identity without installing them.",
       "exit_gate": "M04A_COMPLETE_CI_VERIFIED",
-      "status": "IN_PROGRESS"
+      "status": "M04A_COMPLETE_CI_VERIFIED",
+      "workflow_run_id": 35726177319,
+      "qualification_file": "ceo-android-app/M04A_QUALIFICATION.json"
     },
     "M04-B": {
       "tasks": [
@@ -31,6 +33,7 @@
     "qualification_file": "ceo-android-app/M04_QUALIFICATION.json",
     "note": "User requested M04 be split after this prior full run. Project-state completion now requires independent M04-A and M04-B gates."
   },
-  "current_focus": "M04-A",
-  "physical_installation_allowed": false
+  "current_focus": "M04-B",
+  "physical_installation_allowed": false,
+  "next_task": "APP027"
 }
