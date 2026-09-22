@@ -10,5 +10,7 @@
   "compile_sdk": 36,
   "target_sdk": 36,
   "build_tools": "36.0.0",
-  "historical_api37_not_available_on_runner": true
+  "historical_api37_not_available_on_runner": true,
+  "compose_bom": "2026.04.01",
+  "compose_reason": "Compose 1.12 / BOM 2026.08 requires compileSdk 37, unavailable in runner SDK; M02 uses stable Compose 1.11 baseline."
 }
