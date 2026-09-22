@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-22",
+  "project": "CEO App Android",
+  "active_branch": "ceo-android-first-install",
+  "active_root": "ceo-android-app/",
+  "only_active_project": true,
+  "current_block": "M01",
+  "current_status": "M01_READY_FOR_QUALIFICATION",
+  "next_block": "M02",
+  "next_task": "APP007",
+  "physical_installation_allowed": false,
+  "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
+  "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
+  "source_truth": {
+    "expected_android_files": 45,
+    "exact_source_bodies_recovered": 1,
+    "source_bodies_to_reconstruct": 44,
+    "source_manifest": "ceo-canonical/schemas/android_dev21/BUILD_PAYLOAD_MANIFEST.json",
+    "recovery_matrix": "ceo-android-app/M01_RECOVERY_MATRIX.json",
+    "recovered_baseline": "ceo-android-app/M01_RECOVERED_BASELINE.json"
+  },
+  "block_status": {
+    "APP001": "COMPLETE",
+    "APP002": "COMPLETE",
+    "APP003": "COMPLETE_NO_FULL_SOURCE_ARCHIVE_FOUND",
+    "APP004": "COMPLETE",
+    "APP005": "COMPLETE_REFERENCE_BASELINE_RECOVERED",
+    "APP006": "COMPLETE_PENDING_CI_QUALIFICATION"
+  },
+  "frozen_projects": [
+    "CEO Windows",
+    "Radar de inversión",
+    "Thermal/Tm systematic review",
+    "Beginner Strength & Endurance book",
+    "all other non-Android work"
+  ]
+}
