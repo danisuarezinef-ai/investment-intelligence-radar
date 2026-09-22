@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import pathlib
@@ -107,6 +108,15 @@ def main() -> int:
         failures.append("completed_at_lost_on_reopen")
     if restored.metadata.get("goal_audit_passed") is not True:
         failures.append("goal_audit_passed_lost_on_reopen")
+
+    contract_path = ROOT / "CEO_UPDATE_PACKAGE.json"
+    if contract_path.is_file():
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        expected = str((contract.get("file_hashes") or {}).get("ceo_core/goal_completion_gate.py") or "")
+        actual = hashlib.sha256((ROOT / "ceo_core" / "goal_completion_gate.py").read_bytes()).hexdigest()
+        print("W6_PACKAGE_CONTRACT_HASH", json.dumps({"expected": expected, "actual": actual}, sort_keys=True))
+        if expected and expected != actual:
+            failures.append("package_contract_hash_not_updated")
 
     # A changed evidence payload must NOT inherit the old certificate.
     tampered = ProjectState.model_validate_json(payload)
