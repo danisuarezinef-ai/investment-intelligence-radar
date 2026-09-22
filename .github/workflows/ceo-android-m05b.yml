@@ -1,0 +1,116 @@
+name: CEO Android M05-B Tasks Decisions Navigation
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/android/app/src/main/java/ai/ceo/android/CEOAppShell.kt"
+      - "ceo-android-app/android/app/src/main/java/ai/ceo/android/CEOAppTheme.kt"
+      - "ceo-android-app/android/app/src/main/java/ai/ceo/android/MainActivity.kt"
+      - "ceo-android-app/android/app/src/androidTest/java/ai/ceo/android/M05BShellUiTest.kt"
+      - "ceo-android-app/scripts/verify_m05b.py"
+      - "ceo-android-app/scripts/run_m05b_emulator.sh"
+      - ".github/workflows/ceo-android-m05b.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TZ: UTC
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+
+jobs:
+  qualify-m05b:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up pinned Temurin JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17.0.20"
+
+      - name: Prepare Android build SDK
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify M05-B source contract
+        run: python ceo-android-app/scripts/verify_m05b.py
+
+      - name: Build M05-B app and tests
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew clean :app:assembleDebug :app:assembleDebugAndroidTest             --no-daemon --no-build-cache --rerun-tasks --stacktrace
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          test -f app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+
+      - name: Enable KVM access
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+          fi
+
+      - name: Exercise complete M05 shell in emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          disk-size: 4096M
+          heap-size: 1024M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: |
+            chmod +x ceo-android-app/scripts/run_m05b_emulator.sh
+            bash ceo-android-app/scripts/run_m05b_emulator.sh
+
+      - name: Verify M05-B runtime receipt
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("ceo-android-app/M05B_RUNTIME_RECEIPT.json")
+          assert p.is_file()
+          r=json.loads(p.read_text())
+          assert r["status"]=="M05B_COMPLETE_EMULATOR_VERIFIED"
+          assert all(r[f"APP{n:03d}"]=="PASS" for n in range(35,39))
+          assert r["emulator"]["install_success"] is True
+          assert r["emulator"]["navigation_labels_observed"] is True
+          assert r["emulator"]["light_theme_observed"] is True
+          assert r["emulator"]["dark_theme_observed"] is True
+          assert r["emulator"]["responsive_landscape_verified_by_compose_test"] is True
+          assert r["emulator"]["instrumentation_build_successful"] is True
+          assert r["emulator"]["instrumentation_failures"]==0
+          assert r["emulator"]["fatal_exception_detected"] is False
+          assert r["task_engine_active"] is False
+          assert r["physical_phone_used"] is False
+          assert r["physical_installation_allowed"] is False
+          print("M05B_RUNTIME_RECEIPT_PASS")
+          PY
+
+      - name: Upload M05-B evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: CEO_ANDROID_M05B_SHELL_EVIDENCE
+          path: |
+            ceo-android-app/M05B_SOURCE_VERIFICATION.json
+            ceo-android-app/M05B_RUNTIME_RECEIPT.json
+            ceo-android-app/m05b-evidence/**
+          if-no-files-found: warn
+          retention-days: 7
