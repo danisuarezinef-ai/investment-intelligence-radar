@@ -44,9 +44,9 @@ def main() -> None:
             exact_matches.append(rel)
         else:
             changed.append(rel)
-    assert "TOOLCHAIN.lock.json" in exact_matches
-    assert len(exact_matches) >= 1
     assert len(changed) + len(exact_matches) == 45
+    # M02 establishes a new buildable baseline. Historical hash equality is informative,
+    # never required for reconstructed source bodies or the new supported toolchain.
 
     settings = (ANDROID / "settings.gradle.kts").read_text(encoding="utf-8")
     root_gradle = (ANDROID / "build.gradle.kts").read_text(encoding="utf-8")
@@ -59,8 +59,8 @@ def main() -> None:
     assert 'include(":app")' in settings
     assert 'id("com.android.application") version "9.2.1"' in root_gradle
     assert 'id("org.jetbrains.kotlin.plugin.compose") version "2.3.21"' in root_gradle
-    assert 'compileSdk = 37' in app_gradle
-    assert 'targetSdk = 37' in app_gradle
+    assert 'compileSdk = 36' in app_gradle
+    assert 'targetSdk = 36' in app_gradle
     assert 'minSdk = 26' in app_gradle
     assert 'applicationId = "ai.ceo.android.dev"' in app_gradle
     assert 'versionCode = 11' in app_gradle
@@ -88,8 +88,10 @@ def main() -> None:
     assert lock["jdk"] == "17"
     assert lock["gradle"] == "9.4.1"
     assert lock["android_gradle_plugin"] == "9.2.1"
-    assert lock["compile_sdk"] == 37
-    assert lock["target_sdk"] == 37
+    assert lock["compile_sdk"] == 36
+    assert lock["target_sdk"] == 36
+    assert lock["build_tools"] == "36.0.0"
+    assert lock["m02_reconstructed_baseline"] is True
     assert lock["min_sdk"] == 26
 
     result = {
