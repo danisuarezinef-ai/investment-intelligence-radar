@@ -1,0 +1,59 @@
+name: CEO Android Debug APK
+
+on:
+  push:
+    branches: [ceo-android-app-v1]
+    paths:
+      - "ceo-android/**"
+      - ".github/workflows/ceo-android-debug-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 37
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.4.1"
+
+      - name: Build debug APK
+        working-directory: ceo-android
+        run: gradle :app:assembleDebug --stacktrace --no-daemon
+
+      - name: Inspect APK
+        shell: bash
+        run: |
+          APK="ceo-android/app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          cp "$APK" CEO-Android-debug.apk
+          sha256sum CEO-Android-debug.apk | tee CEO-Android-debug.apk.sha256
+          test "$(stat -c%s CEO-Android-debug.apk)" -gt 10000
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CEO-Android-debug
+          path: |
+            CEO-Android-debug.apk
+            CEO-Android-debug.apk.sha256
+          if-no-files-found: error
+          retention-days: 14
