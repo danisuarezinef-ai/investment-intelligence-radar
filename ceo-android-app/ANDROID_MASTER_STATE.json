@@ -5,10 +5,10 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M03",
-  "current_status": "M03_COMPLETE_REPRODUCIBLE_CI_VERIFIED",
-  "next_block": "M04",
-  "next_task": "APP023",
+  "current_block": "M04",
+  "current_status": "M04_COMPLETE_EMULATOR_VERIFIED",
+  "next_block": "M05",
+  "next_task": "APP031",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
   "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
@@ -42,7 +42,15 @@
     "APP019": "COMPLETE_CI_VERIFIED",
     "APP020": "COMPLETE_CI_VERIFIED",
     "APP021": "COMPLETE_CI_VERIFIED",
-    "APP022": "COMPLETE_CI_VERIFIED"
+    "APP022": "COMPLETE_CI_VERIFIED",
+    "APP023": "COMPLETE_EMULATOR_VERIFIED",
+    "APP024": "COMPLETE_EMULATOR_VERIFIED",
+    "APP025": "COMPLETE_EMULATOR_VERIFIED",
+    "APP026": "COMPLETE_EMULATOR_VERIFIED",
+    "APP027": "COMPLETE_EMULATOR_VERIFIED",
+    "APP028": "COMPLETE_EMULATOR_VERIFIED",
+    "APP029": "COMPLETE_EMULATOR_VERIFIED",
+    "APP030": "COMPLETE_EMULATOR_VERIFIED"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -100,6 +108,25 @@
     "unsigned_release_sha256": "80c68750f0d959b38e303a14336cfac2743448068f31ff35c032e36b341769a6",
     "bit_for_bit_reproducible": true,
     "signing_deferred_to": "M18",
+    "physical_installation_allowed": false
+  },
+  "m04": {
+    "plan": "ceo-android-app/M04_PLAN.json",
+    "qualification": "ceo-android-app/M04_QUALIFICATION.json",
+    "checkpoint": "ceo-android-app/M04_MASTER_CHECKPOINT.md",
+    "workflow_run_id": 35721758822,
+    "verified_head": "9d344107a3dfb7805f042920f7803109d3b83ddf",
+    "conclusion": "success",
+    "status": "M04_COMPLETE_EMULATOR_VERIFIED",
+    "emulator": {
+      "api": 35,
+      "abi": "x86_64",
+      "launch_cycles": 3,
+      "instrumentation_tests": "3/3 PASS"
+    },
+    "app_apk_sha256": "8009420253860d5c311c4eb2bd3b7739f1495fbf1eb116a26c60ea326908e068",
+    "evidence_artifact_id": 10691951770,
+    "physical_phone_used": false,
     "physical_installation_allowed": false
   }
 }
