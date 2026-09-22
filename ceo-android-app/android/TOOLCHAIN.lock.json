@@ -9,7 +9,7 @@
   "chaquopy": "17.0.0",
   "python_runtime": "3.13",
   "kotlin_compose_plugin": "2.3.21",
-  "compose_bom": "2026.08.00",
+  "compose_bom": "2026.04.01",
   "androidx_activity_compose": "1.13.0",
   "androidx_core": "1.19.0",
   "androidx_work": "2.11.2",
@@ -23,5 +23,7 @@
   ],
   "build_tools": "36.0.0",
   "m02_reconstructed_baseline": true,
-  "historical_lock_reference": "ceo-canonical/schemas/android_dev21/TOOLCHAIN.lock.json"
+  "historical_lock_reference": "ceo-canonical/schemas/android_dev21/TOOLCHAIN.lock.json",
+  "compose_core": "1.11.0",
+  "compose_compile_sdk_requirement": 36
 }
