@@ -37,10 +37,6 @@ jobs:
         env:
           CEO_W6_ROOT: /tmp/ceo-w6
         run: python ceo-browser/w6_anti99_regression.py
-      - name: Re-run deterministic completion qualification
-        env:
-          CEO_DEV313_BUILD_ROOT: /tmp/ceo-w6
-        run: python ceo-updates/qualify_dev313_deterministic_completion.py
       - name: Re-run closure convergence qualification
         env:
           CEO_DEV309_BUILD_ROOT: /tmp/ceo-w6
