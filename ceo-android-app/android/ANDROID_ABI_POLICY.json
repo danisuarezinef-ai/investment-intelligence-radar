@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "stage": "M03",
+  "physical_device_primary_abi": "arm64-v8a",
+  "ci_emulator_abi": "x86_64",
+  "native_payload_present": false,
+  "build_filter_enforced": false,
+  "enforcement_trigger": "When native/Python runtime payload is introduced, release packaging must include arm64-v8a and CI/emulator packaging may additionally include x86_64.",
+  "reason": "The current M03 app is pure Kotlin/Java. Declaring an NDK abiFilter now would add no value and could unnecessarily constrain emulator validation.",
+  "physical_installation_allowed": false
+}
