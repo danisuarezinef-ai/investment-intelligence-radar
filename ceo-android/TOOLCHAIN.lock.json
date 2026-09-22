@@ -9,7 +9,7 @@
   "kotlin": "AGP-9-built-in",
   "compose_plugin": "2.3.21",
   "activity_compose": "1.13.0",
-  "core_ktx": "1.19.0",
+  "core_ktx": "1.17.0",
   "work_manager": "2.11.2",
   "runtime_test_api_levels": [
     35,
