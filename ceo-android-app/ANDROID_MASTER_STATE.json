@@ -5,10 +5,10 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M02",
-  "current_status": "M02_COMPLETE_CI_VERIFIED",
-  "next_block": "M03",
-  "next_task": "APP015",
+  "current_block": "M02-A",
+  "current_status": "M02A_COMPLETE_CI_VERIFIED",
+  "next_block": "M02-B",
+  "next_task": "APP011",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
   "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
@@ -27,14 +27,14 @@
     "APP004": "COMPLETE",
     "APP005": "COMPLETE_REFERENCE_BASELINE_RECOVERED",
     "APP006": "COMPLETE_CI_VERIFIED",
-    "APP007": "COMPLETE",
-    "APP008": "COMPLETE",
-    "APP009": "COMPLETE",
-    "APP010": "COMPLETE",
-    "APP011": "COMPLETE",
-    "APP012": "COMPLETE",
-    "APP013": "COMPLETE",
-    "APP014": "COMPLETE_CI_VERIFIED"
+    "APP007": "COMPLETE_CI_VERIFIED",
+    "APP008": "COMPLETE_CI_VERIFIED",
+    "APP009": "COMPLETE_CI_VERIFIED",
+    "APP010": "COMPLETE_CI_VERIFIED",
+    "APP011": "NOT_CLAIMED_COMPLETE",
+    "APP012": "NOT_CLAIMED_COMPLETE",
+    "APP013": "NOT_CLAIMED_COMPLETE",
+    "APP014": "NOT_CLAIMED_COMPLETE"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -55,6 +55,18 @@
     "conclusion": "success",
     "qualification_file": "ceo-android-app/M02_QUALIFICATION.json",
     "checkpoint_file": "ceo-android-app/M02_MASTER_CHECKPOINT.md",
-    "debug_apk_sha256": "3deae30eca2f5657358c87385f335478600993c1ff53f50c97da70323a5a13c0"
+    "debug_apk_sha256": "3deae30eca2f5657358c87385f335478600993c1ff53f50c97da70323a5a13c0",
+    "historical_note": "Prior full M02 CI success retained as historical evidence, but superseded for project-state purposes by the user-requested M02-A/M02-B split."
+  },
+  "m02_split": {
+    "plan": "ceo-android-app/M02_SPLIT_PLAN.json",
+    "current_completed_half": "M02-A",
+    "m02a_qualification": {
+      "workflow_run_id": 35716018519,
+      "conclusion": "success",
+      "qualification_file": "ceo-android-app/M02A_QUALIFICATION.json",
+      "checkpoint_file": "ceo-android-app/M02A_MASTER_CHECKPOINT.md"
+    },
+    "m02b_status": "PENDING_SEPARATE_ATTACK"
   }
 }
