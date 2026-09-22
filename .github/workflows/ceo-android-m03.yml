@@ -1,0 +1,148 @@
+name: CEO Android M03 Reproducible Toolchain
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/android/**"
+      - "ceo-android-app/M03_PLAN.json"
+      - "ceo-android-app/scripts/verify_m03.py"
+      - ".github/workflows/ceo-android-m03.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TZ: UTC
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+  SOURCE_DATE_EPOCH: "946684800"
+
+jobs:
+  qualify-m03:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up pinned Temurin JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17.0.20"
+
+      - name: Verify JDK identity
+        shell: bash
+        run: |
+          java -version 2>&1 | tee /tmp/java-version.txt
+          java -XshowSettings:properties -version 2>&1 | tee /tmp/java-properties.txt
+          grep -E "version .*17\.0\.20|java.version = 17\.0\.20" /tmp/java-version.txt /tmp/java-properties.txt
+          grep -E "Eclipse Adoptium|Temurin" /tmp/java-version.txt /tmp/java-properties.txt
+          echo "M03_JDK_IDENTITY_PASS"
+
+      - name: Prepare pinned Android SDK
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          test -x "$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt"
+
+      - name: Verify APP015-APP022 static locks
+        run: python ceo-android-app/scripts/verify_m03.py
+
+      - name: Verify Gradle wrapper integrity
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          echo "55243ef57851f12b070ad14f7f5bb8302daceeebc5bce5ece5fa6edb23e1145c  gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
+          ./gradlew --version | tee /tmp/gradle-version.txt
+          grep -q "Gradle 9.4.1" /tmp/gradle-version.txt
+          echo "M03_GRADLE_INTEGRITY_PASS"
+
+      - name: Create two independent source workspaces
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/ceo-m03-a" "$RUNNER_TEMP/ceo-m03-b"
+          cp -a ceo-android-app/android "$RUNNER_TEMP/ceo-m03-a"
+          cp -a ceo-android-app/android "$RUNNER_TEMP/ceo-m03-b"
+          rm -rf "$RUNNER_TEMP/ceo-m03-a/app/build" "$RUNNER_TEMP/ceo-m03-a/.gradle"
+          rm -rf "$RUNNER_TEMP/ceo-m03-b/app/build" "$RUNNER_TEMP/ceo-m03-b/.gradle"
+          chmod +x "$RUNNER_TEMP/ceo-m03-a/gradlew" "$RUNNER_TEMP/ceo-m03-b/gradlew"
+
+      - name: Independent release build A
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/ceo-m03-a"
+          GRADLE_USER_HOME="$RUNNER_TEMP/ceo-m03-gradle-home" ./gradlew clean :app:assembleRelease --no-daemon --no-build-cache --rerun-tasks --stacktrace
+          test -f app/build/outputs/apk/release/app-release-unsigned.apk
+          sha256sum app/build/outputs/apk/release/app-release-unsigned.apk | tee "$RUNNER_TEMP/m03-a.sha256"
+
+      - name: Independent release build B
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/ceo-m03-b"
+          GRADLE_USER_HOME="$RUNNER_TEMP/ceo-m03-gradle-home" ./gradlew clean :app:assembleRelease --no-daemon --no-build-cache --rerun-tasks --stacktrace
+          test -f app/build/outputs/apk/release/app-release-unsigned.apk
+          sha256sum app/build/outputs/apk/release/app-release-unsigned.apk | tee "$RUNNER_TEMP/m03-b.sha256"
+
+      - name: Prove bit-for-bit unsigned APK reproducibility
+        shell: bash
+        run: |
+          A="$RUNNER_TEMP/ceo-m03-a/app/build/outputs/apk/release/app-release-unsigned.apk"
+          B="$RUNNER_TEMP/ceo-m03-b/app/build/outputs/apk/release/app-release-unsigned.apk"
+          SHA_A="$(sha256sum "$A" | cut -d' ' -f1)"
+          SHA_B="$(sha256sum "$B" | cut -d' ' -f1)"
+          echo "SHA_A=$SHA_A"
+          echo "SHA_B=$SHA_B"
+          cmp -s "$A" "$B"
+          test "$SHA_A" = "$SHA_B"
+          AAPT="$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt"
+          "$AAPT" dump badging "$A" > /tmp/m03-release-badging.txt
+          grep -q "package: name='ai.ceo.android.dev'" /tmp/m03-release-badging.txt
+          grep -q "sdkVersion:'26'" /tmp/m03-release-badging.txt
+          grep -q "targetSdkVersion:'36'" /tmp/m03-release-badging.txt
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, subprocess
+
+          a=Path(os.environ["RUNNER_TEMP"])/"ceo-m03-a/app/build/outputs/apk/release/app-release-unsigned.apk"
+          b=Path(os.environ["RUNNER_TEMP"])/"ceo-m03-b/app/build/outputs/apk/release/app-release-unsigned.apk"
+          def digest(p):
+              return hashlib.sha256(p.read_bytes()).hexdigest()
+          da,db=digest(a),digest(b)
+          row={
+              "schema_version":1,
+              "status":"M03_BIT_FOR_BIT_REPRODUCIBLE_PASS",
+              "artifact":"app-release-unsigned.apk",
+              "build_a_sha256":da,
+              "build_b_sha256":db,
+              "identical_bytes":a.read_bytes()==b.read_bytes(),
+              "size_bytes":a.stat().st_size,
+              "signed":False,
+              "signing_deferred_to":"M18",
+              "physical_installation_allowed":False,
+          }
+          assert row["identical_bytes"] and da==db
+          Path("ceo-android-app/M03_REPRODUCIBILITY_RECEIPT.json").write_text(
+              json.dumps(row,indent=2,sort_keys=True)+"\n",
+              encoding="utf-8"
+          )
+          print(json.dumps(row))
+          print("M03_BIT_FOR_BIT_REPRODUCIBILITY_PASS")
+          PY
+
+      - name: Upload M03 evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: CEO_ANDROID_M03_REPRODUCIBILITY
+          path: |
+            ceo-android-app/M03_STATIC_VERIFICATION.json
+            ceo-android-app/M03_REPRODUCIBILITY_RECEIPT.json
+          if-no-files-found: error
+          retention-days: 7
