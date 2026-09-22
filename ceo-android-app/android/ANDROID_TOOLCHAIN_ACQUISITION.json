@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "policy": "pinned-reproducible",
+  "jdk": "17",
+  "gradle": "9.4.1",
+  "android_gradle_plugin": "9.2.1",
+  "kotlin_compose_plugin": "2.3.21",
+  "source_of_truth": "TOOLCHAIN.lock.json",
+  "physical_installation_allowed": false
+}
