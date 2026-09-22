@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M03",
+  "tasks": [
+    "APP015",
+    "APP016",
+    "APP017",
+    "APP018",
+    "APP019",
+    "APP020",
+    "APP021",
+    "APP022"
+  ],
+  "status": "M03_COMPLETE_REPRODUCIBLE_CI_VERIFIED",
+  "workflow_run_id": 35718836103,
+  "verified_head": "1d6fcf89069aac7df144c6c5dff66b8297ad39da",
+  "conclusion": "success",
+  "toolchain": {
+    "jdk": {
+      "distribution": "temurin",
+      "runtime_verified": "17.0.20.x",
+      "vendor": "Eclipse Adoptium"
+    },
+    "gradle": {
+      "version": "9.4.1",
+      "distribution_sha256": "2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb",
+      "wrapper_jar_sha256": "55243ef57851f12b070ad14f7f5bb8302daceeebc5bce5ece5fa6edb23e1145c"
+    },
+    "android_gradle_plugin": "9.2.1",
+    "kotlin_compose_plugin": "2.3.21",
+    "compose_bom": "2026.04.01",
+    "compile_sdk": 36,
+    "target_sdk": 36,
+    "min_sdk": 26,
+    "build_tools": "36.0.0"
+  },
+  "abi_policy": {
+    "physical_device_primary": "arm64-v8a",
+    "ci_emulator": "x86_64",
+    "native_payload_present": false,
+    "build_filter_enforced": false
+  },
+  "ci_environment": {
+    "runner": "ubuntu-24.04",
+    "timezone": "UTC",
+    "locale": "C.UTF-8",
+    "source_date_epoch": 946684800,
+    "actions_pinned_by_commit": true
+  },
+  "reproducibility": {
+    "artifact": "app-release-unsigned.apk",
+    "independent_source_workspaces": 2,
+    "build_a_sha256": "80c68750f0d959b38e303a14336cfac2743448068f31ff35c032e36b341769a6",
+    "build_b_sha256": "80c68750f0d959b38e303a14336cfac2743448068f31ff35c032e36b341769a6",
+    "identical_bytes": true,
+    "size_bytes": 8232668,
+    "signed": false,
+    "signing_deferred_to": "M18",
+    "evidence_artifact_id": 10690541133,
+    "evidence_artifact_name": "CEO_ANDROID_M03_REPRODUCIBILITY"
+  },
+  "active_lock_cleanup": {
+    "removed_from_active_lock": [
+      "chaquopy",
+      "python_runtime",
+      "androidx_work"
+    ],
+    "reason": "Not used by the M03 build; they may be reintroduced only when a later block actually activates them.",
+    "dynamic_versions_rejected": true,
+    "maven_local_rejected": true
+  },
+  "safety": {
+    "physical_installation_allowed": false,
+    "production_verified": false,
+    "updater_activation_allowed": false
+  },
+  "next": {
+    "block": "M04",
+    "task": "APP023"
+  }
+}
