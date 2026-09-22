@@ -1,18 +1,6 @@
 name: CEO Android M05-A Shell UI
 
 on:
-  push:
-    branches:
-      - ceo-android-first-install
-    paths:
-      - "ceo-android-app/android/app/src/main/java/ai/ceo/android/MainActivity.kt"
-      - "ceo-android-app/android/app/src/main/java/ai/ceo/android/CEOHomeScreen.kt"
-      - "ceo-android-app/android/app/src/androidTest/java/ai/ceo/android/M05AShellUiTest.kt"
-      - "ceo-android-app/android/app/build.gradle.kts"
-      - "ceo-android-app/M05_SPLIT_PLAN.json"
-      - "ceo-android-app/scripts/verify_m05a.py"
-      - "ceo-android-app/scripts/run_m05a_emulator.sh"
-      - ".github/workflows/ceo-android-m05a.yml"
   workflow_dispatch:
 
 permissions:
