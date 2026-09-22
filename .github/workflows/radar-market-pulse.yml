@@ -1,0 +1,32 @@
+name: Radar Market Pulse
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: radar-market-pulse
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Invoke PAPER-safe market collector
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$(curl --fail-with-body --retry 2 --retry-delay 2 --max-time 120 -sS             -X POST "https://wvmiludqzdepqmjhfwos.supabase.co/functions/v1/radar-market-pulse"             -H "Content-Type: application/json"             --data '{"source":"github-actions","real_trading":false}')"
+          printf '%s\n' "$out"
+          RESPONSE="$out" python - <<'PY'
+          import json, os
+          row=json.loads(os.environ["RESPONSE"])
+          assert row.get("ok") is True, row
+          assert row.get("real_trading") is False, row
+          assert row.get("status") in {"PULSE_OK","PULSE_PARTIAL","SKIPPED_RATE_LIMIT"}, row
+          PY
