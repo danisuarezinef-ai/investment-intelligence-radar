@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-22",
+  "block": "M04",
+  "objective": "Build the first laboratory APK, install it only on an Android emulator, prove launch/relaunch stability and generate runtime evidence.",
+  "tasks": {
+    "APP023": "Compile debug from a clean checkout",
+    "APP024": "Generate app and instrumentation APKs",
+    "APP025": "Inspect APK structure",
+    "APP026": "Verify package/version/minSdk/targetSdk/launcher",
+    "APP027": "Install only in emulator",
+    "APP028": "Launch, force-stop and relaunch repeatedly",
+    "APP029": "Verify crash-free startup and instrumentation tests",
+    "APP030": "Persist hashes, runtime evidence and screenshots"
+  },
+  "emulator": {
+    "api": 35,
+    "abi": "x86_64"
+  },
+  "exit_gate": "M04_COMPLETE_EMULATOR_VERIFIED",
+  "physical_installation_allowed": false
+}
