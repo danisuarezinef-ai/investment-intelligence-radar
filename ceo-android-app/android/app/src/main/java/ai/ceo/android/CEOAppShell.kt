@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -80,7 +79,7 @@ fun CEOAppShell(
                     preparedTitle = preparedTitle,
                     preparedObjective = preparedObjective,
                     darkThemeActive = darkThemeActive,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     onSaveGoal = { title, objective ->
                         preparedTitle = title
                         preparedObjective = objective
