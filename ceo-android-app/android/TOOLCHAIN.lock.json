@@ -11,7 +11,7 @@
   "kotlin_compose_plugin": "2.3.21",
   "compose_bom": "2026.04.01",
   "androidx_activity_compose": "1.13.0",
-  "androidx_core": "1.19.0",
+  "androidx_core": "1.18.0",
   "androidx_work": "2.11.2",
   "ci_emulator_api_levels": [
     35,
