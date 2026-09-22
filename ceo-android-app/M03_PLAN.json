@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-22",
+  "block": "M03",
+  "objective": "Close the reproducible Android toolchain and prove bit-for-bit reproducibility of the unsigned release APK before signing.",
+  "tasks": {
+    "APP015": "Pin and verify JDK identity",
+    "APP016": "Pin Gradle wrapper and official distribution checksum",
+    "APP017": "Pin Android Gradle Plugin",
+    "APP018": "Pin Kotlin/Compose versions",
+    "APP019": "Pin Android SDK and Build Tools",
+    "APP020": "Fix physical-device ABI policy to arm64-v8a and CI emulator to x86_64",
+    "APP021": "Pin CI runner/actions/environment and perform independent double build",
+    "APP022": "Remove unused/future components from active toolchain lock and reject dynamic versions"
+  },
+  "exit_gate": "M03_COMPLETE_REPRODUCIBLE_CI_VERIFIED",
+  "physical_installation_allowed": false
+}
