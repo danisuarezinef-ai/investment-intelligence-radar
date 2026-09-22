@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M04-B",
+  "tasks": [
+    "APP027",
+    "APP028",
+    "APP029",
+    "APP030"
+  ],
+  "status": "M04B_COMPLETE_EMULATOR_VERIFIED",
+  "workflow_run_id": 35729119405,
+  "verified_head": "d3100cbf41f562fe2ff6fd9a4805271d2f94de64",
+  "conclusion": "success",
+  "emulator": {
+    "api": 35,
+    "abi": "x86_64",
+    "install_success": true,
+    "launch_cycles": 3,
+    "force_stop_relaunch_verified": true,
+    "final_process_alive": true,
+    "fatal_exception_detected": false,
+    "anr_detected": false,
+    "instrumentation_pass": true,
+    "instrumentation_test_count": 3,
+    "ui_title_observed_each_cycle": true
+  },
+  "app_apk": {
+    "package": "ai.ceo.android.dev.debug",
+    "version_code": 11,
+    "version_name": "0.9.0-dev-m02-debug",
+    "size_bytes": 11567487,
+    "sha256": "fba5aa946ea131fba660926f220fe237d371d14e4ff4e7e13fcca48c888010dc"
+  },
+  "instrumentation_apk": {
+    "package": "ai.ceo.android.dev.debug.test",
+    "size_bytes": 391241,
+    "sha256": "ce72e61e4e80e98ee15c1fcf30cdaaec38160dd62bffa880704802098b6a61cc"
+  },
+  "evidence": {
+    "artifact_name": "CEO_ANDROID_M04B_EMULATOR_EVIDENCE",
+    "artifact_id": 10695355131,
+    "artifact_zip_sha256": "7d707829df73b7d5a8ab0e20c54aa8881f4f54015ee23bf4e34d1f4276db38b3",
+    "screenshots": 3,
+    "ui_hierarchies": 3,
+    "package_dump": true,
+    "logcat": true,
+    "instrumentation": true
+  },
+  "safety": {
+    "physical_phone_used": false,
+    "physical_installation_allowed": false,
+    "production_verified": false,
+    "updater_activation_allowed": false
+  },
+  "next": {
+    "block": "M05",
+    "task": "APP031"
+  }
+}
