@@ -24,7 +24,9 @@
         "APP030"
       ],
       "objective": "Install only in emulator, launch/force-stop/relaunch, prove crash-free runtime and persist emulator evidence.",
-      "status": "PENDING_SEPARATE_ATTACK"
+      "status": "M04B_COMPLETE_EMULATOR_VERIFIED",
+      "workflow_run_id": 35729119405,
+      "qualification_file": "ceo-android-app/M04B_QUALIFICATION.json"
     }
   },
   "historical_full_m04": {
@@ -33,7 +35,9 @@
     "qualification_file": "ceo-android-app/M04_QUALIFICATION.json",
     "note": "User requested M04 be split after this prior full run. Project-state completion now requires independent M04-A and M04-B gates."
   },
-  "current_focus": "M04-B",
+  "current_focus": "M04-COMPLETE",
   "physical_installation_allowed": false,
-  "next_task": "APP027"
+  "next_task": "APP031",
+  "overall_status": "M04_COMPLETE_AFTER_SPLIT_EMULATOR_VERIFIED",
+  "next_block": "M05"
 }
