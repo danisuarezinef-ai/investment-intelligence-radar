@@ -5,8 +5,8 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M04-A",
-  "current_status": "M04A_COMPLETE_CI_VERIFIED",
+  "current_block": "M04-B",
+  "current_status": "M04B_IN_PROGRESS_EMULATOR_GATE",
   "next_block": "M04-B",
   "next_task": "APP027",
   "physical_installation_allowed": false,
@@ -47,10 +47,10 @@
     "APP024": "COMPLETE_CI_VERIFIED",
     "APP025": "COMPLETE_CI_VERIFIED",
     "APP026": "COMPLETE_CI_VERIFIED",
-    "APP027": "PENDING_SEPARATE_ATTACK",
-    "APP028": "PENDING_SEPARATE_ATTACK",
-    "APP029": "PENDING_SEPARATE_ATTACK",
-    "APP030": "PENDING_SEPARATE_ATTACK"
+    "APP027": "CI_RUNNING",
+    "APP028": "CI_RUNNING",
+    "APP029": "CI_RUNNING",
+    "APP030": "CI_RUNNING"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -114,7 +114,7 @@
     "plan": "ceo-android-app/M04_SPLIT_PLAN.json",
     "current_focus": "M04-B",
     "m04a_status": "M04A_COMPLETE_CI_VERIFIED",
-    "m04b_status": "PENDING_SEPARATE_ATTACK",
+    "m04b_status": "CI_RUNNING",
     "historical_full_m04": {
       "plan": "ceo-android-app/M04_PLAN.json",
       "qualification": "ceo-android-app/M04_QUALIFICATION.json",
@@ -142,7 +142,8 @@
       "checkpoint_file": "ceo-android-app/M04A_MASTER_CHECKPOINT.md",
       "app_apk_sha256": "4017c0c33b239658e8693ff4110da7b53ad705fab982af605e03987b056b8580",
       "instrumentation_apk_sha256": "9d4f21f36684afecf4ed83e43371c590d4b10b7c9b6ab1f63edd2cb14aa5fc71"
-    }
+    },
+    "m04b_workflow_run_id": 35728379783
   },
   "m04_historical": {
     "plan": "ceo-android-app/M04_PLAN.json",
