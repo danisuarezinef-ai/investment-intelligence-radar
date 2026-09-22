@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-22",
+  "block": "M04",
+  "split": {
+    "M04-A": {
+      "tasks": [
+        "APP023",
+        "APP024",
+        "APP025",
+        "APP026"
+      ],
+      "objective": "Produce laboratory debug APKs from a clean build and verify APK structure plus package/version/SDK/launcher identity without installing them.",
+      "exit_gate": "M04A_COMPLETE_CI_VERIFIED",
+      "status": "IN_PROGRESS"
+    },
+    "M04-B": {
+      "tasks": [
+        "APP027",
+        "APP028",
+        "APP029",
+        "APP030"
+      ],
+      "objective": "Install only in emulator, launch/force-stop/relaunch, prove crash-free runtime and persist emulator evidence.",
+      "status": "PENDING_SEPARATE_ATTACK"
+    }
+  },
+  "historical_full_m04": {
+    "status": "PRESERVED_AS_HISTORICAL_EVIDENCE_ONLY",
+    "workflow_run_id": 35721758822,
+    "qualification_file": "ceo-android-app/M04_QUALIFICATION.json",
+    "note": "User requested M04 be split after this prior full run. Project-state completion now requires independent M04-A and M04-B gates."
+  },
+  "current_focus": "M04-A",
+  "physical_installation_allowed": false
+}
