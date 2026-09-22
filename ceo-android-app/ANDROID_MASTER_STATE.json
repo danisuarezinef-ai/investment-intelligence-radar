@@ -5,10 +5,10 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M02",
-  "current_status": "M02_COMPLETE_AFTER_SPLIT_CI_VERIFIED",
+  "current_block": "M03",
+  "current_status": "M03_IN_PROGRESS_REPRODUCIBILITY_GATE",
   "next_block": "M03",
-  "next_task": "APP015",
+  "next_task": "APP021",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
   "updater_requirement": "After first installation, update discovery/download/verification happens inside CEO; no browser/manual external APK download. Android system confirmation may still be required.",
@@ -34,7 +34,15 @@
     "APP011": "COMPLETE_CI_VERIFIED",
     "APP012": "COMPLETE_CI_VERIFIED",
     "APP013": "COMPLETE_CI_VERIFIED",
-    "APP014": "COMPLETE_CI_VERIFIED"
+    "APP014": "COMPLETE_CI_VERIFIED",
+    "APP015": "IMPLEMENTED_PENDING_CI",
+    "APP016": "IMPLEMENTED_PENDING_CI",
+    "APP017": "IMPLEMENTED_PENDING_CI",
+    "APP018": "IMPLEMENTED_PENDING_CI",
+    "APP019": "IMPLEMENTED_PENDING_CI",
+    "APP020": "IMPLEMENTED_PENDING_CI",
+    "APP021": "CI_RUNNING",
+    "APP022": "IMPLEMENTED_PENDING_CI"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -79,5 +87,12 @@
     },
     "combined_qualification": "ceo-android-app/M02_SPLIT_QUALIFICATION.json",
     "overall_status": "M02_COMPLETE_AFTER_SPLIT_CI_VERIFIED"
+  },
+  "m03": {
+    "plan": "ceo-android-app/M03_PLAN.json",
+    "workflow_run_id": 35718836103,
+    "target_status": "M03_COMPLETE_REPRODUCIBLE_CI_VERIFIED",
+    "reproducibility_target": "app-release-unsigned.apk",
+    "physical_installation_allowed": false
   }
 }
