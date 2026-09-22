@@ -15,7 +15,7 @@ from ceo_core.models import ProjectState, Task, TaskStatus, utcnow
 from ceo_core.progress_tracker import StableProgressTracker
 
 
-def make_state() -> ProjectState:
+def make_state(*, field_required: bool = False, field_certified: bool = False) -> ProjectState:
     create = Task(
         id="create",
         title="Create CEO_FIRST_RESULT.md",
@@ -58,8 +58,8 @@ def make_state() -> ProjectState:
             "min_goal_audit_grounded_refs": 2,
             "min_goal_continuity_generations": 3,
             "goal_continuity_generation": 0,
-            "requires_field_endurance_certification": False,
-            "field_endurance_certified": False,
+            "requires_field_endurance_certification": field_required,
+            "field_endurance_certified": field_certified,
             "deliverable_evidence": {
                 "CEO_FIRST_RESULT.md": {
                     "task_id": "create",
@@ -107,6 +107,33 @@ def main() -> int:
         failures.append("completed_at_lost_on_reopen")
     if restored.metadata.get("goal_audit_passed") is not True:
         failures.append("goal_audit_passed_lost_on_reopen")
+
+    # A changed evidence payload must NOT inherit the old certificate.
+    tampered = ProjectState.model_validate_json(payload)
+    tampered.metadata["deliverable_evidence"]["CEO_FIRST_RESULT.md"]["sha256"] = "b" * 64
+    tamper = GoalCompletionGate().migrate_invalid_legacy_pass(tampered)
+    print("W6_TAMPER_REVALIDATION", json.dumps(tamper, default=str, sort_keys=True))
+    if not tamper.get("changed"):
+        failures.append("tampered_evidence_kept_stale_certificate")
+    if tampered.completed_at is not None:
+        failures.append("tampered_evidence_kept_completed_at")
+
+    # Missing deliverable evidence must still block deterministic completion.
+    missing = make_state()
+    missing.metadata["deliverable_evidence"] = {}
+    missing_row = DeterministicCompletionCertifierV1().apply(missing, GoalCompletionGate())
+    print("W6_MISSING_DELIVERABLE", json.dumps(missing_row, default=str, sort_keys=True))
+    if missing_row.get("work_complete") is not False:
+        failures.append("missing_deliverable_did_not_block")
+
+    # Field/endurance certification must remain a separate non-bypassable gate.
+    field = make_state(field_required=True, field_certified=False)
+    field_row = DeterministicCompletionCertifierV1().apply(field, GoalCompletionGate())
+    print("W6_FIELD_GATE", json.dumps(field_row, default=str, sort_keys=True))
+    if field_row.get("work_complete") is not True or field_row.get("final_complete") is not False:
+        failures.append("field_gate_semantics_changed")
+    if field.metadata.get("goal_audit_passed") is True:
+        failures.append("field_gate_bypassed")
 
     if failures:
         print("W6_ANTI99_REGRESSION_FAIL", failures)
