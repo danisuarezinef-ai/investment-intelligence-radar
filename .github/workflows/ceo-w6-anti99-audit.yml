@@ -29,7 +29,21 @@ jobs:
           unzip -q ceo-updates/CEO_1.5.92-rc1-native-transport-integrity.zip -d /tmp/ceo-w6
           test -f /tmp/ceo-w6/ceo_core/deterministic_completion_certifier_v1.py
           test -f /tmp/ceo-w6/ceo_core/progress_tracker.py
+      - name: Apply W6 completion persistence correction
+        env:
+          CEO_W6_ROOT: /tmp/ceo-w6
+        run: python ceo-browser/apply_w6_completion_persistence.py
       - name: Run W6 completion persistence regression
         env:
           CEO_W6_ROOT: /tmp/ceo-w6
         run: python ceo-browser/w6_anti99_regression.py
+      - name: Re-run deterministic completion qualification
+        env:
+          CEO_DEV313_BUILD_ROOT: /tmp/ceo-w6
+        run: python ceo-updates/qualify_dev313_deterministic_completion.py
+      - name: Re-run closure convergence qualification
+        env:
+          CEO_DEV309_BUILD_ROOT: /tmp/ceo-w6
+        run: python ceo-updates/qualify_dev309_closure_convergence.py
+      - name: Compile patched candidate
+        run: python -m compileall -q /tmp/ceo-w6
