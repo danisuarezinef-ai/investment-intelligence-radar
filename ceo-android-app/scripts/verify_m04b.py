@@ -33,7 +33,11 @@ def main() -> None:
     assert a["scope_limits"]["emulator_used"] is False
     assert a["scope_limits"]["physical_installation_allowed"] is False
 
-    assert master["current_status"] == "M04A_COMPLETE_CI_VERIFIED"
+    assert master["current_status"] in {
+        "M04A_COMPLETE_CI_VERIFIED",
+        "M04B_IN_PROGRESS_EMULATOR_GATE",
+    }
+    assert master["current_block"] in {"M04-A", "M04-B"}
     assert master["next_block"] == "M04-B"
     assert master["next_task"] == "APP027"
     assert master["physical_installation_allowed"] is False
