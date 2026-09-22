@@ -5,9 +5,9 @@
   "active_branch": "ceo-android-first-install",
   "active_root": "ceo-android-app/",
   "only_active_project": true,
-  "current_block": "M04",
-  "current_status": "M04_COMPLETE_AFTER_SPLIT_EMULATOR_VERIFIED",
-  "next_block": "M05",
+  "current_block": "M05-A",
+  "current_status": "M05A_IN_PROGRESS",
+  "next_block": "M05-A",
   "next_task": "APP031",
   "physical_installation_allowed": false,
   "installation_gate": "APP220 / CEO_ANDROID_FIRST_INSTALL_READY=true",
@@ -50,7 +50,15 @@
     "APP027": "COMPLETE_EMULATOR_VERIFIED",
     "APP028": "COMPLETE_EMULATOR_VERIFIED",
     "APP029": "COMPLETE_EMULATOR_VERIFIED",
-    "APP030": "COMPLETE_EMULATOR_VERIFIED"
+    "APP030": "COMPLETE_EMULATOR_VERIFIED",
+    "APP031": "CI_RUNNING",
+    "APP032": "CI_RUNNING",
+    "APP033": "CI_RUNNING",
+    "APP034": "CI_RUNNING",
+    "APP035": "PENDING_SEPARATE_ATTACK",
+    "APP036": "PENDING_SEPARATE_ATTACK",
+    "APP037": "PENDING_SEPARATE_ATTACK",
+    "APP038": "PENDING_SEPARATE_ATTACK"
   },
   "frozen_projects": [
     "CEO Windows",
@@ -172,6 +180,14 @@
     "app_apk_sha256": "8009420253860d5c311c4eb2bd3b7739f1495fbf1eb116a26c60ea326908e068",
     "evidence_artifact_id": 10691951770,
     "physical_phone_used": false,
+    "physical_installation_allowed": false
+  },
+  "m05_split": {
+    "plan": "ceo-android-app/M05_SPLIT_PLAN.json",
+    "current_focus": "M05-A",
+    "m05a_status": "CI_RUNNING",
+    "m05a_workflow_run_id": 35731400244,
+    "m05b_status": "PENDING_SEPARATE_ATTACK",
     "physical_installation_allowed": false
   }
 }
