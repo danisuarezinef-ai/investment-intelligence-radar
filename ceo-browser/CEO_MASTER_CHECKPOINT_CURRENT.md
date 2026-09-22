@@ -297,3 +297,52 @@ No implica cambios en:
 Radar mantiene su regla firme:
 
 `REAL_TRADING = OFF`
+
+## W1–W5 AUDIT STATUS
+
+Auditoría previa a candidata única Windows, iniciada 2026-09-23.
+
+- **W1 — candidata base:** CLOSED
+  - core 1.5.92 DEV316
+  - browser-first canónico c210b931
+  - bridge mínimo, no overlay completo
+  - stable updater channel congelado
+
+- **W2 — inventario del paquete:** CLOSED
+  - seis rutas browser de producción delimitadas
+  - scheduler/core 1.5.92 protegidos contra overwrite antiguo
+  - driver/recipe antiguos excluidos
+
+- **W3 — arranque/single-instance:** CLOSED / SOURCE PASS
+  - un backend/scheduler
+  - dead current.json fallback
+  - nested launcher loop protegido
+  - health + productive smoke + rollback heredados
+  - posible segunda ventana UI queda como validación física no bloqueante
+
+- **W4 — Goal Engine finito:** CLOSED / SOURCE PASS
+  - single-file compacto = 3 hojas
+  - baseline general = 24 hojas
+  - cierre requiere evidencia real
+  - el merge final NO puede reintroducir bloqueo de creación por caída de proveedor
+
+- **W5 — scheduler/dependencias:** CLOSED / SOURCE PASS
+  - retry y quality lineage acotados
+  - provider wait no consume recovery budget
+  - closure single-artifact max 4 generaciones; general max 24
+  - deterministic completion suprime auditorías una vez probado el trabajo
+  - no se detecta necesidad de nuevo parche del scheduler antes de prueba física
+
+Fuentes de auditoría:
+- `W1_BASE_CANDIDATE_AUDIT.md`
+- `W2_PACKAGE_INVENTORY_AUDIT.md`
+- `W3_STARTUP_SINGLE_INSTANCE_AUDIT.md`
+- `W4_GOAL_ENGINE_FINITE_AUDIT.md`
+- `W5_SCHEDULER_DEPENDENCY_AUDIT.md`
+
+**No se ha generado instalador ni se ha modificado el canal stable.**
+**No se afirma validación física Windows.**
+
+Siguiente bloque canónico:
+**W6 — auditoría de finalización real / anti-99 %.**
+
