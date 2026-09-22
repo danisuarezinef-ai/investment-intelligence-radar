@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "block": "M04",
+  "status": "M04_COMPLETE_AFTER_SPLIT_EMULATOR_VERIFIED",
+  "halves": {
+    "M04-A": {
+      "status": "M04A_COMPLETE_CI_VERIFIED",
+      "workflow_run_id": 35726177319,
+      "qualification_file": "ceo-android-app/M04A_QUALIFICATION.json",
+      "tasks": [
+        "APP023",
+        "APP024",
+        "APP025",
+        "APP026"
+      ]
+    },
+    "M04-B": {
+      "status": "M04B_COMPLETE_EMULATOR_VERIFIED",
+      "workflow_run_id": 35729119405,
+      "qualification_file": "ceo-android-app/M04B_QUALIFICATION.json",
+      "tasks": [
+        "APP027",
+        "APP028",
+        "APP029",
+        "APP030"
+      ]
+    }
+  },
+  "physical_installation_allowed": false,
+  "next_block": "M05",
+  "next_task": "APP031"
+}
