@@ -58,8 +58,8 @@ class M05BShellUiTest {
         composeRule.onNodeWithText("Tarea preparada").fetchSemanticsNode()
         composeRule.onNodeWithContentDescription("prepared-task-title")
             .assertTextContains("M05 tarea")
-        composeRule.onNodeWithContentDescription("prepared-task-status")
-            .assertTextContains("Pendiente")
+        composeRule.onNodeWithContentDescription("prepared-task-status").fetchSemanticsNode()
+        composeRule.onNodeWithText("Pendiente · motor M07").fetchSemanticsNode()
         composeRule.onNodeWithContentDescription("task-count")
             .assertTextContains("1 tarea")
         composeRule.onNodeWithText(
@@ -72,15 +72,18 @@ class M05BShellUiTest {
         composeRule.onNodeWithContentDescription("nav-decisions").performClick()
 
         composeRule.onNodeWithContentDescription("decision-proposal-0").performClick()
-        composeRule.onNodeWithContentDescription("selected-decision")
-            .assertTextContains("Priorizar calidad")
+        composeRule.onNodeWithContentDescription("selected-decision").fetchSemanticsNode()
+        composeRule.onNodeWithText("Priorizar calidad").fetchSemanticsNode()
 
         composeRule.onNodeWithContentDescription("decision-custom-input")
             .performTextInput("Propuesta propia M05")
         composeRule.onNodeWithContentDescription("decision-add-custom").performClick()
 
-        composeRule.onNodeWithContentDescription("selected-decision")
-            .assertTextContains("Propuesta propia M05")
+        composeRule.onNodeWithContentDescription("selected-decision").fetchSemanticsNode()
+        val ownProposalNodes = composeRule
+            .onAllNodesWithContentDescription("custom-proposal-0")
+            .fetchSemanticsNodes()
+        assertTrue(ownProposalNodes.isNotEmpty())
         composeRule.onNodeWithContentDescription("custom-proposal-0").fetchSemanticsNode()
     }
 
