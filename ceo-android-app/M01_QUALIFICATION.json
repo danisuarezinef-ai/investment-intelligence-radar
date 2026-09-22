@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "qualified_at": "2026-09-22",
+  "workflow_run_id": 35708659200,
+  "verified_head": "0629e7cad3937d9b32398f4eed3c67ae874015de",
+  "conclusion": "success",
+  "branch": "ceo-android-first-install",
+  "m01_complete": true,
+  "checks": [
+    "M01_ANDROID_RECOVERY_QUALIFICATION_PASS",
+    "M01_ANDROID_ONLY_SCOPE_PASS",
+    "M01_NO_INSTALL_OVERCLAIM_PASS"
+  ],
+  "facts": {
+    "expected_android_source_files": 45,
+    "recovered_exact_source_bodies": 1,
+    "source_bodies_to_reconstruct": 44,
+    "full_original_source_recovered": false,
+    "metadata_and_contract_recovery_complete": true,
+    "physical_installation_allowed": false
+  },
+  "next": {
+    "block": "M02",
+    "task": "APP007",
+    "objective": "Materialize the real Android Gradle/Kotlin project under ceo-android-app/android/"
+  }
+}
