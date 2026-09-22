@@ -1,15 +1,6 @@
 name: CEO Android M04-B Emulator Runtime
 
 on:
-  push:
-    branches:
-      - ceo-android-first-install
-    paths:
-      - "ceo-android-app/M04A_QUALIFICATION.json"
-      - "ceo-android-app/M04_SPLIT_PLAN.json"
-      - "ceo-android-app/scripts/verify_m04b.py"
-      - "ceo-android-app/scripts/run_m04b_emulator.sh"
-      - ".github/workflows/ceo-android-m04b.yml"
   workflow_dispatch:
 
 permissions:
