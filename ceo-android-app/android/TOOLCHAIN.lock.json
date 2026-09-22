@@ -3,8 +3,8 @@
   "jdk": "17",
   "gradle": "9.4.1",
   "android_gradle_plugin": "9.2.1",
-  "compile_sdk": 37,
-  "target_sdk": 37,
+  "compile_sdk": 36,
+  "target_sdk": 36,
   "min_sdk": 26,
   "chaquopy": "17.0.0",
   "python_runtime": "3.13",
@@ -20,5 +20,8 @@
   "abis": [
     "arm64-v8a",
     "x86_64"
-  ]
+  ],
+  "build_tools": "36.0.0",
+  "m02_reconstructed_baseline": true,
+  "historical_lock_reference": "ceo-canonical/schemas/android_dev21/TOOLCHAIN.lock.json"
 }
