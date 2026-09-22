@@ -1,0 +1,33 @@
+name: CEO W6 Anti-99 Audit
+
+on:
+  push:
+    branches:
+      - free-browser-ai-worker
+    paths:
+      - "ceo-browser/w6_anti99_regression.py"
+      - ".github/workflows/ceo-w6-anti99-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  w6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract exact CEO 1.5.92 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/ceo-w6
+          mkdir -p /tmp/ceo-w6
+          unzip -q ceo-updates/CEO_1.5.92-rc1-native-transport-integrity.zip -d /tmp/ceo-w6
+          test -f /tmp/ceo-w6/ceo_core/deterministic_completion_certifier_v1.py
+          test -f /tmp/ceo-w6/ceo_core/progress_tracker.py
+      - name: Run W6 completion persistence regression
+        env:
+          CEO_W6_ROOT: /tmp/ceo-w6
+        run: python ceo-browser/w6_anti99_regression.py
