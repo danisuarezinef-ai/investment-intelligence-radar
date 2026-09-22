@@ -1,0 +1,162 @@
+name: CEO Android M04-A APK Build Inspection
+
+on:
+  push:
+    branches:
+      - ceo-android-first-install
+    paths:
+      - "ceo-android-app/M04_SPLIT_PLAN.json"
+      - "ceo-android-app/scripts/verify_m04a.py"
+      - ".github/workflows/ceo-android-m04a.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TZ: UTC
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+
+jobs:
+  qualify-m04a:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up pinned Temurin JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17.0.20"
+
+      - name: Prepare Android SDK 36
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify M04-A source preconditions
+        run: python ceo-android-app/scripts/verify_m04a.py
+
+      - name: APP023 clean debug build and APP024 APK generation
+        working-directory: ceo-android-app/android
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew clean :app:assembleDebug :app:assembleDebugAndroidTest             --no-daemon --no-build-cache --rerun-tasks --stacktrace
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          test -f app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          echo "M04A_APP023_APP024_PASS"
+
+      - name: APP025 inspect APK structures
+        shell: bash
+        run: |
+          APP_APK="ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk"
+          TEST_APK="ceo-android-app/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+
+          unzip -l "$APP_APK" > /tmp/app-apk-list.txt
+          unzip -l "$TEST_APK" > /tmp/test-apk-list.txt
+
+          grep -q "AndroidManifest.xml" /tmp/app-apk-list.txt
+          grep -q "classes.dex" /tmp/app-apk-list.txt
+          grep -q "resources.arsc" /tmp/app-apk-list.txt
+          grep -q "META-INF/" /tmp/app-apk-list.txt
+
+          grep -q "AndroidManifest.xml" /tmp/test-apk-list.txt
+          grep -q "classes.dex" /tmp/test-apk-list.txt
+
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner"
+          test -x "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$APP_APK" > /tmp/apksigner-app.txt
+          "$APKSIGNER" verify --verbose "$TEST_APK" > /tmp/apksigner-test.txt
+
+          echo "M04A_APP025_APK_STRUCTURE_PASS"
+
+      - name: APP026 verify package version SDK and launcher
+        shell: bash
+        run: |
+          APP_APK="ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk"
+          TEST_APK="ceo-android-app/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+          AAPT="$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt"
+          test -x "$AAPT"
+
+          "$AAPT" dump badging "$APP_APK" > /tmp/app-badging.txt
+          "$AAPT" dump badging "$TEST_APK" > /tmp/test-badging.txt
+
+          grep -q "package: name='ai.ceo.android.dev.debug'" /tmp/app-badging.txt
+          grep -q "versionCode='11'" /tmp/app-badging.txt
+          grep -q "versionName='0.9.0-dev-m02-debug'" /tmp/app-badging.txt
+          grep -q "sdkVersion:'26'" /tmp/app-badging.txt
+          grep -q "targetSdkVersion:'36'" /tmp/app-badging.txt
+          grep -q "launchable-activity: name='ai.ceo.android.MainActivity'" /tmp/app-badging.txt
+          grep -q "application-label:'CEO'" /tmp/app-badging.txt
+
+          grep -q "instrumentation:" /tmp/test-badging.txt
+          grep -q "targetPackage='ai.ceo.android.dev.debug'" /tmp/test-badging.txt
+
+          echo "M04A_APP026_IDENTITY_PASS"
+
+      - name: Persist M04-A receipt
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+
+          app=Path("ceo-android-app/android/app/build/outputs/apk/debug/app-debug.apk")
+          test=Path("ceo-android-app/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk")
+          badging=Path("/tmp/app-badging.txt").read_text(encoding="utf-8",errors="replace")
+          test_badging=Path("/tmp/test-badging.txt").read_text(encoding="utf-8",errors="replace")
+          row={
+              "schema_version":1,
+              "status":"M04A_COMPLETE_CI_VERIFIED",
+              "source_head":os.environ.get("GITHUB_SHA",""),
+              "APP023":"PASS",
+              "APP024":"PASS",
+              "APP025":"PASS",
+              "APP026":"PASS",
+              "app_apk":{
+                  "path":"app/build/outputs/apk/debug/app-debug.apk",
+                  "size_bytes":app.stat().st_size,
+                  "sha256":hashlib.sha256(app.read_bytes()).hexdigest(),
+                  "package":"ai.ceo.android.dev.debug",
+                  "version_code":11,
+                  "version_name":"0.9.0-dev-m02-debug",
+                  "min_sdk":26,
+                  "target_sdk":36,
+                  "launcher":"ai.ceo.android.MainActivity",
+              },
+              "instrumentation_apk":{
+                  "path":"app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+                  "size_bytes":test.stat().st_size,
+                  "sha256":hashlib.sha256(test.read_bytes()).hexdigest(),
+                  "target_package":"ai.ceo.android.dev.debug",
+              },
+              "app_badging_excerpt":"\n".join(badging.splitlines()[:12]),
+              "test_badging_excerpt":"\n".join(test_badging.splitlines()[:8]),
+              "emulator_used":False,
+              "physical_phone_used":False,
+              "physical_installation_allowed":False,
+          }
+          Path("ceo-android-app/M04A_BUILD_RECEIPT.json").write_text(
+              json.dumps(row,ensure_ascii=False,indent=2,sort_keys=True)+"\n",
+              encoding="utf-8"
+          )
+          print(json.dumps(row,ensure_ascii=False))
+          print("M04A_COMPLETE_CI_VERIFIED")
+          PY
+
+      - name: Upload M04-A diagnostics only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: CEO_ANDROID_M04A_BUILD_INSPECTION
+          path: |
+            ceo-android-app/M04A_PRECHECK.json
+            ceo-android-app/M04A_BUILD_RECEIPT.json
+          if-no-files-found: error
+          retention-days: 7
