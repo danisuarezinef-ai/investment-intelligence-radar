@@ -49,8 +49,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew projects --no-daemon
-          ./gradlew :app:tasks --no-daemon >/tmp/ceo-app-tasks.txt
-          grep -q "assembleDebug" /tmp/ceo-app-tasks.txt
+          ./gradlew :app:help --task assembleDebug --no-daemon
           echo "M02A_GRADLE_CONFIGURATION_PASS"
 
       - name: Confirm no build or install claim
