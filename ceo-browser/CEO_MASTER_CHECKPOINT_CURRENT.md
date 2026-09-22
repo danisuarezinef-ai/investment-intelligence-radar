@@ -4,8 +4,9 @@
 **Proyecto:** CEO de IAs — Windows / browser-first / no-API  
 **Repositorio:** `danisuarezinef-ai/investment-intelligence-radar`  
 **Rama canónica de esta línea:** `free-browser-ai-worker`  
-**HEAD verificado:** `c210b93167361b3ff4017368ac2d790fca8de5b3`  
-**Workflow canónico:** `35699881577` — **SUCCESS**
+**HEAD de implementación verificado:** `c210b93167361b3ff4017368ac2d790fca8de5b3`  
+**Workflow canónico:** `35699881577` — **SUCCESS**  
+**Commits de sincronización posteriores:** `fef0c0c...` (checkpoint), `20bae6f...` (protocolo). Estos no cambian la implementación.
 
 > Este archivo es la fuente de verdad compartida para todos los chats que trabajen en CEO browser-first.  
 > Si un chat recuerda otra cosa, prevalecen este checkpoint + el HEAD real del branch.
@@ -275,7 +276,7 @@ Todo chat que vaya a trabajar en CEO browser-first debe, antes de modificar nada
 
 1. leer `ceo-browser/CEO_MASTER_CHECKPOINT_CURRENT.md`;
 2. comprobar el HEAD real de `free-browser-ai-worker`;
-3. si HEAD > checkpoint, reconstruir el estado desde commits recientes;
+3. si hay commits posteriores al HEAD de implementación que modifiquen código/configuración operativa, reconstruir el estado desde ellos; ignorar para este cálculo commits que sólo actualicen el checkpoint/protocolo de sincronización;
 4. no continuar desde una lista o build recordada por el chat si contradice el repo;
 5. actualizar este checkpoint al cerrar un hito significativo;
 6. nunca marcar una prueba física como verificada sólo porque CI esté verde.
