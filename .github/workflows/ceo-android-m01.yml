@@ -5,7 +5,8 @@ on:
     branches:
       - ceo-android-first-install
     paths:
-      - "ceo-android-app/**"
+      - "ceo-android-app/M01_*"
+      - "ceo-android-app/scripts/verify_m01.py"
       - ".github/workflows/ceo-android-m01.yml"
   workflow_dispatch:
 
