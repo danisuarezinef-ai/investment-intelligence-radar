@@ -12,7 +12,9 @@
       ],
       "objective": "Build and verify the main CEO mobile shell: home screen, expandable Goal Engine, general status and progress percentage.",
       "exit_gate": "M05A_COMPLETE_EMULATOR_VERIFIED",
-      "status": "IN_PROGRESS"
+      "status": "M05A_COMPLETE_EMULATOR_VERIFIED",
+      "workflow_run_id": 35732038552,
+      "qualification_file": "ceo-android-app/M05A_QUALIFICATION.json"
     },
     "M05-B": {
       "tasks": [
@@ -25,6 +27,8 @@
       "status": "PENDING_SEPARATE_ATTACK"
     }
   },
-  "current_focus": "M05-A",
-  "physical_installation_allowed": false
+  "current_focus": "M05-A-COMPLETE",
+  "physical_installation_allowed": false,
+  "next_block": "M05-B",
+  "next_task": "APP035"
 }
