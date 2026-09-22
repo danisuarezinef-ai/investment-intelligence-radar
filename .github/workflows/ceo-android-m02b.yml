@@ -1,21 +1,6 @@
 name: CEO Android M02-B Qualification
 
 on:
-  push:
-    branches:
-      - ceo-android-first-install
-    paths:
-      - "ceo-android-app/android/app/src/main/java/**"
-      - "ceo-android-app/android/app/src/debug/**"
-      - "ceo-android-app/android/app/src/androidTest/**"
-      - "ceo-android-app/android/app/src/main/res/**"
-      - "ceo-android-app/android/app/src/main/python/**"
-      - "ceo-android-app/android/gradlew"
-      - "ceo-android-app/android/gradlew.bat"
-      - "ceo-android-app/android/gradle/wrapper/**"
-      - "ceo-android-app/android/TOOLCHAIN.lock.json"
-      - "ceo-android-app/scripts/verify_m02b.py"
-      - ".github/workflows/ceo-android-m02b.yml"
   workflow_dispatch:
 
 permissions:
