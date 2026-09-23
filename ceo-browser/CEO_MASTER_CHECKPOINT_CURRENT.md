@@ -768,3 +768,68 @@ Login/sesión real ChatGPT pendiente.
 
 Siguiente bloque canónico:
 **W14 — perfil Chrome persistente / sesión real.**
+
+
+## W14-A AUDIT STATUS
+
+**W14-A — perfil Chrome persistente / propiedad de sesión:** CLOSED — BUG REAL REPRODUCIDO, FIXED, FOCAL Y CI CANÓNICA GREEN
+
+W13 estaba ya CLOSED y no se rehizo.
+
+Hallazgo real:
+- un puerto CDP activo podía ser reutilizado sin demostrar que el proceso pertenecía al ProfileDir solicitado;
+- reproducción raw: Chrome señuelo con un perfil distinto fue aceptado por el driver pre-W14;
+- marca: W14A_RAW_CROSS_PROFILE_ATTACHMENT_REPRODUCED.
+
+Corrección:
+- el driver verifica ownership mediante proceso + remote-debugging-port + user-data-dir;
+- si el puerto está activo pero el perfil no coincide, falla cerrado con BROWSER_PROFILE_OWNERSHIP_CONFLICT;
+- no navega, no poda pestañas y no cierra el navegador ajeno.
+
+Hardening adicional:
+- user-data-dir protegido para rutas con espacios;
+- prueba explícita con ruta CEO de IAs;
+- marker CEO_BROWSER_PROFILE.json se revalida en cada uso;
+- owner, exclusividad, provider, ruta y no-api se restauran si el marker está viejo/corrupto;
+- sesión de harness sobrevive cierre y reapertura del mismo perfil;
+- perfil nuevo sigue devolviendo LOGIN_REQUIRED;
+- no_captcha_bypass=true;
+- no_2fa_bypass=true;
+- manual_login_allowed=true.
+
+Evidencia focal:
+- run 35899237018
+- job 107310848807
+- SUCCESS
+- W14A_FOREIGN_PROFILE_REJECTED
+- W14A_SPACED_PROFILE_OWNERSHIP_PASS
+- W14A_SESSION_PERSISTENCE_AND_MARKER_REPAIR_PASS
+- W14A_LOGIN_BOUNDARY_PASS
+- W14A_WINDOWS_CI_PASS
+
+Hashes de candidata:
+- driver: 52f3f8176a3779d5989150b25c0b185087a1bed4cbc0fb800484021fab4a29fe
+- profile helper: 3f5dfb64dde62c99bbe48f9fef8d4df17b1bedb43983683501e92d09385e89e1
+
+Suite canónica:
+- commit c48c93f236237f627f564bb07540fa7115d65b54
+- run 35899549270
+- job 107311902465
+- conclusion SUCCESS
+- W14A_PROFILE_CONTRACT_CANONICAL_PASS
+- W14A_PROFILE_OWNERSHIP_CANONICAL_PASS
+- B02_SCOPE_FREEZE_PASS
+- CEO_AI_TRANSPORT_BROWSER_ZERO_API_PASS
+- FREE_BROWSER_BOUNDARY_PASS
+
+Archivos:
+- W14A_PERSISTENT_PROFILE_AUDIT.md
+- w14a_profile_persistence_regression.py
+- gates W14-A integrados en test-free-browser-ai-worker.yml
+
+Workflow focal temporal W14-A eliminado tras la evidencia verde.
+No se generó instalador.
+No se modificó stable.
+
+**W14-B permanece pendiente.**
+Debe probar físicamente en el PC del usuario la sesión real chatgpt.com: login manual legítimo, cierre/reapertura, sesión persistente e interacción real Browser Worker con cero APIs y sin bypass de CAPTCHA/2FA.
