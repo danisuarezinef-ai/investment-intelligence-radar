@@ -35,11 +35,16 @@ def parse_local_finite_file_goal(goal: str) -> dict | None:
     ):
         return None
 
-    files = list(dict.fromkeys(_FILE_RE.findall(text)))
-    if len(files) != 1:
+    matches = list(_FILE_RE.finditer(text))
+    if len(matches) != 1:
+        return None
+    match = matches[0]
+    if match.start() > 0 and text[match.start() - 1] in {"/", "\\"}:
+        return None
+    if match.end() < len(text) and text[match.end()] in {"/", "\\"}:
         return None
 
-    name = files[0].strip()
+    name = match.group(1).strip()
     path = pathlib.Path(name)
     if path.name != name or path.suffix.lower() not in _ALLOWED_EXT or name in {".", ".."}:
         return None
