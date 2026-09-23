@@ -97,7 +97,7 @@ jobs:
                       a=max(0,i-before); b=min(len(lines),i+after+1)
                       print(f"===== {pattern} @ {i+1} =====")
                       for j in range(a,b):
-                          print(f"{j+1}: {lines[j]}")
+                          print(f"{j+1}: {lines[j].encode('ascii','backslashreplace').decode('ascii')}")
                       print()
           for pat in [
               "from ceo_core.routing import MultiProviderRouter",
