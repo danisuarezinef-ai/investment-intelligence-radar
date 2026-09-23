@@ -26,6 +26,7 @@ from ceo_core.local_finite_file_provider_v1 import (
 )
 from ceo_core.models import ProjectState, TaskStatus
 from ceo_core.progress_tracker import StableProgressTracker
+from ceo_core.recovery_budget_guard_v1 import RecoveryBudgetGuardV1
 from ceo_core.routing import MultiProviderRouter
 from ceo_core.scheduler import ContinuousScheduler
 from ceo_core.store import CheckpointStore
@@ -33,6 +34,59 @@ from ceo_core.store import CheckpointStore
 
 GOAL = "Crea CEO_LOCAL_W9.txt. Debe contener exactamente: CEO_LOCAL_W9_OK"
 EXPECTED = "CEO_LOCAL_W9_OK"
+
+
+def assert_recovery_guard_preserves_verification() -> None:
+    state = ProjectState(goal="W9 guard semantics")
+    control_a = TaskStatus  # keep import usage explicit for static analyzers
+    del control_a
+
+    from ceo_core.models import Task
+
+    c1 = Task(
+        id="control-a",
+        title="Goal continuity audit #A",
+        status=TaskStatus.READY,
+        priority=100,
+        metadata={"task_role": "control", "goal_continuity_audit": True},
+    )
+    c2 = Task(
+        id="control-b",
+        title="Goal continuity audit #B",
+        status=TaskStatus.READY,
+        priority=90,
+        metadata={"task_role": "control", "goal_continuity_audit": True},
+    )
+    verification = Task(
+        id="verify-real",
+        title="Final audit local verification",
+        status=TaskStatus.READY,
+        priority=10,
+        metadata={
+            "task_role": "verification",
+            "verification_task": True,
+            "verifies": "productive",
+        },
+    )
+    for task in (c1, c2, verification):
+        state.tasks[task.id] = task
+        state.root_task_ids.append(task.id)
+
+    report = RecoveryBudgetGuardV1(max_active_internal=1).apply(state)
+    assert verification.status == TaskStatus.READY, (
+        verification.status,
+        verification.metadata,
+        report.to_dict(),
+    )
+    retired_controls = [
+        t for t in (c1, c2)
+        if t.status == TaskStatus.SUPERSEDED
+        and t.metadata.get("superseded_reason") == "recovery_budget_guard_duplicate_internal_control"
+    ]
+    assert len(retired_controls) == 1, (
+        [(t.id, t.status.value, t.metadata) for t in (c1, c2)],
+        report.to_dict(),
+    )
 
 
 def package_hash_ok(relative: str) -> tuple[bool, str, str]:
@@ -329,6 +383,8 @@ async def run_scheduler() -> dict:
 def main() -> int:
     failures = []
 
+    assert_recovery_guard_preserves_verification()
+
     # Unsafe/ambiguous variants must not activate the local executor.
     rejected = [
         "Crea ../escape.txt. Debe contener exactamente: NO",
@@ -351,6 +407,7 @@ def main() -> int:
 
     for relative in (
         "ceo_core/local_finite_file_provider_v1.py",
+        "ceo_core/recovery_budget_guard_v1.py",
         "scripts/ceo_stdlib_work_mode.py",
         "ceo_core/goal_completion_gate.py",
         "ceo_core/productive_fallback_orchestrator_v1.py",
