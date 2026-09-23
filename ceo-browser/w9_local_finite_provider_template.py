@@ -153,6 +153,7 @@ def configure_local_finite_file_state(
                     "local_finite_file_mode": "verify",
                     "local_finite_file_spec": dict(payload),
                     "task_role": "verification",
+                    "bounded_deterministic_verification": True,
                     "external_action": False,
                     "irreversible": False,
                 }
