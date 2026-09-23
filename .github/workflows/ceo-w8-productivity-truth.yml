@@ -4,6 +4,7 @@ on:
   push:
     branches: [free-browser-ai-worker]
     paths:
+      - 'ceo-browser/apply_w8_productivity_truth_fix.py'
       - 'ceo-browser/w8_productivity_truth_regression.py'
       - '.github/workflows/ceo-w8-productivity-truth.yml'
   workflow_dispatch:
@@ -25,7 +26,7 @@ jobs:
       - name: Install runtime dependency
         shell: pwsh
         run: python -m pip install --disable-pip-version-check "pydantic>=2,<3"
-      - name: Audit raw 1.5.92 productive truth
+      - name: Apply W8 productivity truth correction
         shell: pwsh
         run: |
           $root=Join-Path $env:RUNNER_TEMP "ceo-w8"
@@ -33,9 +34,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path $root | Out-Null
           Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
           $env:CEO_W8_ROOT=$root
-          Write-Host "W8_PROGRESS_TRACKER_SOURCE_BEGIN"
-          Get-Content (Join-Path $root "ceo_core\progress_tracker.py")
-          Write-Host "W8_PROGRESS_TRACKER_SOURCE_END"
+          python ceo-browser\apply_w8_productivity_truth_fix.py
+          if($LASTEXITCODE -ne 0){throw "W8 patch failed"}
           python ceo-browser\w8_productivity_truth_regression.py
           if($LASTEXITCODE -ne 0){throw "W8 productivity truth regression failed"}
+          python -m compileall -q $root
+          if($LASTEXITCODE -ne 0){throw "W8 compile failed"}
           Write-Host "W8_WINDOWS_CI_PASS"
