@@ -108,6 +108,9 @@ def configure_local_finite_file_state(
     state.metadata["min_goal_continuity_generations"] = 1
     state.metadata["max_goal_continuity_generations"] = 4
 
+    execution_task = None
+    verification_task = None
+
     for task in state.leaf_tasks:
         low = str(task.title or "").lower()
         if low.startswith("clarify & lock goal"):
@@ -128,6 +131,7 @@ def configure_local_finite_file_state(
             )
             task.required_capabilities = ["general", "reasoning"]
         elif low.startswith("execution"):
+            execution_task = task
             task.metadata.update(
                 {
                     "preferred_kind": "local",
@@ -141,6 +145,7 @@ def configure_local_finite_file_state(
             )
             task.required_capabilities = ["general"]
         elif low.startswith("final audit"):
+            verification_task = task
             task.metadata.update(
                 {
                     "preferred_kind": "local",
@@ -153,6 +158,23 @@ def configure_local_finite_file_state(
                 }
             )
             task.required_capabilities = ["general", "verification"]
+
+    # The baseline plan already contains one explicit independent local audit.
+    # Bind it to the productive execution task so the generic scheduler
+    # verifier does not spawn extra provider-dependent verification tasks.
+    if execution_task is not None and verification_task is not None:
+        execution_task.metadata["verification_scheduled"] = [verification_task.id]
+        execution_task.metadata["verification_plan"] = {
+            "independent_checks": 1,
+            "adversarial": False,
+            "source_independence_required": False,
+            "reason": "local_finite_explicit_final_audit",
+        }
+        verification_task.metadata["verifies"] = execution_task.id
+        verification_task.metadata["verification_task"] = True
+        verification_task.dependencies = list(
+            dict.fromkeys(list(verification_task.dependencies or []) + [execution_task.id])
+        )
 
 
 class LocalFiniteFileProviderV1(WorkerProvider):
