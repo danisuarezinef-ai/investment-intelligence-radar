@@ -353,8 +353,11 @@ async def run_scheduler() -> dict:
             for provider in all_providers
         ), all_providers
 
-        for task in leaves:
-            assert float(task.cost_actual or 0.0) == 0.0, (task.title, task.cost_actual)
+        cost_spent = float(scheduler.cost_engine.spent(state))
+        assert cost_spent == 0.0, {
+            "cost_spent": cost_spent,
+            "budget": scheduler.cost_engine.snapshot(state),
+        }
 
         payload = state.model_dump_json()
         restored = ProjectState.model_validate_json(payload)
@@ -381,6 +384,7 @@ async def run_scheduler() -> dict:
                 t.title: t.status.value for t in leaves
             },
             "api_env_present": False,
+            "cost_spent": cost_spent,
         }
 
 
