@@ -59,3 +59,54 @@ jobs:
             Get-ChildItem -Recurse -File (Join-Path $root "ceo_core\browser_ai") |
               ForEach-Object { Write-Host $_.FullName.Substring($root.Length+1) }
           }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect W12-composed work-mode browser merge anchors
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w13-composed"
+          if(Test-Path $root){Remove-Item -Recurse -Force $root}
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
+          $env:CEO_W6_ROOT=$root
+          $env:CEO_W7_ROOT=$root
+          $env:CEO_W8_ROOT=$root
+          $env:CEO_W9_ROOT=$root
+          $env:CEO_W10_ROOT=$root
+          $env:CEO_W11_ROOT=$root
+          $env:CEO_W12_ROOT=$root
+          python ceo-browser\apply_w6_completion_persistence.py
+          python ceo-browser\apply_w7_recovery_lineage_cap.py
+          python ceo-browser\apply_w8_productivity_truth_fix.py
+          python ceo-browser\apply_w9_local_finite_task.py
+          python ceo-browser\apply_w10_restart_lease_fix.py
+          python ceo-browser\apply_w11_local_idempotency.py
+          python ceo-browser\apply_w12_operator_control.py
+          $env:CEO_W13_ROOT=$root
+          @'
+          from pathlib import Path
+          import os
+          p=Path(os.environ["CEO_W13_ROOT"])/"scripts"/"ceo_stdlib_work_mode.py"
+          lines=p.read_text(encoding="utf-8").splitlines()
+          def around(pattern,before=5,after=30):
+              for i,line in enumerate(lines):
+                  if pattern in line:
+                      a=max(0,i-before); b=min(len(lines),i+after+1)
+                      print(f"===== {pattern} @ {i+1} =====")
+                      for j in range(a,b):
+                          print(f"{j+1}: {lines[j]}")
+                      print()
+          for pat in [
+              "from ceo_core.routing import MultiProviderRouter",
+              "self.MultiProviderRouter = MultiProviderRouter",
+              "def _router(self):",
+              "async def start_project",
+              "async def snapshot",
+              "def main()",
+              "engine = CEOEngine",
+          ]:
+              around(pat,8,45)
+          '@ | Set-Content -Encoding UTF8 inspect_w13_workmode.py
+          python inspect_w13_workmode.py
