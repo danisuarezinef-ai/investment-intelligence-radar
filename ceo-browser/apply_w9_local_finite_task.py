@@ -136,15 +136,11 @@ def patch_recovery_budget_guard(path: pathlib.Path) -> None:
     text = path.read_text(encoding="utf-8")
     text = replace_once(
         text,
-        "from .task_roles_v2 import is_internal\n",
-        "from .task_roles_v2 import is_internal, is_verification\n",
-        "W9 recovery guard import",
-    )
-    text = replace_once(
-        text,
         "            if not is_internal(task, state):\n"
         "                continue\n",
-        "            if not is_internal(task, state) or is_verification(task, state):\n"
+        "            if not is_internal(task, state):\n"
+        "                continue\n"
+        "            if task.metadata.get(\"bounded_deterministic_verification\"):\n"
         "                continue\n",
         "W9 recovery guard signature",
     )
@@ -153,8 +149,8 @@ def patch_recovery_budget_guard(path: pathlib.Path) -> None:
         "            if is_internal(t, state)\n"
         "            and t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING, TaskStatus.NEEDS_REVIEW, TaskStatus.BLOCKED}\n",
         "            if is_internal(t, state)\n"
-        "            and not is_verification(t, state)\n"
-        "            and t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING, TaskStatus.NEEDS_REVIEW, TaskStatus.BLOCKED}\n",
+        "            and t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING, TaskStatus.NEEDS_REVIEW, TaskStatus.BLOCKED}\n"
+        "            and not t.metadata.get(\"bounded_deterministic_verification\")\n",
         "W9 recovery guard active filter",
     )
     path.write_text(text, encoding="utf-8")
