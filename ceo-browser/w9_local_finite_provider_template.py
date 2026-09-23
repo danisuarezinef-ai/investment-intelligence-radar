@@ -291,6 +291,19 @@ class LocalFiniteFileProviderV1(WorkerProvider):
             )
 
         digest = hashlib.sha256(target.read_bytes()).hexdigest()
+        verify_marker = (
+            "<CEO_VERIFY>"
+            + json.dumps(
+                {
+                    "verdict": "pass",
+                    "confidence": 1.0,
+                    "reason": f"local exact-content readback verified sha256={digest}",
+                },
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+            + "</CEO_VERIFY>"
+        )
         footer = self._footer(
             {
                 "status": "complete",
@@ -307,7 +320,10 @@ class LocalFiniteFileProviderV1(WorkerProvider):
             success=True,
             text=(
                 f"Independent local verification passed for {relative_path}: exists, "
-                f"non-empty, exact UTF-8 content match, sha256={digest}.\n" + footer
+                f"non-empty, exact UTF-8 content match, sha256={digest}.\n"
+                + verify_marker
+                + "\n"
+                + footer
             ),
             artifacts=[relative_path],
             metadata={
