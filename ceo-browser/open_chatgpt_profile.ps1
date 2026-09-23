@@ -17,18 +17,27 @@ if(-not $ProfileDir){
 New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
 
 $marker=Join-Path $ProfileDir "CEO_BROWSER_PROFILE.json"
-if(-not (Test-Path $marker)){
-  $profile=[ordered]@{
-    schema_version=1
-    owner="CEO de IAs"
-    exclusive_profile=$true
-    provider_surface="chatgpt-web"
-    profile_dir=$ProfileDir
-    created_at=(Get-Date).ToString("s")
-    no_api_required=$true
-  }
-  $profile | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 $marker
+$createdAt=(Get-Date).ToString("s")
+if(Test-Path $marker){
+  try{
+    $existingMarker=Get-Content -Raw -Encoding UTF8 $marker | ConvertFrom-Json
+    if($existingMarker.created_at){$createdAt=[string]$existingMarker.created_at}
+  }catch{}
 }
+# W14-A: the marker is a contract, not user-editable truth. Reassert the
+# invariants every time so a stale/corrupt marker cannot silently downgrade
+# profile exclusivity or redirect CEO to a different browser profile.
+$profile=[ordered]@{
+  schema_version=1
+  owner="CEO de IAs"
+  exclusive_profile=$true
+  provider_surface="chatgpt-web"
+  profile_dir=$ProfileDir
+  created_at=$createdAt
+  validated_at=(Get-Date).ToString("s")
+  no_api_required=$true
+}
+$profile | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 $marker
 
 $baseDir=Split-Path -Parent $MyInvocation.MyCommand.Path
 if(-not $DriverPath){$DriverPath=Join-Path $baseDir "windows_chatgpt_cdp_driver.ps1"}
