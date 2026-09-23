@@ -19,7 +19,13 @@ def audit(root='.'):
     v8=(root/'cloud_service_v8.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v8.py').exists() else ''
     v9=(root/'cloud_service_v9.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v9.py').exists() else ''
     v10=(root/'cloud_service_v10.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v10.py').exists() else ''
-    if 'cloud_service_v10.py' not in start:findings.append('START_NOT_V10')
+    # The v7-v10 chain remains protected as historical composition evidence, but the
+    # production entrypoint has evolved. Never force start.sh backwards just to satisfy
+    # this legacy audit. Require a snapshot-safe canonical runtime and keep the legacy
+    # chain checks below independently intact.
+    canonical_entries=('cloud_service_v24_snapshotfix.py','cloud_service_v37_snapshotfix.py')
+    if not any(entry in start for entry in canonical_entries):
+        findings.append('START_NOT_CANONICAL_SNAPSHOTSAFE')
     if 'import cloud_service_v9 as base9' not in v10 or 'base9.start_runtime()' not in v10:findings.append('V10_CHAIN_INVALID')
     if 'import cloud_service_v8 as base8' not in v9 or 'base8.start_runtime()' not in v9:findings.append('V9_CHAIN_INVALID')
     if 'import cloud_service_v7 as base7' not in v8 or 'base7.start_runtime()' not in v8:findings.append('V8_CHAIN_INVALID')
