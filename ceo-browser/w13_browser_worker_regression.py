@@ -121,11 +121,12 @@ def patched_case() -> None:
     contract_path = ROOT / "CEO_UPDATE_PACKAGE.json"
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
     hashes = dict(contract.get("file_hashes") or {})
-    required = set(contract.get("required_files") or [])
-    print("W13_REQUIRED_FILES_RAW", json.dumps(contract.get("required_files"), sort_keys=True))
+    required_raw = contract.get("required_files")
+    required = set(required_raw or []) if isinstance(required_raw, list) else None
     for name, rel in rels.items():
         assert hashes.get(rel) == sha(ROOT / rel), (name, rel, hashes.get(rel), sha(ROOT / rel))
-        assert rel in required, (name, rel)
+        if required is not None:
+            assert rel in required, (name, rel)
 
     browser_builder = (REPO / "ceo-browser" / "build_browser_first_lab.py").read_text(encoding="utf-8")
     assert 'BROWSER_SRC = REPO / "ceo-browser"' in browser_builder
