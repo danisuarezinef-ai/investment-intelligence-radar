@@ -102,12 +102,27 @@ def prepare_state(workspace: pathlib.Path) -> ProjectState:
     return state
 
 
+class JsonCheckpointStore(CheckpointStore):
+    """Minimal durable store for exercising the real scheduler contract in W9."""
+
+    def __init__(self, path: pathlib.Path):
+        self.path = pathlib.Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+
+    def save(self, state: ProjectState) -> None:
+        payload = state.model_dump_json()
+        tmp = self.path.with_suffix(self.path.suffix + ".tmp")
+        tmp.write_text(payload, encoding="utf-8")
+        tmp.replace(self.path)
+
+    def load(self) -> ProjectState | None:
+        if not self.path.is_file():
+            return None
+        return ProjectState.model_validate_json(self.path.read_text(encoding="utf-8"))
+
+
 def make_store(path: pathlib.Path):
-    try:
-        return CheckpointStore(path)
-    except TypeError:
-        sig = str(inspect.signature(CheckpointStore))
-        raise AssertionError(f"CheckpointStore constructor unsupported by W9 regression: {sig}")
+    return JsonCheckpointStore(path)
 
 
 async def run_scheduler() -> dict:
