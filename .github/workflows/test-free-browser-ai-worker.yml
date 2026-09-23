@@ -386,6 +386,17 @@ jobs:
           if($errors.Count -gt 0){$errors | ForEach-Object {Write-Host $_.Message};throw "W14A packaged driver parse failed"}
           Write-Host "W14A_PROFILE_CONTRACT_CANONICAL_PASS"
 
+      - name: W14B real ChatGPT physical runner readiness
+        shell: pwsh
+        run: |
+          python ceo-browser\w14b_real_session_regression.py
+          if($LASTEXITCODE -ne 0){throw "W14B runner contract failed"}
+          $tokens=$null;$errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "ceo-browser\run_w14b_real_session_gate.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object {Write-Host $_.Message};throw "W14B runner PowerShell parse failed"}
+          if(-not (Test-Path "ceo-browser\EJECUTAR_W14B_SESION_REAL.cmd")){throw "W14B one-click launcher missing"}
+          Write-Host "W14B_REAL_SESSION_RUNNER_CANONICAL_PASS"
+
       - name: B02 scope freeze guard
         shell: pwsh
         run: |
@@ -1149,9 +1160,11 @@ jobs:
                   "EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd",
                   "RECUPERAR_PRUEBA_CEO.cmd",
                   "EJECUTAR_B38_CANDIDATE.cmd",
+                  "EJECUTAR_W14B_SESION_REAL.cmd",
                   "CEO_FIRST_TRIAL_LAB.json",
                   "CEO_FIRST_TRIAL_MANIFEST.json",
                   "ceo_core/browser_ai/run_browser_restart_gate.ps1",
+                  "ceo_core/browser_ai/run_w14b_real_session_gate.ps1",
                   "ceo_core/browser_ai/open_web_ai_profile.ps1",
                   "ceo_core/browser_ai/run_field_campaign.py",
                   "ceo_core/browser_ai/first_trial_orchestrator.py",
