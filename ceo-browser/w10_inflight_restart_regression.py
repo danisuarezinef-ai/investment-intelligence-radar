@@ -73,9 +73,29 @@ async def wait_completed(state: ProjectState, timeout: float = 25.0) -> None:
     raise AssertionError({
         "reason": "W10 completion timeout",
         "tasks": [
-            {"id": t.id, "title": t.title, "status": t.status.value, "provider": t.provider_name}
+            {
+                "id": t.id,
+                "title": t.title,
+                "status": t.status.value,
+                "provider": t.provider_name,
+                "worker_id": t.worker_id,
+                "metadata": {
+                    k: v for k, v in (t.metadata or {}).items()
+                    if k in {
+                        "blocked_safe","blocked_safe_reason","blocked_safe_source",
+                        "manual_release_required","worker_lease_v2","worker_lease_collision_v2",
+                        "provider_stage","interrupted_by_shutdown","live_recovery_reason",
+                        "recovery_strategy","strategy_change_requested","waiting_provider_v1",
+                        "dispatch_token","resume_action","resume_reason",
+                    }
+                },
+            }
             for t in state.leaf_tasks
         ],
+        "resume_report": state.metadata.get("resume_coordinator_last") or state.metadata.get("application_recovery_last"),
+        "scheduler_reconciler": state.metadata.get("scheduler_reconciler_last"),
+        "worker_lifecycle": state.metadata.get("worker_lifecycle_v2_last"),
+        "recovery_storm": state.metadata.get("recovery_storm_guard_last"),
         "completion": state.metadata.get("completion_assessment"),
         "provider_wait": state.metadata.get("provider_wait_v1"),
     })
@@ -248,6 +268,15 @@ async def crash_restart_case() -> dict:
         }
         assert reconciled.status in {TaskStatus.RETRY, TaskStatus.READY}, reconciled.status
         assert reconciled.worker_id in {None, ""}, reconciled.worker_id
+        rr_before = getattr(scheduler2, "_resume_report", None)
+        if hasattr(rr_before, "to_dict"):
+            rr_before = rr_before.to_dict()
+        print("W10_CRASH_RECONCILED", json.dumps({
+            "status": reconciled.status.value,
+            "worker_id": reconciled.worker_id,
+            "metadata": reconciled.metadata,
+            "resume_report": rr_before,
+        }, ensure_ascii=False, default=str, sort_keys=True))
 
         scheduler2.start()
         await wait_completed(restarted)
@@ -281,6 +310,7 @@ async def main_async() -> dict:
     os.environ["CEO_ALLOW_OPTIONAL_API"] = "0"
 
     clean = await clean_restart_case()
+    print("W10_CLEAN_RESTART_PASS", json.dumps(clean, ensure_ascii=False, default=str, sort_keys=True))
     crash = await crash_restart_case()
     return {"clean_restart": clean, "crash_restart": crash, "api_env_present": False}
 
