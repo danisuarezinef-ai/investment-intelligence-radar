@@ -33,6 +33,9 @@ jobs:
           New-Item -ItemType Directory -Force -Path $root | Out-Null
           Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
           $env:CEO_W8_ROOT=$root
+          Write-Host "W8_PROGRESS_TRACKER_SOURCE_BEGIN"
+          Get-Content (Join-Path $root "ceo_core\progress_tracker.py")
+          Write-Host "W8_PROGRESS_TRACKER_SOURCE_END"
           python ceo-browser\w8_productivity_truth_regression.py
           if($LASTEXITCODE -ne 0){throw "W8 productivity truth regression failed"}
           Write-Host "W8_WINDOWS_CI_PASS"
