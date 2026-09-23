@@ -110,7 +110,24 @@ def configure_local_finite_file_state(
 
     for task in state.leaf_tasks:
         low = str(task.title or "").lower()
-        if low.startswith("execution"):
+        if low.startswith("clarify & lock goal"):
+            # W9: this phase is deterministic contract preparation, not a
+            # productive deliverable. Treat it as internal control so the
+            # generic multi-provider verifier does not create verification
+            # tasks that would require an external AI.
+            task.metadata.update(
+                {
+                    "preferred_kind": "local",
+                    "local_fallback_kind": "goal_lock",
+                    "task_role": "internal_control",
+                    "control_plane_atomic": True,
+                    "local_goal_lock_deterministic": True,
+                    "external_action": False,
+                    "irreversible": False,
+                }
+            )
+            task.required_capabilities = ["general", "reasoning"]
+        elif low.startswith("execution"):
             task.metadata.update(
                 {
                     "preferred_kind": "local",
