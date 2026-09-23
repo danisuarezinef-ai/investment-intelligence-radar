@@ -16,7 +16,7 @@ def test_production_start_targets_v10_over_v9_over_v8_over_v7_over_v6_over_v5_ov
     text8=Path('cloud_service_v8.py').read_text(encoding='utf-8')
     text9=Path('cloud_service_v9.py').read_text(encoding='utf-8')
     text10=Path('cloud_service_v10.py').read_text(encoding='utf-8')
-    assert 'cloud_service_v24_snapshotfix.py' in start
+    assert 'cloud_service_v37_snapshotfix.py' in start
     assert 'import cloud_service_v9 as base9' in text10
     assert 'base9.start_runtime()' in text10
     assert 'import cloud_service_v8 as base8' in text9
