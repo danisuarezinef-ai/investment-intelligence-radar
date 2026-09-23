@@ -1,0 +1,61 @@
+name: W13 Inspect Canonical Browser Worker
+
+on:
+  push:
+    branches: [free-browser-ai-worker]
+    paths:
+      - '.github/workflows/ceo-w13-inspect.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: windows-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: free-browser-ai-worker
+      - name: Inspect package and stale browser worker copies
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w13-inspect"
+          if(Test-Path $root){Remove-Item -Recurse -Force $root}
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
+
+          $canonicalDriver=(Resolve-Path "ceo-browser\windows_chatgpt_cdp_driver.ps1").Path
+          $canonicalRecipe=(Resolve-Path "ceo-browser\recipes\chatgpt_web.json").Path
+          $oldDriver=(Resolve-Path "ceo-updates\dev313-inspect-routing\browser_ai\windows_chatgpt_cdp_driver.ps1").Path
+          $oldRecipe=(Resolve-Path "ceo-updates\dev313-inspect-routing\browser_ai\recipes\chatgpt_web.json").Path
+
+          Write-Host "W13_CANONICAL_DRIVER_SHA256=$((Get-FileHash $canonicalDriver -Algorithm SHA256).Hash.ToLower())"
+          Write-Host "W13_OLD_COPY_DRIVER_SHA256=$((Get-FileHash $oldDriver -Algorithm SHA256).Hash.ToLower())"
+          Write-Host "W13_CANONICAL_RECIPE_SHA256=$((Get-FileHash $canonicalRecipe -Algorithm SHA256).Hash.ToLower())"
+          Write-Host "W13_OLD_COPY_RECIPE_SHA256=$((Get-FileHash $oldRecipe -Algorithm SHA256).Hash.ToLower())"
+
+          $pkgDriver=Join-Path $root "ceo_core\browser_ai\windows_chatgpt_cdp_driver.ps1"
+          $pkgRecipe=Join-Path $root "ceo_core\browser_ai\recipes\chatgpt_web.json"
+          $pkgProvider=Join-Path $root "ceo_core\providers\chatgpt_web.py"
+          if(Test-Path $pkgDriver){
+            Write-Host "W13_PACKAGE_DRIVER_SHA256=$((Get-FileHash $pkgDriver -Algorithm SHA256).Hash.ToLower())"
+            Write-Host "W13_PACKAGE_DRIVER_SIZE=$((Get-Item $pkgDriver).Length)"
+          } else { Write-Host "W13_PACKAGE_DRIVER_MISSING" }
+          if(Test-Path $pkgRecipe){
+            Write-Host "W13_PACKAGE_RECIPE_SHA256=$((Get-FileHash $pkgRecipe -Algorithm SHA256).Hash.ToLower())"
+          } else { Write-Host "W13_PACKAGE_RECIPE_MISSING" }
+          if(Test-Path $pkgProvider){
+            Write-Host "W13_PACKAGE_PROVIDER_SHA256=$((Get-FileHash $pkgProvider -Algorithm SHA256).Hash.ToLower())"
+          } else { Write-Host "W13_PACKAGE_PROVIDER_MISSING" }
+
+          Write-Host "===== W13 REPOSITORY REFERENCES TO DEV313 BROWSER_AI ====="
+          Get-ChildItem -Recurse -File -Include *.py,*.ps1,*.yml,*.yaml,*.md,*.json |
+            Select-String -SimpleMatch "dev313-inspect-routing" |
+            ForEach-Object { Write-Host ($_.Path + ":" + $_.LineNumber + ":" + $_.Line.Trim()) }
+
+          Write-Host "===== W13 PACKAGE BROWSER_AI FILES ====="
+          if(Test-Path (Join-Path $root "ceo_core\browser_ai")){
+            Get-ChildItem -Recurse -File (Join-Path $root "ceo_core\browser_ai") |
+              ForEach-Object { Write-Host $_.FullName.Substring($root.Length+1) }
+          }
