@@ -332,6 +332,16 @@ async def main_async() -> dict:
 def main() -> int:
     result = asyncio.run(main_async())
     print("W10_RESTART_E2E", json.dumps(result, ensure_ascii=False, default=str, sort_keys=True))
+
+    contract = json.loads((ROOT / "CEO_UPDATE_PACKAGE.json").read_text(encoding="utf-8"))
+    relative = "ceo_core/operational_resilience.py"
+    expected = str((contract.get("file_hashes") or {}).get(relative) or "")
+    actual = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
+    assert expected and expected == actual, {"path": relative, "expected": expected, "actual": actual}
+    print("W10_PACKAGE_HASH", json.dumps({
+        "path": relative, "ok": True, "expected": expected, "actual": actual
+    }, sort_keys=True))
+
     print("W10_RESTART_REGRESSION_PASS")
     return 0
 
