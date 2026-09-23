@@ -187,6 +187,8 @@ async def clean_restart_case() -> dict:
         assert persisted_execution.status == TaskStatus.RETRY, persisted_execution.status
         assert persisted_execution.metadata.get("interrupted_by_shutdown"), persisted_execution.metadata
         assert persisted_execution.metadata.get("provider_stage") == "interrupted", persisted_execution.metadata
+        interrupted_status = persisted_execution.status.value
+        interrupted_provider_stage = persisted_execution.metadata.get("provider_stage")
         assert not (workspace / TARGET).exists(), "provider was interrupted before any write"
 
         # Same task id resumes and completes; no replacement/duplicate is permitted.
@@ -206,8 +208,8 @@ async def clean_restart_case() -> dict:
         assert running_snapshot.tasks[execution_id].status == TaskStatus.RUNNING
 
         return {
-            "interrupted_status": persisted_execution.status.value,
-            "interrupted_provider_stage": persisted_execution.metadata.get("provider_stage"),
+            "interrupted_status": interrupted_status,
+            "interrupted_provider_stage": interrupted_provider_stage,
             "same_execution_id": final["execution_id"] == execution_id,
             "final": final,
         }
@@ -268,9 +270,19 @@ async def crash_restart_case() -> dict:
         }
         assert reconciled.status in {TaskStatus.RETRY, TaskStatus.READY}, reconciled.status
         assert reconciled.worker_id in {None, ""}, reconciled.worker_id
+        reconciled_status_before = reconciled.status.value
+
+        durable_lease = dict((restarted.metadata.get("worker_leases_v2") or {}).get(execution_id) or {})
+        task_lease = dict(reconciled.metadata.get("worker_lease_v2") or {})
+        assert durable_lease.get("released") is True, durable_lease
+        assert durable_lease.get("release_reason") == "restart_interrupted_worker", durable_lease
+        assert task_lease.get("released") is True, task_lease
+        assert task_lease.get("release_reason") == "restart_interrupted_worker", task_lease
+        assert reconciled.metadata.get("worker_lease_recovered_v2") is True, reconciled.metadata
+
         rr_before = getattr(scheduler2, "_resume_report", None)
-        if hasattr(rr_before, "to_dict"):
-            rr_before = rr_before.to_dict()
+        if hasattr(rr_before, "as_dict"):
+            rr_before = rr_before.as_dict()
         print("W10_CRASH_RECONCILED", json.dumps({
             "status": reconciled.status.value,
             "worker_id": reconciled.worker_id,
@@ -293,7 +305,9 @@ async def crash_restart_case() -> dict:
 
         return {
             "stale_status_before_init": TaskStatus.RUNNING.value,
-            "reconciled_status": reconciled.status.value,
+            "reconciled_status": reconciled_status_before,
+            "durable_lease_after_reconcile": durable_lease,
+            "task_lease_after_reconcile": task_lease,
             "partial_sha256": partial_sha,
             "resume_report": resume_report,
             "same_execution_id": final["execution_id"] == execution_id,
