@@ -36,3 +36,19 @@ jobs:
           Write-Host "W9_WORKMODE_MATCHES_BEGIN"
           Select-String -Path (Join-Path $root "scripts\ceo_stdlib_work_mode.py") -Pattern "execution_enabled|start_project|GoalLockLocalProviderV1|MultiProviderRouter|def _router" -Context 3,8
           Write-Host "W9_WORKMODE_MATCHES_END"
+          Write-Host "W9_STORE_API_BEGIN"
+          $env:CEO_W9_INSPECT_ROOT=$root
+          @'
+          import inspect, os, pathlib, sys
+          root=pathlib.Path(os.environ["CEO_W9_INSPECT_ROOT"])
+          sys.path.insert(0,str(root))
+          from ceo_core.store import CheckpointStore
+          from ceo_core.scheduler import ContinuousScheduler
+          from ceo_core.routing import MultiProviderRouter
+          print("CheckpointStore signature:", inspect.signature(CheckpointStore))
+          print(inspect.getsource(CheckpointStore))
+          print("ContinuousScheduler signature:", inspect.signature(ContinuousScheduler))
+          print("MultiProviderRouter signature:", inspect.signature(MultiProviderRouter))
+          '@ | Set-Content -Encoding UTF8 w9_api_inspect.py
+          python w9_api_inspect.py
+          Write-Host "W9_STORE_API_END"
