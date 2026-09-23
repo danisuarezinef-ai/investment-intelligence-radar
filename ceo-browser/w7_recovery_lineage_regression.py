@@ -110,6 +110,30 @@ def main():
     if state.metadata.get("operator_productivity_state") != "BLOQUEADO":
         failures.append("exhausted_lineage_not_visible_as_blocked")
 
+    # Restart persistence: an exhausted lineage must stay exhausted after
+    # serialization/reopen and must not manufacture another replacement.
+    payload = state.model_dump_json()
+    restored = ProjectState.model_validate_json(payload)
+    restored_task = restored.tasks[task.id]
+    before_restart = set(restored.tasks)
+    out_restart = ProductiveFallbackOrchestratorV1().apply(restored)
+    after_restart = set(restored.tasks)
+    print("W7_RESTART_PERSISTENCE", json.dumps({
+        "report": out_restart.to_dict(),
+        "task_status": restored_task.status.value,
+        "blocked_safe": bool(restored_task.metadata.get("blocked_safe")),
+        "reason": restored_task.metadata.get("blocked_safe_reason"),
+        "created": sorted(after_restart - before_restart),
+    }, default=str, sort_keys=True))
+    if after_restart != before_restart:
+        failures.append("restart_reanimated_exhausted_lineage")
+    if restored_task.status != TaskStatus.BLOCKED:
+        failures.append(f"restart_exhausted_status={restored_task.status.value}")
+    if restored_task.metadata.get("blocked_safe") is not True:
+        failures.append("restart_lost_blocked_safe")
+    if restored_task.metadata.get("blocked_safe_reason") != "productive_replan_lineage_exhausted":
+        failures.append("restart_lost_exhaustion_reason")
+
     # Below the cap, one genuine strategy-changing replacement is still allowed.
     state2, task2 = below_cap_state()
     before2 = set(state2.tasks)
