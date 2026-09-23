@@ -17,7 +17,10 @@ def audit(root='.'):
     start=(root/'start.sh').read_text(encoding='utf-8-sig') if (root/'start.sh').exists() else ''
     v9=(root/'cloud_service_v9.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v9.py').exists() else ''
     v10=(root/'cloud_service_v10.py').read_text(encoding='utf-8-sig') if (root/'cloud_service_v10.py').exists() else ''
-    if 'cloud_service_v10.py' not in start:findings.append('START_NOT_V10')
+    # Preserve the historical v9->v10 composition checks below, but do not pin
+    # the production entrypoint to v10 after audited snapshot-safe runtimes advance.
+    if 'exec python cloud_service_v37_snapshotfix.py' not in start:
+        findings.append('START_NOT_V37_SNAPSHOTFIX')
     if 'import cloud_service_v9 as base9' not in v10 or 'base9.start_runtime()' not in v10:findings.append('V10_CHAIN_INVALID')
     if 'import cloud_service_v8 as base8' not in v9 or 'base8.start_runtime()' not in v9:findings.append('V9_CHAIN_INVALID')
     for endpoint in ('/pre160-brain-status-v1','/pre160-forward-evidence-v2','/pre160-calibration-v2',
