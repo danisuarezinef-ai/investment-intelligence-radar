@@ -45,6 +45,8 @@ jobs:
           if($LASTEXITCODE -ne 0){throw "W10 composition W8 failed"}
           python ceo-browser\apply_w9_local_finite_task.py
           if($LASTEXITCODE -ne 0){throw "W10 composition W9 failed"}
+          python ceo-browser\apply_w10_restart_lease_fix.py
+          if($LASTEXITCODE -ne 0){throw "W10 restart lease fix failed"}
           python -m compileall -q $root
           if($LASTEXITCODE -ne 0){throw "W10 cumulative candidate compile failed"}
       - name: Interrupt and resume finite local objective
