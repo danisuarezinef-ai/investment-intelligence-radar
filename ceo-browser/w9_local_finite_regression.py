@@ -191,8 +191,15 @@ async def run_scheduler() -> dict:
                             "blocked_safe_reason",
                             "last_provider_error",
                             "provider_stage",
+                            "superseded_reason",
+                            "verification_task",
+                            "verifies",
+                            "verification_scheduled",
+                            "task_role",
                         }
                     },
+                    "dependencies": list(t.dependencies or []),
+                    "parent_id": t.parent_id,
                 }
                 for t in state.leaf_tasks
             ]
@@ -205,6 +212,10 @@ async def run_scheduler() -> dict:
                         "goal_audit_passed": state.metadata.get("goal_audit_passed"),
                         "operator": state.metadata.get("operator_productivity_state"),
                         "provider_wait": state.metadata.get("provider_wait_v1"),
+                        "completion_phase": state.metadata.get("completion_phase_v1"),
+                        "deterministic_certificate": state.metadata.get("deterministic_completion_certificate_v1"),
+                        "last_goal_audit_rejection": state.metadata.get("last_goal_audit_rejection"),
+                        "continuity_generation": state.metadata.get("goal_continuity_generation"),
                     },
                     ensure_ascii=False,
                     default=str,
