@@ -69,8 +69,7 @@ README="""CEO DE IAs — PRIMERA PRUEBA BROWSER LAB
 2. El motor browser es multi-proveedor: ChatGPT, Claude, Gemini, Perplexity y Grok.
 3. Esta primera validación física usa ChatGPT porque conserva la sesión que ya abriste; no es una dependencia arquitectónica.
 4. La campaña funcional NO reinicia Chrome entre turnos; utiliza una única sesión para evitar aperturas/pestañas innecesarias.
-5. Doble clic en EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd.
-6. El lanzador realiza preflight y después una única campaña B14 -> B18 -> B20 -> B29/B30.
+5. Para certificar primero W14-B (sesión real + cierre/reapertura), doble clic en EJECUTAR_W14B_SESION_REAL.cmd.\n6. Para la campaña funcional completa, doble clic en EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd.\n6. El lanzador realiza preflight y después una única campaña B14 -> B18 -> B20 -> B29/B30.
 7. Si el proveedor web requiere login, hazlo manualmente. No se automatiza CAPTCHA/2FA.
 8. Cada intento usa su propio trial_id y nunca reutiliza evidencias de intentos anteriores.
 9. Si termina GO, B38 NO se inicia automáticamente.
@@ -147,6 +146,7 @@ def main()->None:
     (ROOT/"EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd").write_text(LAUNCHER_TEMPLATE,encoding="utf-8",newline="\r\n")
     (ROOT/"RECUPERAR_PRUEBA_CEO.cmd").write_text(RECOVERY_TEMPLATE,encoding="utf-8",newline="\r\n")
     (ROOT/"EJECUTAR_B38_CANDIDATE.cmd").write_text(B38_TEMPLATE,encoding="utf-8",newline="\r\n")
+    copy(SRC/"EJECUTAR_W14B_SESION_REAL.cmd",ROOT/"EJECUTAR_W14B_SESION_REAL.cmd")
     (ROOT/"PRIMERA_PRUEBA_README.txt").write_text(README,encoding="utf-8")
 
     marker={
