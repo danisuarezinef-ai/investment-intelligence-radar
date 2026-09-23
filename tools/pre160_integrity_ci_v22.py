@@ -19,7 +19,7 @@ def audit(root='.'):
     finally:legacy._text=original_text
     if old.get('status')!='PASS':findings.extend('LEGACY:'+x for x in old.get('findings') or [])
     start=(root/'start.sh').read_text(encoding='utf-8-sig') if (root/'start.sh').exists() else ''
-    if 'exec python cloud_service_v24_snapshotfix.py' not in start:findings.append('START_NOT_V24_SNAPSHOTFIX')
+    if 'exec python cloud_service_v37_snapshotfix.py' not in start:findings.append('START_NOT_V37_SNAPSHOTFIX')
     for n in range(11,25):
         p=root/f'cloud_service_v{n}.py'
         if not p.exists():findings.append(f'MISSING_CLOUD_V{n}');continue
@@ -37,7 +37,7 @@ def audit(root='.'):
         text=(root/path).read_text(encoding='utf-8-sig') if (root/path).exists() else '';compact=text.replace(' ','')
         for token in ("'automatic_promotion':False","'automatic_release':False","'live_execution_allowed':False",'REAL_TRADING=False'):
             if token not in compact:findings.append('SAFETY_TOKEN_MISSING:'+path+':'+token)
-    return {'status':'PASS' if not findings else 'FAIL','findings':findings,'legacy_status':old.get('status'),'actual_entrypoint':'cloud_service_v24_snapshotfix.py','real_trading':False}
+    return {'status':'PASS' if not findings else 'FAIL','findings':findings,'legacy_status':old.get('status'),'actual_entrypoint':'cloud_service_v37_snapshotfix.py','real_trading':False}
 
 if __name__=='__main__':
     result=audit();print(json.dumps(result,indent=2,ensure_ascii=False));raise SystemExit(0 if result['status']=='PASS' else 1)
