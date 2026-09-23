@@ -618,3 +618,60 @@ Validación física del PC del usuario sigue pendiente.
 Siguiente bloque canónico:
 **W12 — pausa / reanudar / cancelar**, salvo indicación distinta del usuario.
 
+
+
+## W12 AUDIT STATUS
+
+**W12 — pausa / reanudar / cancelar:** CLOSED — 2 BUGS FOUND, FIXED, CANONICAL WINDOWS CI GREEN
+
+Hallazgo 1:
+- la pausa de operador solo escribía `state.paused=true`;
+- impedía nuevos dispatches, pero no detenía un worker ya RUNNING;
+- regresión raw: `side_effect_exists=true`, `stop_calls=0`, task seguía `running`.
+
+Hallazgo 2:
+- un proyecto pausado sobrevivía correctamente un reinicio;
+- pero `Reanudar` después del reinicio quitaba `paused` sin recrear el scheduler;
+- regresión raw: `paused=false`, `scheduler_created=false`.
+
+Corrección:
+- pausa persiste primero la intención y usa `_stop_scheduler(timeout_seconds=4.0)` como límite restart-safe;
+- RUNNING seguro vuelve a RETRY y el worker en memoria se cancela;
+- pausa queda durable y scheduler queda desmontado;
+- reanudar reconstruye router + `ContinuousScheduler` y lo arranca cuando no existe scheduler;
+- un proyecto cancelado no puede reanudarse;
+- la cancelación existente fue auditada y ya era terminal: pendientes → SUPERSEDED, autonomía OFF, proyecto deja de ser activo y no revive en restart.
+
+Evidencia focal:
+- run `35871271712`
+- job `107215680970`
+- SUCCESS
+- `W12_RAW_PAUSE_RESUME_BUGS_REPRODUCED`
+- `W12_PATCHED_PAUSE`
+- `W12_PATCHED_RESUME`
+- `W12_CANCEL_TERMINAL`
+- `W12_PAUSE_RESUME_CANCEL_REGRESSION_PASS`
+
+Package hash:
+- `scripts/ceo_stdlib_work_mode.py`
+- `7293caba77e25d3f25e8ac30e8b7710d648fba3247bccb07e5aede3f0538f8e8`
+
+Suite canónica W6-W12:
+- commit `1cd786f75bb88292a38b4c96156a48135a7f027f`
+- run `35871576483`
+- job `107216714929`
+- conclusion SUCCESS
+- W12 + B02 + browser-first + B03-B38 + Gate 0 + LAB + zero-API boundaries: PASS.
+
+Archivo:
+- `W12_OPERATOR_CONTROL_AUDIT.md`
+- `apply_w12_operator_control.py`
+- `w12_pause_resume_cancel_regression.py`
+
+Los workflows temporales W12 se eliminaron después de integrar el gate canónico.
+No se generó instalador.
+No se modificó el canal stable.
+Validación física del PC del usuario sigue pendiente.
+
+Siguiente bloque canónico:
+**W13**, manteniendo la secuencia de auditoría Windows y sin adelantar la instalación.
