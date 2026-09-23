@@ -143,6 +143,15 @@ def main() -> int:
     if key(r0)!=key(r1):
         failures.append("recovery_or_heartbeat_inflated_progress")
 
+    # Explicit legacy high-water marks are still preserved: W8 removes only
+    # the invalid raw-graph fallback, not the monotonic productive-progress contract.
+    legacy=productive_state()
+    legacy.metadata["stable_progress_v1"]={"display_progress":60.0}
+    legacy_row=snap(legacy)
+    print("W8_EXPLICIT_LEGACY_HIGHWATER",json.dumps(key(legacy_row),sort_keys=True))
+    if float(legacy_row.get("display_progress",-1)) != 60.0:
+        failures.append(f"explicit_legacy_highwater_not_preserved={legacy_row.get('display_progress')}")
+
     # A project containing only completed control-plane tasks must not be
     # presented as productive completion.
     controls_only=ProjectState(goal="controls only")
@@ -158,6 +167,16 @@ def main() -> int:
         failures.append(f"controls_only_display_progress={only.get('display_progress')}")
     if truth_only.productive_completed != 0:
         failures.append("controls_only_truth_productive_completed")
+
+    contract_path=ROOT/"CEO_UPDATE_PACKAGE.json"
+    if contract_path.is_file():
+        import hashlib
+        row=json.loads(contract_path.read_text(encoding="utf-8"))
+        expected=str((row.get("file_hashes") or {}).get("ceo_core/progress_tracker.py") or "")
+        actual=hashlib.sha256((ROOT/"ceo_core"/"progress_tracker.py").read_bytes()).hexdigest()
+        print("W8_PACKAGE_HASH",json.dumps({"expected":expected,"actual":actual},sort_keys=True))
+        if expected and expected!=actual:
+            failures.append("package_contract_hash_not_updated")
 
     if failures:
         print("W8_PRODUCTIVITY_TRUTH_FAIL",json.dumps(failures,ensure_ascii=False))
