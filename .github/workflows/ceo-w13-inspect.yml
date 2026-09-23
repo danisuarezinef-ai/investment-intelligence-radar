@@ -110,3 +110,21 @@ jobs:
               around(pat,8,45)
           '@ | Set-Content -Encoding UTF8 inspect_w13_workmode.py
           python inspect_w13_workmode.py
+
+      - name: Inspect W12 UI render anchors
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w13-composed"
+          $env:CEO_W13_ROOT=$root
+          @'
+          from pathlib import Path
+          import os
+          p=Path(os.environ["CEO_W13_ROOT"])/"scripts"/"ceo_stdlib_work_mode.py"
+          lines=p.read_text(encoding="utf-8").splitlines()
+          for i,line in enumerate(lines):
+              if "function render(s)" in line:
+                  for j in range(i,min(len(lines),i+32)):
+                      print(f"{j+1}: {lines[j]}")
+                  break
+          '@ | Set-Content -Encoding UTF8 inspect_w13_ui.py
+          python inspect_w13_ui.py
