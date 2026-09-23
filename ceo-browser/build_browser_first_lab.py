@@ -9,8 +9,9 @@ import zipfile
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 BASE = REPO / "ceo-updates" / "CEO_1.5.89-rc1-native-transport-integrity.zip"
-SRC = REPO / "ceo-updates" / "dev313-inspect-routing"
-LAB = REPO / "ceo-browser"
+CORE_SRC = REPO / "ceo-updates" / "dev313-inspect-routing"
+BROWSER_SRC = REPO / "ceo-browser"
+LAB = BROWSER_SRC
 ROOT = pathlib.Path(os.environ.get("CEO_BROWSER_LAB_BUILD_ROOT", "/tmp/ceo-browser-first-lab"))
 OUT = LAB / "CEO_BROWSER_FIRST_LAB.zip"
 
@@ -103,12 +104,14 @@ def main() -> None:
         z.extractall(ROOT)
 
     # Browser-first CEO source. This is a lab-only replacement, not a release.
-    copy_file(SRC / "ceo_stdlib_work_mode.py", ROOT / "scripts" / "ceo_stdlib_work_mode.py")
-    copy_file(SRC / "routing.py", ROOT / "ceo_core" / "routing.py")
-    copy_file(SRC / "providers" / "chatgpt_web.py", ROOT / "ceo_core" / "providers" / "chatgpt_web.py")
-    copy_file(SRC / "browser_ai" / "windows_chatgpt_cdp_driver.ps1", ROOT / "ceo_core" / "browser_ai" / "windows_chatgpt_cdp_driver.ps1")
-    copy_file(SRC / "browser_ai" / "open_chatgpt_profile.ps1", ROOT / "ceo_core" / "browser_ai" / "open_chatgpt_profile.ps1")
-    copy_file(SRC / "browser_ai" / "recipes" / "chatgpt_web.json", ROOT / "ceo_core" / "browser_ai" / "recipes" / "chatgpt_web.json")
+    copy_file(CORE_SRC / "ceo_stdlib_work_mode.py", ROOT / "scripts" / "ceo_stdlib_work_mode.py")
+    copy_file(CORE_SRC / "routing.py", ROOT / "ceo_core" / "routing.py")
+    copy_file(CORE_SRC / "providers" / "chatgpt_web.py", ROOT / "ceo_core" / "providers" / "chatgpt_web.py")
+    # W13: browser runtime has a single canonical source. The historical
+    # dev313/browser_ai snapshot is intentionally not a packaging source.
+    copy_file(BROWSER_SRC / "windows_chatgpt_cdp_driver.ps1", ROOT / "ceo_core" / "browser_ai" / "windows_chatgpt_cdp_driver.ps1")
+    copy_file(BROWSER_SRC / "open_chatgpt_profile.ps1", ROOT / "ceo_core" / "browser_ai" / "open_chatgpt_profile.ps1")
+    copy_file(BROWSER_SRC / "recipes" / "chatgpt_web.json", ROOT / "ceo_core" / "browser_ai" / "recipes" / "chatgpt_web.json")
 
     (ROOT / "ABRIR_CEO_BROWSER_LAB.cmd").write_text(CMD, encoding="utf-8", newline="\r\n")
     (ROOT / "ABRIR_CEO_BROWSER_LAB.vbs").write_text(VBS, encoding="utf-8", newline="\r\n")
