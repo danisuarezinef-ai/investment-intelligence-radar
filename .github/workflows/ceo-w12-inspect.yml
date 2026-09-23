@@ -57,5 +57,8 @@ jobs:
           dump("ceo_core/store.py",80,115)
           dump("ceo_core/sqlite_store.py",170,200)
           dump("ceo_core/operational_resilience.py",90,165)
+          dump("scripts/ceo_stdlib_work_mode.py",1,260)
+          dump("ceo_core/engine.py",1,260)
+          dump("ceo_core/api.py",1,260)
           '@ | Set-Content -Encoding UTF8 inspect_w12.py
           python inspect_w12.py
