@@ -527,3 +527,50 @@ Validación física del PC del usuario sigue pendiente.
 Siguiente bloque canónico:
 **W10 — persistencia/reinicio durante una tarea finita en curso**, salvo indicación distinta.
 
+## W10 AUDIT STATUS
+
+**W10 — persistencia/reinicio durante una tarea finita:** CLOSED — BUG FOUND, FIXED, CANONICAL WINDOWS CI GREEN
+
+Hallazgo:
+- `ResumeCoordinator` recuperaba un RUNNING huérfano como RETRY y limpiaba `worker_id`;
+- pero dejaba vivo el lease persistido de la sesión muerta;
+- `WorkerLifecycleV2.claim()` detectaba `task_already_leased`;
+- la tarea recuperada terminaba bloqueada por `worker_lease_collision_v2`.
+
+Corrección:
+- al clasificar `safe_retry_after_interruption`, se libera también el lease durable;
+- `release_reason=restart_interrupted_worker`;
+- se libera la copia de task metadata;
+- `worker_lease_recovered_v2=true`;
+- no se modifican TTL normales, límites W7 ni política de efectos externos ambiguos.
+
+Evidencia:
+- clean stop durante RUNNING → RETRY durable;
+- mismo Execution task ID tras reanudación;
+- crash snapshot RUNNING → RETRY;
+- stale lease released=true;
+- archivo parcial sobrescrito por contenido final correcto;
+- Final audit PASS;
+- completed_at + 100 %;
+- sin hojas duplicadas;
+- package hash `operational_resilience.py` verificado.
+
+Archivos:
+- `W10_INFLIGHT_RESTART_AUDIT.md`
+- `apply_w10_restart_lease_fix.py`
+- `w10_inflight_restart_regression.py`
+
+Suite canónica:
+- commit: `02723bf4d0f2d51d118dd463137b03eb1f2bc28e`
+- run: `35863310519`
+- job: `107188575693`
+- conclusion: SUCCESS
+
+Workflows temporales W10 eliminados.
+No se generó instalador.
+No se modificó el canal stable.
+Validación física del PC del usuario sigue pendiente.
+
+Siguiente bloque canónico:
+**W11 — idempotencia y reejecución segura de tareas finitas con side effects locales**, salvo indicación distinta del usuario.
+
