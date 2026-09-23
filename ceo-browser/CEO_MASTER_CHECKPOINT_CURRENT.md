@@ -384,3 +384,46 @@ Validación física del PC del usuario sigue pendiente.
 Siguiente bloque canónico:
 **W7 — anti-recovery-loop / productividad real**, salvo que el usuario indique otro punto.
 
+## W7 AUDIT STATUS
+
+**W7 — anti-recovery-loop / productividad real:** CLOSED — BUG FOUND, FIXED, WINDOWS CI GREEN
+
+Hallazgo:
+- 1.5.92 limitaba retries por tarea pero NO el linaje de reemplazos productivos;
+- `BlockedUnitRebuilderV2` incrementaba `stall_replan_generation`;
+- `ProductiveFallbackOrchestratorV1` podía crear A → A' → A'' → A''' → A''''... sin máximo.
+
+Corrección:
+- máximo por defecto: 3 generaciones productivas de replanteo;
+- al agotarlo: 0 reemplazos, `blocked_safe`, reason `productive_replan_lineage_exhausted`;
+- watchdog queda BLOQUEADO de forma estable en vez de fabricar actividad falsa;
+- debajo del límite sigue permitiendo un cambio real de estrategia.
+
+Evidencia:
+- raw 1.5.92 reprodujo generación 4;
+- parche evita generación 4;
+- dos ticks de watchdog no recrean tarea;
+- serialización/reapertura no reanima el linaje;
+- provider wait no consume ni crea recuperación;
+- package hash actualizado;
+- suite canónica Windows completa: SUCCESS.
+
+Archivos:
+- `W7_RECOVERY_PRODUCTIVITY_AUDIT.md`
+- `apply_w7_recovery_lineage_cap.py`
+- `w7_recovery_lineage_regression.py`
+- regresión integrada en `.github/workflows/test-free-browser-ai-worker.yml`
+
+Suite canónica:
+- commit: `567f4091432f7cb7af24352e24445e6dbdcde0dc`
+- run: `35845102577`
+- job: `107129243402`
+- conclusion: SUCCESS
+
+No se generó instalador.
+No se modificó el canal stable.
+Validación física del PC del usuario sigue pendiente.
+
+Siguiente bloque canónico:
+**W8 — productividad real / actividad útil vs control**, salvo indicación distinta del usuario.
+
