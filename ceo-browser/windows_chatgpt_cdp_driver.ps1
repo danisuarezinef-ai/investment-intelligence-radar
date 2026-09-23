@@ -64,9 +64,9 @@ function Wait-DevToolsDown([int]$port,[int]$timeoutSeconds=20) {
 
 function Normalize-ProfilePath([string]$path) {
   try {
-    return ([IO.Path]::GetFullPath($path).TrimEnd('\\','/')).ToLowerInvariant()
+    return ([IO.Path]::GetFullPath($path).TrimEnd([char[]]@([char]92,[char]47))).ToLowerInvariant()
   } catch {
-    return ([string]$path).Trim().TrimEnd('\\','/').ToLowerInvariant()
+    return ([string]$path).Trim().TrimEnd([char[]]@([char]92,[char]47)).ToLowerInvariant()
   }
 }
 
