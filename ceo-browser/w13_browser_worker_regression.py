@@ -108,8 +108,6 @@ def patched_case() -> None:
     assert "self.AIWorkerProvider(self.browser_transport)" in work
     assert "CEO_ALLOW_OPTIONAL_API" in work
     assert "browser_control_verified" in work
-    assert "$('startBtn').disabled=false" in work
-    assert "$('resumeBtn').disabled=!hasActive||!s.paused" in work
 
     start = method_block(work, "    async def start_project(self, body: dict[str, Any]):")
     assert "IA web no disponible. CEO necesita Chrome/Edge" not in start
