@@ -675,3 +675,96 @@ Validación física del PC del usuario sigue pendiente.
 
 Siguiente bloque canónico:
 **W13**, manteniendo la secuencia de auditoría Windows y sin adelantar la instalación.
+
+
+## W13 AUDIT STATUS
+
+**W13 — Browser Worker actual:** CLOSED — 2 INTEGRATION GAPS FOUND, FIXED, CANONICAL WINDOWS CI GREEN
+
+Definición recuperada:
+- integrar/auditar exclusivamente el Browser Worker canónico del estado `c210b93167361b3ff4017368ac2d790fca8de5b3`;
+- descartar como fuente de producción las copias antiguas de `dev313-inspect-routing/browser_ai`.
+
+Hallazgo 1:
+- la candidata acumulada W6→W12 sobre 1.5.92 no contenía `ceo_core/browser_ai` ni `ceo_core/providers/chatgpt_web.py`;
+- tampoco tenía `ChatGPTWebTransport` integrado en el work mode;
+- marca: `W13_RAW_BROWSER_WORKER_GAP_REPRODUCED`.
+
+Hallazgo 2:
+- `build_browser_first_lab.py` seguía copiando driver/perfil/receta desde el snapshot histórico del bridge;
+- driver antiguo SHA-256: `03938ad0a943154611e775264c928d41bf37cbdf697de930ffdb16a6f4487662`;
+- recipe antigua SHA-256: `cd4847432d1048a2083636bc8d74ec7cf140e067843fda54b2ac83a106b6c107`;
+- el builder ahora usa `ceo-browser` como única fuente de esas piezas.
+
+Integración W13:
+- `ceo_core/routing.py`;
+- `ceo_core/providers/chatgpt_web.py`;
+- merge browser-only sobre `scripts/ceo_stdlib_work_mode.py`;
+- `ceo_core/browser_ai/windows_chatgpt_cdp_driver.ps1`;
+- `ceo_core/browser_ai/open_chatgpt_profile.ps1`;
+- `ceo_core/browser_ai/recipes/chatgpt_web.json`.
+
+Identidad c210 verificada:
+- driver blob actual = c210 = `7bf89f3441861360b49ed1f98b08384e24d453df`;
+- profile blob actual = c210 = `202b43d1d6b83645df2d6e239d319c14aff95001`;
+- recipe blob actual = c210 = `eac61a5dd8e2d233f1872db81f176d101f519454`.
+
+Hashes de candidata W13:
+- routing: `9fcdfd242128e759e7d66820bfa8f188dba55ccb7a1fc5287e0f3f39b6c23c43`;
+- provider: `02c7089106f8f984b5c6ae8a339e10106c172de75f0cd3bd22afcb527f94f076`;
+- driver: `bfbb01eb528f08c0db586d0adb55078a109690ffcf6516c641a131d86974e9bb`;
+- profile: `7ff3a1fc30eaab0fed4f1dcf06f79bfe1ab751a4f5f48d02af6435178d226cd6`;
+- recipe: `c4b615480d3dedbfaaebf17cdcd7f2fc18e7790e183687e7934d77ba9d4ee82b`;
+- work mode acumulado: `9b955619b59260b55e3b11cda9c82756940511d64e3cf6d70807f07ce0a860f8`.
+
+Semántica:
+- Browser Worker es la superficie IA externa normal;
+- API sigue siendo opcional detrás de `CEO_ALLOW_OPTIONAL_API`;
+- el arranque normal no solicita Gemini key;
+- una indisponibilidad browser no debe destruir/bloquear el core local ni impedir persistir trabajo;
+- no se copió entero el work-mode antiguo.
+
+Contrato del paquete:
+- las seis rutas W13 están cubiertas por `CEO_UPDATE_PACKAGE.json.file_hashes`;
+- 1.5.92 tiene `required_files=null`; W13 no inventa un esquema nuevo.
+
+Evidencia focal:
+- run `35884246546`
+- job `107260198219`
+- SUCCESS
+- `W13_CANONICAL_BROWSER_WORKER_REGRESSION_PASS`
+- `W13_PACKAGED_BROWSER_TWO_TURN_ZERO_API_PASS`
+- `W13_WINDOWS_CI_PASS`.
+
+La prueba focal utilizó el Browser Worker ya incluido en la candidata W13:
+- Chrome/CDP: PASS;
+- dos turnos: PASS;
+- misma conversation URL: PASS;
+- `api_calls=0`: PASS;
+- `paid_api_calls=0`: PASS.
+Se ejecutó contra harness web local; NO equivale todavía a ChatGPT real del usuario.
+
+Suite canónica W6→W13:
+- commit `728b75dbcccd1ce5d51b401cf83a33badffb08ed`
+- run `35884483679`
+- job `107261018379`
+- conclusion SUCCESS
+- 54 pasos completados.
+- marcas: `W13_CANONICAL_BROWSER_WORKER_PASS`, `B02_SCOPE_FREEZE_PASS`, `CEO_AI_TRANSPORT_BROWSER_ZERO_API_PASS`, `FREE_BROWSER_BOUNDARY_PASS`.
+
+Archivos persistentes W13:
+- `apply_w13_canonical_browser_worker.py`;
+- `w13_browser_worker_regression.py`;
+- `W13_CANONICAL_BROWSER_WORKER_AUDIT.md`;
+- gate W13 integrado en `test-free-browser-ai-worker.yml`;
+- `build_browser_first_lab.py` corregido para fuente browser canónica.
+
+Los workflows temporales W13 fueron eliminados tras la prueba focal.
+
+No se generó instalador.
+No se modificó el canal stable.
+Validación física del PC del usuario pendiente.
+Login/sesión real ChatGPT pendiente.
+
+Siguiente bloque canónico:
+**W14 — perfil Chrome persistente / sesión real.**
