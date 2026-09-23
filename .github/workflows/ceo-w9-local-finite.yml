@@ -1,0 +1,71 @@
+name: CEO W9 Local Finite Task Audit
+
+on:
+  push:
+    branches: [free-browser-ai-worker]
+    paths:
+      - 'ceo-browser/w9_local_finite_provider_template.py'
+      - 'ceo-browser/apply_w9_local_finite_task.py'
+      - 'ceo-browser/w9_local_finite_regression.py'
+      - '.github/workflows/ceo-w9-local-finite.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  w9:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: free-browser-ai-worker
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime dependency
+        shell: pwsh
+        run: python -m pip install --disable-pip-version-check "pydantic>=2,<3"
+      - name: Build cumulative W6-W9 candidate
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w9"
+          if(Test-Path $root){Remove-Item -Recurse -Force $root}
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
+
+          $env:CEO_W6_ROOT=$root
+          python ceo-browser\apply_w6_completion_persistence.py
+          if($LASTEXITCODE -ne 0){throw "W6 patch failed in W9 cumulative build"}
+
+          $env:CEO_W7_ROOT=$root
+          python ceo-browser\apply_w7_recovery_lineage_cap.py
+          if($LASTEXITCODE -ne 0){throw "W7 patch failed in W9 cumulative build"}
+
+          $env:CEO_W8_ROOT=$root
+          python ceo-browser\apply_w8_productivity_truth_fix.py
+          if($LASTEXITCODE -ne 0){throw "W8 patch failed in W9 cumulative build"}
+
+          $env:CEO_W9_ROOT=$root
+          python ceo-browser\apply_w9_local_finite_task.py
+          if($LASTEXITCODE -ne 0){throw "W9 patch failed"}
+
+          python -m compileall -q $root
+          if($LASTEXITCODE -ne 0){throw "W9 cumulative candidate compile failed"}
+      - name: Run local finite task through real scheduler
+        shell: pwsh
+        env:
+          CEO_ALLOW_OPTIONAL_API: '0'
+          OPENAI_API_KEY: ''
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          ANTHROPIC_API_KEY: ''
+          PERPLEXITY_API_KEY: ''
+          XAI_API_KEY: ''
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w9"
+          $env:CEO_W9_ROOT=$root
+          python ceo-browser\w9_local_finite_regression.py
+          if($LASTEXITCODE -ne 0){throw "W9 local finite regression failed"}
+          Write-Host "W9_WINDOWS_CI_PASS"
