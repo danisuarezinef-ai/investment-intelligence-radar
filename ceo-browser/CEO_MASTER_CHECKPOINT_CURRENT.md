@@ -477,3 +477,52 @@ Validación física del PC del usuario sigue pendiente.
 Siguiente bloque canónico:
 **W9 — tarea local finita sin IA**, salvo indicación distinta del usuario.
 
+## W9 AUDIT STATUS
+
+**W9 — tarea local finita sin IA externa:** CLOSED — MULTIPLE BUGS FOUND, FIXED, FOCAL WINDOWS CI GREEN
+
+Resultado:
+- objetivo: `Crea CEO_LOCAL_W9.txt. Debe contener exactamente: CEO_LOCAL_W9_OK`
+- archivo real creado y modificado en workspace;
+- SHA-256 final: `3efcdd70d048b516b02a66eabd0400ae90ac3bef11cf293467c0d14db47c47e1`;
+- providers: `ceo-local-goal-lock` + `ceo-local-finite-file`;
+- API keys ausentes;
+- coste total: 0.0;
+- Final audit local = COMPLETE;
+- `CEO_VERIFY verdict=pass confidence=1.0`;
+- `goal_audit_passed=true`;
+- `completed_at` persistido;
+- display progress = 100;
+- productive pending = 0;
+- reapertura mantiene certificado, cierre y 100 %.
+
+Bugs reales corregidos:
+1. goal-lock determinista tratado como trabajo productivo y sometido a verificación externa;
+2. verificación genérica duplicaba el Final audit local;
+3. `RecoveryBudgetGuardV1` podía superseder verificaciones legítimas al tratarlas como churn interno;
+4. el Final audit local devolvía `CEO_RESULT` pero no el contrato requerido `CEO_VERIFY`.
+
+Correcciones de harness, no runtime:
+- dependencias CI `psutil/httpx`;
+- `CheckpointStore` abstracto;
+- métrica de coste migrada a `CostEngine.spent(state)`.
+
+Evidencia focal:
+- run: `35861150095`
+- job: `107181407132`
+- conclusion: SUCCESS
+
+Documento:
+- `W9_LOCAL_FINITE_TASK_AUDIT.md`
+
+Integración:
+- step W9 acumulativo integrado en `.github/workflows/test-free-browser-ai-worker.yml`;
+- workflows temporales W9 eliminados.
+
+No se ha generado instalador.
+No se ha modificado el canal stable.
+Validación física del PC del usuario sigue pendiente.
+
+Siguiente bloque canónico:
+**W10 — persistencia/reinicio durante una tarea finita en curso**, salvo indicación distinta.
+
