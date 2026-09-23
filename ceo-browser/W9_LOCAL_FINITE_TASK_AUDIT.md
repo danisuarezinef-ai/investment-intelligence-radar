@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-09-23  
 **Ámbito:** CEO Windows únicamente  
-**Estado:** CLOSED — MULTIPLE BUGS FOUND, FIXED, FOCAL WINDOWS CI GREEN  
+**Estado:** CLOSED — MULTIPLE BUGS FOUND, FIXED, CANONICAL WINDOWS CI GREEN  
 **Validación física en el PC del usuario:** pendiente
 
 ## Objetivo
@@ -198,6 +198,36 @@ Reapertura:
   - `d234cafe891d6f8c8524f1780e54e18f8a676664c353abb7b376faf3ab0acab2`
 - W8 progress tracker:
   - `a7c5e293393ad116d3bae6ec6802aea37485c1d99bbde94dbd4fcdff8e0b51d4`
+
+## Evidencia suite canónica completa
+
+Después de integrar W9 en la suite principal de CEO Windows:
+
+- commit funcional: `6dc2a82fcd2adba1b0669c0c871b79a0a6d82d09`
+- workflow run: `35861315876`
+- job: `107181951798`
+- conclusion: **SUCCESS**
+
+En la misma ejecución pasaron conjuntamente:
+
+- W6 anti-99;
+- W7 bounded productive recovery lineage;
+- W8 productive truth;
+- W9 finite local objective;
+- B02 scope freeze;
+- contratos Python;
+- browser-first source;
+- multi-provider browser pool;
+- PowerShell;
+- real-UI input;
+- B14-B20;
+- B03-B38;
+- Gate 0;
+- LAB portable;
+- AITransport through Chrome with zero API keys;
+- free-only / no-production boundaries.
+
+Esto demuestra que la corrección W9 no rompe las garantías previas ni la ruta browser-first.
 
 ## Integración
 
