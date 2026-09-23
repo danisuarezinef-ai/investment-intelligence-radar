@@ -64,7 +64,9 @@ assert 'REAL_TRADING = False' in cloud10
 
 version=json.loads((ROOT/'version.json').read_text(encoding='utf-8-sig'))
 assert version.get('version')=='1.5.28', version
-assert 'exec python cloud_service_v10.py' in (ROOT/'start.sh').read_text(encoding='utf-8')
+start=(ROOT/'start.sh').read_text(encoding='utf-8')
+# v10 remains validated above as historical composition; production uses v37.
+assert 'exec python cloud_service_v37_snapshotfix.py' in start
 
 print(json.dumps({
     'status':'PASS','scope':'AUTONOMOUS_PAPER_PRIORITIES_41_60',

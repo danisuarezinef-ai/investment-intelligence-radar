@@ -61,7 +61,7 @@ def test_production_entrypoint_runs_delegated_sync_and_closed_loop():
     assert 'base9.start_runtime()' in v10
     assert 'REAL_TRADING=False' in v9.replace(' ','')
     assert 'REAL_TRADING=False' in v10.replace(' ','')
-    assert 'exec python cloud_service_v10.py' in Path('start.sh').read_text(encoding='utf-8')
+    assert 'exec python cloud_service_v37_snapshotfix.py' in Path('start.sh').read_text(encoding='utf-8')
 
 
 def test_forward_outcome_sync_resends_updated_existing_rows_idempotently():

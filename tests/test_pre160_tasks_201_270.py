@@ -95,7 +95,7 @@ def test_cloud_v10_is_composed_over_v9_over_v8_over_v7_over_v6_and_windows_stays
     assert 'base8.start_runtime()' in cloud9
     assert 'import cloud_service_v9 as base9' in cloud10
     assert 'base9.start_runtime()' in cloud10
-    assert 'cloud_service_v10.py' in start
+    assert 'cloud_service_v37_snapshotfix.py' in start
     assert version=='1.5.28'
     assert 'REAL_TRADING=False' in cloud9.replace(' ','')
     assert 'REAL_TRADING=False' in cloud10.replace(' ','')

@@ -18,7 +18,7 @@ jobs:
           python - <<'PY'
           import json
           assert json.load(open('version.json',encoding='utf-8-sig'))['version']=='1.5.28'
-          assert 'exec python cloud_service_v22.py' in open('start.sh',encoding='utf-8').read()
+          assert 'exec python cloud_service_v37_snapshotfix.py' in open('start.sh',encoding='utf-8').read()
           import radar_autonomous_paper_control_v1 as c
           import radar_autonomous_learning_16_40_v1 as l
           import radar_autonomous_learning_41_60_v1 as a
@@ -63,6 +63,7 @@ jobs:
           assert authority.get('status') not in ('RESTORE_FAILED_FAIL_CLOSED','FAILED'),authority
           assert learn.get('status')=='AUTONOMOUS_PAPER_LEARNING_16_40',learn;assert advanced.get('status')=='AUTONOMOUS_PAPER_LEARNING_41_60',advanced
           assert combined.get('status')=='AUTONOMOUS_PAPER_LEARNING_16_60',combined
+          assert handoff.get('development_mode')=='MAINTENANCE_ONLY'
           assert handoff.get('real_trading') is False and handoff.get('live_execution_allowed') is False
           assert executive.get('real_trading') is False
           assert cert.get('real_trading') is False and cert.get('live_execution_allowed') is False and cert.get('automatic_promotion') is False

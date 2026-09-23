@@ -26,7 +26,7 @@ def _dt(v):
     except Exception:return None
 
 def _hash(v):return hashlib.sha256(json.dumps(v,sort_keys=True,separators=(',',':'),default=str).encode()).hexdigest()
-def _task(n,status,**e):return {'task':n,'status':status,'evidence':{**e,'real_trading':False},'real_trading':False}
+def _task(task_id,status,**e):return {'task':task_id,'status':status,'evidence':{**e,'real_trading':False},'real_trading':False}
 
 def deployment_verify(deployment):
     d=deployment or {}; ok=d.get('status')=='SUCCESS' and bool(d.get('commit_sha')) and d.get('commit_sha')==d.get('expected_sha')
