@@ -365,6 +365,27 @@ jobs:
           if($LASTEXITCODE -ne 0){throw "W13 cumulative candidate compile failed"}
           Write-Host "W13_CANONICAL_BROWSER_WORKER_PASS"
 
+      - name: W14A persistent profile contract in accumulated candidate
+        shell: pwsh
+        env:
+          CEO_ALLOW_OPTIONAL_API: '0'
+          OPENAI_API_KEY: ''
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          ANTHROPIC_API_KEY: ''
+          PERPLEXITY_API_KEY: ''
+          XAI_API_KEY: ''
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w13-canonical"
+          if(-not (Test-Path $root)){throw "W14A accumulated W13 candidate missing"}
+          $env:CEO_W14_ROOT=$root
+          python ceo-browser\w14a_profile_persistence_regression.py
+          if($LASTEXITCODE -ne 0){throw "W14A accumulated profile contract failed"}
+          $tokens=$null;$errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $root "ceo_core\browser_ai\windows_chatgpt_cdp_driver.ps1"),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){$errors | ForEach-Object {Write-Host $_.Message};throw "W14A packaged driver parse failed"}
+          Write-Host "W14A_PROFILE_CONTRACT_CANONICAL_PASS"
+
       - name: B02 scope freeze guard
         shell: pwsh
         run: |
@@ -521,6 +542,49 @@ jobs:
           Start-Sleep -Seconds 1
           $r=Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/ -TimeoutSec 3
           if($r.StatusCode -ne 200){throw "harness not healthy"}
+
+      - name: W14A profile ownership and spaced path runtime gate
+        shell: pwsh
+        run: |
+          $chromeCandidates=@(
+            "$env:PROGRAMFILES\Google\Chrome\Application\chrome.exe",
+            "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe",
+            "$env:PROGRAMFILES\Microsoft\Edge\Application\msedge.exe"
+          )
+          $chrome=$chromeCandidates | Where-Object {$_ -and (Test-Path $_)} | Select-Object -First 1
+          if(-not $chrome){throw "W14A Chrome/Edge unavailable"}
+
+          $decoy=Join-Path $env:RUNNER_TEMP "w14a-canonical-decoy"
+          $wanted=Join-Path $env:RUNNER_TEMP "w14a-canonical-wanted"
+          $port=9320
+          Start-Process -FilePath $chrome -ArgumentList @("--remote-debugging-port=$port","--remote-allow-origins=*","--user-data-dir=$decoy","--no-first-run","--no-default-browser-check","http://127.0.0.1:8765/?seed=1") | Out-Null
+          $deadline=(Get-Date).AddSeconds(20)
+          $v=$null
+          do{
+            try{$v=Invoke-RestMethod -Uri "http://127.0.0.1:$port/json/version" -TimeoutSec 1;if($v.webSocketDebuggerUrl){break}}catch{}
+            Start-Sleep -Milliseconds 250
+          }while((Get-Date) -lt $deadline)
+          if(-not $v.webSocketDebuggerUrl){throw "W14A decoy CDP browser did not start"}
+
+          $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-ConversationUrl","http://127.0.0.1:8765/","-ProfileDir",$wanted,"-Port",[string]$port,"-TimeoutSeconds","20","-ProbeOnly","-NoLaunch")
+          $raw=& powershell.exe @args
+          $code=$LASTEXITCODE
+          Write-Host $raw
+          $row=$raw | ConvertFrom-Json
+          if($code -eq 0){throw "W14A canonical driver accepted foreign profile"}
+          if($row.status -ne "BROWSER_PROFILE_OWNERSHIP_CONFLICT"){throw "W14A canonical ownership status mismatch"}
+          Get-CimInstance Win32_Process | Where-Object {$_.CommandLine -and $_.CommandLine.ToLower().Contains("--remote-debugging-port=$port")} | ForEach-Object {Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue}
+          Start-Sleep -Seconds 2
+          $global:LASTEXITCODE=0
+
+          $spaceProfile=Join-Path $env:RUNNER_TEMP "CEO de IAs\canonical browser profile"
+          $args2=@("-NoProfile","-ExecutionPolicy","Bypass","-File","ceo-browser\windows_chatgpt_cdp_driver.ps1","-RecipePath","ceo-browser\recipes\test_harness.json","-ConversationUrl","http://127.0.0.1:8765/","-ProfileDir",$spaceProfile,"-Port","9321","-TimeoutSeconds","30","-ProbeOnly","-CloseBrowserAfter")
+          $raw2=& powershell.exe @args2
+          Write-Host $raw2
+          if($LASTEXITCODE -ne 0){throw "W14A canonical spaced profile failed"}
+          $row2=$raw2 | ConvertFrom-Json
+          if(-not $row2.ok -or $row2.profile_dir -ne $spaceProfile){throw "W14A canonical spaced profile drift"}
+          Write-Host "W14A_PROFILE_OWNERSHIP_CANONICAL_PASS"
 
       - name: Unified B14-B20 campaign end to end
         shell: pwsh
