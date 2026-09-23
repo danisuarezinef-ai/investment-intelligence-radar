@@ -57,5 +57,7 @@ assert 'autonomous-simulator/ceo-handoff-v1' in workflow
 assert 'MAINTENANCE_ONLY' in workflow
 version=json.loads((ROOT/'version.json').read_text(encoding='utf-8-sig'))
 assert version.get('version')=='1.5.28'
-assert 'exec python cloud_service_v10.py' in (ROOT/'start.sh').read_text(encoding='utf-8')
+start=(ROOT/'start.sh').read_text(encoding='utf-8')
+# v10 composition remains checked above; production is the audited v37 snapshot wrapper.
+assert 'exec python cloud_service_v37_snapshotfix.py' in start
 print(json.dumps({'status':'PASS','scope':'RADAR_CEO_HANDOFF','development_mode':'MAINTENANCE_ONLY','primary_human_project':'CEO_DE_IAS','prospective_memory_contract':'DECISION_MEMORY_V1','setup_built':False,'real_trading':False},sort_keys=True))
