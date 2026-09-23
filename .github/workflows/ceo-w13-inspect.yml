@@ -87,7 +87,8 @@ jobs:
           $env:CEO_W13_ROOT=$root
           @'
           from pathlib import Path
-          import os
+          import os,sys
+          sys.stdout.reconfigure(encoding="utf-8",errors="backslashreplace")
           p=Path(os.environ["CEO_W13_ROOT"])/"scripts"/"ceo_stdlib_work_mode.py"
           lines=p.read_text(encoding="utf-8").splitlines()
           def around(pattern,before=5,after=30):
