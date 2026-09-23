@@ -62,6 +62,75 @@ function Wait-DevToolsDown([int]$port,[int]$timeoutSeconds=20) {
   return $false
 }
 
+function Normalize-ProfilePath([string]$path) {
+  try {
+    return ([IO.Path]::GetFullPath($path).TrimEnd('\\','/')).ToLowerInvariant()
+  } catch {
+    return ([string]$path).Trim().TrimEnd('\\','/').ToLowerInvariant()
+  }
+}
+
+function Get-CDPOwnership([int]$port,[string]$profileDir) {
+  $expected=Normalize-ProfilePath $profileDir
+  $portNeedle=("--remote-debugging-port={0}" -f $port).ToLowerInvariant()
+  $matchedPort=0
+  $matchedProfile=0
+  $observed=@()
+  try {
+    $rows=Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object {
+      $_.Name -in @("chrome.exe","msedge.exe") -and $_.CommandLine
+    }
+    foreach($row in @($rows)){
+      $cmd=[string]$row.CommandLine
+      $lower=$cmd.ToLowerInvariant()
+      if(-not $lower.Contains($portNeedle)){continue}
+      $matchedPort += 1
+      $observed += [int]$row.ProcessId
+      $m=[regex]::Match($cmd,'(?i)--user-data-dir=(?:"([^"]+)"|''([^'']+)''|([^\s"]+))')
+      if(-not $m.Success){continue}
+      $value=""
+      for($i=1;$i -le 3;$i++){
+        if($m.Groups[$i].Success -and $m.Groups[$i].Value){
+          $value=[string]$m.Groups[$i].Value
+          break
+        }
+      }
+      if((Normalize-ProfilePath $value) -eq $expected){$matchedProfile += 1}
+    }
+  } catch {
+    return @{
+      owned=$false
+      reason="process_inventory_unavailable"
+      matched_port_processes=0
+      matched_profile_processes=0
+      process_ids=@()
+      detail=$_.Exception.Message
+    }
+  }
+  return @{
+    owned=($matchedProfile -gt 0)
+    reason=if($matchedProfile -gt 0){"owned_profile"}elseif($matchedPort -gt 0){"profile_mismatch"}else{"port_process_not_found"}
+    matched_port_processes=$matchedPort
+    matched_profile_processes=$matchedProfile
+    process_ids=$observed
+    detail=""
+  }
+}
+
+function Write-OwnershipConflictAndExit([int]$port,[string]$profileDir,[hashtable]$ownership) {
+  Write-JsonResult @{
+    ok=$false
+    status="BROWSER_PROFILE_OWNERSHIP_CONFLICT"
+    cdp_port=$port
+    profile_dir=$profileDir
+    ownership_reason=[string]$ownership.reason
+    matched_port_processes=[int]$ownership.matched_port_processes
+    matched_profile_processes=[int]$ownership.matched_profile_processes
+    detail="The CDP port is active but is not proven to belong to the requested CEO browser profile."
+  }
+  exit 6
+}
+
 function Get-PageTarget([int]$port,[string]$wantedUrl,[int]$timeoutSeconds) {
   $deadline = [DateTime]::UtcNow.AddSeconds($timeoutSeconds)
   while([DateTime]::UtcNow -lt $deadline) {
@@ -542,12 +611,19 @@ New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
 
 $chrome = Find-Chrome
 $existing = Get-DevToolsVersion $Port
+if($existing) {
+  $ownership=Get-CDPOwnership $Port $ProfileDir
+  if(-not $ownership.owned) {
+    Write-OwnershipConflictAndExit $Port $ProfileDir $ownership
+  }
+}
 if(-not $NoLaunch -and -not $existing) {
   [void](Clear-RestoredTabState $ProfileDir $targetUrl)
+  $profileArg='--user-data-dir="{0}"' -f ([string]$ProfileDir).Replace('"','\"')
   $args = @(
     "--remote-debugging-port=$Port",
     "--remote-allow-origins=*",
-    "--user-data-dir=$ProfileDir",
+    $profileArg,
     "--no-first-run",
     "--no-default-browser-check",
     $targetUrl
@@ -557,6 +633,10 @@ if(-not $NoLaunch -and -not $existing) {
 
 try {
   Wait-DevTools $Port ([Math]::Min(30,$TimeoutSeconds)) | Out-Null
+  $ownership=Get-CDPOwnership $Port $ProfileDir
+  if(-not $ownership.owned) {
+    Write-OwnershipConflictAndExit $Port $ProfileDir $ownership
+  }
   [void](Prune-UnrelatedRestoredTargets $Port $targetUrl 4)
   $target = Get-PageTarget $Port $targetUrl ([Math]::Min(30,$TimeoutSeconds))
   $ws = Connect-CDP ([string]$target.webSocketDebuggerUrl)
