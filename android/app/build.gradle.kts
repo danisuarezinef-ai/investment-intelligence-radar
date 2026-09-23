@@ -2,6 +2,8 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id(
 android {
  namespace="ai.danisuarez.radar"; compileSdk=35
  defaultConfig { applicationId="ai.danisuarez.radar"; minSdk=26; targetSdk=35; versionCode=1; versionName="0.1.0-rc1" }
+ compileOptions { sourceCompatibility=JavaVersion.VERSION_17; targetCompatibility=JavaVersion.VERSION_17 }
+ kotlinOptions { jvmTarget="17" }
  buildFeatures { compose=true; buildConfig=true }
  buildTypes {
   debug { buildConfigField("boolean","REAL_TRADING","false") }
