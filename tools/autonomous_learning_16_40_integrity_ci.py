@@ -3,7 +3,10 @@ import json
 
 root=Path(__file__).resolve().parents[1]
 assert json.loads((root/'version.json').read_text(encoding='utf-8-sig'))['version']=='1.5.28'
-assert 'exec python cloud_service_v10.py' in (root/'start.sh').read_text(encoding='utf-8')
+start=(root/'start.sh').read_text(encoding='utf-8')
+# v10 remains part of the audited historical composition below; production
+# has advanced to the snapshot-safe v37 entrypoint.
+assert 'exec python cloud_service_v37_snapshotfix.py' in start
 cloud10=(root/'cloud_service_v10.py').read_text(encoding='utf-8')
 cloud=(root/'cloud_service_v9.py').read_text(encoding='utf-8')
 learning=(root/'radar_autonomous_learning_16_40_v1.py').read_text(encoding='utf-8')
