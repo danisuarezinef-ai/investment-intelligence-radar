@@ -1,0 +1,56 @@
+name: W12 Inspect Pause Resume Cancel
+
+on:
+  push:
+    branches: [free-browser-ai-worker]
+    paths:
+      - '.github/workflows/ceo-w12-inspect.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: free-browser-ai-worker
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect candidate control surfaces
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w12-inspect"
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
+          python ceo-browser\apply_w6_completion_persistence.py
+          python ceo-browser\apply_w7_recovery_lineage_cap.py
+          python ceo-browser\apply_w8_productivity_truth_fix.py
+          python ceo-browser\apply_w9_local_finite_task.py
+          python ceo-browser\apply_w10_restart_lease_fix.py
+          python ceo-browser\apply_w11_local_idempotency.py
+          @'
+          from pathlib import Path
+          import os,re
+          root=Path(os.environ["CEO_W12_ROOT"])
+          terms=re.compile(r"pause|resume|cancel|stop_requested|paused|cancelled|canceled",re.I)
+          for p in sorted(root.rglob("*.py")):
+              try: lines=p.read_text(encoding="utf-8").splitlines()
+              except Exception: continue
+              hits=[(i+1,l) for i,l in enumerate(lines) if terms.search(l)]
+              if hits:
+                  print("FILE",p.relative_to(root))
+                  for i,l in hits[:120]:
+                      print(f"{i}: {l}")
+          '@ | Set-Content -Encoding UTF8 inspect_w12.py
+          $env:CEO_W6_ROOT=$root
+          $env:CEO_W7_ROOT=$root
+          $env:CEO_W8_ROOT=$root
+          $env:CEO_W9_ROOT=$root
+          $env:CEO_W10_ROOT=$root
+          $env:CEO_W11_ROOT=$root
+          $env:CEO_W12_ROOT=$root
+          python inspect_w12.py
