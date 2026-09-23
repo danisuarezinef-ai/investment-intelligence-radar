@@ -122,6 +122,7 @@ def patched_case() -> None:
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
     hashes = dict(contract.get("file_hashes") or {})
     required = set(contract.get("required_files") or [])
+    print("W13_REQUIRED_FILES_RAW", json.dumps(contract.get("required_files"), sort_keys=True))
     for name, rel in rels.items():
         assert hashes.get(rel) == sha(ROOT / rel), (name, rel, hashes.get(rel), sha(ROOT / rel))
         assert rel in required, (name, rel)
