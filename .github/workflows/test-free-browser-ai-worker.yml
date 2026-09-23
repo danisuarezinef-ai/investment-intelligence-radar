@@ -74,6 +74,7 @@ jobs:
               "ceo-updates/dev313-inspect-routing/routing.py",
               "ceo-updates/dev313-inspect-routing/providers/chatgpt_web.py",
               ".github/workflows/test-free-browser-ai-worker.yml",
+              ".github/workflows/ceo-w7-recovery-lineage.yml",
           }
           prefixes=(
               "ceo-browser/",
