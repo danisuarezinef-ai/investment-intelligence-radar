@@ -41,16 +41,21 @@ jobs:
           python ceo-browser\apply_w11_local_idempotency.py
           @'
           from pathlib import Path
-          import os,re
+          import os,sys
           root=Path(os.environ["CEO_W12_ROOT"])
-          terms=re.compile(r"pause|resume|cancel|stop_requested|paused|cancelled|canceled",re.I)
-          for p in sorted(root.rglob("*.py")):
-              try: lines=p.read_text(encoding="utf-8").splitlines()
-              except Exception: continue
-              hits=[(i+1,l) for i,l in enumerate(lines) if terms.search(l)]
-              if hits:
-                  print("FILE",p.relative_to(root))
-                  for i,l in hits[:120]:
-                      print(f"{i}: {l}")
+          sys.stdout.reconfigure(encoding="utf-8",errors="backslashreplace")
+          def dump(rel,a,b):
+              p=root/rel
+              print(f"===== {rel}:{a}-{b} =====")
+              lines=p.read_text(encoding="utf-8").splitlines()
+              for i in range(a,min(b,len(lines))+1):
+                  print(f"{i}: {lines[i-1]}")
+          dump("ceo_core/models.py",1,180)
+          dump("ceo_core/scheduler.py",530,720)
+          dump("ceo_core/scheduler.py",1980,2050)
+          dump("ceo_core/project_catalog.py",150,230)
+          dump("ceo_core/store.py",80,115)
+          dump("ceo_core/sqlite_store.py",170,200)
+          dump("ceo_core/operational_resilience.py",90,165)
           '@ | Set-Content -Encoding UTF8 inspect_w12.py
           python inspect_w12.py
