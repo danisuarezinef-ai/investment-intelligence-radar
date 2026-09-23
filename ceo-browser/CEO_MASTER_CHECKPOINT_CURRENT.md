@@ -574,3 +574,47 @@ Validación física del PC del usuario sigue pendiente.
 Siguiente bloque canónico:
 **W11 — idempotencia y reejecución segura de tareas finitas con side effects locales**, salvo indicación distinta del usuario.
 
+## W11 AUDIT STATUS
+
+**W11 — idempotencia y reejecución segura de efectos locales:** CLOSED — BUG FOUND, FIXED, CANONICAL WINDOWS CI GREEN
+
+Hallazgo:
+- tras un checkpoint antiguo, una Execution ya materializada volvía a escribir físicamente draft + final;
+- raw: 2 escrituras nuevas y mtime modificado aunque el archivo final ya era exacto.
+
+Corrección:
+- provider detecta contenido final ya exacto y no reemite el draft;
+- scheduler convierte el write idéntico en noop físico y reconstruye artefacto/evidencia;
+- misma evidencia task/ref/SHA no se duplica;
+- IDs de artefacto ya registrados no se duplican.
+
+Evidencia:
+- raw: `W11_RAW_DUPLICATE_SIDE_EFFECT_REPRODUCED`;
+- corregido: physical_writes=0, mtime_changed=false, idempotent_noops=1;
+- target corrupto: sí se repara con escrituras físicas;
+- hashes de package contract verificados.
+
+Archivos:
+- `W11_LOCAL_IDEMPOTENCY_AUDIT.md`
+- `apply_w11_local_idempotency.py`
+- `w11_local_idempotency_regression.py`
+
+CI focal:
+- run `35865768272`
+- job `107196824131`
+- SUCCESS
+
+Suite canónica:
+- commit `a576047b788e82a762fbd29271d905d4205fca9e`
+- run `35866004082`
+- job `107197622430`
+- SUCCESS
+
+Workflow temporal W11 eliminado.
+No se generó instalador.
+No se modificó el canal stable.
+Validación física del PC del usuario sigue pendiente.
+
+Siguiente bloque canónico:
+**W12 — pausa / reanudar / cancelar**, salvo indicación distinta del usuario.
+
