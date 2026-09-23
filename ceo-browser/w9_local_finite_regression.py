@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-import inspect
 import json
 import os
 import pathlib
@@ -37,16 +36,7 @@ EXPECTED = "CEO_LOCAL_W9_OK"
 
 
 def assert_recovery_guard_preserves_verification() -> None:
-    import inspect
-    from ceo_core.task_roles_v2 import is_verification
-
-    print("W9_RECOVERY_GUARD_PATCHED_SOURCE_BEGIN")
-    print(inspect.getsource(RecoveryBudgetGuardV1))
-    print("W9_RECOVERY_GUARD_PATCHED_SOURCE_END")
-
     state = ProjectState(goal="W9 guard semantics")
-    control_a = TaskStatus  # keep import usage explicit for static analyzers
-    del control_a
 
     from ceo_core.models import Task
 
@@ -79,16 +69,6 @@ def assert_recovery_guard_preserves_verification() -> None:
         state.tasks[task.id] = task
         state.root_task_ids.append(task.id)
 
-    print(
-        "W9_RECOVERY_GUARD_ROLE_CHECK",
-        json.dumps(
-            {
-                "verification_is_verification": is_verification(verification, state),
-                "verification_metadata": verification.metadata,
-            },
-            sort_keys=True,
-        ),
-    )
     report = RecoveryBudgetGuardV1(max_active_internal=1).apply(state)
     assert verification.status == TaskStatus.READY, (
         verification.status,
