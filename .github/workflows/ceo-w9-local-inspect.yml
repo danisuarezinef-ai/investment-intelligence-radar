@@ -53,3 +53,16 @@ jobs:
           '@ | Set-Content -Encoding UTF8 w9_api_inspect.py
           python w9_api_inspect.py
           Write-Host "W9_STORE_API_END"
+          Write-Host "W9_RECOVERY_GUARD_SOURCE_BEGIN"
+          @'
+          import inspect, os, pathlib, sys
+          root=pathlib.Path(os.environ["CEO_W9_INSPECT_ROOT"])
+          sys.path.insert(0,str(root))
+          import ceo_core.recovery_storm_guard_v1 as rg
+          import ceo_core.task_roles_v2 as tr
+          print(inspect.getsource(rg))
+          print("===TASK_ROLES===")
+          print(inspect.getsource(tr))
+          '@ | Set-Content -Encoding UTF8 w9_guard_inspect.py
+          python w9_guard_inspect.py
+          Write-Host "W9_RECOVERY_GUARD_SOURCE_END"
