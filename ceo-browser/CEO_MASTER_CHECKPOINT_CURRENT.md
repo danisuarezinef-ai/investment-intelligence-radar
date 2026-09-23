@@ -479,7 +479,7 @@ Siguiente bloque canónico:
 
 ## W9 AUDIT STATUS
 
-**W9 — tarea local finita sin IA externa:** CLOSED — MULTIPLE BUGS FOUND, FIXED, FOCAL WINDOWS CI GREEN
+**W9 — tarea local finita sin IA externa:** CLOSED — MULTIPLE BUGS FOUND, FIXED, CANONICAL WINDOWS CI GREEN
 
 Resultado:
 - objetivo: `Crea CEO_LOCAL_W9.txt. Debe contener exactamente: CEO_LOCAL_W9_OK`
@@ -518,6 +518,7 @@ Documento:
 Integración:
 - step W9 acumulativo integrado en `.github/workflows/test-free-browser-ai-worker.yml`;
 - workflows temporales W9 eliminados.
+- suite canónica completa: commit `6dc2a82fcd2adba1b0669c0c871b79a0a6d82d09`, run `35861315876`, job `107181951798`, **SUCCESS**.
 
 No se ha generado instalador.
 No se ha modificado el canal stable.
