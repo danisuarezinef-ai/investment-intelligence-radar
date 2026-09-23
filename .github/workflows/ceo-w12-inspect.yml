@@ -26,6 +26,13 @@ jobs:
           $root=Join-Path $env:RUNNER_TEMP "ceo-w12-inspect"
           New-Item -ItemType Directory -Force -Path $root | Out-Null
           Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
+          $env:CEO_W6_ROOT=$root
+          $env:CEO_W7_ROOT=$root
+          $env:CEO_W8_ROOT=$root
+          $env:CEO_W9_ROOT=$root
+          $env:CEO_W10_ROOT=$root
+          $env:CEO_W11_ROOT=$root
+          $env:CEO_W12_ROOT=$root
           python ceo-browser\apply_w6_completion_persistence.py
           python ceo-browser\apply_w7_recovery_lineage_cap.py
           python ceo-browser\apply_w8_productivity_truth_fix.py
@@ -46,11 +53,4 @@ jobs:
                   for i,l in hits[:120]:
                       print(f"{i}: {l}")
           '@ | Set-Content -Encoding UTF8 inspect_w12.py
-          $env:CEO_W6_ROOT=$root
-          $env:CEO_W7_ROOT=$root
-          $env:CEO_W8_ROOT=$root
-          $env:CEO_W9_ROOT=$root
-          $env:CEO_W10_ROOT=$root
-          $env:CEO_W11_ROOT=$root
-          $env:CEO_W12_ROOT=$root
           python inspect_w12.py
