@@ -1,0 +1,38 @@
+name: CEO W9 Local Route Inspect
+
+on:
+  push:
+    branches: [free-browser-ai-worker]
+    paths:
+      - '.github/workflows/ceo-w9-local-inspect.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: free-browser-ai-worker
+      - name: Inspect local execution route in 1.5.92
+        shell: pwsh
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP "ceo-w9-inspect"
+          if(Test-Path $root){Remove-Item -Recurse -Force $root}
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
+          Write-Host "W9_FILES"
+          Get-ChildItem (Join-Path $root "ceo_core") -Filter "*local*provider*.py" | Select-Object -ExpandProperty Name
+          Write-Host "W9_GOAL_LOCK_SOURCE_BEGIN"
+          if(Test-Path (Join-Path $root "ceo_core\goal_lock_local_provider_v1.py")){Get-Content (Join-Path $root "ceo_core\goal_lock_local_provider_v1.py")}
+          Write-Host "W9_GOAL_LOCK_SOURCE_END"
+          Write-Host "W9_ROUTING_SOURCE_BEGIN"
+          if(Test-Path (Join-Path $root "ceo_core\routing.py")){Get-Content (Join-Path $root "ceo_core\routing.py")}
+          Write-Host "W9_ROUTING_SOURCE_END"
+          Write-Host "W9_WORKMODE_MATCHES_BEGIN"
+          Select-String -Path (Join-Path $root "scripts\ceo_stdlib_work_mode.py") -Pattern "execution_enabled|start_project|GoalLockLocalProviderV1|MultiProviderRouter|def _router" -Context 3,8
+          Write-Host "W9_WORKMODE_MATCHES_END"
