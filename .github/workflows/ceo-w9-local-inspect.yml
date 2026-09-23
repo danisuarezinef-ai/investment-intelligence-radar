@@ -56,6 +56,9 @@ jobs:
           Write-Host "W9_RECOVERY_GUARD_BEGIN"
           Select-String -Path (Join-Path $root "ceo_core\scheduler.py") -Pattern "recovery_budget_guard|duplicate_internal_control|internal_control|verification_task" -Context 18,28
           Write-Host "W9_RECOVERY_GUARD_END"
+          Write-Host "W9_RECOVERY_GUARD_FILE_BEGIN"
+          Get-Content -Path (Join-Path $root "ceo_core\recovery_budget_guard_v1.py")
+          Write-Host "W9_RECOVERY_GUARD_FILE_END"
           Write-Host "W9_RECOVERY_GUARD_SOURCE_BEGIN"
           Get-ChildItem -Path $root -Recurse -File -Filter *.py | Select-String -Pattern "recovery_budget_guard_duplicate_internal_control|duplicate_internal_control|recovery_budget_guard_v1" -Context 18,28
           Write-Host "W9_RECOVERY_GUARD_SOURCE_END"
