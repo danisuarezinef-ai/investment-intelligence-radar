@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -12,6 +13,7 @@ data class RadarUiState(val cloud:String="Comprobando…",val equity:String="—
 class MainActivity:ComponentActivity(){
  override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);check(!BuildConfig.REAL_TRADING){"Unsafe trading build"};setContent{MaterialTheme{RadarHome()}}}
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable fun RadarHome(state:RadarUiState=RadarUiState()){
  Scaffold(topBar={TopAppBar(title={Text("Radar de inversión")})}){pad->
   Column(Modifier.padding(pad).padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
