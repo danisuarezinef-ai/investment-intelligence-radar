@@ -132,6 +132,34 @@ def patch_work_mode(path: pathlib.Path) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def patch_recovery_budget_guard(path: pathlib.Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    text = replace_once(
+        text,
+        "from .task_roles_v2 import is_internal\n",
+        "from .task_roles_v2 import is_internal, is_verification\n",
+        "W9 recovery guard import",
+    )
+    text = replace_once(
+        text,
+        "            if not is_internal(task, state):\n"
+        "                continue\n",
+        "            if not is_internal(task, state) or is_verification(task, state):\n"
+        "                continue\n",
+        "W9 recovery guard signature",
+    )
+    text = replace_once(
+        text,
+        "            if is_internal(t, state)\n"
+        "            and t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING, TaskStatus.NEEDS_REVIEW, TaskStatus.BLOCKED}\n",
+        "            if is_internal(t, state)\n"
+        "            and not is_verification(t, state)\n"
+        "            and t.status in {TaskStatus.READY, TaskStatus.RETRY, TaskStatus.RUNNING, TaskStatus.NEEDS_REVIEW, TaskStatus.BLOCKED}\n",
+        "W9 recovery guard active filter",
+    )
+    path.write_text(text, encoding="utf-8")
+
+
 def apply(root: pathlib.Path) -> dict:
     root = root.resolve()
     if not TEMPLATE.is_file():
@@ -143,6 +171,9 @@ def apply(root: pathlib.Path) -> dict:
     work_mode = root / "scripts" / "ceo_stdlib_work_mode.py"
     patch_work_mode(work_mode)
 
+    recovery_guard = root / "ceo_core" / "recovery_budget_guard_v1.py"
+    patch_recovery_budget_guard(recovery_guard)
+
     contract_path = root / "CEO_UPDATE_PACKAGE.json"
     updated_paths: list[str] = []
     if contract_path.is_file():
@@ -150,6 +181,7 @@ def apply(root: pathlib.Path) -> dict:
         hashes = dict(contract.get("file_hashes") or {})
         for relative in (
             "ceo_core/local_finite_file_provider_v1.py",
+            "ceo_core/recovery_budget_guard_v1.py",
             "scripts/ceo_stdlib_work_mode.py",
         ):
             hashes[relative] = sha256_file(root / relative)
@@ -170,6 +202,7 @@ def apply(root: pathlib.Path) -> dict:
     return {
         "ok": True,
         "module_sha256": sha256_file(module),
+        "recovery_guard_sha256": sha256_file(recovery_guard),
         "work_mode_sha256": sha256_file(work_mode),
         "contract_paths_updated": updated_paths,
     }
