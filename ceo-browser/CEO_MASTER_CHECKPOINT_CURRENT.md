@@ -427,3 +427,53 @@ Validación física del PC del usuario sigue pendiente.
 Siguiente bloque canónico:
 **W8 — productividad real / actividad útil vs control**, salvo indicación distinta del usuario.
 
+## W8 AUDIT STATUS
+
+**W8 — productividad real / control-plane no cuenta como trabajo útil:** CLOSED — BUG FOUND, FIXED, CANONICAL WINDOWS CI GREEN
+
+Hallazgo:
+- 1.5.92 podía mostrar 65.3 % de progreso visible con solo 25 % de trabajo productivo real;
+- la diferencia aparecía al añadir gran cantidad de auditorías/recoveries/control sin cambiar ninguna tarea productiva;
+- causa raíz: `StableProgressTracker` usaba `state.progress` (grafo bruto) como fallback legacy cuando no existía `stable_progress_v1.display_progress` explícito.
+
+Corrección:
+- sin display legacy explícito, el fallback visible pasa a ser exclusivamente el `batch_progress` productivo;
+- un high-water legacy explícito sí se conserva;
+- controles, recoveries y heartbeats permanecen diagnósticos pero no mueven el porcentaje productivo.
+
+Evidencia raw:
+- run `35846649444`
+- job `107134311632`
+- bug reproducido: base 25.0 %, contaminado 65.3 %.
+
+Evidencia corregida:
+- run `35847046154`
+- job `107135591324`
+- conclusion SUCCESS;
+- base 25.0 %, contaminado 25.0 %;
+- control-only transition no mueve progreso ni timestamp productivo;
+- recoveries/heartbeats no mueven progreso;
+- controls-only = 0 % productivo;
+- package hash actualizado.
+
+Suite canónica compuesta:
+- commit funcional `34d4200e520506c700caa1aed3bea07453d01987`
+- run `35851753709`
+- job `107150833286`
+- conclusion SUCCESS;
+- aplica W6 + W7 + W8 sobre el mismo root y después pasa browser-first completo.
+
+Archivos:
+- `W8_PRODUCTIVITY_TRUTH_AUDIT.md`
+- `apply_w8_productivity_truth_fix.py`
+- `w8_productivity_truth_regression.py`
+- regresión integrada en `.github/workflows/test-free-browser-ai-worker.yml`
+
+Workflow temporal W8 eliminado.
+No se generó instalador.
+No se modificó el canal stable.
+Validación física del PC del usuario sigue pendiente.
+
+Siguiente bloque canónico:
+**W9 — tarea local finita sin IA**, salvo indicación distinta del usuario.
+
