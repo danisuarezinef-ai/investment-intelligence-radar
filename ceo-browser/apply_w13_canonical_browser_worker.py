@@ -182,39 +182,6 @@ def patch_work_mode(path: pathlib.Path) -> None:
         1,
     )
 
-    # UI: browser-first status, no mandatory key box, and provider outages do not
-    # prevent creating/resuming a project (W4 invariant).
-    text = replace_once(
-        text,
-        "$('provider').textContent=(live?'IA conectada':(keyRecognized?'Clave Gemini autenticada · proveedor en espera':'IA no activa'))+(schedulerAlive?' · motor activo':' · motor detenido');",
-        "const browserReady=!!s.browser_provider_ready;$('provider').textContent=(browserReady?'ChatGPT web · Chrome':(live?'IA conectada':'IA web no disponible'))+(schedulerAlive?' · motor activo':' · motor detenido');",
-        "W13 UI provider",
-    )
-    text = replace_once(
-        text,
-        "$('execPill').textContent=live?'✓ Gemini VALIDADO y activo':(keyRecognized?'⏳ Gemini autenticado · EN ESPERA':'⚠ Gemini NO activo');$('execPill').className='pill '+(live?'live':'warn');$('keyBox').style.display=live?'none':'flex';",
-        "$('execPill').textContent=browserReady?'✓ IA WEB preparada · sin API requerida':(live?'✓ IA conectada':'⚠ IA web no disponible');$('execPill').className='pill '+((browserReady||live)?'live':'warn');$('keyBox').style.display='none';",
-        "W13 UI execution pill",
-    )
-    text = replace_once(
-        text,
-        "$('power').value=s.power_percent??30;$('powerLabel').textContent=$('power').value+'%';const hasActive=!!s.active;$('pauseBtn').disabled=!hasActive||!!s.paused;$('resumeBtn').disabled=!hasActive||!s.paused||!live;$('cancelBtn').disabled=!hasActive;$('startBtn').disabled=!live;$('startBtn').title=live?'Iniciar trabajo real':'Primero activa y valida Gemini';",
-        "$('power').value=s.power_percent??30;$('powerLabel').textContent=$('power').value+'%';const hasActive=!!s.active;$('pauseBtn').disabled=!hasActive||!!s.paused;$('resumeBtn').disabled=!hasActive||!s.paused;$('cancelBtn').disabled=!hasActive;$('startBtn').disabled=false;$('startBtn').title=browserReady?'Iniciar trabajo real mediante IA web':'Puedes crear el objetivo; CEO esperará IA web sin perder el proyecto';",
-        "W13 UI controls",
-    )
-    text = replace_once(
-        text,
-        "else if(!live){$('actionBanner').className='banner warnb';$('actionBanner').textContent='Gemini no está activo. CEO no está trabajando.'}",
-        "else if(!live){$('actionBanner').className='banner warnb';$('actionBanner').textContent='IA web no disponible ahora. Puedes crear o reanudar el objetivo; CEO conservará el trabajo y esperará proveedor.'}",
-        "W13 UI outage semantics",
-    )
-    text = replace_once(
-        text,
-        "else{$('actionBanner').className='banner okb';$('actionBanner').textContent='✓ Gemini activo. Ya puedes iniciar un proyecto real.'}",
-        "else{$('actionBanner').className='banner okb';$('actionBanner').textContent='✓ CEO listo. IA web es la superficie principal y no requiere API.'}",
-        "W13 UI idle banner",
-    )
-
     # Browser-first startup: no API prompt unless the operator explicitly opts in.
     main_start = text.index("def main() -> int:")
     key_start = text.index('    key = _normalize_gemini_key(os.environ.get("GEMINI_API_KEY"))\n', main_start)
