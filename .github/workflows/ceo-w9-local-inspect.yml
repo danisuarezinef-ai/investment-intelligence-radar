@@ -21,6 +21,7 @@ jobs:
       - name: Inspect local execution route in 1.5.92
         shell: pwsh
         run: |
+          python -m pip install --disable-pip-version-check "pydantic>=2,<3" psutil httpx
           $root=Join-Path $env:RUNNER_TEMP "ceo-w9-inspect"
           if(Test-Path $root){Remove-Item -Recurse -Force $root}
           New-Item -ItemType Directory -Force -Path $root | Out-Null
