@@ -331,8 +331,12 @@ async def run_scheduler() -> dict:
         assert writes[1]["sha256"] == target_sha, writes
 
         assert verify.metadata.get("independently_verified") is True, verify.metadata
+        assert verify.provider_name == "ceo-local-finite-file", verify.provider_name
         verification = dict(verify.metadata.get("verification_application") or {})
-        assert verification.get("provider") == "ceo-local-finite-file", verification
+        assert verification.get("applied") is True, verification
+        assert verification.get("verdict") == "pass", verification
+        assert verification.get("target_id") == execution.id, verification
+        assert float(verification.get("confidence") or 0.0) == 1.0, verification
 
         evidence = dict(state.metadata.get("deliverable_evidence") or {})
         assert evidence.get("CEO_LOCAL_W9.txt"), evidence
