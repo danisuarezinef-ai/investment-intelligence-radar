@@ -54,6 +54,9 @@ jobs:
           python w9_api_inspect.py
           Write-Host "W9_STORE_API_END"
           Write-Host "W9_RECOVERY_GUARD_SOURCE_BEGIN"
+          Get-ChildItem -Path $root -Recurse -File -Filter *.py | Select-String -Pattern "recovery_budget_guard_duplicate_internal_control|duplicate_internal_control|recovery_budget_guard_v1" -Context 18,28
+          Write-Host "W9_RECOVERY_GUARD_SOURCE_END"
+          Write-Host "W9_RECOVERY_GUARD_SOURCE_BEGIN"
           @'
           import inspect, os, pathlib, sys
           root=pathlib.Path(os.environ["CEO_W9_INSPECT_ROOT"])
