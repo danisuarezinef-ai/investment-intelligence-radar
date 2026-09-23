@@ -833,3 +833,80 @@ No se modificó stable.
 
 **W14-B permanece pendiente.**
 Debe probar físicamente en el PC del usuario la sesión real chatgpt.com: login manual legítimo, cierre/reapertura, sesión persistente e interacción real Browser Worker con cero APIs y sin bypass de CAPTCHA/2FA.
+
+
+## W14-B AUDIT STATUS
+
+**W14-B — sesión real ChatGPT / cierre-reapertura / cero APIs:** READY FOR PHYSICAL — RUNNER + PORTABLE LAB CANONICAL CI GREEN
+
+W14-A estaba CLOSED y no se rehizo.
+
+Infraestructura reutilizada:
+- `run_browser_restart_gate.ps1` sigue siendo el motor de cierre/reapertura;
+- W14-B no duplica esa lógica.
+
+Nuevo gate consolidado:
+- `run_w14b_real_session_gate.ps1`;
+- prepara sesión con `open_chatgpt_profile.ps1`;
+- exige `SESSION_READY` inicial;
+- ejecuta el restart gate;
+- exige navegador cerrado y relanzado;
+- exige misma conversación;
+- exige `api_calls=0` y `paid_api_calls=0`;
+- realiza probe final y exige `SESSION_READY` después del reinicio;
+- solo entonces puede emitir `W14B_REAL_CHATGPT_SESSION_PASS`, `real_chatgpt_verified=true` y `windows_physical_verified=true`;
+- cualquier fallo deja estado `W14B_REAL_SESSION_PENDING_OR_FAILED` y verificación física false.
+
+Lanzador:
+- `EJECUTAR_W14B_SESION_REAL.cmd`;
+- una sola acción;
+- no instala;
+- no toca stable/current.json;
+- no hace commit/push/merge;
+- no usa APIs;
+- no compra nada.
+
+Autenticación:
+- login manual legítimo permitido;
+- `no_captcha_bypass=true`;
+- `no_2fa_bypass=true`;
+- `no_purchase=true`;
+- `no_subscription_change=true`.
+
+LAB:
+- `build_first_trial_lab.py` incluye realmente:
+  - `ceo_core/browser_ai/run_w14b_real_session_gate.ps1`;
+  - `EJECUTAR_W14B_SESION_REAL.cmd`.
+
+Regresión:
+- `w14b_real_session_regression.py`;
+- marca `W14B_REAL_SESSION_RUNNER_CONTRACT_PASS`.
+
+Suite canónica:
+- commit funcional `1b21720dcf5d0bb5aca2a2cef90fd5eef63b2c84`;
+- run `35907419265`;
+- job `107338467485`;
+- conclusion SUCCESS;
+- marcas:
+  - `W14B_REAL_SESSION_RUNNER_CONTRACT_PASS`;
+  - `W14B_REAL_SESSION_RUNNER_CANONICAL_PASS`;
+  - `FIRST_TRIAL_PORTABLE_LAB_PASS`;
+  - `CEO_AI_TRANSPORT_BROWSER_ZERO_API_PASS`;
+  - `FREE_BROWSER_BOUNDARY_PASS`.
+
+Documento:
+- `W14B_REAL_CHATGPT_SESSION_AUDIT.md`.
+
+**Estado físico:**
+- NO existe todavía evidencia real `W14B_REAL_CHATGPT_SESSION_PASS` procedente del PC del usuario;
+- `WINDOWS_PHYSICAL_VERIFIED` permanece pending/false;
+- `REAL_CHATGPT_VERIFIED` permanece pending/false;
+- W14-B NO se declara CLOSED todavía.
+
+Prueba física pendiente:
+- doble clic en `EJECUTAR_W14B_SESION_REAL.cmd` dentro del LAB físico;
+- evidencia esperada:
+  `%LOCALAPPDATA%\CEO de IAs\evidence\W14B_REAL_CHATGPT_SESSION.json`.
+
+No se generó instalador.
+No se modificó stable.
