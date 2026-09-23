@@ -227,6 +227,21 @@ async def run_scheduler() -> dict:
         assert goal_lock.provider_name == "ceo-local-goal-lock", goal_lock.provider_name
         assert execution.provider_name == "ceo-local-finite-file", execution.provider_name
         assert verify.provider_name == "ceo-local-finite-file", verify.provider_name
+        assert verify.status == TaskStatus.COMPLETE, verify.status
+        assert execution.metadata.get("verification_scheduled") == [verify.id], execution.metadata
+        assert verify.metadata.get("verifies") == execution.id, verify.metadata
+        assert not any(
+            ("execution" in str(t.title or "").lower())
+            and (
+                str(t.title or "").lower().startswith("independent verification")
+                or str(t.title or "").lower().startswith("verify ")
+            )
+            for t in leaves
+            if t.id != verify.id
+        ), [
+            {"title": t.title, "status": t.status.value, "metadata": t.metadata}
+            for t in leaves
+        ]
         assert goal_lock.metadata.get("task_role") == "internal_control", goal_lock.metadata
         assert not goal_lock.metadata.get("verification_scheduled"), goal_lock.metadata
         assert not any(
