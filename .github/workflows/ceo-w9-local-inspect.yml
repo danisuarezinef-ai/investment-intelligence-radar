@@ -66,3 +66,6 @@ jobs:
           '@ | Set-Content -Encoding UTF8 w9_guard_inspect.py
           python w9_guard_inspect.py
           Write-Host "W9_RECOVERY_GUARD_SOURCE_END"
+          Write-Host "W9_SCHEDULER_RECOVERY_MATCHES_BEGIN"
+          Select-String -Path (Join-Path $root "ceo_core\scheduler.py") -Pattern "recovery_budget_guard|duplicate_internal_control|suppress_new_internal_recovery|is_internal\(" -Context 12,20
+          Write-Host "W9_SCHEDULER_RECOVERY_MATCHES_END"
