@@ -136,6 +136,25 @@ def patch_scheduler(path: pathlib.Path) -> None:
                             verified = exchange.register(
 """
     text = replace_once(text, old, new, "W11 scheduler idempotent write")
+    old_written = """                            written.append({
+                                "path": relative,
+                                "sha256": row.get("sha256"),
+                                "size_bytes": row.get("size_bytes"),
+                                "artifact_id": verified.get("artifact_id"),
+                                "evidence_ref": evidence.ref,
+                            })
+"""
+    new_written = """                            written.append({
+                                "path": relative,
+                                "sha256": row.get("sha256"),
+                                "size_bytes": row.get("size_bytes"),
+                                "artifact_id": verified.get("artifact_id"),
+                                "evidence_ref": evidence.ref,
+                                "idempotent_noop": bool(row.get("idempotent_noop", False)),
+                                "physical_write": bool(row.get("physical_write", True)),
+                            })
+"""
+    text = replace_once(text, old_written, new_written, "W11 write audit metadata")
     old2 = """                            task.metadata.setdefault("verified_artifacts", []).extend(
                                 x["artifact_id"] for x in written if x.get("artifact_id")
                             )
