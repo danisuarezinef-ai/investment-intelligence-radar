@@ -45,6 +45,7 @@ BROWSER_FILES=[
     "finalize_browser_field.py",
     "run_field_campaign.py",
     "run_browser_restart_gate.ps1",
+    "run_w14b_real_session_gate.ps1",
     "run_b29_b30_full_field_gate.ps1",
     "real_code_candidate.py",
     "run_b38_real_ceo_candidate.py",
@@ -59,6 +60,7 @@ ROOT_FILES={
     "EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd":"ceo-browser/EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd",
     "RECUPERAR_PRUEBA_CEO.cmd":"ceo-browser/RECUPERAR_PRUEBA_CEO.cmd",
     "EJECUTAR_B38_CANDIDATE.cmd":"ceo-browser/EJECUTAR_B38_CANDIDATE.cmd",
+    "EJECUTAR_W14B_SESION_REAL.cmd":"ceo-browser/EJECUTAR_W14B_SESION_REAL.cmd",
 }
 
 README="""CEO DE IAs — PRIMERA PRUEBA BROWSER LAB
@@ -193,6 +195,7 @@ def main()->None:
         "EJECUTAR_PRIMERA_PRUEBA_CEO_BROWSER.cmd",
         "RECUPERAR_PRUEBA_CEO.cmd",
         "EJECUTAR_B38_CANDIDATE.cmd",
+        "EJECUTAR_W14B_SESION_REAL.cmd",
         "PRIMERA_PRUEBA_README.txt",
         "CEO_FIRST_TRIAL_LAB.json",
         "CEO_FIRST_TRIAL_MANIFEST.json",
@@ -200,6 +203,7 @@ def main()->None:
         "ceo_core/browser_ai/run_field_campaign.py",
         "ceo_core/browser_ai/open_web_ai_profile.ps1",
         "ceo_core/browser_ai/run_b29_b30_full_field_gate.ps1",
+        "ceo_core/browser_ai/run_w14b_real_session_gate.ps1",
         "ceo_core/browser_ai/run_b38_real_ceo_candidate.py",
     }
     missing=sorted(required-names)
