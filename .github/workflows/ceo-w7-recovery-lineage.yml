@@ -34,7 +34,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $root | Out-Null
           Expand-Archive -Path "ceo-updates\CEO_1.5.92-rc1-native-transport-integrity.zip" -DestinationPath $root -Force
           $env:CEO_W7_ROOT=$root
-          python - <<'PY'
+          @'
           import os, pathlib, sys
           root=pathlib.Path(os.environ["CEO_W7_ROOT"])
           sys.path.insert(0,str(root))
@@ -51,7 +51,9 @@ jobs:
           new=s.tasks[next(iter(created))]
           assert int(new.metadata.get("stall_replan_generation",-1))==4
           print("W7_RAW_1592_UNBOUNDED_REPLAN_REPRODUCED")
-          PY
+          '@ | Set-Content -Encoding UTF8 w7_raw_repro.py
+          python w7_raw_repro.py
+          if($LASTEXITCODE -ne 0){throw "W7 raw reproduction failed"}
       - name: Apply W7 bounded lineage correction
         shell: pwsh
         run: |
