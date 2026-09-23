@@ -56,6 +56,12 @@ jobs:
           Write-Host "W9_RECOVERY_GUARD_SOURCE_BEGIN"
           Get-ChildItem -Path $root -Recurse -File -Filter *.py | Select-String -Pattern "recovery_budget_guard_duplicate_internal_control|duplicate_internal_control|recovery_budget_guard_v1" -Context 18,28
           Write-Host "W9_RECOVERY_GUARD_SOURCE_END"
+          Write-Host "W9_RECOVERY_GUARD_FULL_BEGIN"
+          Get-Content -Path (Join-Path $root "ceo_core\recovery_budget_guard_v1.py")
+          Write-Host "W9_TASK_ROLES_FULL_BEGIN"
+          Get-Content -Path (Join-Path $root "ceo_core\task_roles_v2.py")
+          Write-Host "W9_TASK_ROLES_FULL_END"
+          Write-Host "W9_RECOVERY_GUARD_FULL_END"
           Write-Host "W9_RECOVERY_GUARD_SOURCE_BEGIN"
           @'
           import inspect, os, pathlib, sys
